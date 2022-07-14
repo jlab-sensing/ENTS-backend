@@ -4,6 +4,7 @@ import pdb
 
 import pandas as pd
 from bokeh.plotting import figure, show
+from bokeh.models import LinearAxis, Range1d
 
 # Read soil date
 # NOTE: read_csv skips blank lines therefore the header index is 9
@@ -23,8 +24,25 @@ raw["P2"] = raw["V2"] * raw["I2L"]
 # Calculate moving average
 moving_avg = raw.resample('10min').mean()
 
-p = figure(title="Simple line example", x_axis_label='time [s]',
+# Plot Power
+power = figure(title="Simple line example", x_axis_label='time [s]',
            y_axis_label='Power [Watts]')
-p.line(moving_avg.index, moving_avg["P1"], legend_label="Power", line_width=2)
+power.line(moving_avg.index, moving_avg["P1"], legend_label="Power", line_width=2)
 
-show(p)
+# Plot voltage/current
+vi = figure(title="Voltage/Current Measurements", x_axis_label='time',
+            y_axis_label='V [V}')
+
+# Create separate y axis for current
+vi.extra_y_ranges = {"I": Range1d(start=0, end=2*moving_avg["I1L"].max())}
+vi.add_layout(LinearAxis(axis_label="I [uA]", y_range_name="I"), 'right')
+
+# Plot data
+for vcols in ["V1", "V2"]:
+    vi.line(moving_avg.index, moving_avg[vcols], legend_label=vcols, line_width=1)
+for icols in ["I1L", "I2L"]:
+    vi.line(moving_avg.index, moving_avg[icols], legend_label=icols,
+            y_range_name="I", line_width=1)
+
+show(power)
+show(vi)
