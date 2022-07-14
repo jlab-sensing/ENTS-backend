@@ -3,8 +3,11 @@
 import pdb
 
 import pandas as pd
+
 from bokeh.plotting import figure, show
 from bokeh.models import LinearAxis, Range1d
+from bokeh.io import curdoc
+from bokeh.layouts import column, row
 
 # Read soil date
 # NOTE: read_csv skips blank lines therefore the header index is 9
@@ -25,9 +28,9 @@ raw["P2"] = raw["V2"] * raw["I2L"]
 moving_avg = raw.resample('10min').mean()
 
 # Plot Power
-power = figure(title="Simple line example", x_axis_label='time [s]',
+power = figure(title="Power Measurements", x_axis_label='time [s]',
            y_axis_label='Power [Watts]')
-power.line(moving_avg.index, moving_avg["P1"], legend_label="Power", line_width=2)
+power.line(moving_avg.index, moving_avg["P1"], legend_label="Power")
 
 # Plot voltage/current
 vi = figure(title="Voltage/Current Measurements", x_axis_label='time',
@@ -39,10 +42,10 @@ vi.add_layout(LinearAxis(axis_label="I [uA]", y_range_name="I"), 'right')
 
 # Plot data
 for vcols in ["V1", "V2"]:
-    vi.line(moving_avg.index, moving_avg[vcols], legend_label=vcols, line_width=1)
+    vi.line(moving_avg.index, moving_avg[vcols], legend_label=vcols)
 for icols in ["I1L", "I2L"]:
     vi.line(moving_avg.index, moving_avg[icols], legend_label=icols,
-            y_range_name="I", line_width=1)
+            y_range_name="I")
 
-show(power)
-show(vi)
+curdoc().add_root(column(power, vi, sizing_mode="stretch_both"))
+curdoc().title = "MFC"
