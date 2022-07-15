@@ -5,9 +5,10 @@ import pdb
 import pandas as pd
 
 from bokeh.plotting import figure, show
-from bokeh.models import LinearAxis, Range1d
+from bokeh.models import ColumnDataSource, LinearAxis, Range1d, DatetimeRangeSlider
 from bokeh.io import curdoc
 from bokeh.layouts import column, row
+
 
 # Read soil date
 # NOTE: read_csv skips blank lines therefore the header index is 9
@@ -30,13 +31,13 @@ raw["P2"] = raw["V2"] * raw["I2L"]
 # Calculate moving average
 moving_avg = raw.resample('10min').mean()
 
-
 # Plot Power
 power = figure(
     title="Power Measurements",
-    x_axis_label='time [s]',
+    x_axis_label='Date',
     x_axis_type="datetime",
     y_axis_label='Power [uW]',
+    aspect_ratio=2.,
 )
 power.line(moving_avg.index, moving_avg["P1"], legend_label="P1")
 
@@ -47,7 +48,8 @@ vi = figure(
     x_axis_label='Date',
     y_axis_label='Voltage [V]',
     y_range=Range1d(start=0,end=1.),
-    x_axis_type="datetime"
+    x_axis_type="datetime",
+    aspect_ratio = 2.,
 )
 
 # Create separate y axis for current
@@ -59,6 +61,20 @@ vi.line(moving_avg.index, moving_avg["V1"], legend_label="V1", color="green")
 vi.line(moving_avg.index, moving_avg["I1L"], legend_label="I1L",
         y_range_name="I", color="red")
 
+#pdb.set_trace()
+date_range= DatetimeRangeSlider(title="Date Range",
+                                start=moving_avg.index[0],
+                                end=moving_avg.index[-1],
+                                value=(moving_avg.index[0],
+                                       moving_avg.index[-1]),
+                                step=100000,
+                                )
 
-curdoc().add_root(column(power, vi, sizing_mode="stretch_both"))
+#def update_data(attrname, old, new):
+
+
+graph_col = column(power, vi, sizing_mode="fixed")
+layout = row(date_range, graph_col)
+
+curdoc().add_root(layout)
 curdoc().title = "MFC"
