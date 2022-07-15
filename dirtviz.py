@@ -79,16 +79,22 @@ def load_teros_data(_filename):
 
     raw = pd.read_csv(_filename, header=0)
     # Convert to datetime
-    raw["timestamp"] = pd.to_datetime(raw["timestamp"], unit='ms')
+    raw["timestamp"] = pd.to_datetime(raw["timestamp"], unit='s')
+    raw = raw.set_index("timestamp")
+
     # Calculate volumetric water content
-    raw["vmc"] = (9.079e-10)*raw["raw_VWC"]**3 - (6.626e-6)*raw["raw_VWC"]**2 + (1.643e-2)*raw["raw_VWC"] - 1.354e1
+    raw["vwc"] = (9.079e-10)*raw["raw_VWC"]**3 - (6.626e-6)*raw["raw_VWC"]**2 + (1.643e-2)*raw["raw_VWC"] - 1.354e1
+    raw["vwc"] = 100 * raw["vwc"]
     # Only take sensor 1
     sensor1 = raw[raw["sensorID"] == 1]
 
-    return sensor1
+    downsampled = sensor1.resample('10min').mean()
+
+    return downsampled
 
 
 teros_data = load_teros_data("TEROSoutput-1656537434-f17.csv")
+teros_source = ColumnDataSource(teros_data)
 
 rl_data = load_rl_data("soil_20220629-214516_8.csv")
 source = ColumnDataSource(rl_data)
@@ -124,14 +130,43 @@ vi.line("timestamp", "V1", source=source, legend_label="V1", color="green")
 vi.line("timestamp", "I1L", source=source, legend_label="I1L",
         y_range_name="I", color="red")
 
-#pdb.set_trace()
-date_range= DatetimeRangeSlider(title="Date Range",
-                                start=rl_data.index[0],
-                                end=rl_data.index[-1],
-                                value=(rl_data.index[0],
-                                       rl_data.index[-1]),
-                                step=100000,
-                                )
+
+# Plot TEROS data
+teros_temp_vwc = figure(
+    title="TEROS-12 Sensor Data",
+    x_axis_label="Date",
+    x_axis_type="datetime",
+    y_axis_label="Volumetric Water Content [%]",
+    y_range=Range1d(start=0, end=100),
+    aspect_ratio=2.,
+)
+teros_temp_vwc.extra_y_ranges = {"temp": Range1d(start=0, end=40.)}
+teros_temp_vwc.add_layout(LinearAxis(axis_label="Temperature [C]",
+                                     y_range_name="temp"), 'right')
+
+teros_temp_vwc.line("timestamp", "vwc", source=teros_source, legend_label="VWC")
+teros_temp_vwc.line("timestamp", "temp", source=teros_source,
+           legend_label="Temperature", y_range_name="temp", color="red")
+
+# Plot TEROS EC data
+teros_ec = figure(
+    title="TEROS-12 Measured Electricaly Conductivity",
+    x_axis_label="Date",
+    x_axis_type="datetime",
+    y_axis_label="Electrical Conductivity",
+    aspect_ratio=2.,
+)
+teros_ec.line("timestamp", "EC", source=teros_source,
+           legend_label="Electrical Conductivity [uS/cm]", color="green")
+
+
+date_range= DatetimeRangeSlider(
+    title="Date Range",
+    start=rl_data.index[0],
+    end=rl_data.index[-1],
+    value=(rl_data.index[0], rl_data.index[-1]),
+    step=100000,
+)
 
 def update_range(attrname, old, new):
     """Update range of data displayed
@@ -151,15 +186,28 @@ def update_range(attrname, old, new):
     """
 
     lower, upper = pd.to_datetime(new, unit='ms')
+
+    # Update rocketlogger data
     selected = rl_data
     selected = selected[selected.index >= lower]
     selected = selected[selected.index <= upper]
+
     source.data = selected
+
+    # Update TEROS data
+    selected_teros = teros_data
+    selected_teros = selected_teros[selected_teros.index >= lower]
+    selected_teros = selected_teros[selected_teros.index <= upper]
+
+    teros_source.data = selected_teros
+
 
 date_range.on_change('value', update_range)
 
-graph_col = column(power, vi, sizing_mode="fixed")
-layout = row(date_range, graph_col)
+rl_col = column(power, vi)
+teros_col = column(teros_temp_vwc, teros_ec)
+graphs = row(rl_col, teros_col)
+layout = column(date_range, graphs, width=1000)
 
 curdoc().add_root(layout)
 curdoc().title = "DirtViz"
