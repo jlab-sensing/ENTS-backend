@@ -12,6 +12,8 @@ TODO
 .. moduleauthor:: John Madden <jtmadden@ucsc.edu>
 """
 
+import pdb
+
 import pandas as pd
 
 from bokeh.plotting import figure, show
@@ -59,6 +61,34 @@ def load_rl_data(_filename):
 
     return downsampled
 
+
+def load_teros_data(_filename):
+    """Loads TEROS soil data and converts the raw volumetric water content to
+    a percentage.
+
+    Parameters
+    ----------
+    _filename: str
+        Path to csv formatted file.
+
+    Returns
+    -------
+    pd.DataFrame
+        Dataframe containing loaded data with same columns as in the csv file.
+    """
+
+    raw = pd.read_csv(_filename, header=0)
+    # Convert to datetime
+    raw["timestamp"] = pd.to_datetime(raw["timestamp"], unit='ms')
+    # Calculate volumetric water content
+    raw["vmc"] = (9.079e-10)*raw["raw_VWC"]**3 - (6.626e-6)*raw["raw_VWC"]**2 + (1.643e-2)*raw["raw_VWC"] - 1.354e1
+    # Only take sensor 1
+    sensor1 = raw[raw["sensorID"] == 1]
+
+    return sensor1
+
+
+teros_data = load_teros_data("TEROSoutput-1656537434-f17.csv")
 
 rl_data = load_rl_data("soil_20220629-214516_8.csv")
 source = ColumnDataSource(rl_data)
