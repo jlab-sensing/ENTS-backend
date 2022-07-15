@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 
-import pdb
+"""
+Implements the bokeh plots mirring those generated from show_twobat.py from
+original data processing. There is a datetime slider that adjusts the range of
+the graphs. The script uses the interal bokeh server to serve the graphs.
+
+TODO
+- Graph TEROS-12 Sensor Data
+- Display key statistics (max power)
+
+.. moduleauthor:: John Madden <jtmadden@ucsc.edu>
+"""
 
 import pandas as pd
 
@@ -73,16 +83,30 @@ date_range= DatetimeRangeSlider(title="Date Range",
                                 step=100000,
                                 )
 
-def update_data(attrname, old, new):
-    # NOTE: bokeh uses ms units for epoch time
+def update_range(attrname, old, new):
+    """Update range of data displayed
+
+    Parameters
+    ----------
+    attrname: str
+    old: tuple
+        Tuple of old dates
+    new: tuple
+        Tuple of new dates
+
+    Notes
+    -----
+    bokeh uses ms units for epoch time contrary to the input timestamp used in
+    the original pandas dataframe.
+    """
+
     lower, upper = pd.to_datetime(new, unit='ms')
     selected = moving_avg
     selected = selected[selected.index >= lower]
     selected = selected[selected.index <= upper]
     source.data = selected
 
-for w in [date_range]:
-    w.on_change('value', update_data)
+date_range.on_change('value', update_date)
 
 graph_col = column(power, vi, sizing_mode="fixed")
 layout = row(date_range, graph_col)
