@@ -88,4 +88,4 @@ graph_col = column(power, vi, sizing_mode="fixed")
 layout = row(date_range, graph_col)
 
 curdoc().add_root(layout)
-curdoc().title = "MFC"
+curdoc().title = "DirtViz"
