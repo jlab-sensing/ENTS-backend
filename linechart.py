@@ -20,6 +20,9 @@ raw = pd.read_csv("soil_20220629-214516_8.csv", header=9,
 # Calculate timestamp and make index
 raw["timestamp"] = pd.to_datetime(raw["timestamp"], unit='s')
 raw = raw.set_index("timestamp")
+# Convert units
+raw[["I1L", "I2L"]] = raw[["I1L", "I2L"]]*10e-6
+raw[["V1", "V2"]] = raw[["V1", "V2"]]*10e-9
 # Calculate power
 raw["P1"] = raw["V1"] * raw["I1L"]
 raw["P2"] = raw["V2"] * raw["I2L"]
@@ -27,25 +30,35 @@ raw["P2"] = raw["V2"] * raw["I2L"]
 # Calculate moving average
 moving_avg = raw.resample('10min').mean()
 
+
 # Plot Power
-power = figure(title="Power Measurements", x_axis_label='time [s]',
-           y_axis_label='Power [Watts]')
-power.line(moving_avg.index, moving_avg["P1"], legend_label="Power")
+power = figure(
+    title="Power Measurements",
+    x_axis_label='time [s]',
+    x_axis_type="datetime",
+    y_axis_label='Power [uW]',
+)
+power.line(moving_avg.index, moving_avg["P1"], legend_label="P1")
+
 
 # Plot voltage/current
-vi = figure(title="Voltage/Current Measurements", x_axis_label='time',
-            y_axis_label='V [V}')
+vi = figure(
+    title="Voltage/Current Measurements",
+    x_axis_label='Date',
+    y_axis_label='Voltage [V]',
+    y_range=Range1d(start=0,end=1.),
+    x_axis_type="datetime"
+)
 
 # Create separate y axis for current
-vi.extra_y_ranges = {"I": Range1d(start=0, end=2*moving_avg["I1L"].max())}
-vi.add_layout(LinearAxis(axis_label="I [uA]", y_range_name="I"), 'right')
+vi.extra_y_ranges = {"I": Range1d(start=0, end=200)}
+vi.add_layout(LinearAxis(axis_label="Current [uA]", y_range_name="I"), 'right')
 
 # Plot data
-for vcols in ["V1", "V2"]:
-    vi.line(moving_avg.index, moving_avg[vcols], legend_label=vcols)
-for icols in ["I1L", "I2L"]:
-    vi.line(moving_avg.index, moving_avg[icols], legend_label=icols,
-            y_range_name="I")
+vi.line(moving_avg.index, moving_avg["V1"], legend_label="V1", color="green")
+vi.line(moving_avg.index, moving_avg["I1L"], legend_label="I1L",
+        y_range_name="I", color="red")
+
 
 curdoc().add_root(column(power, vi, sizing_mode="stretch_both"))
 curdoc().title = "MFC"
