@@ -20,28 +20,48 @@ from bokeh.io import curdoc
 from bokeh.layouts import column, row
 
 
-# Read soil date
-# NOTE: read_csv skips blank lines therefore the header index is 9
-# The data has two current channels and the I1L_valid and I2L_valid indicate
-# which channels is currently being used. For now only I*L are valid
-raw = pd.read_csv("soil_20220629-214516_8.csv", header=9,
-                        names=["timestamp", "I1L_valid", "I2L_valid", "I1H",
-                               "I1L", "V1", "V2", "I2H", "I2L"],
-                        )
-# Calculate timestamp and make index
-raw["timestamp"] = pd.to_datetime(raw["timestamp"], unit='s')
-raw = raw.set_index("timestamp")
-# Convert units
-raw[["I1L", "I2L"]] = raw[["I1L", "I2L"]]*10e-6
-raw[["V1", "V2"]] = raw[["V1", "V2"]]*10e-9
-# Calculate power
-raw["P1"] = raw["V1"] * raw["I1L"]
-raw["P2"] = raw["V2"] * raw["I2L"]
+def load_rl_data(_filename):
+    """Loads rocketlogger data and downsamples the data to a reasonable
+    timestep. The graphs were started to lag with all the raw data.
 
-# Calculate moving average
-moving_avg = raw.resample('10min').mean()
+    Parameters
+    ----------
+    _filename: str
+        Path to csv formatted file
 
-source = ColumnDataSource(moving_avg)
+    Note
+    ----
+    read_csv() skips blank lines therefore the header index is 9 to skip the
+    rocketlogger preamble.
+
+    There is nothing implemented to handle switching between IL and IH.
+    """
+
+    # The data has two current channels and the I1L_valid and I2L_valid indicate
+    # which channels is currently being used. For now only I*L are valid
+    raw = pd.read_csv(_filename,
+                      header=9,
+                      names=["timestamp", "I1L_valid", "I2L_valid", "I1H",
+                             "I1L", "V1", "V2", "I2H", "I2L"],
+                      )
+    # Calculate timestamp and make index
+    raw["timestamp"] = pd.to_datetime(raw["timestamp"], unit='s')
+    raw = raw.set_index("timestamp")
+    # Convert units
+    raw[["I1L", "I2L"]] = raw[["I1L", "I2L"]]*10e-6
+    raw[["V1", "V2"]] = raw[["V1", "V2"]]*10e-9
+    # Calculate power
+    raw["P1"] = raw["V1"] * raw["I1L"]
+    raw["P2"] = raw["V2"] * raw["I2L"]
+
+    # Calculate moving average
+    downsampled = raw.resample('10min').mean()
+
+    return downsampled
+
+
+rl_data = load_rl_data("soil_20220629-214516_8.csv")
+source = ColumnDataSource(rl_data)
 
 
 # Plot Power
@@ -76,10 +96,10 @@ vi.line("timestamp", "I1L", source=source, legend_label="I1L",
 
 #pdb.set_trace()
 date_range= DatetimeRangeSlider(title="Date Range",
-                                start=moving_avg.index[0],
-                                end=moving_avg.index[-1],
-                                value=(moving_avg.index[0],
-                                       moving_avg.index[-1]),
+                                start=rl_data.index[0],
+                                end=rl_data.index[-1],
+                                value=(rl_data.index[0],
+                                       rl_data.index[-1]),
                                 step=100000,
                                 )
 
@@ -101,12 +121,12 @@ def update_range(attrname, old, new):
     """
 
     lower, upper = pd.to_datetime(new, unit='ms')
-    selected = moving_avg
+    selected = rl_data
     selected = selected[selected.index >= lower]
     selected = selected[selected.index <= upper]
     source.data = selected
 
-date_range.on_change('value', update_date)
+date_range.on_change('value', update_range)
 
 graph_col = column(power, vi, sizing_mode="fixed")
 layout = row(date_range, graph_col)
