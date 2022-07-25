@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Column, Integer, String, Text, ForeignKey
+from sqlalchemy import Table, Column, Integer, String, Text, ForeignKey, Float
 from sqlalchemy.dialects.postgresql import MACADDR, TIMESTAMP
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship
@@ -53,3 +53,22 @@ class PowerData(Base):
         Voltage={self.Voltage!r})"""
 
         return r
+
+class TEROSData(Base):
+    __tablename__ = "TEROSData"
+
+    Id = Column(Integer, primary_key=True)
+    Cell_Id = Column(Integer, ForeignKey("Cells.Id"), nullable=False)
+    Timestamp = Column(TIMESTAMP)
+    SensorId = Column(String(1))
+    raw_VWC = Column(Float)
+    Temperature = Column(Float)
+    EC = Column(Integer)
+
+    Cell = relationship("Cells", foreign_keys="Cells.Id")
+
+    def __repr__(self):
+        r = f"""TEROSData(Id={self.Id!r}, Cell_Id={self.Cell_Id!r},
+        Timestamp={self.Timestamp!r}, SensorId={self.SensorId!r},
+        raw_VWC={self.raw_VWC!r}, Temperature={self.Temperature!r},
+        EC={self.EC!r})"""
