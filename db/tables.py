@@ -6,69 +6,68 @@ from sqlalchemy.orm import relationship
 Base = declarative_base()
 
 class RocketLogger(Base):
-    __tablename__ = "RocketLoggers"
+    __tablename__ = "rocketlogger"
 
-    Id = Column(Integer, primary_key=True)
-    MAC = Column(MACADDR)
+    id = Column(Integer, primary_key=True)
+    mac = Column(MACADDR)
     hostname = Column(Text())
 
     def __repr__(self):
-        r = f"""RocketLogger(Id={self.Id!r}, MAC={self.MAC!r},
+        r = f"""RocketLogger(id={self.id!r}, MAC={self.mac!r},
         hostname={self.hostname!r}"""
 
         return r
 
 class Cell(Base):
-    __tablename__ = "Cells"
+    __tablename__ = "cell"
 
-    Id = Column(Integer, primary_key=True)
-    Name = Column(Text())
-    Location = Column(Text())
+    id = Column(Integer, primary_key=True)
+    name = Column(Text())
+    location = Column(Text())
 
     def __repr__(self):
-        r = f"""Cell(Id={self.Id!r}, Name={self.Name!r},
-        Location={self.Location!r}"""
+        r = f"""Cell(id={self.id!r}, Name={self.name!r},
+        Location={self.location!r}"""
 
         return r
 
 class PowerData(Base):
-    __tablename__ = "PowerData"
+    __tablename__ = "power_data"
 
-    Id = Column(Integer, primary_key=True)
-    RocketLogger_Id = Column(Integer, ForeignKey("RocketLoggers.Id"),
+    id = Column(Integer, primary_key=True)
+    rocketlogger_id = Column(Integer, ForeignKey("rocketlogger.id"),
                              nullable=False)
-    Cell_Id = Column(Integer, ForeignKey("Cells.Id"), nullable=False)
-    Timestamp = Column(TIMESTAMP)
-    Current = Column(Integer)
-    Voltage = Column(Integer)
+    cell_id = Column(Integer, ForeignKey("cell.id"), nullable=False)
+    timestamp = Column(TIMESTAMP)
+    current = Column(Integer)
+    voltage = Column(Integer)
 
-    RocketLogger = relationship("RocketLoggers",
-                                foreign_keys="RocketLoggers.Id")
-    Cell = relationship("Cells", foreign_keys="Cells.Id")
+    rocketlogger = relationship("RocketLogger")
+    cell = relationship("Cell")
 
     def __repr__(self):
-        r = f"""PowerData(Id={self.Id!r},
-        RocketLogger_Id={self.RocketLogger_Id!r}, Cell_Id={self.Cell_Id!r},
-        Timestamp={self.Timestamp!r}, Current={self.Current!r},
-        Voltage={self.Voltage!r})"""
+        r = f"""PowerData(id={self.id!r},
+        RocketLogger_id={self.locketlogger_id!r}, cell_id={self.cell_id!r},
+        timestamp={self.timestamp!r}, current={self.current!r},
+        voltage={self.voltage!r})"""
 
         return r
 
 class TEROSData(Base):
-    __tablename__ = "TEROSData"
+    __tablename__ = "teros_data"
 
-    Id = Column(Integer, primary_key=True)
-    Cell_Id = Column(Integer, ForeignKey("Cells.Id"), nullable=False)
-    Timestamp = Column(TIMESTAMP)
-    SensorId = Column(String(1))
+    id = Column(Integer, primary_key=True)
+    cell_id = Column(Integer, ForeignKey("cell.id"), nullable=False)
+    timestamp = Column(TIMESTAMP)
+    sensorid = Column(String(1))
     raw_VWC = Column(Float)
-    Temperature = Column(Float)
-    EC = Column(Integer)
+    temperature = Column(Float)
+    ec = Column(Integer)
 
-    Cell = relationship("Cells", foreign_keys="Cells.Id")
+    cell = relationship("Cell")
 
     def __repr__(self):
-        r = f"""TEROSData(Id={self.Id!r}, Cell_Id={self.Cell_Id!r},
-        Timestamp={self.Timestamp!r}, SensorId={self.SensorId!r},
-        raw_VWC={self.raw_VWC!r}, Temperature={self.Temperature!r},
-        EC={self.EC!r})"""
+        r = f"""TEROSData(id={self.id!r}, cell_id={self.cell_id!r},
+        timestamp={self.timestamp!r}, sensorid={self.sensorid!r},
+        raw_VWC={self.raw_VWC!r}, temperature={self.temperature!r},
+        ec={self.ec!r})"""
