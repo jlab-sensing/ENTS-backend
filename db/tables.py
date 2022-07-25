@@ -13,5 +13,20 @@ class RocketLogger(Base):
     hostname = Column(Text())
 
     def __repr__(self):
-        return f"RocketLogger(Id={self.Id!r}, MAC={self.MAC!r}, hostname={self.hostname!r}"
+        r = f"""RocketLogger(Id={self.Id!r}, MAC={self.MAC!r},
+        hostname={self.hostname!r}"""
 
+        return r
+
+class Cell(Base):
+    __tablename__ = "Cells"
+
+    Id = Column(Integer, primary_key=True)
+    Name = Column(Text())
+    Location = Column(Text())
+
+    def __repr__(self):
+        r = f"""Cell(Id={self.Id!r}, Name={self.Name!r},
+        Location={self.Location!r}"""
+
+        return r
