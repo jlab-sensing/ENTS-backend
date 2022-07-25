@@ -12,6 +12,7 @@ TODO
 .. moduleauthor:: John Madden <jtmadden@ucsc.edu>
 """
 
+import os
 import pdb
 
 import pandas as pd
@@ -21,6 +22,12 @@ from bokeh.models import ColumnDataSource, LinearAxis, Range1d, DatetimeRangeSli
 from bokeh.io import curdoc
 from bokeh.layouts import column, row
 
+# Path to data directory
+DATA_DIR = "data"
+# Name of TEROS data file
+TEROS_NAME = "TEROSoutput-1656537434-f17.csv"
+# Name of RocketLogger data file
+RL_NAME = "soil_20220629-214516_8.csv"
 
 def load_rl_data(_filename):
     """Loads rocketlogger data and downsamples the data to a reasonable
@@ -93,10 +100,12 @@ def load_teros_data(_filename):
     return downsampled
 
 
-teros_data = load_teros_data("TEROSoutput-1656537434-f17.csv")
+teros_path = os.path.join(DATA_DIR, TEROS_NAME)
+teros_data = load_teros_data(teros_path)
 teros_source = ColumnDataSource(teros_data)
 
-rl_data = load_rl_data("soil_20220629-214516_8.csv")
+rl_path = os.path.join(DATA_DIR, RL_NAME)
+rl_data = load_rl_data(rl_path)
 source = ColumnDataSource(rl_data)
 
 
