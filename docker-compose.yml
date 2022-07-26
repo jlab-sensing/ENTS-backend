@@ -30,5 +30,5 @@ services:
     ports:
       - 8080:8080
 
-  volumnes:
+  volumes:
     postgresdata:
