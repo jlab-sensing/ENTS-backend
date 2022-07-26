@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION get_formatted_power_data(cell_id INT)
+CREATE OR REPLACE FUNCTION get_formatted_power_data(_cell_id INT)
 RETURNS TABLE (
 	ts TIMESTAMP,
 	voltage DOUBLE PRECISION,
@@ -24,7 +24,7 @@ FROM (
 		AVG(voltage) voltage,
 		AVG(current) current
 		FROM power_data
-		WHERE power_data.cell_id = cell_id
+		WHERE power_data.cell_id = _cell_id
 		GROUP BY DATE_TRUNC('hour', ts)
 		ORDER BY DATE_TRUNC('hour', ts)
 	) averaged
