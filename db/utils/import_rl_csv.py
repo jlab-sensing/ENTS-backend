@@ -41,7 +41,7 @@ def import_rl_csv(path, rl, cell1=None, cell2=None):
                 pow1 = PowerData(
                     rocketlogger_id=rl,
                     cell_id=cell1,
-                    timestamp=ts,
+                    ts=ts,
                     current=row[4],
                     voltage=row[5],
                 )
@@ -49,14 +49,14 @@ def import_rl_csv(path, rl, cell1=None, cell2=None):
                 pow2 = PowerData(
                     rocketlogger_id=rl,
                     cell_id=cell2,
-                    timestamp=ts,
+                    ts=ts,
                     current=row[8],
                     voltage=row[6],
                 )
 
                 s.add_all([pow1, pow2])
 
-            s.commit()
+                s.commit()
 
 
 if __name__ == "__main__":

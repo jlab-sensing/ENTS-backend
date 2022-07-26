@@ -39,7 +39,7 @@ class PowerData(Base):
     rocketlogger_id = Column(Integer, ForeignKey("rocketlogger.id"),
                              nullable=False)
     cell_id = Column(Integer, ForeignKey("cell.id"), nullable=False)
-    timestamp = Column(DateTime)
+    ts = Column(DateTime)
     current = Column(Integer)
     voltage = Column(Integer)
 
@@ -49,7 +49,7 @@ class PowerData(Base):
     def __repr__(self):
         r = f"""PowerData(id={self.id!r},
         RocketLogger_id={self.locketlogger_id!r}, cell_id={self.cell_id!r},
-        timestamp={self.timestamp!r}, current={self.current!r},
+        ts={self.ts!r}, current={self.current!r},
         voltage={self.voltage!r})"""
 
         return r
@@ -59,7 +59,7 @@ class TEROSData(Base):
 
     id = Column(Integer, primary_key=True)
     cell_id = Column(Integer, ForeignKey("cell.id"), nullable=False)
-    timestamp = Column(DateTime)
+    ts = Column(DateTime)
     sensorid = Column(String(1))
     raw_VWC = Column(Float)
     temperature = Column(Float)
@@ -69,6 +69,6 @@ class TEROSData(Base):
 
     def __repr__(self):
         r = f"""TEROSData(id={self.id!r}, cell_id={self.cell_id!r},
-        timestamp={self.timestamp!r}, sensorid={self.sensorid!r},
+        ts={self.ts!r}, sensorid={self.sensorid!r},
         raw_VWC={self.raw_VWC!r}, temperature={self.temperature!r},
         ec={self.ec!r})"""

@@ -126,8 +126,10 @@ rl_data = {
 
 with Session(engine) as s:
 
-    with open("db/sql/select_powerdata.sql", "r") as file:
-        stmt = text(file.read())
+    stmt = text("""
+        SELECT ts, voltage, current,power
+        FROM get_formatted_power_data(:cell_id)""").bindparams(cell_id=5)
+
 
     #stmt = select(
     #    PowerData.timestamp,
@@ -138,7 +140,7 @@ with Session(engine) as s:
     #)
 
     for row in s.execute(stmt):
-        rl_data["timestamp"].append(row.timestamp)
+        rl_data["timestamp"].append(row.ts)
         rl_data["v"].append(row.voltage)
         rl_data["i"].append(row.current)
         rl_data["p"].append(row.power)
