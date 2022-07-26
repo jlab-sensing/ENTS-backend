@@ -20,7 +20,7 @@ services:
       POSTGRES_USER: dirtviz
       POSTGRES_PASSWORD: password
     volumes:
-      - postgresqldata:/var/lib/postgresql/data
+      - postgresdata:/var/lib/postgresql/data
     ports:
       - 5432:5432
 
@@ -30,5 +30,5 @@ services:
     ports:
       - 8080:8080
 
-  volumes:
-    postgresdata:
+volumes:
+  postgresdata:
