@@ -9,34 +9,6 @@ from .tables import RocketLogger, Cell, PowerData, TEROSData
 from .conn import engine
 
 
-def add_rl(mac=None, hostname=None) -> RocketLogger:
-    """Adds a new rocketlogger
-
-    Parameters
-    ----------
-    mac : str
-        MAC Address of the RocketLogger
-    hostname : str
-        FQDN of the RocketLogger
-
-    Returns
-    -------
-    Reference to created RocketLogger object
-    """
-
-    with Session(engine) as s:
-        # Create new object
-        rl = RocketLogger(
-            mac=mac,
-            hostname=hostname,
-        )
-
-        s.add(rl)
-        s.commit()
-
-        print(rl)
-
-
 def import_rl(path, rl, cell1=None, cell2=None):
     """Imports raw RocketLogger data in PowerData table.
 
@@ -80,7 +52,7 @@ def import_rl(path, rl, cell1=None, cell2=None):
 
                 pow2 = PowerData(
                     rocketlogger_id=rl,
-                    cell_id=cell1,
+                    cell_id=cell2,
                     timestamp=ts,
                     current=row[8],
                     voltage=row[6],
