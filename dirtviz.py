@@ -27,6 +27,7 @@ from sqlalchemy import select
 from sqlalchemy import cast
 from sqlalchemy import Numeric
 from sqlalchemy.sql import label
+from sqlalchemy import text
 
 from db.conn import engine
 from db.tables import PowerData, Cell
@@ -125,13 +126,16 @@ rl_data = {
 
 with Session(engine) as s:
 
-    stmt = select(
-        PowerData.timestamp,
-        PowerData.current,
-        PowerData.voltage,
-        label("power", cast(PowerData.current, Numeric)
-              / cast(PowerData.voltage, Numeric))
-    )
+    with open("db/sql/select_powerdata.sql", "r") as file:
+        stmt = text(file.read())
+
+    #stmt = select(
+    #    PowerData.timestamp,
+    #    PowerData.current,
+    #    PowerData.voltage,
+    #    label("power", cast(PowerData.current, Numeric)
+    #          / cast(PowerData.voltage, Numeric))
+    #)
 
     for row in s.execute(stmt):
         rl_data["timestamp"].append(row.timestamp)
