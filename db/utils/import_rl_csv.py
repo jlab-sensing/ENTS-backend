@@ -1,15 +1,14 @@
-import pdb
 import csv
 from datetime import datetime
 
 from tqdm import tqdm
 from sqlalchemy.orm import Session
 
-from .tables import RocketLogger, Cell, PowerData, TEROSData
-from .conn import engine
+from ..conn import engine
+from ..tables import PowerData
 
 
-def import_rl(path, rl, cell1=None, cell2=None):
+def import_rl_csv(path, rl, cell1=None, cell2=None):
     """Imports raw RocketLogger data in PowerData table.
 
     Expects columns in the following format
@@ -25,9 +24,6 @@ def import_rl(path, rl, cell1=None, cell2=None):
         Reference to cell being measured on channel 1.
     cell2 : Cell
         Reference to cell being measured on channel 2.
-
-    Returns
-    -------
     """
 
     with open(path, newline='') as csvfile:
@@ -60,4 +56,20 @@ def import_rl(path, rl, cell1=None, cell2=None):
 
                 s.add_all([pow1, pow2])
 
-            s.commit()
+                s.commit()
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Rocketlogger csv importer utility")
+    parser.add_argument("path", type=str, help="Name of cell")
+    parser.add_argument("rl", type=int, help="Id of rocketlogger")
+    parser.add_argument("cell1", type=int, help="Id of cell connected to\
+                        channel 1")
+    parser.add_argument("cell2", type=int, help="Id of cell connected to\
+                        channel 2")
+
+    args = parser.parse_args()
+
+    import_rl_csv(args.path, args.rl, args.cell1, args.cell2)
