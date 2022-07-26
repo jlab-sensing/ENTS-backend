@@ -20,7 +20,16 @@ import pandas as pd
 from bokeh.plotting import figure, show
 from bokeh.models import ColumnDataSource, LinearAxis, Range1d, DatetimeRangeSlider
 from bokeh.io import curdoc
-from bokeh.layouts import column, row
+from bokeh import layouts
+
+from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy import cast
+from sqlalchemy import Numeric
+from sqlalchemy.sql import label
+
+from db.conn import engine
+from db.tables import PowerData, Cell
 
 # Path to data directory
 DATA_DIR = "data"
@@ -100,8 +109,33 @@ def load_teros_data(_filename):
     return downsampled
 
 
-teros_path = os.path.join(DATA_DIR, TEROS_NAME)
-teros_data = load_teros_data(teros_path)
+#teros_path = os.path.join(DATA_DIR, TEROS_NAME)
+#teros_data = load_teros_data(teros_path)
+
+teros_data = {
+    'timestamp': [],
+    'v': [],
+    'i': [],
+    'p': [],
+}
+
+with Session(engine) as s:
+
+    stmt = select(
+        PowerData.timestamp,
+        PowerData.current,
+        PowerData.voltage,
+        label("power", cast(PowerData.current, Numeric)
+              / cast(PowerData.voltage, Numeric))
+    )
+
+    for row in s.execute(stmt):
+        teros_data["timestamp"].append(row.timestamp)
+        teros_data["v"].append(row.voltage)
+        teros_data["i"].append(row.current)
+        teros_data["p"].append(row.power)
+
+
 teros_source = ColumnDataSource(teros_data)
 
 rl_path = os.path.join(DATA_DIR, RL_NAME)
@@ -213,10 +247,11 @@ def update_range(attrname, old, new):
 
 date_range.on_change('value', update_range)
 
-rl_col = column(power, vi)
-teros_col = column(teros_temp_vwc, teros_ec)
-graphs = row(rl_col, teros_col)
-layout = column(date_range, graphs, width=1000)
+rl_col = layouts.column(power, vi)
+teros_col = layouts.column(teros_temp_vwc, teros_ec)
+graphs = layouts.row(rl_col, teros_col)
+#layout = layouts.column(date_range, graphs, width=1000)
+layout = rl_col
 
 curdoc().add_root(layout)
 curdoc().title = "DirtViz"
