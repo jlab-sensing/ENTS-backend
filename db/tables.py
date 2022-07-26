@@ -1,5 +1,6 @@
-from sqlalchemy import Table, Column, Integer, String, Text, ForeignKey, Float
-from sqlalchemy.dialects.postgresql import MACADDR, TIMESTAMP
+from sqlalchemy import (Table, Column, Integer, String, Text, ForeignKey,
+                        Float, DateTime)
+from sqlalchemy.dialects.postgresql import MACADDR
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -38,7 +39,7 @@ class PowerData(Base):
     rocketlogger_id = Column(Integer, ForeignKey("rocketlogger.id"),
                              nullable=False)
     cell_id = Column(Integer, ForeignKey("cell.id"), nullable=False)
-    timestamp = Column(TIMESTAMP)
+    timestamp = Column(DateTime)
     current = Column(Integer)
     voltage = Column(Integer)
 
@@ -58,7 +59,7 @@ class TEROSData(Base):
 
     id = Column(Integer, primary_key=True)
     cell_id = Column(Integer, ForeignKey("cell.id"), nullable=False)
-    timestamp = Column(TIMESTAMP)
+    timestamp = Column(DateTime)
     sensorid = Column(String(1))
     raw_VWC = Column(Float)
     temperature = Column(Float)
