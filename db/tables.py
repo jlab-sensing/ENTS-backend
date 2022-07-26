@@ -4,7 +4,9 @@ from sqlalchemy.dialects.postgresql import MACADDR
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship
 
+
 Base = declarative_base()
+
 
 class RocketLogger(Base):
     __tablename__ = "rocketlogger"
@@ -14,10 +16,8 @@ class RocketLogger(Base):
     hostname = Column(Text())
 
     def __repr__(self):
-        r = f"""RocketLogger(id={self.id!r}, MAC={self.mac!r},
-        hostname={self.hostname!r}"""
+        return f"RocketLogger(id={self.id!r}, MAC={self.mac!r}, hostname={self.hostname!r}"
 
-        return r
 
 class Cell(Base):
     __tablename__ = "cell"
@@ -27,10 +27,8 @@ class Cell(Base):
     location = Column(Text())
 
     def __repr__(self):
-        r = f"""Cell(id={self.id!r}, Name={self.name!r},
-        Location={self.location!r}"""
+        return f"Cell(id={self.id!r}, Name={self.name!r}, Location={self.location!r}"
 
-        return r
 
 class PowerData(Base):
     __tablename__ = "power_data"
@@ -47,12 +45,8 @@ class PowerData(Base):
     cell = relationship("Cell")
 
     def __repr__(self):
-        r = f"""PowerData(id={self.id!r},
-        RocketLogger_id={self.locketlogger_id!r}, cell_id={self.cell_id!r},
-        ts={self.ts!r}, current={self.current!r},
-        voltage={self.voltage!r})"""
+        return f"PowerData(id={self.id!r}, RocketLogger_id={self.locketlogger_id!r}, cell_id={self.cell_id!r}, ts={self.ts!r}, current={self.current!r}, voltage={self.voltage!r})"
 
-        return r
 
 class TEROSData(Base):
     __tablename__ = "teros_data"
@@ -68,7 +62,4 @@ class TEROSData(Base):
     cell = relationship("Cell")
 
     def __repr__(self):
-        r = f"""TEROSData(id={self.id!r}, cell_id={self.cell_id!r},
-        ts={self.ts!r}, sensorid={self.sensorid!r},
-        raw_VWC={self.raw_VWC!r}, temperature={self.temperature!r},
-        ec={self.ec!r})"""
+        return f"TEROSData(id={self.id!r}, cell_id={self.cell_id!r}, ts={self.ts!r}, sensorid={self.sensorid!r}, raw_VWC={self.raw_VWC!r}, temperature={self.temperature!r}, ec={self.ec!r})"
