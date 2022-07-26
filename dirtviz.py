@@ -109,10 +109,14 @@ def load_teros_data(_filename):
     return downsampled
 
 
-#teros_path = os.path.join(DATA_DIR, TEROS_NAME)
-#teros_data = load_teros_data(teros_path)
+teros_path = os.path.join(DATA_DIR, TEROS_NAME)
+teros_data = load_teros_data(teros_path)
+teros_source = ColumnDataSource(teros_data)
 
-teros_data = {
+#rl_path = os.path.join(DATA_DIR, RL_NAME)
+#rl_data = load_rl_data(rl_path)
+
+rl_data = {
     'timestamp': [],
     'v': [],
     'i': [],
@@ -130,16 +134,11 @@ with Session(engine) as s:
     )
 
     for row in s.execute(stmt):
-        teros_data["timestamp"].append(row.timestamp)
-        teros_data["v"].append(row.voltage)
-        teros_data["i"].append(row.current)
-        teros_data["p"].append(row.power)
+        rl_data["timestamp"].append(row.timestamp)
+        rl_data["v"].append(row.voltage)
+        rl_data["i"].append(row.current)
+        rl_data["p"].append(row.power)
 
-
-teros_source = ColumnDataSource(teros_data)
-
-rl_path = os.path.join(DATA_DIR, RL_NAME)
-rl_data = load_rl_data(rl_path)
 source = ColumnDataSource(rl_data)
 
 
@@ -151,7 +150,7 @@ power = figure(
     y_axis_label='Power [uW]',
     aspect_ratio=2.,
 )
-power.line("timestamp", "P1", source=source, legend_label="P1")
+power.line("timestamp", "p", source=source, legend_label="P1")
 
 
 # Plot voltage/current
@@ -169,8 +168,8 @@ vi.extra_y_ranges = {"I": Range1d(start=0, end=200)}
 vi.add_layout(LinearAxis(axis_label="Current [uA]", y_range_name="I"), 'right')
 
 # Plot data
-vi.line("timestamp", "V1", source=source, legend_label="V1", color="green")
-vi.line("timestamp", "I1L", source=source, legend_label="I1L",
+vi.line("timestamp", "v", source=source, legend_label="V1", color="green")
+vi.line("timestamp", "i", source=source, legend_label="I1L",
         y_range_name="I", color="red")
 
 
@@ -203,13 +202,13 @@ teros_ec.line("timestamp", "EC", source=teros_source,
            legend_label="Electrical Conductivity [uS/cm]", color="green")
 
 
-date_range= DatetimeRangeSlider(
-    title="Date Range",
-    start=rl_data.index[0],
-    end=rl_data.index[-1],
-    value=(rl_data.index[0], rl_data.index[-1]),
-    step=100000,
-)
+#date_range= DatetimeRangeSlider(
+#    title="Date Range",
+#    start=rl_data.index[0],
+#    end=rl_data.index[-1],
+#    value=(rl_data.index[0], rl_data.index[-1]),
+#    step=100000,
+#)
 
 def update_range(attrname, old, new):
     """Update range of data displayed
@@ -245,7 +244,7 @@ def update_range(attrname, old, new):
     teros_source.data = selected_teros
 
 
-date_range.on_change('value', update_range)
+#date_range.on_change('value', update_range)
 
 rl_col = layouts.column(power, vi)
 teros_col = layouts.column(teros_temp_vwc, teros_ec)
