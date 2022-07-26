@@ -56,7 +56,7 @@ def import_rl_csv(path, rl, cell1=None, cell2=None):
 
                 s.add_all([pow1, pow2])
 
-                s.commit()
+            s.commit()
 
 
 if __name__ == "__main__":
