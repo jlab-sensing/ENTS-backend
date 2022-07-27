@@ -6,6 +6,7 @@ services:
     restart: always
     environment:
       DB_URL: "postgresql://dirtviz:password@database/dirtviz"
+      BOKEH_ALLOW_WS_ORIGIN: "localhost:5006" 
     volumes:
       - ./data:/app/data
     ports:
