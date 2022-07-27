@@ -61,7 +61,7 @@ def import_rl_csv(path, rl, cell1=None, cell2=None, batch_size=100000):
             tmp.append(pow2)
 
             count += 1
-            if (count > batch_size and not tmp):
+            if (count > batch_size and tmp):
                 with Session(engine) as s:
                     s.bulk_save_objects(tmp)
                     s.commit()
