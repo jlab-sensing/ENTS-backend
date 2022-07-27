@@ -8,7 +8,7 @@ from ..conn import engine
 from ..tables import PowerData
 
 
-def import_rl_csv(path, rl, cell1=None, cell2=None):
+def import_rl_csv(path, rl, cell1=None, cell2=None, batch_size=100000):
     """Imports raw RocketLogger data in PowerData table.
 
     Expects columns in the following format
@@ -33,38 +33,47 @@ def import_rl_csv(path, rl, cell1=None, cell2=None):
         for _ in range(11):
             rl_reader.__next__()
 
-        with Session(engine) as s:
-            for row in tqdm(rl_reader):
-                # convert string to timestamp
-                ts = datetime.fromtimestamp(float(row[0]))
+        count = 0
+        tmp = []
 
-                pow1 = PowerData(
-                    rocketlogger_id=rl,
-                    cell_id=cell1,
-                    ts=ts,
-                    current=row[4],
-                    voltage=row[5],
-                )
+        for row in tqdm(rl_reader):
 
-                pow2 = PowerData(
-                    rocketlogger_id=rl,
-                    cell_id=cell2,
-                    ts=ts,
-                    current=row[8],
-                    voltage=row[6],
-                )
+            # convert string to timestamp
+            ts = datetime.fromtimestamp(float(row[0]))
 
-                s.add_all([pow1, pow2])
+            pow1 = PowerData(
+                rocketlogger_id=rl,
+                cell_id=cell1,
+                ts=ts,
+                current=row[4],
+                voltage=row[5],
+            )
 
-            print("Saving...")
-            s.commit()
-            print("Done!")
+            pow2 = PowerData(
+                rocketlogger_id=rl,
+                cell_id=cell2,
+                ts=ts,
+                current=row[8],
+                voltage=row[6],
+            )
+
+            tmp.append(pow1)
+            tmp.append(pow2)
+
+            count += 1
+            if (count > batch_size and not tmp):
+                with Session(engine) as s:
+                    s.bulk_save_objects(tmp)
+                    s.commit()
+                count = 0
+                tmp.clear()
 
 
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Rocketlogger csv importer utility")
+    parser.add_argument("--batch-size", type=int, default=100000, help="Batch size of inserts")
     parser.add_argument("path", type=str, help="Name of cell")
     parser.add_argument("rl", type=int, help="Id of rocketlogger")
     parser.add_argument("cell1", type=int, help="Id of cell connected to\
@@ -74,4 +83,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    import_rl_csv(args.path, args.rl, args.cell1, args.cell2)
+    import_rl_csv(args.path, args.rl, args.cell1, args.cell2, args.batch_size)
