@@ -68,6 +68,11 @@ def import_rl_csv(path, rl, cell1=None, cell2=None, batch_size=100000):
                 count = 0
                 tmp.clear()
 
+        # Save remaining objects
+        with Session(engine) as s:
+            s.bulk_save_objects(tmp)
+            s.commit()
+
 
 if __name__ == "__main__":
     import argparse
