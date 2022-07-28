@@ -29,9 +29,9 @@ from sqlalchemy import cast
 from sqlalchemy.sql import label
 from sqlalchemy import text
 
-from db.conn import engine
-from db.tables import PowerData, Cell
-from db.getters import get_power_data
+from .db.conn import engine
+from .db.tables import PowerData, Cell
+from .db.getters import get_power_data
 
 # Path to data directory
 DATA_DIR = "data"
