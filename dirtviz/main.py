@@ -121,9 +121,9 @@ cell_select = Select(options=cell_options)
 
 
 # Read TEEROS data
-teros_path = os.path.join(DATA_DIR, TEROS_NAME)
-teros_data = load_teros_data(teros_path)
-teros_source = ColumnDataSource(teros_data)
+#teros_path = os.path.join(DATA_DIR, TEROS_NAME)
+#teros_data = load_teros_data(teros_path)
+teros_source = ColumnDataSource(pd.DataFrame())
 
 #rl_path = os.path.join(DATA_DIR, RL_NAME)
 #rl_data = load_rl_data(rl_path)
