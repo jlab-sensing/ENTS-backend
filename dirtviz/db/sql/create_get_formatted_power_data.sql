@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION get_formatted_power_data(_cell_id INT)
+CREATE FUNCTION get_formatted_power_data(_cell_id INT)
 RETURNS TABLE (
 	ts TIMESTAMP,
 	voltage DOUBLE PRECISION,
