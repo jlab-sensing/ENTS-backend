@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  portal:
+    build: .
+    restart: always
+    environment:
+      DB_URL: "postgresql://dirtviz:password@database/dirtviz"
+      BOKEH_ALLOW_WS_ORIGIN: "localhost:5006" 
+    volumes:
+      - ./data:/app/data
+    ports:
+      - 5006:5006
+    links:
+      - database
+
+  database:
+    image: postgres:14.4
+    restart: always
+    environment:
+      POSTGRES_USER: dirtviz
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  postgresdata:

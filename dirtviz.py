@@ -19,8 +19,19 @@ import pandas as pd
 
 from bokeh.plotting import figure, show
 from bokeh.models import ColumnDataSource, LinearAxis, Range1d, DatetimeRangeSlider
+from bokeh.models import AutocompleteInput, Select
 from bokeh.io import curdoc
-from bokeh.layouts import column, row
+from bokeh import layouts
+
+from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy import cast
+from sqlalchemy.sql import label
+from sqlalchemy import text
+
+from db.conn import engine
+from db.tables import PowerData, Cell
+from db.getters import get_power_data
 
 # Path to data directory
 DATA_DIR = "data"
@@ -28,6 +39,8 @@ DATA_DIR = "data"
 TEROS_NAME = "TEROSoutput-1656537434-f17.csv"
 # Name of RocketLogger data file
 RL_NAME = "soil_20220629-214516_8.csv"
+
+sess = Session(engine)
 
 def load_rl_data(_filename):
     """Loads rocketlogger data and downsamples the data to a reasonable
@@ -100,12 +113,22 @@ def load_teros_data(_filename):
     return downsampled
 
 
+
+# Create cell select widget
+stmt = select(Cell).order_by(Cell.name)
+cell_options = [(str(c.id), c.__repr__()) for c in sess.scalars(stmt)]
+cell_select = Select(options=cell_options)
+
+
+# Read TEEROS data
 teros_path = os.path.join(DATA_DIR, TEROS_NAME)
 teros_data = load_teros_data(teros_path)
 teros_source = ColumnDataSource(teros_data)
 
-rl_path = os.path.join(DATA_DIR, RL_NAME)
-rl_data = load_rl_data(rl_path)
+#rl_path = os.path.join(DATA_DIR, RL_NAME)
+#rl_data = load_rl_data(rl_path)
+
+rl_data = get_power_data(sess, int(cell_options[0][0]))
 source = ColumnDataSource(rl_data)
 
 
@@ -117,7 +140,7 @@ power = figure(
     y_axis_label='Power [uW]',
     aspect_ratio=2.,
 )
-power.line("timestamp", "P1", source=source, legend_label="P1")
+power.line("timestamp", "p", source=source, legend_label="P1")
 
 
 # Plot voltage/current
@@ -135,8 +158,8 @@ vi.extra_y_ranges = {"I": Range1d(start=0, end=200)}
 vi.add_layout(LinearAxis(axis_label="Current [uA]", y_range_name="I"), 'right')
 
 # Plot data
-vi.line("timestamp", "V1", source=source, legend_label="V1", color="green")
-vi.line("timestamp", "I1L", source=source, legend_label="I1L",
+vi.line("timestamp", "v", source=source, legend_label="V1", color="green")
+vi.line("timestamp", "i", source=source, legend_label="I1L",
         y_range_name="I", color="red")
 
 
@@ -169,13 +192,13 @@ teros_ec.line("timestamp", "EC", source=teros_source,
            legend_label="Electrical Conductivity [uS/cm]", color="green")
 
 
-date_range= DatetimeRangeSlider(
-    title="Date Range",
-    start=rl_data.index[0],
-    end=rl_data.index[-1],
-    value=(rl_data.index[0], rl_data.index[-1]),
-    step=100000,
-)
+#date_range= DatetimeRangeSlider(
+#    title="Date Range",
+#    start=rl_data.index[0],
+#    end=rl_data.index[-1],
+#    value=(rl_data.index[0], rl_data.index[-1]),
+#    step=100000,
+#)
 
 def update_range(attrname, old, new):
     """Update range of data displayed
@@ -211,12 +234,23 @@ def update_range(attrname, old, new):
     teros_source.data = selected_teros
 
 
-date_range.on_change('value', update_range)
+def update_cell(attrname, old, new):
+    """Updated the data source based on the selected cels"""
 
-rl_col = column(power, vi)
-teros_col = column(teros_temp_vwc, teros_ec)
-graphs = row(rl_col, teros_col)
-layout = column(date_range, graphs, width=1000)
+    #pdb.set_trace()
+    new_data = get_power_data(sess, int(new))
+    source.data = new_data
+
+
+#date_range.on_change('value', update_range)
+cell_select.on_change('value', update_cell)
+
+rl_col = layouts.column(power, vi)
+teros_col = layouts.column(teros_temp_vwc, teros_ec)
+graphs = layouts.row(rl_col, teros_col)
+layout = layouts.column(cell_select, rl_col, width=1000)
 
 curdoc().add_root(layout)
 curdoc().title = "DirtViz"
+
+sess.close()
