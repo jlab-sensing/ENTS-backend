@@ -4,9 +4,9 @@ from sqlalchemy import select
 from sqlalchemy import text
 from sqlalchemy import func
 
-from .tables import TEROSData
+from .tables import TEROSData, PowerData
 
-def get_power_data(s, cell_id):
+def get_power_data(s, cell_id, resample="hour"):
     """Gets the power data for a given cell. Can be directly passed to
     bokeh.ColumnDataSource.
 
@@ -36,10 +36,35 @@ def get_power_data(s, cell_id):
         'p': [],
     }
 
-    stmt = text("""
-        SELECT ts, voltage, current,power
-        FROM get_formatted_power_data(:cell_id)
-                """).bindparams(cell_id=cell_id)
+    resampled = (
+        select(
+            func.date_trunc(resample, PowerData.ts).label("ts"),
+            func.avg(PowerData.voltage).label("voltage"),
+            func.avg(PowerData.current).label("current")
+        )
+        .where(PowerData.cell_id == cell_id)
+        .group_by(func.date_trunc(resample, PowerData.ts))
+        .subquery()
+    )
+
+    adj_units = (
+        select(
+            resampled.c.ts.label("ts"),
+            (resampled.c.voltage * 10e-9).label("voltage"),
+            (resampled.c.current * 10e-6).label("current")
+        )
+        .subquery()
+    )
+
+    stmt = (
+        select(
+            adj_units.c.ts.label("ts"),
+            adj_units.c.voltage.label("voltage"),
+            adj_units.c.current.label("current"),
+            (adj_units.c.voltage * adj_units.c.current).label("power")
+        )
+        .order_by(adj_units.c.ts)
+    )
 
     for row in s.execute(stmt):
         data["timestamp"].append(row.ts)
