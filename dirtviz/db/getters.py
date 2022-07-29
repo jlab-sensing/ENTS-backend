@@ -44,3 +44,45 @@ def get_power_data(s, cell_id):
 
     return data
 
+def get_teros_data(s, cell_id, resample='hour'):
+    """Gets the TEROS-12 sensor data for a given cell. Returned dictionary can
+    be passed directly to bokeh.ColumnDataSource.
+
+    Parmaters
+    ---------
+    s : sqlalchemy.orm.Session
+        Session to use
+    cell_id : int
+        Valid Cell.id
+
+    Returns
+    -------
+    dict
+        Dictionary of lists with keys named after columns of the table
+        {
+            'timestamp': [],
+            'v': [],
+            'i': [],
+            'p': []
+        }
+    """
+
+    data = {
+        'timestamp': [],
+        'vwc': [],
+        'temp': [],
+        'ec': []
+    }
+
+    stmt = (
+        select(TEROSData)
+        .where(TEROSData.cell_id == cell_id)
+    )
+
+    for row in s.execute(stmt):
+        data['timestamp'].append(row.ts)
+        data['vwc'].append(row.raw_VWC)
+        data['temp'].append(row.temperature)
+        data['ec'].append(row.ec)
+
+    return data
