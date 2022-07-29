@@ -31,88 +31,9 @@ from sqlalchemy import text
 
 from .db.conn import engine
 from .db.tables import PowerData, Cell
-from .db.getters import get_power_data
-
-# Path to data directory
-DATA_DIR = "data"
-# Name of TEROS data file
-TEROS_NAME = "TEROSoutput-1656537434-f17.csv"
-# Name of RocketLogger data file
-RL_NAME = "soil_20220629-214516_8.csv"
+from .db.getters import get_power_data, get_teros_data
 
 sess = Session(engine)
-
-def load_rl_data(_filename):
-    """Loads rocketlogger data and downsamples the data to a reasonable
-    timestep. The graphs were started to lag with all the raw data.
-
-    Parameters
-    ----------
-    _filename: str
-        Path to csv formatted file
-
-    Note
-    ----
-    read_csv() skips blank lines therefore the header index is 9 to skip the
-    rocketlogger preamble.
-
-    There is nothing implemented to handle switching between IL and IH.
-    """
-
-    # The data has two current channels and the I1L_valid and I2L_valid indicate
-    # which channels is currently being used. For now only I*L are valid
-    raw = pd.read_csv(_filename,
-                      header=9,
-                      names=["timestamp", "I1L_valid", "I2L_valid", "I1H",
-                             "I1L", "V1", "V2", "I2H", "I2L"],
-                      )
-    # Calculate timestamp and make index
-    raw["timestamp"] = pd.to_datetime(raw["timestamp"], unit='s')
-    raw = raw.set_index("timestamp")
-    # Convert units
-    raw[["I1L", "I2L"]] = raw[["I1L", "I2L"]]*10e-6
-    raw[["V1", "V2"]] = raw[["V1", "V2"]]*10e-9
-    # Calculate power
-    raw["P1"] = raw["V1"] * raw["I1L"]
-    raw["P2"] = raw["V2"] * raw["I2L"]
-
-    # Calculate moving average
-    downsampled = raw.resample('10min').mean()
-
-    return downsampled
-
-
-def load_teros_data(_filename):
-    """Loads TEROS soil data and converts the raw volumetric water content to
-    a percentage.
-
-    Parameters
-    ----------
-    _filename: str
-        Path to csv formatted file.
-
-    Returns
-    -------
-    pd.DataFrame
-        Dataframe containing loaded data with same columns as in the csv file.
-    """
-
-    raw = pd.read_csv(_filename, header=0)
-    # Convert to datetime
-    raw["timestamp"] = pd.to_datetime(raw["timestamp"], unit='s')
-    raw = raw.set_index("timestamp")
-
-    # Calculate volumetric water content
-    raw["vwc"] = (9.079e-10)*raw["raw_VWC"]**3 - (6.626e-6)*raw["raw_VWC"]**2 + (1.643e-2)*raw["raw_VWC"] - 1.354e1
-    raw["vwc"] = 100 * raw["vwc"]
-    # Only take sensor 1
-    sensor1 = raw[raw["sensorID"] == 1]
-
-    downsampled = sensor1.resample('10min').mean()
-
-    return downsampled
-
-
 
 # Create cell select widget
 stmt = select(Cell).order_by(Cell.name)
@@ -121,12 +42,8 @@ cell_select = Select(options=cell_options)
 
 
 # Read TEEROS data
-#teros_path = os.path.join(DATA_DIR, TEROS_NAME)
-#teros_data = load_teros_data(teros_path)
-teros_source = ColumnDataSource(pd.DataFrame())
-
-#rl_path = os.path.join(DATA_DIR, RL_NAME)
-#rl_data = load_rl_data(rl_path)
+teros_data = get_teros_data(sess, int(cell_options[0][0]))
+teros_source = ColumnDataSource(teros_data)
 
 rl_data = get_power_data(sess, int(cell_options[0][0]))
 source = ColumnDataSource(rl_data)
@@ -188,7 +105,7 @@ teros_ec = figure(
     y_axis_label="Electrical Conductivity",
     aspect_ratio=2.,
 )
-teros_ec.line("timestamp", "EC", source=teros_source,
+teros_ec.line("timestamp", "ec", source=teros_source,
            legend_label="Electrical Conductivity [uS/cm]", color="green")
 
 
@@ -248,7 +165,7 @@ cell_select.on_change('value', update_cell)
 rl_col = layouts.column(power, vi)
 teros_col = layouts.column(teros_temp_vwc, teros_ec)
 graphs = layouts.row(rl_col, teros_col)
-layout = layouts.column(cell_select, rl_col, width=1000)
+layout = layouts.column(cell_select, graphs, width=1000)
 
 curdoc().add_root(layout)
 curdoc().title = "DirtViz"
