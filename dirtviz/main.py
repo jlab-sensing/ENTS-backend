@@ -156,6 +156,9 @@ def update_cell(attrname, old, new):
     new_data = get_power_data(sess, int(new))
     source.data = new_data
 
+    new_teros_data =get_teros_data(sess, int(new))
+    teros_source.data = new_teros_data
+
 
 #date_range.on_change('value', update_range)
 cell_select.on_change('value', update_cell)
