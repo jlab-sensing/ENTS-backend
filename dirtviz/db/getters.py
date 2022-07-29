@@ -1,3 +1,5 @@
+import pdb
+
 from sqlalchemy import select
 from sqlalchemy import text
 from sqlalchemy import func
@@ -57,6 +59,10 @@ def get_teros_data(s, cell_id, resample='hour'):
         Session to use
     cell_id : int
         Valid Cell.id
+    resample : str
+        Resample time frame. Defaults to hour.  Valid options are
+        [microseconds, milliseconds, second, minute, hour, day, week, month,
+        quarter, year, decade, century, millennium].
 
     Returns
     -------
@@ -64,9 +70,9 @@ def get_teros_data(s, cell_id, resample='hour'):
         Dictionary of lists with keys named after columns of the table
         {
             'timestamp': [],
-            'v': [],
-            'i': [],
-            'p': []
+            'vwc': [],
+            'temp': [],
+            'ec': []
         }
     """
 
@@ -78,14 +84,21 @@ def get_teros_data(s, cell_id, resample='hour'):
     }
 
     stmt = (
-        select(TEROSData)
+        select(
+            func.date_trunc(resample, TEROSData.ts).label("ts"),
+            func.avg(TEROSData.raw_VWC).label("vwc"),
+            func.avg(TEROSData.temperature).label("temp"),
+            func.avg(TEROSData.ec).label("ec")
+        )
         .where(TEROSData.cell_id == cell_id)
+        .group_by(func.date_trunc(resample, TEROSData.ts))
+        .order_by(func.date_trunc(resample, TEROSData.ts))
     )
 
-    for row in s.scalars(stmt):
+    for row in s.execute(stmt):
         data['timestamp'].append(row.ts)
-        data['vwc'].append(row.raw_VWC)
-        data['temp'].append(row.temperature)
+        data['vwc'].append(row.vwc)
+        data['temp'].append(row.temp)
         data['ec'].append(row.ec)
 
     return data
