@@ -1,5 +1,10 @@
+import pdb
+
 from sqlalchemy import select
 from sqlalchemy import text
+from sqlalchemy import func
+
+from .tables import TEROSData
 
 def get_power_data(s, cell_id):
     """Gets the power data for a given cell. Can be directly passed to
@@ -44,3 +49,56 @@ def get_power_data(s, cell_id):
 
     return data
 
+def get_teros_data(s, cell_id, resample='hour'):
+    """Gets the TEROS-12 sensor data for a given cell. Returned dictionary can
+    be passed directly to bokeh.ColumnDataSource.
+
+    Parmaters
+    ---------
+    s : sqlalchemy.orm.Session
+        Session to use
+    cell_id : int
+        Valid Cell.id
+    resample : str
+        Resample time frame. Defaults to hour.  Valid options are
+        [microseconds, milliseconds, second, minute, hour, day, week, month,
+        quarter, year, decade, century, millennium].
+
+    Returns
+    -------
+    dict
+        Dictionary of lists with keys named after columns of the table
+        {
+            'timestamp': [],
+            'vwc': [],
+            'temp': [],
+            'ec': []
+        }
+    """
+
+    data = {
+        'timestamp': [],
+        'vwc': [],
+        'temp': [],
+        'ec': []
+    }
+
+    stmt = (
+        select(
+            func.date_trunc(resample, TEROSData.ts).label("ts"),
+            func.avg(TEROSData.vwc).label("vwc"),
+            func.avg(TEROSData.temp).label("temp"),
+            func.avg(TEROSData.ec).label("ec")
+        )
+        .where(TEROSData.cell_id == cell_id)
+        .group_by(func.date_trunc(resample, TEROSData.ts))
+        .order_by(func.date_trunc(resample, TEROSData.ts))
+    )
+
+    for row in s.execute(stmt):
+        data['timestamp'].append(row.ts)
+        data['vwc'].append(row.vwc)
+        data['temp'].append(row.temp)
+        data['ec'].append(row.ec)
+
+    return data

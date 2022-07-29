@@ -8,8 +8,9 @@ from ..conn import engine
 from ..tables import PowerData
 
 
-def import_rl_csv(path, rl, cell1=None, cell2=None, batch_size=100000):
-    """Imports raw RocketLogger data in PowerData table.
+def import_rl_csv(path, logger_id, cell1, cell2, batch_size=100000):
+    """Imports raw RocketLogger data in PowerData table. A logger instance for
+    the rokcet locker must be created first.
 
     Expects columns in the following format
     timestamp,I1L_valid,I2L_valid,I1H [nA],I1L [10pA],V1 [10nV],V2 [10nV],I2H [nA],I2L [10pA]
@@ -18,8 +19,8 @@ def import_rl_csv(path, rl, cell1=None, cell2=None, batch_size=100000):
     ----------
     path : str
         Path to csv file.
-    rl : RocketLogger
-        Reference to RocketLogger.
+    logger_id : int
+        logger.id for the RocketLogger
     cell1 : Cell
         Reference to cell being measured on channel 1.
     cell2 : Cell
@@ -42,7 +43,7 @@ def import_rl_csv(path, rl, cell1=None, cell2=None, batch_size=100000):
             ts = datetime.fromtimestamp(float(row[0]))
 
             pow1 = PowerData(
-                rocketlogger_id=rl,
+                logger_id=logger_id,
                 cell_id=cell1,
                 ts=ts,
                 current=row[4],
@@ -50,7 +51,7 @@ def import_rl_csv(path, rl, cell1=None, cell2=None, batch_size=100000):
             )
 
             pow2 = PowerData(
-                rocketlogger_id=rl,
+                logger_id=logger_id,
                 cell_id=cell2,
                 ts=ts,
                 current=row[8],
@@ -67,6 +68,11 @@ def import_rl_csv(path, rl, cell1=None, cell2=None, batch_size=100000):
                     s.commit()
                 count = 0
                 tmp.clear()
+
+        # Save remaining objects
+        with Session(engine) as s:
+            s.bulk_save_objects(tmp)
+            s.commit()
 
 
 if __name__ == "__main__":
