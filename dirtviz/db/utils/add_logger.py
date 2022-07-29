@@ -1,13 +1,15 @@
 from sqlalchemy.orm import Session
 
-from ..tables import RocketLogger
+from ..tables import Logger
 from ..conn import engine
 
-def add_rl(mac=None, hostname=None) -> RocketLogger:
-    """Adds a new rocketlogger
+def add_logger(name, mac=None, hostname=None):
+    """Adds a new data logger source
 
     Parameters
     ----------
+    name : str
+        Name of logger
     mac : str
         MAC Address of the RocketLogger
     hostname : str
@@ -20,7 +22,8 @@ def add_rl(mac=None, hostname=None) -> RocketLogger:
 
     with Session(engine) as s:
         # Create new object
-        rl = RocketLogger(
+        rl = Logger(
+            name=name,
             mac=mac,
             hostname=hostname,
         )
@@ -34,11 +37,12 @@ def add_rl(mac=None, hostname=None) -> RocketLogger:
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Add rocketlogger utility")
-    parser.add_argument("mac", type=str, help="MAC Address of rocketlogger")
-    parser.add_argument("hostname", type=str, help="FQDN of rocketlogger")
+    parser = argparse.ArgumentParser(description="Add logger utility")
+    parser.add_argument("name", type=str, help="Name of logger")
+    parser.add_argument("--mac", type=str, help="MAC Address of logger")
+    parser.add_argument("--hostname", type=str, help="FQDN of logger")
 
     args = parser.parse_args()
 
-    print(add_rl(args.mac, args.hostname))
+    print(add_logger(args.name, args.mac, args.hostname))
 

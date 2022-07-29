@@ -86,8 +86,8 @@ def get_teros_data(s, cell_id, resample='hour'):
     stmt = (
         select(
             func.date_trunc(resample, TEROSData.ts).label("ts"),
-            func.avg(TEROSData.raw_VWC).label("vwc"),
-            func.avg(TEROSData.temperature).label("temp"),
+            func.avg(TEROSData.vwc).label("vwc"),
+            func.avg(TEROSData.temp).label("temp"),
             func.avg(TEROSData.ec).label("ec")
         )
         .where(TEROSData.cell_id == cell_id)

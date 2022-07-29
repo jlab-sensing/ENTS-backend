@@ -10,7 +10,7 @@ from ..tables import TEROSData
 import pdb
 
 
-def import_TEROS_csv(path, cell_map, batch_size=100000):
+def import_teros_csv(path, cell_map, batch_size=100000):
     """Imports raw TEROS data to table TEROSData
 
     Expects columns in the following format
@@ -40,8 +40,8 @@ def import_TEROS_csv(path, cell_map, batch_size=100000):
             tdata = TEROSData(
                 cell_id=cell_map[row[1]],
                 ts=ts,
-                raw_VWC=row[2],
-                temperature=row[3],
+                vwc=row[2],
+                temp=row[3],
                 ec=row[4]
             )
 
@@ -64,10 +64,10 @@ def import_TEROS_csv(path, cell_map, batch_size=100000):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Rocketlogger csv importer utility")
+    parser = argparse.ArgumentParser(description="TEROSLogger csv importer utility")
     parser.add_argument("--batch-size", type=int, default=100000, help="Batch size of inserts")
-    parser.add_argument("path", type=str, help="Name of cell")
     parser.add_argument("--cell", action="append", required=True, help="Mapping of sensorID to cell_id in the form of sensorID,cell_id")
+    parser.add_argument("path", type=str, help="Name of cell")
 
     args = parser.parse_args()
 
@@ -78,4 +78,4 @@ if __name__ == "__main__":
 
     print(cell_map)
 
-    import_TEROS_csv(args.path, cell_map, args.batch_size)
+    import_teros_csv(args.path, cell_map, args.batch_size)
