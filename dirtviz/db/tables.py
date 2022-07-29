@@ -25,7 +25,6 @@ class Cell(Base):
     id = Column(Integer, primary_key=True)
     name = Column(Text())
     location = Column(Text())
-    vwc_coefficients = Column(ARRAY(Float))
 
     def __repr__(self):
         return f"Cell(id={self.id!r}, Name={self.name!r}, Location={self.location!r}"

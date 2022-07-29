@@ -1,5 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy import text
+from sqlalchemy import func
+
+from .tables import TEROSData
 
 def get_power_data(s, cell_id):
     """Gets the power data for a given cell. Can be directly passed to
@@ -79,7 +82,7 @@ def get_teros_data(s, cell_id, resample='hour'):
         .where(TEROSData.cell_id == cell_id)
     )
 
-    for row in s.execute(stmt):
+    for row in s.scalars(stmt):
         data['timestamp'].append(row.ts)
         data['vwc'].append(row.raw_VWC)
         data['temp'].append(row.temperature)
