@@ -15,8 +15,6 @@ TODO
 import os
 import pdb
 
-import pandas as pd
-
 from bokeh.plotting import figure, show
 from bokeh.models import ColumnDataSource, LinearAxis, Range1d, DatetimeRangeSlider
 from bokeh.models import AutocompleteInput, Select
