@@ -1,0 +1,5 @@
+bokeh
+sqlalchemy
+psycopg2-binary
+chirpstack-api==3.7.2
+protobuf<=3.20
