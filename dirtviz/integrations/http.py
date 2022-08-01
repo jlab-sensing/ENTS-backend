@@ -1,8 +1,14 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
+from datetime import datetime
+import base64
 
 from chirpstack_api.as_pb import integration
 from google.protobuf.json_format import Parse
+
+from sqlalchemy import select
+from ..db.conn import engine
+from ..tables import Logger, Cell, PowerData, TEROSData
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -29,6 +35,74 @@ class Handler(BaseHTTPRequestHandler):
 
     def up(self, body):
         up = self.unmarshal(body, integration.UplinkEvent())
+
+        ts = datetime.fromtimestamp(up.publishedAt)
+
+        #data = up.data.hex()
+        data = base64.b64decode(up.data)
+        v1, _, i1, v2, _, i2 = data.split(",")
+
+        with Session(engine) as s:
+            # Create logger if name does not exist
+            stmt = (
+                select(Logger)
+                .where(Logger.name==up.tags.logger_name)
+            )
+            l = s.execute(stmt).count()
+            if not l:
+                l = Logger(name=up.tags.logger_name)
+                s.add(l)
+
+            # Create cell1 if does not exist
+            stmt = (
+                select(Cell)
+                .where(Cell.name==up.tags.cell1_name)
+                .where(Cell.location==up.tags.cell1_loc)
+            )
+            c1 = s.execute(stmt).count()
+            if not c:
+                c1 = Cell(
+                    name=up.tags.cell1_name,
+                    location=up.tags.cell1_loc
+                )
+                s.add(c1)
+
+            # Create cell2 if does not exist
+            stmt = (
+                select(Cell)
+                .where(Cell.name==up.tags.cell2_name)
+                .where(Cell.location==up.tags.cell2_loc)
+            )
+            c2 = s.execute(stmt).count()
+            if not c:
+                c2 = Cell(
+                    name=up.tags.cell2_name,
+                    location=up.tags.cell2_loc
+                )
+                s.add(c2)
+
+            # PowerData
+            data1 = PowerData(
+                logger_id=l.id,
+                cell_id=c1.id,
+                ts=ts,
+                current=i1,
+                voltage=v1
+            )
+
+            data2 = PowerData(
+                logger_id=l.id,
+                cell_id=c2.id,
+                ts=ts,
+                current=i2,
+                voltage=v2
+            )
+
+            s.add_all([data1, data2])
+
+            s.commit()
+
+
         print("Uplink received from: %s with payload: %s" % (up.dev_eui.hex(), up.data.hex()))
 
     def join(self, body):
