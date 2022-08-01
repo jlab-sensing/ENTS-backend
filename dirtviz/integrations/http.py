@@ -8,7 +8,8 @@ from google.protobuf.json_format import Parse
 
 from sqlalchemy import select
 from ..db.conn import engine
-from ..tables import Logger, Cell, PowerData, TEROSData
+from ..db.tables import Logger, Cell, PowerData, TEROSData
+form ..db.get_or_create import get_or_create_logger
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -38,20 +39,14 @@ class Handler(BaseHTTPRequestHandler):
 
         ts = datetime.fromtimestamp(up.publishedAt)
 
+        # TODO Check if the following implements the base64 decode
         #data = up.data.hex()
         data = base64.b64decode(up.data)
         v1, _, i1, v2, _, i2 = data.split(",")
 
         with Session(engine) as s:
             # Create logger if name does not exist
-            stmt = (
-                select(Logger)
-                .where(Logger.name==up.tags.logger_name)
-            )
-            l = s.execute(stmt).count()
-            if not l:
-                l = Logger(name=up.tags.logger_name)
-                s.add(l)
+            get_or_create_logger(s, up.tags.logger_name)
 
             # Create cell1 if does not exist
             stmt = (
