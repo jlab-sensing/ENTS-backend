@@ -5,7 +5,7 @@ services:
     build: .
     restart: always
     environment:
-      DB_URL: "postgresql://dirtviz:password@portal-postgres/dirtviz"
+      DB_URL: "postgresql://dirtviz:password@portal-postgresql/dirtviz"
       BOKEH_ALLOW_WS_ORIGIN: "localhost:5006"
     ports:
       - 5006:5006
@@ -18,7 +18,7 @@ services:
     build: .
     restart: always
     environment:
-      DB_URL: "postgresql://dirtviz:password@portal-postgres/dirtviz"
+      DB_URL: "postgresql://dirtviz:password@portal-postgresql/dirtviz"
     command: ["python", "-m", "dirtviz.integrations.http"]
     ports:
       - 8090:8090
