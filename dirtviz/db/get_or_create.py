@@ -37,7 +37,7 @@ def get_or_create_cell(s, name, location=None):
 
     stmt = Select(Cell).where(Cell.name==name)
     if location:
-        stmt = stmt.where(Cell.location=location)
+        stmt = stmt.where(Cell.location==location)
 
     c = s.execute(stmt).one_or_none()
 
