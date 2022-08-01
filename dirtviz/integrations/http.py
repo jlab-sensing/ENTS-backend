@@ -9,7 +9,7 @@ from google.protobuf.json_format import Parse
 from sqlalchemy import select
 from ..db.conn import engine
 from ..db.tables import Logger, Cell, PowerData, TEROSData
-form ..db.get_or_create import get_or_create_logger
+from ..db.get_or_create import get_or_create_logger, get_or_create_cell
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -46,35 +46,11 @@ class Handler(BaseHTTPRequestHandler):
 
         with Session(engine) as s:
             # Create logger if name does not exist
-            get_or_create_logger(s, up.tags.logger_name)
+            l = get_or_create_logger(s, up.tags.logger_name)
 
             # Create cell1 if does not exist
-            stmt = (
-                select(Cell)
-                .where(Cell.name==up.tags.cell1_name)
-                .where(Cell.location==up.tags.cell1_loc)
-            )
-            c1 = s.execute(stmt).count()
-            if not c:
-                c1 = Cell(
-                    name=up.tags.cell1_name,
-                    location=up.tags.cell1_loc
-                )
-                s.add(c1)
-
-            # Create cell2 if does not exist
-            stmt = (
-                select(Cell)
-                .where(Cell.name==up.tags.cell2_name)
-                .where(Cell.location==up.tags.cell2_loc)
-            )
-            c2 = s.execute(stmt).count()
-            if not c:
-                c2 = Cell(
-                    name=up.tags.cell2_name,
-                    location=up.tags.cell2_loc
-                )
-                s.add(c2)
+            c1 = get_or_create_cell(s, up.tags.cell1_name, up.tags.cell1_loc)
+            c2 = get_or_create_cell(s, up.tags.cell2_name, up.tags.cell2_loc)
 
             # PowerData
             data1 = PowerData(
@@ -94,7 +70,6 @@ class Handler(BaseHTTPRequestHandler):
             )
 
             s.add_all([data1, data2])
-
             s.commit()
 
 

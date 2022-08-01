@@ -2,6 +2,7 @@ from sqlalchemy import select
 
 from .tables import Logger, Cell
 
+
 def get_or_create_logger(s, name, mac=None, hostname=None):
     """Get or create Logger object
 
@@ -24,3 +25,25 @@ def get_or_create_logger(s, name, mac=None, hostname=None):
         s.flush()
 
     return l
+
+
+def get_or_create_cell(s, name, location=None):
+    """Get or create Cell objects
+
+    Returns
+    -------
+    Cell object
+    """
+
+    stmt = Select(Cell).where(Cell.name==name)
+    if location:
+        stmt = stmt.where(Cell.location=location)
+
+    c = s.execute(stmt).one_or_none()
+
+    if not c:
+        c = Cell(name=name, location=location)
+        s.add(c)
+        s.flush()
+
+    return c
