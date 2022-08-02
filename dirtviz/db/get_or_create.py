@@ -11,7 +11,7 @@ def get_or_create_logger(s, name, mac=None, hostname=None):
     Logger object
     """
 
-    stmt = Select(Logger).where(Logger.name==name)
+    stmt = select(Logger).where(Logger.name==name)
     if mac:
         stmt = stmt.where(Logger.mac==mac)
     if hostname:
@@ -23,6 +23,8 @@ def get_or_create_logger(s, name, mac=None, hostname=None):
         l = Logger(name=name, mac=mac, hostname=hostname)
         s.add(l)
         s.flush()
+    else:
+        l = l[0]
 
     return l
 
@@ -35,7 +37,7 @@ def get_or_create_cell(s, name, location=None):
     Cell object
     """
 
-    stmt = Select(Cell).where(Cell.name==name)
+    stmt = select(Cell).where(Cell.name==name)
     if location:
         stmt = stmt.where(Cell.location==location)
 
@@ -45,5 +47,7 @@ def get_or_create_cell(s, name, location=None):
         c = Cell(name=name, location=location)
         s.add(c)
         s.flush()
+    else:
+        c = c[0]
 
     return c

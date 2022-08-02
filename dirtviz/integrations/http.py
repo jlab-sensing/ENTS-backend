@@ -6,6 +6,7 @@ import base64
 from chirpstack_api.as_pb import integration
 from google.protobuf.json_format import Parse
 
+from sqlalchemy.orm import Session
 from sqlalchemy import select
 from ..db.conn import engine
 from ..db.tables import Logger, Cell, PowerData, TEROSData
@@ -37,21 +38,19 @@ class Handler(BaseHTTPRequestHandler):
     def up(self, body):
         up = self.unmarshal(body, integration.UplinkEvent())
 
-        print(up, flush=True)
-        ts = datetime.fromtimestamp(up.publishedAt)
+        # NOTE for now just take time when message is received
+        ts = datetime.now()
 
-        # TODO Check if the following implements the base64 decode
-        #data = up.data.hex()
-        data = base64.b64decode(up.data)
-        v1, _, i1, v2, _, i2 = data.split(",")
+        rl = up.data.decode().split(",")
+        v1, _, i1, v2, _, i2 = [int(m) for m in rl]
 
         with Session(engine) as s:
             # Create logger if name does not exist
-            l = get_or_create_logger(s, up.tags.logger_name)
+            l = get_or_create_logger(s, up.tags["logger_name"])
 
             # Create cell1 if does not exist
-            c1 = get_or_create_cell(s, up.tags.cell1_name, up.tags.cell1_loc)
-            c2 = get_or_create_cell(s, up.tags.cell2_name, up.tags.cell2_loc)
+            c1 = get_or_create_cell(s, up.tags["cell1_name"], up.tags["cell1_loc"])
+            c2 = get_or_create_cell(s, up.tags["cell2_name"], up.tags["cell2_loc"])
 
             # PowerData
             data1 = PowerData(
