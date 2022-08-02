@@ -37,6 +37,7 @@ class Handler(BaseHTTPRequestHandler):
     def up(self, body):
         up = self.unmarshal(body, integration.UplinkEvent())
 
+        print(up, flush=True)
         ts = datetime.fromtimestamp(up.publishedAt)
 
         # TODO Check if the following implements the base64 decode
