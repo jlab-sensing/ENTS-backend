@@ -12,7 +12,7 @@ services:
     links:
       - portal-postgresql
     depends_on:
-      - portal-database
+      - portal-postgresql
 
   portal-http-integration:
     build: .
