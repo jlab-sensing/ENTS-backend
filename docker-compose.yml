@@ -14,20 +14,6 @@ services:
     networks:
       default:
 
-  http-integration:
-    build: .
-    restart: always
-    environment:
-      DB_URL: "postgresql://dirtviz:password@postgresql/dirtviz"
-    command: ["python", "-m", "dirtviz.integrations.http"]
-    ports:
-      - 8090:8090
-    depends_on:
-      - postgresql
-    networks:
-      default:
-      chirpstack:
-
   postgresql:
     image: postgres:14.4
     restart: always
@@ -51,9 +37,6 @@ services:
 
 networks:
   default:
-  chirpstack:
-    name: "chirpstack-external"
-    external: true
 
 volumes:
   postgresqldata:
