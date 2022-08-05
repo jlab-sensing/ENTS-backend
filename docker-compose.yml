@@ -34,6 +34,8 @@ services:
     environment:
       POSTGRES_USER: dirtviz
       POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
     volumes:
       - postgresqldata:/var/lib/postgresql/data
     networks:
