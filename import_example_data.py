@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from dirtviz.db.utils.add_logger import add_logger
-from dirtviz.db.utils.add_cell import add_cell
 from dirtviz.db.utils.import_rl_csv import import_rl_csv
 from dirtviz.db.utils.import_teros_csv import import_teros_csv
 

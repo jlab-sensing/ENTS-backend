@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from ..conn import engine
 from ..tables import TEROSData
+from ..get_or_create import get_or_create_cell
 
 import pdb
 
@@ -38,7 +39,7 @@ def import_teros_csv(path, cell_map, batch_size=10000):
 
             # get cell data
             for sens_id, cell_name in cell_map.items():
-                c = get_or_create_cell(cell_name)
+                c = get_or_create_cell(s, cell_name)
                 cell_map[cell_name] = c
 
             for row in tqdm(teros_reader):

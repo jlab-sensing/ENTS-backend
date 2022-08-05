@@ -65,6 +65,8 @@ sqlalchemy==1.4.39
     # via -r requirements.in
 tornado==6.2
     # via bokeh
+tqdm==4.64.0
+    # via -r requirements.in
 typing-extensions==4.3.0
     # via bokeh
 urllib3==1.26.11
