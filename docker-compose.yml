@@ -11,6 +11,8 @@ services:
       - 5006:5006
     depends_on:
       - postgresql
+    networks:
+      default:
 
   http-integration:
     build: .
@@ -22,6 +24,9 @@ services:
       - 8090:8090
     depends_on:
       - postgresql
+    networks:
+      default:
+      chirpstack:
 
   postgresql:
     image: postgres:14.4
@@ -31,12 +36,22 @@ services:
       POSTGRES_PASSWORD: password
     volumes:
       - postgresqldata:/var/lib/postgresql/data
+    networks:
+      default:
 
   adminer:
     image: adminer
     restart: always
     ports:
       - 8060:8080
+    networks:
+      default:
+
+networks:
+  default:
+  chirpstack:
+    name: "chirpstack-external"
+    external: true
 
 volumes:
   postgresqldata:
