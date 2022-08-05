@@ -38,16 +38,17 @@ def import_teros_csv(path, cell_map, batch_size=10000):
             tmp = []
 
             # get cell data
+            cell_obj_map = {}
             for sens_id, cell_name in cell_map.items():
                 c = get_or_create_cell(s, cell_name)
-                cell_map[cell_name] = c
+                cell_obj_map[sens_id] = c
 
             for row in tqdm(teros_reader):
                 # convert string to timestamp
                 ts = datetime.fromtimestamp(int(row[0]))
 
                 tdata = TEROSData(
-                    cell_id=cell_map[row[1]].id,
+                    cell_id=cell_obj_map[row[1]].id,
                     ts=ts,
                     vwc=row[2],
                     temp=row[3],
