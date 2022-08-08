@@ -31,20 +31,20 @@ from .db.conn import engine
 from .db.tables import PowerData, Cell
 from .db.getters import get_power_data, get_teros_data
 
-sess = Session(engine)
 
-# Create cell select widget
-stmt = select(Cell).order_by(Cell.name)
-cell_options = [(str(c.id), c.__repr__()) for c in sess.scalars(stmt)]
-cell_select = Select(options=cell_options)
+with Session(engine) as s:
+    # Create cell select widget
+    stmt = select(Cell).order_by(Cell.name)
+    cell_options = [(str(c.id), c.__repr__()) for c in s.scalars(stmt)]
+    cell_select = Select(options=cell_options)
 
+    # Read TEEROS data
+    teros_data = get_teros_data(s, int(cell_options[0][0]))
+    teros_source = ColumnDataSource(teros_data)
 
-# Read TEEROS data
-teros_data = get_teros_data(sess, int(cell_options[0][0]))
-teros_source = ColumnDataSource(teros_data)
-
-rl_data = get_power_data(sess, int(cell_options[0][0]))
-source = ColumnDataSource(rl_data)
+    # Read initial rocketlogger data
+    rl_data = get_power_data(s, int(cell_options[0][0]))
+    source = ColumnDataSource(rl_data)
 
 
 # Plot Power
@@ -152,12 +152,12 @@ def update_range(attrname, old, new):
 def update_cell(attrname, old, new):
     """Updated the data source based on the selected cels"""
 
-    #pdb.set_trace()
-    new_data = get_power_data(sess, int(new))
-    source.data = new_data
+    with Session(engine) as s:
+        new_data = get_power_data(s, int(new))
+        source.data = new_data
 
-    new_teros_data =get_teros_data(sess, int(new))
-    teros_source.data = new_teros_data
+        new_teros_data =get_teros_data(s, int(new))
+        teros_source.data = new_teros_data
 
 
 #date_range.on_change('value', update_range)
@@ -170,5 +170,3 @@ layout = layouts.column(cell_select, graphs, width=1000)
 
 curdoc().add_root(layout)
 curdoc().title = "DirtViz"
-
-sess.close()
