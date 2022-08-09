@@ -9,7 +9,7 @@ from google.protobuf.json_format import Parse
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from ..db.conn import engine
-from ..db.tables import Logger, Cell, PowerData, TEROSData
+from ..db.tables import PowerData, TEROSData
 from ..db.get_or_create import get_or_create_logger, get_or_create_cell
 
 
@@ -35,14 +35,22 @@ class Handler(BaseHTTPRequestHandler):
         else:
             print("handler for event %s is not implemented" % query_args["event"][0])
 
+
     def up(self, body):
         up = self.unmarshal(body, integration.UplinkEvent())
 
-        # NOTE for now just take time when message is received
-        ts = datetime.now()
+        # Take the current timestamp
+        ts_n = datetime.now()
 
+        # decode the data
         rl = up.data.decode().split(",")
-        v1, _, i1, v2, _, i2 = [int(m) for m in rl]
+        # convert from strings to types
+        types = [int, int, int, int,int, float, float, int]
+        ts_r, v1, i1, v2, i2, raw_vwc, temp, ec = [t(m) for t,m in zip(types, rl)]
+        # convert to timestamp objects
+        ts_r = datetime.fromtimestamp(ts_r)
+
+        # TODO run calibration for vwc
 
         with Session(engine) as s:
             # Create logger if name does not exist
@@ -53,7 +61,7 @@ class Handler(BaseHTTPRequestHandler):
             c2 = get_or_create_cell(s, up.tags["cell2_name"], up.tags["cell2_loc"])
 
             # PowerData
-            data1 = PowerData(
+            pd1 = PowerData(
                 logger_id=l.id,
                 cell_id=c1.id,
                 ts=ts,
@@ -61,7 +69,7 @@ class Handler(BaseHTTPRequestHandler):
                 voltage=v1
             )
 
-            data2 = PowerData(
+            pd2 = PowerData(
                 logger_id=l.id,
                 cell_id=c2.id,
                 ts=ts,
@@ -69,15 +77,32 @@ class Handler(BaseHTTPRequestHandler):
                 voltage=v2
             )
 
-            s.add_all([data1, data2])
+            td1 = TEROSData(
+                cell_id=c1.id,
+                ts=ts,
+                vwc=raw_vwc,
+                temp=temp,
+                ec=ec
+            )
+
+            td2 = TEROSData(
+                cell_id=c2.id,
+                ts=ts,
+                vwc=raw_vwc,
+                temp=temp,
+                ec=ec
+            )
+
+            s.add_all([pd1, pd2, td1, td2])
             s.commit()
 
-
         print("Uplink received from: %s with payload: %s" % (up.dev_eui.hex(), up.data.hex()))
+
 
     def join(self, body):
         join = self.unmarshal(body, integration.JoinEvent())
         print("Device: %s joined with DevAddr: %s" % (join.dev_eui.hex(), join.dev_addr.hex()))
+
 
     def unmarshal(self, body, pl):
         if self.json:
