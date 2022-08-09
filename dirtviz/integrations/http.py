@@ -40,7 +40,7 @@ class Handler(BaseHTTPRequestHandler):
         up = self.unmarshal(body, integration.UplinkEvent())
 
         # Take the current timestamp
-        ts_n = datetime.now()
+        ts = datetime.now()
 
         # decode the data
         rl = up.data.decode().split(",")
