@@ -1,19 +1,24 @@
-load-testing:
-  timeout-minutes: 10
-  runs-on: ubuntu-latest
+name: Load Testing
 
-  steps:
-  - name: Checkout
-    uses: actions/checkout@v1
+on: [push, pull_request]
 
-  - name: Start containers
-    run: docker compose -f "docker-compose.yml" up -d --build
+jobs:
+  load-testing:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
 
-  - name: Run local k6 test
-    uses: grafana/k6-action@v0.2.0
-    with:
-      filename: tests/basic.js
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
 
-  - name: Stop containers
-    if: always()
-    run: docker compose -f "docker-compose.yml" down
+    - name: Start containers
+      run: docker compose -f "docker-compose.yml" up -d --build
+
+    - name: Run local k6 test
+      uses: grafana/k6-action@v0.2.0
+      with:
+        filename: tests/basic.js
+
+    - name: Stop containers
+      if: always()
+      run: docker compose -f "docker-compose.yml" down
