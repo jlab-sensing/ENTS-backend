@@ -3,6 +3,7 @@ from sqlalchemy import (Table, Column, Integer, String, Text, ForeignKey,
 from sqlalchemy.dialects.postgresql import MACADDR, ARRAY
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 
 Base = declarative_base()
@@ -39,6 +40,7 @@ class PowerData(Base):
     cell_id = Column(Integer, ForeignKey("cell.id", ondelete="CASCADE"),
                      nullable=False)
     ts = Column(DateTime, nullable=False)
+    ts_server = Column(DateTime, server_default=func.now())
     current = Column(Integer)
     voltage = Column(Integer)
 
@@ -55,7 +57,8 @@ class TEROSData(Base):
     id = Column(Integer, primary_key=True)
     cell_id = Column(Integer, ForeignKey("cell.id", ondelete="CASCADE"),
                      nullable=False)
-    ts = Column(DateTime)
+    ts = Column(DateTime, nullable=False)
+    ts_server = Column(DateTime, server_default=func.now())
     vwc = Column(Float)
     temp = Column(Float)
     ec = Column(Integer)
