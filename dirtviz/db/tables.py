@@ -12,7 +12,7 @@ class Logger(Base):
     __tablename__ = "logger"
 
     id = Column(Integer, primary_key=True)
-    name = Column(Text(), nullable=False)
+    name = Column(Text(), nullable=False, unique=True)
     mac = Column(MACADDR)
     hostname = Column(Text())
 
@@ -24,7 +24,7 @@ class Cell(Base):
     __tablename__ = "cell"
 
     id = Column(Integer, primary_key=True)
-    name = Column(Text(), nullable=False)
+    name = Column(Text(), nullable=False, unique=True)
     location = Column(Text())
 
     def __repr__(self):
