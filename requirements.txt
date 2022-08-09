@@ -4,6 +4,8 @@
 #
 #    pip-compile
 #
+alembic==1.8.1
+    # via -r requirements.in
 bokeh==2.4.3
     # via -r requirements.in
 cachetools==5.2.0
@@ -28,8 +30,12 @@ idna==3.3
     # via requests
 jinja2==3.1.2
     # via bokeh
+mako==1.2.1
+    # via alembic
 markupsafe==2.1.1
-    # via jinja2
+    # via
+    #   jinja2
+    #   mako
 numpy==1.23.1
     # via bokeh
 packaging==21.3
@@ -62,7 +68,9 @@ six==1.16.0
     #   google-auth
     #   grpcio
 sqlalchemy==1.4.39
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   alembic
 tornado==6.2
     # via bokeh
 tqdm==4.64.0

@@ -8,5 +8,3 @@ from .tables import Base
 
 # Connect
 engine = create_engine(os.environ["DB_URL"])
-# Create tables
-Base.metadata.create_all(engine)
