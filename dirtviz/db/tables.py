@@ -35,8 +35,9 @@ class PowerData(Base):
     __tablename__ = "power_data"
 
     id = Column(Integer, primary_key=True)
-    logger_id = Column(Integer, ForeignKey("logger.id"), nullable=False)
-    cell_id = Column(Integer, ForeignKey("cell.id"), nullable=False)
+    logger_id = Column(Integer, ForeignKey("logger.id"))
+    cell_id = Column(Integer, ForeignKey("cell.id", ondelete="CASCADE"),
+                     nullable=False)
     ts = Column(DateTime, nullable=False)
     current = Column(Integer)
     voltage = Column(Integer)
@@ -52,7 +53,8 @@ class TEROSData(Base):
     __tablename__ = "teros_data"
 
     id = Column(Integer, primary_key=True)
-    cell_id = Column(Integer, ForeignKey("cell.id"), nullable=False)
+    cell_id = Column(Integer, ForeignKey("cell.id", ondelete="CASCADE"),
+                     nullable=False)
     ts = Column(DateTime)
     vwc = Column(Float)
     temp = Column(Float)
