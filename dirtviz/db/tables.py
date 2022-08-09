@@ -39,7 +39,6 @@ class PowerData(Base):
     cell_id = Column(Integer, ForeignKey("cell.id", ondelete="CASCADE"),
                      nullable=False)
     ts = Column(DateTime, nullable=False)
-    ts_logger = Column(DateTime, nullable=False)
     current = Column(Integer)
     voltage = Column(Integer)
 
@@ -56,8 +55,7 @@ class TEROSData(Base):
     id = Column(Integer, primary_key=True)
     cell_id = Column(Integer, ForeignKey("cell.id", ondelete="CASCADE"),
                      nullable=False)
-    ts = Column(DateTime, nullable=False)
-    ts_logger = Column(DateTime, nullable=False)
+    ts = Column(DateTime)
     vwc = Column(Float)
     temp = Column(Float)
     ec = Column(Integer)
