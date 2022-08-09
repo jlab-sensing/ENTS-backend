@@ -7,8 +7,8 @@ services:
     environment:
       DB_URL: "postgresql://dirtviz:password@postgresql/dirtviz"
     command: ["python", "-m", "dirtviz.integrations.http"]
-    ports:
-      - 8090:8090
+    exposes:
+      - "8090"
     depends_on:
       - postgresql
     networks:
