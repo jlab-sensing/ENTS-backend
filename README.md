@@ -74,3 +74,22 @@ If you want the database to be recreated the following can be run to delete post
 ```
 docker volume rm dirtviz_postgresqldata
 ```
+
+### Database Migrations
+
+This projects makes use of [alembic](https://alembic.sqlalchemy.org/en/latest/) to handle database migrations. It is recommended to have a understanding of the package first before attempting to modify the database schema. Due to the way that alembic handles package imports, the config file needs to be specified while running from the root project folder. For example the following will autogenerate new migrations from the latest revision of the database.
+
+```bash
+# Migrate to latest version
+alembic -c dirtviz/db/alembic.ini upgrade head
+# Autogenerate migration
+alembic -c dirtviz/db/alembic.ini revision --autogenerate -m "<MIGRATION MESSAGE>"
+# Run generated migration
+alembic -c dirtviz/db/alembic.ini upgrade head
+```
+
+If the docker containers are used for development checking of the database is made easy by removing the `postgresqldata` volume to reset the database to a clean slate. Thus the full chain of migrations can be tested.
+
+```bash
+docker volume rm dirtviz_postgresqldata
+```
