@@ -24,16 +24,21 @@ jobs:
     - name: Lint
       run: pylint dirtviz
 
-  load-testing:
-    timeout-minutes: 10
+  test:
+    timeout-minutes: 1
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout
       uses: actions/checkout@v1
 
-    - name: Start containers
-      run: docker compose -f "docker-compose.yml" up -d --build
+    - name: Setup python
+      uses: actions/setup-python@v4
+      with:
+        cache: 'pip'
+
+    - name: Start webserver
+      run: bokeh serve dirtviz &
 
     - name: Wait for webserver to start
       run: sleep 10s
@@ -43,7 +48,3 @@ jobs:
       uses: grafana/k6-action@v0.2.0
       with:
         filename: tests/basic.js
-
-    - name: Stop containers
-      if: always()
-      run: docker compose -f "docker-compose.yml" down
