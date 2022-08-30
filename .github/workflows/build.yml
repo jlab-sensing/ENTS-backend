@@ -3,8 +3,27 @@ name: Build and Test
 on:
   push:
   pull_request:
+  workflow_call:
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup python
+      uses: actions/setup-python@v4
+      with:
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Lint
+      run: pylint dirtviz
+
   load-testing:
     timeout-minutes: 10
     runs-on: ubuntu-latest
