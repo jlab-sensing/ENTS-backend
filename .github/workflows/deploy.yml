@@ -4,12 +4,13 @@ on:
   push:
     branches:
       - 'main'
+  workflow_dispatch:
 
 env:
   DOCKER_REGISTRY: ghcr.io
   DOCKER_USERNAME: ${{ github.actor }}
   DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-    
+
 concurrency: production
 
 jobs:
@@ -29,7 +30,7 @@ jobs:
         username: ${{ env.DOCKER_USERNAME }}
         password: ${{ env.DOCKER_PASSWORD }}
 
-    - name: Extract metadata 
+    - name: Extract metadata
       id: meta
       uses: docker/metadata-action@v4
       with:
