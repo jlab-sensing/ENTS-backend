@@ -77,7 +77,7 @@ jobs:
 
     - name: Copy files
       run: |
-        rsync -rlpv $GITHUB_WORKSPACE/docker-compose-prod*.yml ${SERVER_UESR}@${SERVER_HOSTNAME}:~/${{ github.repository }}
+        rsync -rlpv $GITHUB_WORKSPACE/docker-compose-prod*.yml ${{ secrets.USER }}@${{ secrets.HOSTNAME }}:~/${{ github.repository }}
       shell: bash
 
     - name: Update services
