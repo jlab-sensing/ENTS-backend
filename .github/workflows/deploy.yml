@@ -9,6 +9,9 @@ env:
   DOCKER_REGISTRY: ghcr.io
   DOCKER_USERNAME: ${{ github.actor }}
   DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+    
+environment: production
+concurrency: production
 
 jobs:
   build-docker:
@@ -43,10 +46,6 @@ jobs:
   deploy:
     timeout-minutes: 5
     runs-on: ubuntu
-    environment: production
-    concurrency:
-      group: production
-      cancel-in-progress: true
     needs: build-docker
     env:
       SERVER_SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
