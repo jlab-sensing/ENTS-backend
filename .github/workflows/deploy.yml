@@ -1,0 +1,85 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - 'main'
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+  DOCKER_USERNAME: ${{ github.actor }}
+  DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+    
+environment: production
+concurrency: production
+
+jobs:
+  build-docker:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to Github containers
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ env.DOCKER_USERNAME }}
+        password: ${{ env.DOCKER_PASSWORD }}
+
+    - name: Extract metadata 
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v3
+      with:
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    timeout-minutes: 5
+    runs-on: ubuntu
+    needs: build-docker
+    env:
+      SERVER_SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SERVER_SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+      SERVER_HOSTNAME: ${{ secrets.HOSTNAME }}
+      SERVER_USER: ${{ secrets.USER }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh/
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        sudo chmod 600 ~/.ssh/id_rsa
+        echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      shell: bash
+
+    - name: Generate docker-compose-prod.yml
+      uses: cuchi/jinja2-action@v1.2.0
+      with:
+        template: docker-compose-prod.yml.j2
+        output: docker-compose-prod.yml
+        strict: true
+        variables: |
+          hostname=${{ secrets.HOSTNAME }}
+
+    - name: Copy files
+      run: |
+        rsync -rlpv $GITHUB_WORKSPACE ${SERVER_UESR}@${secrets.HOSTNAME}:~/${{ github.repository }}
+      shell: bash
+
+    - name: Update services
+      run: |
+        docker compose -f docker-compose-prod.yml -f docker-compose-prod-http.yml up -d
+      shell: bash

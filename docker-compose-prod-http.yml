@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   http-integration:
-    build: .
+    image: ghcr.io/jlab-sensing/dirtviz:main
     restart: always
     environment:
       DB_URL: "postgresql://dirtviz:password@postgresql/dirtviz"
