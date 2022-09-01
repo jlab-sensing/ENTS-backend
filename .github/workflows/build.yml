@@ -82,3 +82,43 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    timeout-minutes: 5
+    runs-on: ubuntu
+    environment:
+      name: production
+      url: ${{ secrets.HOSTNAME }}
+    concurrency:
+      group: production
+      cancel-in-progress: true
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh/
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        sudo chmod 600 ~/.ssh/id_rsa
+        echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+      shell: bash
+
+    - name: Generate docker-compose-prod.yml
+      uses: cuchi/jinja2-action@v1.2.0
+      template: docker-compose-prod.yml.j2
+      output: docker-compose-prod.yml
+      strict: true
+      variables: |
+        hostname={{ secrets.HOSTNAME }}
+
+    - name: Copy files
+      run: |
+        rsync -rlpv $GITHUB_WORKSPACE ${{ secrets.USER }}@${{ secrets.HOSTNAME }}:~/${{ github.repository }}
+      shell: bash
+
+    - name: Update services
+      run: |
+        docker compose -f docker-compose-prod.yml -f docker-compose-prod-http.yml up -d
+      shell: bash

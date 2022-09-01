@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  portal:
+    image: ghcr.io/jlab-sensing/dirtviz:main
+    restart: always
+    environment:
+      DB_URL: "postgresql://dirtviz:password@postgresql/dirtviz"
+      BOKEH_ALLOW_WS_ORIGIN: "{{ hostanme }}"
+    ports:
+      - "5006:5006"
+    depends_on:
+      - postgresql
+    networks:
+      default:
+
+  postgresql:
+    image: postgres:14.4
+    restart: always
+    environment:
+      POSTGRES_USER: dirtviz
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgresqldata:/var/lib/postgresql/data
+    networks:
+      default:
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+        reservations:
+          memory: 3g
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8060:8080"
+    networks:
+      default:
+
+networks:
+  default:
+
+volumes:
+  postgresqldata:
