@@ -47,11 +47,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-docker
     environment: production
-    env:
-      SERVER_SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      SERVER_SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
-      SERVER_HOSTNAME: ${{ secrets.HOSTNAME }}
-      SERVER_USER: ${{ secrets.USER }}
 
     steps:
     - name: Checkout
@@ -64,6 +59,9 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
         echo "$SERVER_SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
         chmod 600 ~/.ssh/known_hosts
+      env:
+        SERVER_SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SERVER_SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
       shell: bash
 
     - name: Generate docker-compose-prod.yml
@@ -77,10 +75,11 @@ jobs:
 
     - name: Copy files
       run: |
-        rsync -rlpv $GITHUB_WORKSPACE/docker-compose-prod*.yml ${{ secrets.USER }}@${{ secrets.HOSTNAME }}:~/${{ github.repository }}
+        rsync -rlpv --mkpath $GITHUB_WORKSPACE/docker-compose-prod*.yml ${{ secrets.USER }}@${{ secrets.HOSTNAME }}:~/${{ github.repository }}
       shell: bash
 
     - name: Update services
       run: |
+        cd ${{ github.repository }}
         docker compose -f docker-compose-prod.yml -f docker-compose-prod-http.yml up -d
       shell: bash
