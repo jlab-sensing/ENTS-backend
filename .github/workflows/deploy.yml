@@ -76,7 +76,7 @@ jobs:
 
     - name: Copy files
       run: |
-        rsync -rlpv $GITHUB_WORKSPACE ${SERVER_UESR}@${secrets.HOSTNAME}:~/${{ github.repository }}
+        rsync -rlpv $GITHUB_WORKSPACE ${SERVER_UESR}@${SERVER_HOSTNAME}:~/${{ github.repository }}
       shell: bash
 
     - name: Update services
