@@ -6,7 +6,7 @@ services:
     restart: always
     environment:
       DB_URL: "postgresql://dirtviz:password@postgresql/dirtviz"
-      BOKEH_ALLOW_WS_ORIGIN: "{{ hostanme }}"
+      BOKEH_ALLOW_WS_ORIGIN: "{{ hostname }}"
     ports:
       - "5006:5006"
     depends_on:
