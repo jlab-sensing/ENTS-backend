@@ -60,9 +60,9 @@ jobs:
     - name: Setup SSH
       run: |
         mkdir -p ~/.ssh/
-        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        echo "$SERVER_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+        echo "$SERVER_SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
         chmod 600 ~/.ssh/known_hosts
       shell: bash
 
