@@ -80,6 +80,6 @@ jobs:
 
     - name: Update services
       run: |
-        cd ${{ github.repository }}
+        cd ~/${{ github.repository }}
         docker compose -f docker-compose-prod.yml -f docker-compose-prod-http.yml up -d
       shell: bash
