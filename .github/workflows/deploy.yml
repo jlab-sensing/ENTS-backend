@@ -73,9 +73,13 @@ jobs:
         variables: |
           hostname=${{ secrets.HOSTNAME }}
 
+    - name: Create directory
+      run: |
+        ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} mkdir -p ~/${{ github.repository }}
+
     - name: Copy files
       run: |
-        rsync -rlpv --mkpath $GITHUB_WORKSPACE/docker-compose-prod*.yml ${{ secrets.USER }}@${{ secrets.HOSTNAME }}:~/${{ github.repository }}
+        rsync -rlpv $GITHUB_WORKSPACE/docker-compose-prod*.yml ${{ secrets.USER }}@${{ secrets.HOSTNAME }}:~/${{ github.repository }}
       shell: bash
 
     - name: Update services
