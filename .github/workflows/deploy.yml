@@ -1,9 +1,9 @@
-name: Test, Build, and Deploy
+name: Build and Deploy
 
 on:
   push:
-  pull_request:
-  workflow_call:
+    branches:
+      - 'main'
 
 env:
   DOCKER_REGISTRY: ghcr.io
@@ -11,54 +11,6 @@ env:
   DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-
-    - name: Setup python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-        cache: 'pip'
-
-    - name: Install dependencies
-      run: pip install -r requirements.txt -r requirements-dev.txt
-
-    - name: Lint
-      run: pylint dirtviz
-
-  test:
-    timeout-minutes: 1
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-
-    - name: Setup python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-        cache: 'pip'
-
-    - name: Install dependencies
-      run: pip install -r requirements.txt
-
-    - name: Start webserver
-      run: bokeh serve dirtviz &
-
-    - name: Wait for webserver to start
-      run: sleep 10s
-      shell: bash
-
-    - name: Run local k6 test
-      uses: grafana/k6-action@v0.2.0
-      with:
-        filename: tests/basic.js
-
   build-docker:
     runs-on: ubuntu-latest
     permissions:
@@ -95,6 +47,7 @@ jobs:
     concurrency:
       group: production
       cancel-in-progress: true
+    needs: build-docker
     env:
       SERVER_SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       SERVER_SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
