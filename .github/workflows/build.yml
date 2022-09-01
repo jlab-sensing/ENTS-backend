@@ -86,12 +86,15 @@ jobs:
   deploy:
     timeout-minutes: 5
     runs-on: ubuntu
-    environment:
-      name: production
-      url: ${{ secrets.HOSTNAME }}
+    environment: production
     concurrency:
       group: production
       cancel-in-progress: true
+    env:
+      SERVER_SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SERVER_SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+      SERVER_HOSTNAME: ${{ secrets.HOSTNAME }}
+      SERVER_USER: ${{ secrets.USER }}
 
     steps:
     - name: Checkout
@@ -100,22 +103,23 @@ jobs:
     - name: Setup SSH
       run: |
         mkdir -p ~/.ssh/
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         sudo chmod 600 ~/.ssh/id_rsa
-        echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+        echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
       shell: bash
 
     - name: Generate docker-compose-prod.yml
       uses: cuchi/jinja2-action@v1.2.0
-      template: docker-compose-prod.yml.j2
-      output: docker-compose-prod.yml
-      strict: true
-      variables: |
-        hostname={{ secrets.HOSTNAME }}
+      with:
+        template: docker-compose-prod.yml.j2
+        output: docker-compose-prod.yml
+        strict: true
+        variables: |
+          hostname=${{ secrets.HOSTNAME }}
 
     - name: Copy files
       run: |
-        rsync -rlpv $GITHUB_WORKSPACE ${{ secrets.USER }}@${{ secrets.HOSTNAME }}:~/${{ github.repository }}
+        rsync -rlpv $GITHUB_WORKSPACE ${SERVER_UESR}@${secrets.HOSTNAME}:~/${{ github.repository }}
       shell: bash
 
     - name: Update services
