@@ -75,7 +75,8 @@ jobs:
 
     - name: Create directory
       run: |
-        ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} mkdir -p /home/${{ secrets.USER }}/${{ github.repository }}
+        ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
+        "mkdir -p /home/${{ secrets.USER }}/${{ github.repository }}"
 
     - name: Copy files
       run: |
@@ -85,5 +86,7 @@ jobs:
     - name: Update services
       run: |
         ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
-        "cd /home/${{ secrets.USER }}/${{ github.repository }} && docker compose -f docker-compose-prod.yml -f docker-compose-prod-http.yml up -d"
+        "cd /home/${{ secrets.USER }}/${{ github.repository }} &&
+        docker compose -f docker-compose-prod.yml -f docker-compose-prod-http.yml pull &&
+        docker compose -f docker-compose-prod.yml -f docker-compose-prod-http.yml up -d"
       shell: bash
