@@ -36,21 +36,14 @@ def get_power_data(s, cell_id, resample="hour"):
         'p': [],
     }
 
-    limit = (
-        select(PowerData)
-        .where(PowerData.cell_id == cell_id)
-        .limit(400000)
-        .subquery()
-    )
-
     resampled = (
         select(
-            func.date_trunc(resample, limit.ts).label("ts"),
-            func.avg(limit.voltage).label("voltage"),
-            func.avg(limit.current).label("current")
+            func.date_trunc(resample, PowerData.ts).label("ts"),
+            func.avg(PowerData.voltage).label("voltage"),
+            func.avg(PowerData.current).label("current")
         )
-        .where(limit.cell_id == cell_id)
-        .group_by(func.date_trunc(resample, limit.ts))
+        .where(PowerData.cell_id == cell_id)
+        .group_by(func.date_trunc(resample, PowerData.ts))
         .subquery()
     )
 
