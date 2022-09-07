@@ -1,6 +1,12 @@
-from sqlalchemy import (Table, Column, Integer, String, Text, ForeignKey,
-                        Float, DateTime)
-from sqlalchemy.dialects.postgresql import MACADDR, ARRAY
+"""Module for sqlalchmey defined database tables
+
+.. codeauthor:: John Madden <jtmadden@ucsc.edu>
+"""
+
+# pylint: disable=too-few-public-methods
+
+from sqlalchemy import Column, Integer,  Text, ForeignKey, Float, DateTime
+from sqlalchemy.dialects.postgresql import MACADDR
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -10,6 +16,8 @@ Base = declarative_base()
 
 
 class Logger(Base):
+    """Table of logging hardware"""
+
     __tablename__ = "logger"
 
     id = Column(Integer, primary_key=True)
@@ -18,10 +26,12 @@ class Logger(Base):
     hostname = Column(Text())
 
     def __repr__(self):
-        return f"Logger(id={self.id!r}, name={self.name!r})"
+        return repr(self.name)
 
 
 class Cell(Base):
+    """Table of cells"""
+
     __tablename__ = "cell"
 
     id = Column(Integer, primary_key=True)
@@ -29,10 +39,12 @@ class Cell(Base):
     location = Column(Text())
 
     def __repr__(self):
-        return f"Cell(id={self.id!r}, name={self.name!r}, location={self.location!r})"
+        return repr(self.name)
 
 
 class PowerData(Base):
+    """Table for power measurements"""
+
     __tablename__ = "power_data"
 
     id = Column(Integer, primary_key=True)
@@ -48,10 +60,12 @@ class PowerData(Base):
     cell = relationship("Cell")
 
     def __repr__(self):
-        return f"PowerData(id={self.id!r}, logger_id={self.logger_id!r}, cell_id={self.cell_id!r}, ts={self.ts!r}, current={self.current!r}, voltage={self.voltage!r})"
+        return f"PowerData(id={self.id!r}, ts={self.ts!r})"
 
 
 class TEROSData(Base):
+    """Table for TEROS-12 Data"""
+
     __tablename__ = "teros_data"
 
     id = Column(Integer, primary_key=True)
@@ -66,4 +80,4 @@ class TEROSData(Base):
     cell = relationship("Cell")
 
     def __repr__(self):
-        return f"TEROSData(id={self.id!r}, cell_id={self.cell_id!r}, ts={self.ts!r}, vwc={self.vwc!r}, temp={self.temp!r}, ec={self.ec!r})"
+        return f"TEROSData(id={self.id!r}, ts={self.ts!r})"
