@@ -5,47 +5,73 @@ Implements the bokeh plots mirring those generated from show_twobat.py from
 original data processing. There is a datetime slider that adjusts the range of
 the graphs. The script uses the interal bokeh server to serve the graphs.
 
-TODO
-- Graph TEROS-12 Sensor Data
-- Display key statistics (max power)
+Notes
+-----
+All statements involving the database should be put inside of functions to
+prevent overwritting of the global namespace.
+
+Todo
+----
+    - Display key statistics (max power)
 
 .. moduleauthor:: John Madden <jtmadden@ucsc.edu>
 """
 
-import os
-import pdb
-
-from bokeh.plotting import figure, show
-from bokeh.models import ColumnDataSource, LinearAxis, Range1d, DatetimeRangeSlider
-from bokeh.models import AutocompleteInput, Select
+from bokeh.plotting import figure
+from bokeh.models import (ColumnDataSource, LinearAxis, Range1d, Select)
 from bokeh.io import curdoc
 from bokeh import layouts
 
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from sqlalchemy import cast
-from sqlalchemy.sql import label
-from sqlalchemy import text
 
 from .db.conn import engine
-from .db.tables import PowerData, Cell
+from .db.tables import Cell
 from .db.getters import get_power_data, get_teros_data
 
+# Data sources
+teros_source = ColumnDataSource(data=None)
+source = ColumnDataSource(data=None)
 
-with Session(engine) as s:
-    # Create cell select widget
-    stmt = select(Cell).order_by(Cell.name)
-    cell_options = [(str(c.id), c.__repr__()) for c in s.scalars(stmt)]
-    cell_select = Select(options=cell_options)
 
-    # Read TEEROS data
-    teros_data = get_teros_data(s, int(cell_options[0][0]))
-    teros_source = ColumnDataSource(teros_data)
+def update_data(cell_id):
+    """Updates plotted data
 
-    # Read initial rocketlogger data
-    rl_data = get_power_data(s, int(cell_options[0][0]))
-    source = ColumnDataSource(rl_data)
+    Selects cell data from database and updates the ColumnDataSource for
+    power and teros data.
 
+    Parameters
+    ----------
+    cell_id : int
+        cell_id to update data from
+    """
+
+    with Session(engine) as sess:
+        teros_source.data = get_teros_data(sess, cell_id)
+        source.data = get_power_data(sess, cell_id)
+
+
+def get_cells():
+    """Gets identifiers for each of the cells
+
+    Returns
+    -------
+    list(tuple)
+        Each tuple is in the format of (id, repr) where both are strings. The
+        id is the cell_id from the database and repr is the identification
+        string of the cell.
+    """
+
+    with Session(engine) as sess:
+        # Create cell select widget
+        stmt = select(Cell).order_by(Cell.name)
+        opts = [(str(c.id), repr(c)) for c in sess.scalars(stmt)]
+        return opts
+
+
+cell_opts = get_cells()
+cell_select = Select(options=cell_opts)
+update_data(int(cell_opts[0][0]))
 
 # Plot Power
 power = figure(
@@ -115,50 +141,11 @@ teros_ec.line("timestamp", "ec", source=teros_source,
 #    step=100000,
 #)
 
-def update_range(attrname, old, new):
-    """Update range of data displayed
-
-    Parameters
-    ----------
-    attrname: str
-    old: tuple
-        Tuple of old dates
-    new: tuple
-        Tuple of new dates
-
-    Notes
-    -----
-    bokeh uses ms units for epoch time contrary to the input timestamp used in
-    the original pandas dataframe.
-    """
-
-    lower, upper = pd.to_datetime(new, unit='ms')
-
-    # Update rocketlogger data
-    selected = rl_data
-    selected = selected[selected.index >= lower]
-    selected = selected[selected.index <= upper]
-
-    source.data = selected
-
-    # Update TEROS data
-    selected_teros = teros_data
-    selected_teros = selected_teros[selected_teros.index >= lower]
-    selected_teros = selected_teros[selected_teros.index <= upper]
-
-    teros_source.data = selected_teros
-
-
+# pylint: disable=unused-argument
 def update_cell(attrname, old, new):
-    """Updated the data source based on the selected cels"""
+    """Callback to update the data source based on the selected cell"""
 
-    with Session(engine) as s:
-        new_data = get_power_data(s, int(new))
-        source.data = new_data
-
-        new_teros_data =get_teros_data(s, int(new))
-        teros_source.data = new_teros_data
-
+    update_data(int(new))
 
 #date_range.on_change('value', update_range)
 cell_select.on_change('value', update_cell)
