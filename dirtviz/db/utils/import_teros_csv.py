@@ -4,12 +4,12 @@ Examples
 --------
 Import data for cell1 and cell2 that was logged using rocket1::
 
-    $ python -m dirtviz.db.utils.import_teros_csv data.csv rocket1 cell1 cell2
-
+    $ python -m dirtviz.db.utils.import_teros_csv --cell 1,cell1 \
+        --cell 2,cell data.csv
 
 Help prompt for utility::
 
-    $ python -m dirtviz.db.utils.import_teros_csv  -h
+    $ python -m dirtviz.db.utils.import_teros_csv -h
 """
 
 import csv
