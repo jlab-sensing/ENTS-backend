@@ -1,14 +1,23 @@
+"""Helper functions to get or create objects
+
+Notes
+-----
+All functions must have a `sess` argument so that multiple functions can be
+called while retaining object data from queried objects.
+"""
+
 from sqlalchemy import select
 
 from .tables import Logger, Cell
 
 
-def get_or_create_logger(s, name, mac=None, hostname=None):
+def get_or_create_logger(sess, name, mac=None, hostname=None):
     """Get or create Logger object
 
     Returns
     -------
-    Logger object
+    Logger
+        Object with the inputted attributes
     """
 
     stmt = select(Logger).where(Logger.name==name)
@@ -17,19 +26,19 @@ def get_or_create_logger(s, name, mac=None, hostname=None):
     if hostname:
         stmt = stmt.where(Logger.hostname==hostname)
 
-    l = s.execute(stmt).one_or_none()
+    log = sess.execute(stmt).one_or_none()
 
-    if not l:
-        l = Logger(name=name, mac=mac, hostname=hostname)
-        s.add(l)
-        s.flush()
+    if not log:
+        log = Logger(name=name, mac=mac, hostname=hostname)
+        sess.add(log)
+        sess.flush()
     else:
-        l = l[0]
+        log = log[0]
 
-    return l
+    return log
 
 
-def get_or_create_cell(s, name, location=None):
+def get_or_create_cell(sess, name, location=None):
     """Get or create Cell objects
 
     Returns
@@ -41,13 +50,13 @@ def get_or_create_cell(s, name, location=None):
     if location:
         stmt = stmt.where(Cell.location==location)
 
-    c = s.execute(stmt).one_or_none()
+    cell = sess.execute(stmt).one_or_none()
 
-    if not c:
-        c = Cell(name=name, location=location)
-        s.add(c)
-        s.flush()
+    if not cell:
+        cell = Cell(name=name, location=location)
+        sess.add(cell)
+        sess.flush()
     else:
-        c = c[0]
+        cell = cell[0]
 
-    return c
+    return cell
