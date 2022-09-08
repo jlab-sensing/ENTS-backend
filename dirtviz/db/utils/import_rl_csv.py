@@ -1,3 +1,17 @@
+"""Rocketlogger CSV importer
+
+Examples
+--------
+Import data for cell1 and cell2 that was logged using rocket1::
+
+    $ python -m dirtviz.db.utils.import_teros_csv data.csv rocket1 cell1 cell2
+
+
+Help prompt for utility::
+
+    $ python -m dirtviz.db.utils.import_teros_csv -h
+"""
+
 import csv
 from datetime import datetime
 
@@ -28,59 +42,59 @@ def import_rl_csv(path, logger_name, cell1_name, cell2_name, batch_size=10000):
         Name of cell being measured on channel 2.
     """
 
-    with open(path, newline='') as csvfile:
+    # pylint: disable=R0801
+
+    with open(path, newline='', encoding="UTF-8") as csvfile:
         rl_reader = csv.reader(csvfile)
 
 
         # Skip header
         for _ in range(11):
-            rl_reader.__next__()
+            next(rl_reader)
 
-        count = 0
         tmp = []
 
-        with Session(engine) as s:
+        with Session(engine) as sess:
             # Get or create objects
-            logger = get_or_create_logger(s, logger_name)
-            cell1 = get_or_create_cell(s, cell1_name)
-            cell2 = get_or_create_cell(s, cell2_name)
+            logger = get_or_create_logger(sess, logger_name)
+            cell1 = get_or_create_cell(sess, cell1_name)
+            cell2 = get_or_create_cell(sess, cell2_name)
 
             for row in tqdm(rl_reader):
 
                 # convert string to timestamp
                 ts = datetime.fromtimestamp(float(row[0]))
 
-                pow1 = PowerData(
-                    logger_id=logger.id,
-                    cell_id=cell1.id,
-                    ts=ts,
-                    current=row[4],
-                    voltage=row[5],
+                tmp.append(
+                    PowerData(
+                        logger_id=logger.id,
+                        cell_id=cell1.id,
+                        ts=ts,
+                        current=row[4],
+                        voltage=row[5],
+                    )
                 )
 
-                pow2 = PowerData(
-                    logger_id=logger.id,
-                    cell_id=cell2.id,
-                    ts=ts,
-                    current=row[8],
-                    voltage=row[6],
+                tmp.append(
+                    PowerData(
+                        logger_id=logger.id,
+                        cell_id=cell2.id,
+                        ts=ts,
+                        current=row[8],
+                        voltage=row[6],
+                    )
                 )
 
-                tmp.append(pow1)
-                tmp.append(pow2)
-
-                count += 1
-                if (count > batch_size and tmp):
+                if (len(tmp) > batch_size and tmp):
                     # Save objects
-                    s.bulk_save_objects(tmp)
-                    s.commit()
-                    # Reset counter
-                    count = 0
+                    sess.bulk_save_objects(tmp)
+                    sess.commit()
+                    # Reset array
                     tmp.clear()
 
             # Save remaining objects
-            s.bulk_save_objects(tmp)
-            s.commit()
+            sess.bulk_save_objects(tmp)
+            sess.commit()
 
 
 if __name__ == "__main__":

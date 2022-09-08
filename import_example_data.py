@@ -11,7 +11,7 @@ if __name__ == "__main__":
     print("Importing TEROS-12 data")
     import_teros_csv(
         path="data/TEROSoutput-1656537434-f17.csv",
-        cell_map={
+        mapping={
             "1": "cell1",
             "3": "cell2"
         }
