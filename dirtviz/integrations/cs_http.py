@@ -30,12 +30,12 @@ class Handler(BaseHTTPRequestHandler):
         means protobuf.
     """
 
-    # pylint: disable=invalid-name
 
     # True -  JSON marshaler
     # False - Protobuf marshaler (binary)
     json = False
 
+    # pylint: disable-next=invalid-name
     def do_POST(self):
         """Handle post request"""
 
@@ -171,8 +171,8 @@ class Handler(BaseHTTPRequestHandler):
         keys = ["ts_r", "v1", "i1", "v2", "i2", "raw_vwc", "temp", "ec"]
         types = [datetime.fromtimestamp, int, int, int, int,int, float, float,
                  int]
-        for k, t, p in zip(keys, types, split):
-            data[k] = t(p)
+        for key, _type, meas in zip(keys, types, split):
+            data[key] = _type(meas)
 
         return data
 
