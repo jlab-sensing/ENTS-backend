@@ -44,15 +44,17 @@ jobs:
     - name: Start postgresql service
       run: docker compose up postgresql -d
 
-    - name: Start webserver
-      run: ./migrate_and_start.sh > dirtviz_log 2>&1 &
+    - name: Wait for db to start
+      run: sleep 5s
 
-    - name: Wait for webserver to start
-      run: sleep 10s
-      shell: bash
-    
+    - name: Apply migrations
+      run: alembic -c dirtviz/db/alembic.ini upgrade head
+
     - name: Import example data
       run: python import_example_data.py
+
+    - name: Start webserver
+      run: bokeh serve dirtviz > dirtviz_log 2>&1 &
 
     - name: Send GET request
       run: curl --connect-timeout 10 http://localhost:5006/dirtviz
