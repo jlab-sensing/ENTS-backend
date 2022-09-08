@@ -25,6 +25,8 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    env:
+      DB_URL: "postgresql://dirtviz:password@localhost/dirtviz"
 
     steps:
     - name: Checkout
@@ -39,8 +41,18 @@ jobs:
     - name: Install dependencies
       run: pip install -r requirements.txt
 
+    - name: Start postgresql service
+      run: docker compose up postgresql
+    
+    - name: Wait for postgresql
+      run: sleep 5s
+      shell: bash
+
+    - name: Import example data
+      run: python import_example_data.py
+
     - name: Start webserver
-      run: bokeh serve dirtviz &
+      run: bokeh serve dirtviz >> dirtviz_log &
 
     - name: Wait for webserver to start
       run: sleep 10s
@@ -50,3 +62,12 @@ jobs:
       uses: grafana/k6-action@v0.2.0
       with:
         filename: tests/basic.js
+
+    - name: Echo runtime log
+      run: cat dirtviz_log
+
+    - name: Upload log artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: DirtViz Portal Logs
+        path: dirtviz_log
