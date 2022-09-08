@@ -43,20 +43,16 @@ jobs:
 
     - name: Start postgresql service
       run: docker compose up postgresql -d
-    
-    - name: Wait for postgresql
-      run: sleep 5s
-      shell: bash
-
-    - name: Import example data
-      run: python import_example_data.py
 
     - name: Start webserver
-      run: bokeh serve dirtviz >> dirtviz_log &
+      run: ./migrate_and_start.sh >> dirtviz_log &
 
     - name: Wait for webserver to start
-      run: sleep 2s
+      run: sleep 10s
       shell: bash
+    
+    - name: Import example data
+      run: python import_example_data.py
 
     - name: Run local k6 test
       uses: grafana/k6-action@v0.2.0
