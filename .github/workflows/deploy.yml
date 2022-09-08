@@ -87,6 +87,6 @@ jobs:
       run: |
         ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
         "cd /home/${{ secrets.USER }}/${{ github.repository }} &&
-        docker compose -f docker-compose-prod.yml -f docker-compose-prod-http.yml pull &&
-        docker compose -f docker-compose-prod.yml -f docker-compose-prod-http.yml up -d"
+        docker compose -f docker-compose-prod.yml -f docker-compose-prod-cs_http.yml -f docker-compose-prod-api.yml pull &&
+        docker compose -f docker-compose-prod.yml -f docker-compose-prod-cs_http.yml -f docker-compose-prod-api.yml up -d"
       shell: bash
