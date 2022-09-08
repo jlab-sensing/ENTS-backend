@@ -45,7 +45,7 @@ jobs:
       run: docker compose up postgresql -d
 
     - name: Start webserver
-      run: ./migrate_and_start.sh >> dirtviz_log &
+      run: ./migrate_and_start.sh > dirtviz_log 2>&1 &
 
     - name: Wait for webserver to start
       run: sleep 10s
