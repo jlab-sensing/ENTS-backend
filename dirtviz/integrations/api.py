@@ -8,6 +8,8 @@ from ..db.tables import PowerData, TEROSData
 
 
 class Handler(BaseHTTPRequestHandler):
+
+    # pylint: disable-next=invalid-name
     def do_POST(self):
         # Send OK response
         self.send_response(200)
@@ -17,7 +19,7 @@ class Handler(BaseHTTPRequestHandler):
         content_type = self.headers.get('Content-Type', 0)
         logger_name = self.headers.get('Device-Name', 0)
         logger_cells = self.headers.get('Cells')
-        
+
 
         if (content_type == "mfc-data"):
             content = self.rfile.read(content_len)
@@ -31,19 +33,17 @@ class Handler(BaseHTTPRequestHandler):
 
             ts_r = datetime.fromtimestamp(ts_r)
 
-            with Session(engine) as s:
+            with Session(engine) as sess:
                 # Create logger if name does not exist
-                l = get_or_create_logger(s, logger_name)
+                log = get_or_create_logger(sess, logger_name)
 
                 # Create cell if it does not exist
-                c1 = get_or_create_cell(
-                    s, cells[0], None)
-                c2 = get_or_create_cell(
-                    s, cells[1], None)
+                c1 = get_or_create_cell(sess, cells[0], None)
+                c2 = get_or_create_cell(sess, cells[1], None)
 
                 # PowerData
                 pd1 = PowerData(
-                    logger_id=l.id,
+                    logger_id=log.id,
                     cell_id=c1.id,
                     ts=ts_r,
                     current=i1,
@@ -51,7 +51,7 @@ class Handler(BaseHTTPRequestHandler):
                 )
 
                 pd2 = PowerData(
-                    logger_id=l.id,
+                    logger_id=log.id,
                     cell_id=c2.id,
                     ts=ts_r,
                     current=i2,
@@ -74,8 +74,8 @@ class Handler(BaseHTTPRequestHandler):
                     ec=ec
                 )
 
-                s.add_all([pd1, pd2, td1, td2])
-                s.commit()
+                sess.add_all([pd1, pd2, td1, td2])
+                sess.commit()
         else:
             print("Handler for content type {ctype} not implemented".format(ctype = "mfc-data"))
 
