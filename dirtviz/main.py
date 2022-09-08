@@ -29,9 +29,9 @@ from .db.conn import engine
 from .db.tables import Cell
 from .db.getters import get_power_data, get_teros_data
 
-# Data sources
-teros_source = ColumnDataSource(data=None)
-source = ColumnDataSource(data=None)
+# Create empty data sources
+teros_source = ColumnDataSource()
+source = ColumnDataSource()
 
 
 def update_data(cell_id):
