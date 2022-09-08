@@ -13,9 +13,3 @@ services:
       - postgresql
     networks:
       default:
-      chirpstack:
-
-networks:
-  chirpstack:
-    name: "chirpstack-external"
-    external: true
