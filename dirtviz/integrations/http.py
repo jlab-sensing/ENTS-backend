@@ -1,24 +1,44 @@
+"""Chirpstack HTTP Inetgration server
+
+Notes
+-----
+The data format is hardcoded for the rocketlogger data stream. If it changes
+then this code will need to be changed to reflect the format
+
+.. codeauthor:: John Madden <jtmadden@ucsc.edu>
+"""
+
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime
-import base64
 
 from chirpstack_api.as_pb import integration
 from google.protobuf.json_format import Parse
 
 from sqlalchemy.orm import Session
-from sqlalchemy import select
 from ..db.conn import engine
 from ..db.tables import PowerData, TEROSData
 from ..db.get_or_create import get_or_create_logger, get_or_create_cell
 
-
 class Handler(BaseHTTPRequestHandler):
+    """HTTP Request Handler
+
+    Attributes
+    ----------
+    json : bool
+        Flag to decode using json or protobuf marshaler. True means json, False
+        means protobuf.
+    """
+
+    # pylint: disable=invalid-name
+
     # True -  JSON marshaler
     # False - Protobuf marshaler (binary)
     json = False
 
     def do_POST(self):
+        """Handle post request"""
+
         self.send_response(200)
         self.end_headers()
         query_args = parse_qs(urlparse(self.path).query)
@@ -33,78 +53,146 @@ class Handler(BaseHTTPRequestHandler):
             self.join(body)
 
         else:
-            print("handler for event %s is not implemented" % query_args["event"][0])
+            print(f"""handler for event {query_args["event"][0]} is not
+                  implemented""")
 
 
     def up(self, body):
+        """Handle LoRa uplink event
+
+        Parameters
+        ----------
+        body : bytes
+            Request body
+        """
+
         up = self.unmarshal(body, integration.UplinkEvent())
 
-        # Take the current timestamp
-        ts = datetime.now()
+        data = self.parse_rl(up.data.decode())
 
-        # decode the data
-        rl = up.data.decode().split(",")
-        # convert from strings to types
-        types = [int, int, int, int,int, float, float, int]
-        ts_r, v1, i1, v2, i2, raw_vwc, temp, ec = [t(m) for t,m in zip(types, rl)]
-        # convert to timestamp objects
-        ts_r = datetime.fromtimestamp(ts_r)
-
-        # TODO run calibration for vwc
-
-        with Session(engine) as s:
+        with Session(engine) as sess:
             # Create logger if name does not exist
-            l = get_or_create_logger(s, up.tags["logger_name"])
+            log = get_or_create_logger(sess, up.tags["logger_name"])
 
             # Create cell1 if does not exist
-            c1 = get_or_create_cell(s, up.tags["cell1_name"], up.tags["cell1_loc"])
-            c2 = get_or_create_cell(s, up.tags["cell2_name"], up.tags["cell2_loc"])
+            c1 = get_or_create_cell(sess, up.tags["cell1_name"], up.tags["cell1_loc"])
+            c2 = get_or_create_cell(sess, up.tags["cell2_name"], up.tags["cell2_loc"])
+
+            data_list = []
 
             # PowerData
-            pd1 = PowerData(
-                logger_id=l.id,
-                cell_id=c1.id,
-                ts=ts,
-                current=i1,
-                voltage=v1
+            data_list.append(
+                    PowerData(
+                    logger_id=log.id,
+                    cell_id=c1.id,
+                    ts=data["ts"],
+                    current=data["i1"],
+                    voltage=data["v1"]
+                )
             )
 
-            pd2 = PowerData(
-                logger_id=l.id,
-                cell_id=c2.id,
-                ts=ts,
-                current=i2,
-                voltage=v2
+            data_list.append(
+                PowerData(
+                    logger_id=log.id,
+                    cell_id=c2.id,
+                    ts=data["ts"],
+                    current=data["i2"],
+                    voltage=data["v2"]
+                )
             )
 
-            td1 = TEROSData(
-                cell_id=c1.id,
-                ts=ts,
-                vwc=raw_vwc,
-                temp=temp,
-                ec=ec
+            data_list.append(
+                TEROSData(
+                    cell_id=c1.id,
+                    ts=data["ts"],
+                    vwc=data["raw_vwc"],
+                    temp=data["temp"],
+                    ec=data["ec"]
+                )
             )
 
-            td2 = TEROSData(
-                cell_id=c2.id,
-                ts=ts,
-                vwc=raw_vwc,
-                temp=temp,
-                ec=ec
+            data_list.append(
+                TEROSData(
+                    cell_id=c2.id,
+                    ts=data["ts"],
+                    vwc=data["raw_vwc"],
+                    temp=data["temp"],
+                    ec=data["ec"]
+                )
             )
 
-            s.add_all([pd1, pd2, td1, td2])
-            s.commit()
+            sess.add_all(data_list)
+            sess.commit()
 
-        print("Uplink received from: %s with payload: %s" % (up.dev_eui.hex(), up.data.hex()))
+        print(f"""Uplink received from: {up.dev_eui.hex()} with payload:
+              {up.data.hex()}""")
 
 
     def join(self, body):
+        """Handle LoRa join event
+
+        Parameters
+        ----------
+        body : bytes
+            Request body
+        """
+
         join = self.unmarshal(body, integration.JoinEvent())
-        print("Device: %s joined with DevAddr: %s" % (join.dev_eui.hex(), join.dev_addr.hex()))
+        print(f"""Device: {join.dev_eui.hex()} joined with DevAddr:
+              {join.dev_addr.hex()}""")
+
+
+    def parse_rl(self, payload):
+        """Parses sent rocketlogger data
+
+        The payload is expected to be already decoded and formatted as a csv as
+        follows::
+
+            ts_r, v1, i1, v2, i2, raw_vwc, temp, ec
+
+        Parameters
+        ----------
+        payload : bytes
+            Decoded data sent from the rocketlogger
+
+        Returns
+        -------
+        dict
+            Dictonary of sent data. Keys are as follows ["ts_r", "v1", "i1",
+            "v2", "i2", "raw_vwc", "temp", "ec"].
+        """
+
+        split = payload.split(",")
+
+        data = {}
+        data["ts"] = datetime.now()
+
+        # format and store
+        keys = ["ts_r", "v1", "i1", "v2", "i2", "raw_vwc", "temp", "ec"]
+        types = [datetime.fromtimestamp, int, int, int, int,int, float, float,
+                 int]
+        for k, t, p in zip(keys, types, split):
+            data[k] = t(p)
+
+        return data
 
 
     def unmarshal(self, body, pl):
+        """Parse data from request
+
+        Parameters
+        ----------
+        body : bytes
+            Request body
+        pl : protobuf
+            Protobuf payload decoder
+
+        Returns
+        -------
+        protobuf
+            Decoded payload
+        """
+
         if self.json:
             return Parse(body, pl)
 

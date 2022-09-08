@@ -1,18 +1,22 @@
-import pdb
+"""Helper functions for getting data
 
-from sqlalchemy import select
-from sqlalchemy import text
-from sqlalchemy import func
+Notes
+-----
+All functions must have a `sess` argument so that multiple functions can be
+called while retaining object data from queried objects.
+"""
+
+from sqlalchemy import select, func
 
 from .tables import TEROSData, PowerData
 
-def get_power_data(s, cell_id, resample="hour"):
+def get_power_data(sess, cell_id, resample="hour"):
     """Gets the power data for a given cell. Can be directly passed to
     bokeh.ColumnDataSource.
 
     Parmaters
     ---------
-    s : sqlalchemy.orm.Session
+    sess : sqlalchemy.orm.Session
         Session to use
     cell_id : int
         Valid Cell.id
@@ -66,7 +70,7 @@ def get_power_data(s, cell_id, resample="hour"):
         .order_by(adj_units.c.ts)
     )
 
-    for row in s.execute(stmt):
+    for row in sess.execute(stmt):
         data["timestamp"].append(row.ts)
         data["v"].append(row.voltage)
         data["i"].append(row.current)
@@ -74,7 +78,7 @@ def get_power_data(s, cell_id, resample="hour"):
 
     return data
 
-def get_teros_data(s, cell_id, resample='hour'):
+def get_teros_data(sess, cell_id, resample='hour'):
     """Gets the TEROS-12 sensor data for a given cell. Returned dictionary can
     be passed directly to bokeh.ColumnDataSource.
 
@@ -120,7 +124,7 @@ def get_teros_data(s, cell_id, resample='hour'):
         .order_by(func.date_trunc(resample, TEROSData.ts))
     )
 
-    for row in s.execute(stmt):
+    for row in sess.execute(stmt):
         data['timestamp'].append(row.ts)
         data['vwc'].append(row.vwc)
         data['temp'].append(row.temp)

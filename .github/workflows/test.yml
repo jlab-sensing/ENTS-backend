@@ -21,10 +21,12 @@ jobs:
       run: pip install -r requirements.txt -r requirements-dev.txt
 
     - name: Lint
-      run: pylint --exit-zero dirtviz
+      run: pylint dirtviz
 
   test:
     runs-on: ubuntu-latest
+    env:
+      DB_URL: "postgresql://dirtviz:password@localhost/dirtviz"
 
     steps:
     - name: Checkout
@@ -39,14 +41,34 @@ jobs:
     - name: Install dependencies
       run: pip install -r requirements.txt
 
+    - name: Start postgresql service
+      run: docker compose up postgresql -d
+
+    - name: Wait for db to start
+      run: sleep 5s
+
+    - name: Apply migrations
+      run: alembic -c dirtviz/db/alembic.ini upgrade head
+
+    - name: Import example data
+      run: python import_example_data.py
+
     - name: Start webserver
-      run: bokeh serve dirtviz &
+      run: bokeh serve dirtviz > dirtviz_log 2>&1 &
 
     - name: Wait for webserver to start
-      run: sleep 10s
-      shell: bash
+      run: sleep 5s
 
-    - name: Run local k6 test
-      uses: grafana/k6-action@v0.2.0
+    - name: Send GET request
+      run: curl --connect-timeout 10 http://localhost:5006/dirtviz
+
+    - name: Echo runtime log
+      if: always()
+      run: cat dirtviz_log
+
+    - name: Upload log artifact
+      if: always()
+      uses: actions/upload-artifact@v3
       with:
-        filename: tests/basic.js
+        name: DirtViz Portal Logs
+        path: dirtviz_log
