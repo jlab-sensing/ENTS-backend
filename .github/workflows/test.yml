@@ -42,7 +42,7 @@ jobs:
       run: pip install -r requirements.txt
 
     - name: Start postgresql service
-      run: docker compose up postgresql
+      run: docker compose up postgresql -d
     
     - name: Wait for postgresql
       run: sleep 5s
@@ -55,7 +55,7 @@ jobs:
       run: bokeh serve dirtviz >> dirtviz_log &
 
     - name: Wait for webserver to start
-      run: sleep 10s
+      run: sleep 2s
       shell: bash
 
     - name: Run local k6 test
