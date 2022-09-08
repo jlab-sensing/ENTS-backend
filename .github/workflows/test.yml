@@ -54,10 +54,8 @@ jobs:
     - name: Import example data
       run: python import_example_data.py
 
-    - name: Run local k6 test
-      uses: grafana/k6-action@v0.2.0
-      with:
-        filename: tests/basic.js
+    - name: Send GET request
+      run: curl http://localhost:5006/dirtviz
 
     - name: Echo runtime log
       run: cat dirtviz_log
