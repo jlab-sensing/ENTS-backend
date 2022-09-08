@@ -38,6 +38,8 @@ def import_teros_csv(path, mapping, batch_size=10000):
         database.
     """
 
+    # pylint: disable=R0801
+
     with open(path, newline='', encoding='utf-8') as csvfile:
         teros_reader = csv.reader(csvfile)
 

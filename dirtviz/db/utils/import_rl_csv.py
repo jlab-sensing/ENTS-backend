@@ -42,6 +42,8 @@ def import_rl_csv(path, logger_name, cell1_name, cell2_name, batch_size=10000):
         Name of cell being measured on channel 2.
     """
 
+    # pylint: disable=R0801
+
     with open(path, newline='', encoding="UTF-8") as csvfile:
         rl_reader = csv.reader(csvfile)
 
