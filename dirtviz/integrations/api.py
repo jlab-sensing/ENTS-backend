@@ -6,7 +6,6 @@
 """
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from sqlalchemy.orm import Session
 from .decoder import add_data
 
 
