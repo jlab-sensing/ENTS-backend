@@ -10,15 +10,11 @@ then this code will need to be changed to reflect the format
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
-from datetime import datetime
 
 from chirpstack_api.as_pb import integration
 from google.protobuf.json_format import Parse
 
-from sqlalchemy.orm import Session
-from ..db.conn import engine
-from ..db.tables import PowerData, TEROSData
-from ..db.get_or_create import get_or_create_logger, get_or_create_cell
+from .decoder import add_data
 
 class Handler(BaseHTTPRequestHandler):
     """HTTP Request Handler
@@ -68,61 +64,14 @@ class Handler(BaseHTTPRequestHandler):
 
         up = self.unmarshal(body, integration.UplinkEvent())
 
-        data = self.parse_rl(up.data.decode())
-
-        with Session(engine) as sess:
-            # Create logger if name does not exist
-            log = get_or_create_logger(sess, up.tags["logger_name"])
-
-            # Create cell1 if does not exist
-            c1 = get_or_create_cell(sess, up.tags["cell1_name"], up.tags["cell1_loc"])
-            c2 = get_or_create_cell(sess, up.tags["cell2_name"], up.tags["cell2_loc"])
-
-            data_list = []
-
-            # PowerData
-            data_list.append(
-                    PowerData(
-                    logger_id=log.id,
-                    cell_id=c1.id,
-                    ts=data["ts"],
-                    current=data["i1"],
-                    voltage=data["v1"]
-                )
-            )
-
-            data_list.append(
-                PowerData(
-                    logger_id=log.id,
-                    cell_id=c2.id,
-                    ts=data["ts"],
-                    current=data["i2"],
-                    voltage=data["v2"]
-                )
-            )
-
-            data_list.append(
-                TEROSData(
-                    cell_id=c1.id,
-                    ts=data["ts"],
-                    vwc=data["raw_vwc"],
-                    temp=data["temp"],
-                    ec=data["ec"]
-                )
-            )
-
-            data_list.append(
-                TEROSData(
-                    cell_id=c2.id,
-                    ts=data["ts"],
-                    vwc=data["raw_vwc"],
-                    temp=data["temp"],
-                    ec=data["ec"]
-                )
-            )
-
-            sess.add_all(data_list)
-            sess.commit()
+        add_data(
+            up.data.decode(),
+            logger_name=up.tags["logger_name"],
+            cell1_name=up.tags["cell1_name"],
+            cell1_loc=up.tags["cell1_loc"],
+            cell2_name=up.tags["cell2_name"],
+            cell2_loc=up.tags["cell2_loc"]
+        )
 
         print(f"""Uplink received from: {up.dev_eui.hex()} with payload:
               {up.data.hex()}""")
@@ -140,41 +89,6 @@ class Handler(BaseHTTPRequestHandler):
         join = self.unmarshal(body, integration.JoinEvent())
         print(f"""Device: {join.dev_eui.hex()} joined with DevAddr:
               {join.dev_addr.hex()}""")
-
-
-    def parse_rl(self, payload):
-        """Parses sent rocketlogger data
-
-        The payload is expected to be already decoded and formatted as a csv as
-        follows::
-
-            ts_r, v1, i1, v2, i2, raw_vwc, temp, ec
-
-        Parameters
-        ----------
-        payload : bytes
-            Decoded data sent from the rocketlogger
-
-        Returns
-        -------
-        dict
-            Dictonary of sent data. Keys are as follows ["ts_r", "v1", "i1",
-            "v2", "i2", "raw_vwc", "temp", "ec"].
-        """
-
-        split = payload.split(",")
-
-        data = {}
-        data["ts"] = datetime.now()
-
-        # format and store
-        keys = ["ts_r", "v1", "i1", "v2", "i2", "raw_vwc", "temp", "ec"]
-        types = [datetime.fromtimestamp, int, int, int, int,int, float, float,
-                 int]
-        for key, _type, meas in zip(keys, types, split):
-            data[key] = _type(meas)
-
-        return data
 
 
     def unmarshal(self, body, pl):
