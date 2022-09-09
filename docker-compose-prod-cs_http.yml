@@ -6,7 +6,7 @@ services:
     restart: always
     environment:
       DB_URL: "postgresql://dirtviz:password@postgresql/dirtviz"
-    command: ["python", "-m", "dirtviz.integrations.http"]
+    command: ["python", "-m", "dirtviz.integrations.cs_http"]
     expose:
       - "8090"
     depends_on:
