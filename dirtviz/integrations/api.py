@@ -1,18 +1,23 @@
-from http.server import HTTPServer, BaseHTTPRequestHandler
-from http.client import HTTPResponse
-from sqlalchemy.orm import Session
-from datetime import datetime
+"""
+-HTTP API server implementation
+-Used to upload rocketlogger data to postgreSQL via ethernet
+-based on existing rocketlogger data format, code must be altered if format
+    changes
+"""
 
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from sqlalchemy.orm import Session
 from .decoder import add_data
-from ..db.conn import engine
-from ..db.get_or_create import get_or_create_logger, get_or_create_cell
-from ..db.tables import PowerData, TEROSData
 
 
 class Handler(BaseHTTPRequestHandler):
+    """HTTP Request Handler"""
 
     # pylint: disable-next=invalid-name
     def do_POST(self):
+        """Handle HTTP POST request
+            -Only handles type 'mfc-data', no current plans to expand
+        """
         # Send OK response
         self.send_response(200)
         self.end_headers()
@@ -22,7 +27,7 @@ class Handler(BaseHTTPRequestHandler):
         logger_name = self.headers.get('Device-Name', 0)
         logger_cells = self.headers.get('Cells')
 
-        if (content_type == "mfc-data"):
+        if content_type == "mfc-data":
             content = self.rfile.read(content_len)
 
             cells = logger_cells.split(",")
@@ -37,7 +42,7 @@ class Handler(BaseHTTPRequestHandler):
             )
 
         else:
-            print("Handler for content type {ctype} not implemented".format(ctype = "mfc-data"))
+            print(f"Handler for content type {content_type} not implemented")
 
 
 if __name__ == "__main__":
