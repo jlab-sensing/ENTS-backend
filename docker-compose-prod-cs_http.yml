@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  http-integration:
+  cs-http-integration:
     image: ghcr.io/jlab-sensing/dirtviz:main
     restart: always
     environment:
