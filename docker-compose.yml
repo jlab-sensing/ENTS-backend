@@ -3,7 +3,6 @@ version: "3.9"
 services:
   portal:
     build: .
-    restart: always
     environment:
       DB_URL: "postgresql://dirtviz:password@postgresql/dirtviz"
       BOKEH_ALLOW_WS_ORIGIN: "localhost:5006"
@@ -16,7 +15,6 @@ services:
 
   postgresql:
     image: postgres:14.4
-    restart: always
     environment:
       POSTGRES_USER: dirtviz
       POSTGRES_PASSWORD: password
@@ -35,7 +33,6 @@ services:
 
   adminer:
     image: adminer
-    restart: always
     ports:
       - "8060:8080"
     networks:
