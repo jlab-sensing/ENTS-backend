@@ -130,8 +130,8 @@ def parse_rl(payload):
 
     # format and store
     keys = ["ts_r", "v1", "i1", "v2", "i2", "raw_vwc", "temp", "ec"]
-    types = [datetime.fromtimestamp, int, int, int, int,int, float, float,
-             int]
+    types = [lambda ts_str : datetime.fromtimestamp(float(ts_str)), int, int,
+             int, int,int, float, float, int]
     for key, _type, meas in zip(keys, types, split):
         data[key] = _type(meas)
 
