@@ -36,7 +36,7 @@ class Handler(BaseHTTPRequestHandler):
                 logger_name=logger_name,
                 cell1_name=cells[0],
                 cell1_loc=None,
-                cell2_name=cells[0],
+                cell2_name=cells[1],
                 cell2_loc=None
             )
 
