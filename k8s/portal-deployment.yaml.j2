@@ -1,7 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dirtviz-portal
+  namespace: dirtviz
+  name: portal
 spec:
   selector:
     matchLabels:
