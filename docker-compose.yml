@@ -10,8 +10,6 @@ services:
       - "5006:5006"
     depends_on:
       - postgresql
-    networks:
-      default:
 
   postgresql:
     image: postgres:14.4
@@ -35,11 +33,26 @@ services:
     image: adminer
     ports:
       - "8060:8080"
-    networks:
-      default:
 
-networks:
-  default:
+  http-integration:
+    build: .
+    environment:
+      DB_URL: "postgresql://dirtviz:password@postgresql/dirtviz"
+    command: ["python", "-m", "dirtviz.integrations.cs_http"]
+    expose:
+      - "8100"
+    depends_on:
+      - postgresql
+
+  http-api:
+    build: .
+    environment:
+      DB_URL: "postgresql://dirtviz:password@postgresql/dirtviz"
+    command: ["python", "-m", "dirtviz.integrations.api"]
+    expose:
+      - "8090"
+    depends_on:
+      - postgresql
 
 volumes:
   postgresqldata:
