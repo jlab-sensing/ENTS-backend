@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dirtviz-portal
+spec:
+  selector:
+    matchLabels:
+      app: portal
+      git-branch: {{ branch }}
+  template:
+    metadata:
+      labels:
+        app: portal
+        git-branch: {{ branch }}
+        git-commit: {{ sha }}
+    spec:
+      containers:
+        - name: portal
+          image: ghcr.io/jlab-sensing/dirtviz-portal:{{ branch }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5006
+          env:
+            - name: DB_URL
+              value: "postgresql://dirtviz:password@postgresql/dirtviz"
+            - name: BOKEH_ALLOW_WS_ORIGIN
+              value: "0.0.0.0"
