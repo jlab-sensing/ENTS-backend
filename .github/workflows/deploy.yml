@@ -31,34 +31,46 @@ jobs:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ env.DOCKER_PASSWORD }}
 
-      - name: Extract metadata
-        id: meta
+      - name: Extract metadata for portal
+        id: meta-portal
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}
+          images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}-portal
 
       - name: Build and push portal
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: ${{ steps.meta.outputs.tags }}-portal
-          labels: ${{ steps.meta.outputs.labels }}
-     
+          tags: ${{ steps.meta-portal.outputs.tags }}
+          labels: ${{ steps.meta-portal.outputs.labels }}
+
+      - name: Extract metadata for Chirpstack HTTP
+        id: meta-cs
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}-cs-http
+
       - name: Build and push Chirpstack HTTP Integration
         uses: docker/build-push-action@v3
         with:
           push: true
           file: cs-http.Dockerfile
-          tags: ${{ steps.meta.outputs.tags }}-cs-http
-          labels: ${{ steps.meta.outputs.labels }}
-     
+          tags: ${{ steps.meta-cs.outputs.tags }}
+          labels: ${{ steps.meta-cs.outputs.labels }}
+
+      - name: Extract metadata for HTTP API
+        id: meta-http-api
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}-http-api
+
       - name: Build and push HTTP API
         uses: docker/build-push-action@v3
         with:
           push: true
           file: http-api.Dockerfile
-          tags: ${{ steps.meta.outputs.tags }}-http-api
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta-http-api.outputs.tags }}
+          labels: ${{ steps.meta-http-api.outputs.labels }}
 
 
   deploy:
