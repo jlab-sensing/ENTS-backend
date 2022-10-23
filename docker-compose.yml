@@ -40,7 +40,6 @@ services:
       dockerfile: cs-http.Dockerfile
     environment:
       DB_URL: "postgresql://dirtviz:password@postgresql/dirtviz"
-    command: ["python", "-m", "dirtviz.integrations.cs_http"]
     expose:
       - "8100"
     depends_on:
@@ -52,7 +51,6 @@ services:
       dockerfile: http-api.Dockerfile
     environment:
       DB_URL: "postgresql://dirtviz:password@postgresql/dirtviz"
-    command: ["python", "-m", "dirtviz.integrations.api"]
     expose:
       - "8090"
     depends_on:
