@@ -34,8 +34,10 @@ services:
     ports:
       - "8060:8080"
 
-  http-integration:
-    build: .
+  cs-http:
+    build:
+      context: .
+      dockerfile: cs-http.Dockerfile
     environment:
       DB_URL: "postgresql://dirtviz:password@postgresql/dirtviz"
     command: ["python", "-m", "dirtviz.integrations.cs_http"]
@@ -45,7 +47,9 @@ services:
       - postgresql
 
   http-api:
-    build: .
+    build:
+      context: .
+      dockerfile: http-api.Dockerfile
     environment:
       DB_URL: "postgresql://dirtviz:password@postgresql/dirtviz"
     command: ["python", "-m", "dirtviz.integrations.api"]
