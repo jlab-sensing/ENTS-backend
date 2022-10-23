@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: dirtviz
+  name: http-api
+spec:
+  selector:
+    matchLabels:
+      app: http-api
+      git-branch: {{ branch }}
+  template:
+    metadata:
+      labels:
+        app: http-api
+        git-branch: {{ branch }}
+        git-commit: {{ sha }}
+    spec:
+      containers:
+        - name: portal
+          image: ghcr.io/jlab-sensing/dirtviz-http-api:{{ branch }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8090
+          env:
+            - name: DB_URL
+              value: "postgresql://dirtviz:password@postgresql/dirtviz"
