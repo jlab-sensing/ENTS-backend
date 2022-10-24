@@ -21,6 +21,9 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8090
+          envFrom:
+            - secretRef:
+                name: DatabaseURL
           env:
-            - name: DB_URL
-              value: "postgresql://dirtviz:password@postgresql/dirtviz"
+            - name: DB_DATABASE
+              value: dirtviz-{{ branch }}
