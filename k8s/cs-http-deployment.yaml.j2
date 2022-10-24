@@ -23,7 +23,7 @@ spec:
             - containerPort: 8100
           envFrom:
             - secretRef:
-                name: DatabaseURL
+                name: dburl
           env:
             - name: DB_DATABASE
               value: dirtviz-{{ branch }}

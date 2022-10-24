@@ -23,7 +23,7 @@ spec:
             - containerPort: 5006
           envFrom:
             - secretRef:
-                name: DatabaseURL
+                name: dburl
           env:
             - name: BOKEH_ALLOW_WS_ORIGIN
               value: "0.0.0.0"
