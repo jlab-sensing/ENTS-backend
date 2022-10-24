@@ -4,7 +4,11 @@ services:
   portal:
     build: .
     environment:
-      DB_URL: "postgresql://dirtviz:password@postgresql/dirtviz"
+      DB_USER: dirtviz
+      DB_PASS: password
+      DB_HOST: postgresql
+      DB_PORT: 5432
+      DB_DATABASE: dirtviz
       BOKEH_ALLOW_WS_ORIGIN: "localhost:5006"
     ports:
       - "5006:5006"
@@ -39,7 +43,11 @@ services:
       context: .
       dockerfile: cs-http.Dockerfile
     environment:
-      DB_URL: "postgresql://dirtviz:password@postgresql/dirtviz"
+      DB_USER: dirtviz
+      DB_PASS: password
+      DB_HOST: postgresql
+      DB_PORT: 5432
+      DB_DATABASE: dirtviz
     expose:
       - "8100"
     depends_on:
@@ -50,7 +58,11 @@ services:
       context: .
       dockerfile: http-api.Dockerfile
     environment:
-      DB_URL: "postgresql://dirtviz:password@postgresql/dirtviz"
+      DB_USER: dirtviz
+      DB_PASS: password
+      DB_HOST: postgresql
+      DB_PORT: 5432
+      DB_DATABASE: dirtviz
     expose:
       - "8090"
     depends_on:
