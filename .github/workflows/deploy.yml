@@ -149,3 +149,6 @@ jobs:
           template: k8s/cs-http.yaml.j2
           output_file: k8s/cs-http.yaml
 
+      - name: Apply configurations
+        shell: bash
+        run: cat k8s/*.yml | ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} microk8s kubectl apply -f -
