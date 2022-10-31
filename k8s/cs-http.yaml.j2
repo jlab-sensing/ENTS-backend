@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   namespace: dirtviz
   name: cs-http
+  git-branch: {{ branch }}
 spec:
   selector:
     matchLabels:
@@ -27,3 +28,16 @@ spec:
           env:
             - name: DB_DATABASE
               value: dirtviz_{{ branch }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: dirtviz
+  name: cs-http
+  git-branch: {{ branch }}
+spec:
+  selector:
+    app: cs-http
+    git-branch: {{ branch }}
+  ports:
+    - port: 8100

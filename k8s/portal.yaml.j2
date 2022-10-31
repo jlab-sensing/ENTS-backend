@@ -2,28 +2,45 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: dirtviz
-  name: http-api
+  name: portal
+  git-branch: {{ branch }}
 spec:
   selector:
     matchLabels:
-      app: http-api
+      app: portal
       git-branch: {{ branch }}
   template:
     metadata:
       labels:
-        app: http-api
+        app: portal
         git-branch: {{ branch }}
         git-commit: {{ sha }}
     spec:
       containers:
         - name: portal
-          image: ghcr.io/jlab-sensing/dirtviz-http-api:{{ branch }}
+          image: ghcr.io/jlab-sensing/dirtviz-portal:{{ branch }}
           imagePullPolicy: Always
           ports:
-            - containerPort: 8090
+            - containerPort: 5006
           envFrom:
             - secretRef:
                 name: dburl
           env:
+            - name: BOKEH_ALLOW_WS_ORIGIN
+              value: "0.0.0.0"
             - name: DB_DATABASE
               value: dirtviz_{{ branch }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: dirtviz
+  name: portal
+  git-branch: {{ branch }}
+spec:
+  selector:
+    app: portal
+    git-branch: {{ branch }}
+  ports:
+    - port: 5006
+  type: NodePort
