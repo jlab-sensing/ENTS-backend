@@ -3,22 +3,22 @@ kind: Deployment
 metadata:
   namespace: dirtviz
   name: http-api
-  git-branch: {{ branch }}
+  git-branch: {{ env['GITHUB_REF'] }}
 spec:
   selector:
     matchLabels:
       app: http-api
-      git-branch: {{ branch }}
+      git-branch: {{ env['GITHUB_REF'] }}
   template:
     metadata:
       labels:
         app: http-api
-        git-branch: {{ branch }}
-        git-commit: {{ sha }}
+        git-branch: {{ env['GITHUB_REF'] }}
+        git-commit: {{ env['GITHUB_SHA'] }}
     spec:
       containers:
         - name: portal
-          image: ghcr.io/jlab-sensing/dirtviz-http-api:{{ branch }}
+          image: ghcr.io/jlab-sensing/dirtviz-http-api:{{ env['GITHUB_REF'] }}
           imagePullPolicy: Always
           ports:
             - containerPort: 8090
@@ -27,18 +27,18 @@ spec:
                 name: dburl
           env:
             - name: DB_DATABASE
-              value: dirtviz_{{ branch }}
+              value: dirtviz_{{ env['GITHUB_REF'] }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   namespace: dirtviz
   name: http-api
-  git-branch: {{ branch }}
+  git-branch: {{ env['GITHUB_REF'] }}
 spec:
   selector:
     app: http-api
-    git-branch: {{ branch }}
+    git-branch: {{ env['GITHUB_REF'] }}
   ports:
     - port: 8090
   type: NodePort

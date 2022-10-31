@@ -3,22 +3,22 @@ kind: Deployment
 metadata:
   namespace: dirtviz
   name: portal
-  git-branch: {{ branch }}
+  git-branch: {{ env['GITHUB_REF'] }}
 spec:
   selector:
     matchLabels:
       app: portal
-      git-branch: {{ branch }}
+      git-branch: {{ env['GITHUB_REF'] }}
   template:
     metadata:
       labels:
         app: portal
-        git-branch: {{ branch }}
-        git-commit: {{ sha }}
+        git-branch: {{ env['GITHUB_REF'] }}
+        git-commit: {{ env['GITHUB_SHA'] }}
     spec:
       containers:
         - name: portal
-          image: ghcr.io/jlab-sensing/dirtviz-portal:{{ branch }}
+          image: ghcr.io/jlab-sensing/dirtviz-portal:{{ env['GITHUB_REF'] }}
           imagePullPolicy: Always
           ports:
             - containerPort: 5006
@@ -29,18 +29,18 @@ spec:
             - name: BOKEH_ALLOW_WS_ORIGIN
               value: "0.0.0.0"
             - name: DB_DATABASE
-              value: dirtviz_{{ branch }}
+              value: dirtviz_{{ env['GITHUB_REF'] }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   namespace: dirtviz
   name: portal
-  git-branch: {{ branch }}
+  git-branch: {{ env['GITHUB_REF'] }}
 spec:
   selector:
     app: portal
-    git-branch: {{ branch }}
+    git-branch: {{ env['GITHUB_REF'] }}
   ports:
     - port: 5006
   type: NodePort

@@ -111,10 +111,9 @@ jobs:
           labels: ${{ steps.meta-http-api.outputs.labels }}
 
   deploy:
-    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs: [portal, cs-http, http-api]
-    environment: production
+    environment: ${{ github.ref_name }}
 
     steps:
       - name: Checkout
@@ -132,29 +131,21 @@ jobs:
           SERVER_SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
         shell: bash
 
-      - name: Generate docker-compose-prod.yml
+      - name: Generate portal template
         uses: cuchi/jinja2-action@v1.2.0
         with:
-          template: docker-compose-prod.yml.j2
-          output_file: docker-compose-prod.yml
-          strict: true
-          variables: |
-            hostname=${{ secrets.HOSTNAME }}
+          template: k8s/portal.yaml.j2
+          output_file: k8s/portal.yaml
+      
+      - name: Generate http-api template
+        uses: cuchi/jinja2-action@v1.2.0
+        with:
+          template: k8s/htt-api.yaml.j2
+          output_file: k8s/http-api.yaml
+      
+      - name: Generate cs-http template
+        uses: cuchi/jinja2-action@v1.2.0
+        with:
+          template: k8s/cs-http.yaml.j2
+          output_file: k8s/cs-http.yaml
 
-      - name: Create directory
-        run: |
-          ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
-          "mkdir -p /home/${{ secrets.USER }}/${{ github.repository }}"
-
-      - name: Copy files
-        run: |
-          rsync -rlpv $GITHUB_WORKSPACE/docker-compose-prod*.yml ${{ secrets.USER }}@${{ secrets.HOSTNAME }}:~/${{ github.repository }}
-        shell: bash
-
-      - name: Update services
-        run: |
-          ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
-          "cd /home/${{ secrets.USER }}/${{ github.repository }} &&
-          docker compose -f docker-compose-prod.yml -f docker-compose-prod-cs_http.yml -f docker-compose-prod-api.yml pull &&
-          docker compose -f docker-compose-prod.yml -f docker-compose-prod-cs_http.yml -f docker-compose-prod-api.yml up -d"
-        shell: bash
