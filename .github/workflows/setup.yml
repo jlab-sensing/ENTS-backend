@@ -1,0 +1,37 @@
+name: Create new deployment
+
+on:
+  create:
+  workflow_dispatch:
+
+jobs:
+  create_table:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref_type == 'branch' }}
+    environment: ${{ github.ref_name }}
+
+    steps:
+      - name: Setup SSH
+        shell: bash
+        env:
+          SERVER_SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SERVER_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "$SERVER_SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Generate setup.sql
+        uses: cuchi/jinja2-action@v1.2.0
+        with:
+          template: sql/setup.sql.j2
+          output_file: sql/setup.sql
+        
+      - name: Create database
+        shell: bash
+        run: |
+          cat sql/setup.sql | \
+          ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
+          psql -U ${{ secrets.DB_USER }}
