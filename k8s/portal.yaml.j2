@@ -31,7 +31,7 @@ spec:
             - name: BOKEH_ALLOW_WS_ORIGIN
               value: "0.0.0.0"
             - name: DB_DATABASE
-              value: dirtviz_{{ env['GITHUB_REF_NAME'] }}
+              value: {{ env['GITHUB_REF_NAME'] }}
 ---
 apiVersion: v1
 kind: Service

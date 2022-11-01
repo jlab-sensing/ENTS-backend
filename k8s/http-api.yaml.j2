@@ -29,7 +29,7 @@ spec:
                 name: dburl
           env:
             - name: DB_DATABASE
-              value: dirtviz_{{ env['GITHUB_REF_NAME'] }}
+              value: {{ env['GITHUB_REF_NAME'] }}
 ---
 apiVersion: v1
 kind: Service
