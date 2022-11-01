@@ -154,6 +154,12 @@ jobs:
         with:
           template: k8s/dburl-secret.yaml.j2
           output_file: k8s/dburl-secret.yaml
+          strict: true
+          variables: |
+            user=${{ secrets.DB_USER }}
+            pass=${{ secrets.DB_PASS }}
+            host=${{ secrets.DB_HOST }}
+            port=${{ secrets.DB_PORT }}
 
       - name: Apply configurations
         shell: bash
