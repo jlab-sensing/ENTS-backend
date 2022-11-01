@@ -151,4 +151,4 @@ jobs:
 
       - name: Apply configurations
         shell: bash
-        run: cat k8s/*.yaml | ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} 'microk8s kubectl apply -f -'
+        run: cat k8s/*.yaml | ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} '/snap/bin/microk8s kubectl apply -f -'
