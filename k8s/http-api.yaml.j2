@@ -36,7 +36,8 @@ kind: Service
 metadata:
   namespace: dirtviz
   name: http-api
-  git-branch: {{ env['GITHUB_REF'] }}
+  labels:
+    git-branch: {{ env['GITHUB_REF'] }}
 spec:
   selector:
     app: http-api

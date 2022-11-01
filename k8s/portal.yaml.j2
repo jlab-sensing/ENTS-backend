@@ -38,7 +38,8 @@ kind: Service
 metadata:
   namespace: dirtviz
   name: portal
-  git-branch: {{ env['GITHUB_REF'] }}
+  labels:
+    git-branch: {{ env['GITHUB_REF'] }}
 spec:
   selector:
     app: portal
