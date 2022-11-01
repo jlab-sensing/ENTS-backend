@@ -45,8 +45,8 @@ jobs:
           ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
           psql -U ${{ secrets.DB_USER }} -d ${{ github.ref_name }}
 
-      - name: 
+      - name: Delete environment
         uses: strumwolf/delete-deployment-environment@v2
-          with:
-            token: ${{ secrets.GITHUB_TOKEN }}
-            environment: ${{ github.ref_name }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: ${{ github.ref_name }}
