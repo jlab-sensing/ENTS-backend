@@ -35,7 +35,7 @@ apiVersion: v1
 kind: Service
 metadata:
   namespace: dirtviz
-  name: http-api
+  name: http-api-{{ env['GITHUB_REF_NAME'] }}
   labels:
     git-branch: {{ env['GITHUB_REF_NAME'] }}
 spec:
@@ -44,3 +44,23 @@ spec:
     git-branch: {{ env['GITHUB_REF_NAME'] }}
   ports:
     - port: 8090
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: http-api-ingress-{{ env['GITHUB_REF_NAME'] }}
+  namespace: dirtviz
+  label:
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+        - path: /dirtviz/{{ env['GITHUB_REF_NAME'] }}/http-api
+          pathType: Prefix
+          backend:
+            service:
+              name: http-api-{{ env['GITHUB_REF_NAME'] }}
+              port:
+                number: 8090

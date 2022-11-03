@@ -46,3 +46,25 @@ spec:
     git-branch: {{ env['GITHUB_REF_NAME'] }}
   ports:
     - port: 5006
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+name: portal-ingress-{{ env['GITHUB_REF_NAME'] }}
+  namespace: dirtviz
+  label:
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /dirtviz/$2
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+        - path: /dirtviz/{{ env['GITHUB_REF_NAME'] }}(/|$)(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: portal-{{ env['GITHUB_REF_NAME'] }}
+              port:
+                number: 5006
