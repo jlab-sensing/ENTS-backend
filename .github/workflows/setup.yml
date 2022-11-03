@@ -5,6 +5,37 @@ on:
   workflow_dispatch:
 
 jobs:
+  create_namespace:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref_type == 'branch' }}
+    environment: ${{ github.ref_name }}
+
+    steps:
+      - name: Setup SSH
+        shell: bash
+        env:
+          SERVER_SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SERVER_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "$SERVER_SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Generate namespace.yaml
+        uses: cuchi/jinja2-action@v1.2.0
+        with:
+          template: k8s/namespace.yaml.j2
+          output_file: k8s/namespace.yaml
+      
+      - name: Apply configurations
+        shell: bash
+        run: |
+          cat k8s/namespace.yaml | \
+          ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
+          '/snap/bin/microk8s kubectl apply -f -'
+
   create_database:
     runs-on: ubuntu-latest
     if: ${{ github.ref_type == 'branch' }}

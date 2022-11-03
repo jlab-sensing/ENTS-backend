@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: dirtviz
+  namespace: dirtviz-{{ env['GITHUB_REF_NAME'] }}
   name: cs-http
   labels:
     git-branch: {{ env['GITHUB_REF_NAME'] }}
@@ -34,8 +34,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: dirtviz
-  name: cs-http-{{ env['GITHUB_REF_NAME'] }}
+  namespace: dirtviz-{{ env['GITHUB_REF_NAME'] }}
+  name: cs-http
   labels:
     git-branch: {{ env['GITHUB_REF_NAME'] }}
 spec:
@@ -48,8 +48,8 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: cs-http-ingress-{{ env['GITHUB_REF_NAME'] }}
-  namespace: dirtviz
+  namespace: dirtviz-{{ env['GITHUB_REF_NAME'] }}
+  name: cs-http-ingress
   labels:
     git-branch: {{ env['GITHUB_REF_NAME'] }}
 spec:
@@ -61,6 +61,6 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: cs-http-{{ env['GITHUB_REF_NAME'] }}
+              name: cs-http
               port:
                 number: 8100

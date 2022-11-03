@@ -35,8 +35,13 @@ jobs:
         shell: bash
         run: |
           ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
-          /snap/bin/microk8s kubectl \
-          delete all -l git-branch=$GITHUB_REF_NAME -n dirtviz
+          /snap/bin/microk8s kubectl delete all --all -n dirtviz-$GITHUB_REF_NAME \
+      
+      - name: Remove k8s namespace
+        shell: bash
+        run: |
+          ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
+          /snap/bin/microk8s kubectl delete namespace dirtviz-$GITHUB_REF_NAME
 
       - name: Remove database
         shell: bash
