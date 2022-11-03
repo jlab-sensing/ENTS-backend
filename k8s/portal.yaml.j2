@@ -52,7 +52,7 @@ kind: Ingress
 metadata:
 name: portal-ingress-{{ env['GITHUB_REF_NAME'] }}
   namespace: dirtviz
-  label:
+  labels:
     git-branch: {{ env['GITHUB_REF_NAME'] }}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /dirtviz/$2

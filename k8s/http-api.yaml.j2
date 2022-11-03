@@ -50,7 +50,7 @@ kind: Ingress
 metadata:
   name: http-api-ingress-{{ env['GITHUB_REF_NAME'] }}
   namespace: dirtviz
-  label:
+  labels:
     git-branch: {{ env['GITHUB_REF_NAME'] }}
 spec:
   ingressClassName: nginx
