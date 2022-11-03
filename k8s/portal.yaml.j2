@@ -61,7 +61,7 @@ spec:
   rules:
   - http:
       paths:
-        - path: /dirtviz/{{ env['GITHUB_REF_NAME'] }}(/|$)(.*)
+        - path: /dirtviz/{{ env['GITHUB_REF_NAME'] }}/portal(/|$)(.*)
           pathType: Prefix
           backend:
             service:
