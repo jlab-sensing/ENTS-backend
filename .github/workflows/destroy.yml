@@ -1,8 +1,6 @@
 name: Delete deployment
 
-on:
-  delete:
-  workflow_dispatch:
+on: delete
 
 jobs:
   delete_resources:
