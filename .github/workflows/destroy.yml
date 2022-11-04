@@ -2,8 +2,6 @@ name: Delete deployment
 
 on:
   delete:
-    branches-ignore:
-      - main
   workflow_dispatch:
 
 jobs:
