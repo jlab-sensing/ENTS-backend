@@ -76,7 +76,7 @@ jobs:
   apply_migrations:
     runs-on: ubuntu-latest
     if: ${{ github.ref_type == 'branch' }}
-    needs: [create_database]
+    needs: [create_database, create_namespace]
     environment: ${{ github.ref_name }}
 
     steps:
