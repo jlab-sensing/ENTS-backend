@@ -136,13 +136,15 @@ jobs:
         with:
           template: k8s/portal.yaml.j2
           output_file: k8s/portal.yaml
-      
+          variables: |
+            hostname=${{ secrets.HOSTNAME }}
+
       - name: Generate http-api.yaml
         uses: cuchi/jinja2-action@v1.2.0
         with:
           template: k8s/http-api.yaml.j2
           output_file: k8s/http-api.yaml
-      
+
       - name: Generate cs-http.yaml
         uses: cuchi/jinja2-action@v1.2.0
         with:

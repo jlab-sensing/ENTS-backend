@@ -29,7 +29,7 @@ spec:
                 name: dburl
           env:
             - name: BOKEH_ALLOW_WS_ORIGIN
-              value: "0.0.0.0"
+              value: "{{ hostname }}"
             - name: DB_DATABASE
               value: {{ env['GITHUB_REF_NAME'] }}
 ---
