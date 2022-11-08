@@ -1,0 +1,70 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: dirtviz-{{ env['GITHUB_REF_NAME'] }}
+  name: portal
+  labels:
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+spec:
+  selector:
+    matchLabels:
+      app: portal
+      git-branch: {{ env['GITHUB_REF_NAME'] }}
+  template:
+    metadata:
+      labels:
+        app: portal
+        git-branch: {{ env['GITHUB_REF_NAME'] }}
+        git-commit: {{ env['GITHUB_SHA'] }}
+    spec:
+      containers:
+        - name: portal
+          image: ghcr.io/jlab-sensing/dirtviz-portal:{{ env['GITHUB_REF_NAME'] }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5006
+          envFrom:
+            - secretRef:
+                name: dburl
+          env:
+            - name: BOKEH_ALLOW_WS_ORIGIN
+              value: "{{ hostname }}"
+            - name: DB_DATABASE
+              value: {{ env['GITHUB_REF_NAME'] }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: dirtviz-{{ env['GITHUB_REF_NAME'] }}
+  name: portal
+  labels:
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+spec:
+  selector:
+    app: portal
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+  ports:
+    - port: 5006
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: dirtviz-{{ env['GITHUB_REF_NAME'] }}
+  name: portal-ingress
+  labels:
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /dirtviz/$2
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+        - path: /dirtviz/{{ env['GITHUB_REF_NAME'] }}/portal(/|$)(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: portal
+              port:
+                number: 5006

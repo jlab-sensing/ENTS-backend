@@ -1,0 +1,66 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: dirtviz-{{ env['GITHUB_REF_NAME'] }}
+  name: cs-http
+  labels:
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+spec:
+  selector:
+    matchLabels:
+      app: cs-http
+      git-branch: {{ env['GITHUB_REF_NAME'] }}
+  template:
+    metadata:
+      labels:
+        app: cs-http
+        git-branch: {{ env['GITHUB_REF_NAME'] }}
+        git-commit: {{ env['GITHUB_SHA'] }}
+    spec:
+      containers:
+        - name: portal
+          image: ghcr.io/jlab-sensing/dirtviz-cs-http:{{ env['GITHUB_REF_NAME'] }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8100
+          envFrom:
+            - secretRef:
+                name: dburl
+          env:
+            - name: DB_DATABASE
+              value: {{ env['GITHUB_REF_NAME'] }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: dirtviz-{{ env['GITHUB_REF_NAME'] }}
+  name: cs-http
+  labels:
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+spec:
+  selector:
+    app: cs-http
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+  ports:
+    - port: 8100
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: dirtviz-{{ env['GITHUB_REF_NAME'] }}
+  name: cs-http-ingress
+  labels:
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+        - path: /dirtviz/{{ env['GITHUB_REF_NAME'] }}/cs-http
+          pathType: Prefix
+          backend:
+            service:
+              name: cs-http
+              port:
+                number: 8100

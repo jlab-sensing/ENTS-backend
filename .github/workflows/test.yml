@@ -26,7 +26,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      DB_URL: "postgresql://dirtviz:password@localhost/dirtviz"
+      DB_USER: dirtviz
+      DB_PASS: password
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_DATABASE: dirtviz
 
     steps:
     - name: Checkout
