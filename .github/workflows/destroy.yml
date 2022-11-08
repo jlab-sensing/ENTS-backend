@@ -7,7 +7,6 @@ jobs:
   delete_resources:
     runs-on: ubuntu-latest
     if: ${{ github.event.ref_type == 'branch' }}
-    environment: ${{ github.event.ref }}
 
     steps:
       - name: Checkout
@@ -30,8 +29,9 @@ jobs:
         with:
           template: sql/destroy.sql.j2
           output_file: sql/destroy.sql
+          strict: true
           variables: |
-            hostname=${{ github.event.ref }}
+            database=${{ github.event.ref }}
 
       - name: Remove k8s resources
         shell: bash
