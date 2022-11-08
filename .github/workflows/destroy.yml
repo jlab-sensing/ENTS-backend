@@ -29,8 +29,8 @@ jobs:
         with:
           template: sql/destroy.sql.j2
           output_file: sql/destroy.sql
-        variables: |
-          hostname=${{ github.event.ref }}
+          variables: |
+            hostname=${{ github.event.ref }}
 
       - name: Remove k8s resources
         shell: bash
