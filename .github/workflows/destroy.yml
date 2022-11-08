@@ -9,6 +9,9 @@ jobs:
     environment: ${{ github.ref_name }}
 
     steps:
+      - name: Print branch name
+        run: echo $GITHUB_REF_NAME
+
       - name: Setup SSH
         shell: bash
         env:
@@ -32,7 +35,7 @@ jobs:
         run: |
           ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
           /snap/bin/microk8s kubectl delete all --all -n dirtviz-$GITHUB_REF_NAME \
-      
+
       - name: Remove k8s namespace
         shell: bash
         run: |
