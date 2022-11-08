@@ -1,6 +1,6 @@
 name: Delete deployment
 
-on: delete
+on: [delete, workflow_dispatch]
 
 jobs:
   delete_resources:
@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - name: Print branch name
-        run: echo $GITHUB_REF_NAME
+        run: echo ${{ github.event.ref }}
 
       - name: Setup SSH
         shell: bash
@@ -29,28 +29,30 @@ jobs:
         with:
           template: sql/destroy.sql.j2
           output_file: sql/destroy.sql
+        variables: |
+          hostname=${{ github.event.ref }}
 
       - name: Remove k8s resources
         shell: bash
         run: |
           ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
-          /snap/bin/microk8s kubectl delete all --all -n dirtviz-$GITHUB_REF_NAME \
+          /snap/bin/microk8s kubectl delete all --all -n dirtviz-${{ github.event.ref }} \
 
       - name: Remove k8s namespace
         shell: bash
         run: |
           ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
-          /snap/bin/microk8s kubectl delete namespace dirtviz-$GITHUB_REF_NAME
+          /snap/bin/microk8s kubectl delete namespace dirtviz-${{ github.event.ref }}
 
       - name: Remove database
         shell: bash
         run: |
           cat sql/destroy.sql | \
           ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
-          psql -U ${{ secrets.DB_USER }} -d ${{ github.ref_name }}
+          psql -U ${{ secrets.DB_USER }} -d ${{ github.event.ref }}
 
       - name: Delete environment
         uses: strumwolf/delete-deployment-environment@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          environment: ${{ github.ref_name }}
+          environment: ${{ github.event.ref }}
