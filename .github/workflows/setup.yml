@@ -31,10 +31,6 @@ jobs:
         with:
           template: k8s/namespace.yaml.j2
           output_file: k8s/namespace.yaml
-          strict: true
-          variables:
-            sourcebranch=main
-            newbranch=${{ github.ref_name }}
 
       - name: Apply configurations
         shell: bash
@@ -69,7 +65,11 @@ jobs:
         with:
           template: sql/setup.sql.j2
           output_file: sql/setup.sql
-        
+          strict: true
+          variables:
+            sourcebranch=main
+            newbranch=${{ github.ref_name }}
+
       - name: Create database
         shell: bash
         run: |
