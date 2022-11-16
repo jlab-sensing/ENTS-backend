@@ -37,6 +37,7 @@ class Cell(Base):
     id = Column(Integer, primary_key=True)
     name = Column(Text(), nullable=False, unique=True)
     location = Column(Text())
+    history = Column(Text())
 
     def __repr__(self):
         return repr(self.name)
