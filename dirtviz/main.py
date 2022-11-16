@@ -86,7 +86,7 @@ power.line("timestamp", "p", source=source, legend_label="P1")
 
 # Plot voltage/current
 vi = figure(
-    title="Voltage/Current Measurements",
+    title="V/C Measurements",
     x_axis_label='Date',
     y_axis_label='Voltage [V]',
     y_range=Range1d(start=0,end=1.),
