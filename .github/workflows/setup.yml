@@ -31,6 +31,10 @@ jobs:
         with:
           template: k8s/namespace.yaml.j2
           output_file: k8s/namespace.yaml
+          strict: true
+          variables:
+            sourcebranch=main
+            newbranch=${{ github.ref_name }}
 
       - name: Apply configurations
         shell: bash

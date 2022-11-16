@@ -1,1 +1,1 @@
-CREATE DATABASE "{{ env['GITHUB_REF_NAME'] }}";
+CREATE DATABASE "{{ newbranch }}" WITH TEMPLATE "{{ sourcebranch }}";
