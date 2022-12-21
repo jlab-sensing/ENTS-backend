@@ -63,9 +63,8 @@ jobs:
       - name: Create database
         shell: bash
         run: |
-          ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
-          createdb ${{ github.ref_name }} \
-          pg_dump main | psql ${{ github.ref_name }}
+          ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} 'createdb ${{ github.ref_name }}'
+          ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} 'pg_dump main | psql ${{ github.ref_name }}'
 
   apply_migrations:
     runs-on: ubuntu-latest
