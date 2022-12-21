@@ -6,8 +6,6 @@ on: [delete, workflow_dispatch]
 jobs:
   delete_resources:
     runs-on: ubuntu-latest
-    permissions:
-      deployments: write
 
     steps:
       - name: Checkout
