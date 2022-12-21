@@ -66,7 +66,7 @@ jobs:
           template: sql/setup.sql.j2
           output_file: sql/setup.sql
           strict: true
-          variables:
+          variables: |
             sourcebranch=main
             newbranch=${{ github.ref_name }}
 
