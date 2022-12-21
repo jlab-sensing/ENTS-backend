@@ -64,7 +64,12 @@ jobs:
         shell: bash
         run: |
           ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} 'createdb ${{ github.ref_name }}'
+
+      - name: Copy from production
+        shell: bash
+        run: |
           ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} 'pg_dump main | psql ${{ github.ref_name }}'
+        
 
   apply_migrations:
     runs-on: ubuntu-latest
