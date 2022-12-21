@@ -9,6 +9,7 @@ on:
 jobs:
   delete_resources:
     runs-on: ubuntu-latest
+    permissions: write-all
 
     steps:
       - name: Checkout
