@@ -6,6 +6,8 @@ on: [delete, workflow_dispatch]
 jobs:
   delete_resources:
     runs-on: ubuntu-latest
+    permissions:
+      deployments: write
 
     steps:
       - name: Checkout
@@ -53,8 +55,6 @@ jobs:
 
       - name: Delete environment
         uses: strumwolf/delete-deployment-environment@v2
-        permissions:
-          deployments: write
         with:
           token: ${{ github.token }}
           environment: ${{ github.event.ref }}
