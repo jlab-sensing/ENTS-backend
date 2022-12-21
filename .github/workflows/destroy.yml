@@ -1,7 +1,10 @@
 ---
 name: Delete deployment
 
-on: [delete, workflow_dispatch]
+on:
+  delete:
+    branches-ignore:
+      - main
 
 jobs:
   delete_resources:
@@ -53,8 +56,6 @@ jobs:
 
       - name: Delete environment
         uses: strumwolf/delete-deployment-environment@v2
-        permissions:
-          deployments: write
         with:
           token: ${{ github.token }}
           environment: ${{ github.event.ref }}
