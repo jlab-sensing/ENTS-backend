@@ -60,22 +60,12 @@ jobs:
           echo "$SERVER_SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
-      - name: Generate setup.sql
-        uses: cuchi/jinja2-action@v1.2.0
-        with:
-          template: sql/setup.sql.j2
-          output_file: sql/setup.sql
-          strict: true
-          variables: |
-            sourcebranch=main
-            newbranch=${{ github.ref_name }}
-
       - name: Create database
         shell: bash
         run: |
-          cat sql/setup.sql | \
           ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
-          psql -U ${{ secrets.DB_USER }}
+          createdb ${{ github.ref_name }} \
+          pg_dump main | psql ${{ github.ref_name }}
 
   apply_migrations:
     runs-on: ubuntu-latest
