@@ -73,7 +73,7 @@ jobs:
           ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} 'createdb ${{ github.ref_name }}'
 
 
-  populate database:
+  populate_database:
     runs-on: ubuntu-latest
     if: ${{ github.ref_type == 'branch' }}
     needs: [create_database]
