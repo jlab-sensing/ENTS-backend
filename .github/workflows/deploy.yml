@@ -172,6 +172,13 @@ jobs:
     needs: [portal, cs-http, http-api]
     environment: ${{ github.ref_name }}
 
+    env:
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PASS: ${{ secrets.DB_PASS }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_DATABASE: ${{ github.ref_name }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v1
