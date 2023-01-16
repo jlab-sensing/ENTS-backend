@@ -2,62 +2,94 @@
 
 DirtViz is a project to visualize data collected from sensors deployed in sensor networks. The project involves developing web based plotting scripts to create a fully-fledged DataViz tool tailored to the data collected from embedded systems sensor networks.
 
-## Integrations
+## Dependencies
 
-Dirtviz is only a frontend and it needs some way of importing data into the backend database. Currently there are csv importers, chirpstack HTTP integration, and postgresql access.
+| Dependency |
+|------------|
+| Python     |
+| Docker     |
 
-### Postgresql
+## Getting Started
 
-By default the `postgresql` instance is exposed on the host machine that can be connected with the following options
-```
-ip: localhost
-port: 5432
-user: dirtviz
-password: password
-table: dirtviz
-```
+### Starting Services
 
-### CSV Importers
-
-There are csv importers that can be used to populate the database. Python utilities currently exist to import RocketLogger and TEROS data. These are available as modules under dirtviz. More information on used can be found by running the modules with the `--help` flag. It is recomended to setup a virtual enviroment to install the required packages listed in `requirements.txt`.
+A local version of Dirtviz can be started using `docker-compose.yml`. This will build the local images and start the required services in the background, including the database.
 
 ```
-python -m dirtviz.db.utils.import_rl_csv
-python -m dirtviz.db.utils.import_teros_csv
+docker compose up --build -d
 ```
 
-Before running the moduels the `DB_URL` must be set as a enviorment variable. By default you can set it with
-```
-export DB_URL=postgresql://dirtviz:password@localhost/dirtviz
-```
+At this point the portal is accessible at [http://localhost:5006/dirtviz](http://localhost:5006/dirtviz), but will likely show a blank page in your web browser and throw an error. This is due to the database being empty, therefore there is no data to display.
 
-### Setting up a Development Environment
+### Setup Connection Stings
 
-The DirtViz application is designed to be run from docker. There are multiple container that all need to work together to the end user website up. Luckily for you all of it is defined within the `docker-compose.yml` file. Run the following command to start all the containers.
+The following table shows the default values to connect to the postgresql instance.
 
-```
-docker compose up -d
-```
+> *NOTE:* The database connection strings are set to static simple values as defined in `docker-compose.yml`. Do ***NOT*** use the default values for any publicly facing deployment.
 
-When adding functionality to the website there is a need to have sample data so that the graphs displayed are not blank. There is data included in the repo and can be imported using the `import_example_data.py` script. It is recommended to run the script from outside the container using the commands listed below to setup a virtual environment, install the necessary packages, and import the data. Due to the way docker mounts function, it is far quicker to import the data over a TCP connection to the postgresql container rather than mounting folder containing the data within the container. The other option would be to add the data to the dirtviz image, but that would increase the image size considerably. For now this is the best option as this functionality is not required in a production environment.
+| Name     | Key         | Value     |
+|----------|-------------|-----------|
+| User     | DB_USER     | dirtviz   |
+| Password | DB_PASS     | password  |
+| Hostname | DB_HOST     | localhost |
+| Port     | DB_PORT     | 5432      |
+| Database | DB_DATABASE | dirtviz   |
+
+The following commands will set the necessary environment variables to allow utilities within Dirtviz to connect to the database.
 
 ```bash
-export DB_URL=postgresql://dirtviz:password@localhost/dirtviz
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt requirements-dev.txt
-./import_example_data.py
+export DB_USER=dirtviz
+export DB_PASS=password
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_DATABASE=dirtviz
 ```
 
-If you want to reset the database, the following command will delete the postgresql volume causing the database to be recreated.
+### Migrate Database
 
-```
-docker volume rm dirtviz_postgresqldata
+Alembic is used to manage database migrations. Alembic is a python package and acts as a complement to sqlalchemy which is used to query the database. The following will upgrade the database to the most recent version and should be done any time the database schema changes.
+
+> *NOTE:* It is recommended that a virtual environment is setup and ***ALL*** dependencies are installed via `pip install -r requirements.txt`. If you are unsure what this means, read [this](https://docs.python.org/3/tutorial/venv.html).
+
+```bash
+alembic -c dirtviz/db/alembic.ini upgrade head
 ```
 
-### Database Migrations
+### Import Example Data
+
+Real life example data is provided and can be imported with the following. The data was collected at UC Santa Cruz by jlab.
+
+```bash
+python import_example_data.py
+```
+
+Now some graphs should appear on the website and look like the following.
+
+![Example screenshot of Dirtviz](.github/assets/img/screenshot.png)
+
+
+## Integrations
+
+Currently there are two integrations that allow for data to uploaded to the database.
+
+### Chirpstack
+
+Chirpstack handles data uploaded via the [LoRa](https://en.wikipedia.org/wiki/LoRa) protocol which works over extremely long ranges. The Chirpstack integration makes use of the HTTP integration that is a part of the Chirpstack software package. More information can be found at [https://www.chirpstack.io/application-server/integrations/http/](https://www.chirpstack.io/application-server/integrations/http/). Below is an example configuration within Chirpstack.
+
+![Chirpstack HTTP Integration Configuration](.github/assets/img/screenshot_cs.png)
+
+### HTTP
+
+The HTTP integration is currently under development and will be changed significantly coming soon. Clients connected over Ethernet can send HTTP POST request to `http://localhost:8090` in CSV format. See the source code for formatting.
+
+
+## FAQ
+
+### How do I create database migrations?
 
 This projects makes use of [alembic](https://alembic.sqlalchemy.org/en/latest/) to handle database migrations. It is recommended to have a understanding of the package first before attempting to modify the database schema. Due to the way that alembic handles package imports, the config file needs to be specified while running from the root project folder. For example the following will autogenerate new migrations from the latest revision of the database.
+
+> *NOTE:* Autogeneration of migrations requires a running version of the database. Refer above to see how to create a local version of the database.
 
 ```bash
 # Migrate to latest version
@@ -68,8 +100,22 @@ alembic -c dirtviz/db/alembic.ini revision --autogenerate -m "<MIGRATION MESSAGE
 alembic -c dirtviz/db/alembic.ini upgrade head
 ```
 
-If the docker containers are used for development checking of the database is made easy by removing the `postgresqldata` volume to reset the database to a clean slate. Thus the full chain of migrations can be tested.
+### How do I reset the local database?
+
+Sometime the database breaks and causes errors. Usually deleting the docker volume `postgresqldata` causing the database to be recreated fixes the issue. The following does exactly that and reapplies the migrations to the cleaned database.
 
 ```bash
+docker compose down
 docker volume rm dirtviz_postgresqldata
+alembic -c dirtviz/db/alembic.ini upgrade head
+docker compose up --build -d
+```
+
+### How do I import my own TEROS and Rocketlogger data previously collected?
+
+There exist csv importers that can be used to populate the database. Python utilities currently exist to import RocketLogger and TEROS data. These are available as modules under dirtviz. More information on used can be found by running the modules with the `--help` flag.
+
+```bash
+python -m dirtviz.db.utils.import_rl_csv
+python -m dirtviz.db.utils.import_teros_csv
 ```
