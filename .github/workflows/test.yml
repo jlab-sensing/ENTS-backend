@@ -36,20 +36,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      - name: Install k6
+        run: |
+          curl https://github.com/loadimpact/k6/releases/download/v0.26.2/k6-v0.26.2-linux64.tar.gz -L | tar xvz --strip-components 1
 
       - name: Start postgresql service
-        run: docker compose up postgresql -d
+        run: docker compose up -d
 
-      - name: Wait for db to start
-        run: sleep 5s
+      - name: Wait for services to start
+        run: sleep 10s
 
       - name: Apply migrations
         run: alembic -c dirtviz/db/alembic.ini upgrade head
@@ -57,22 +52,19 @@ jobs:
       - name: Import example data
         run: python import_example_data.py
 
-      - name: Start webserver
-        run: bokeh serve dirtviz > dirtviz_log 2>&1 &
+      - name: Run smoke test
+        run: ./k6 run tests/basic.js
 
-      - name: Wait for webserver to start
-        run: sleep 5s
-
-      - name: Send GET request
-        run: curl --connect-timeout 10 http://localhost:5006/dirtviz
-
-      - name: Echo runtime log
+      - name: Save logs
         if: always()
-        run: cat dirtviz_log
+        run: docker compose logs > dirtvizlogs
+
+      - name: Check for errors
+        run: grep -i "error" dirtvizlogs
 
       - name: Upload log artifact
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: DirtViz Portal Logs
-          path: dirtviz_log
+          name: DirtViz Logs
+          path: dirtvizlogs
