@@ -25,7 +25,7 @@ At this point the portal is accessible at [http://localhost:5006/dirtviz](http:/
 
 The following table shows the default values to connect to the postgresql instance.
 
-> *NOTE:* The database connection strings are set to static simple values as defined in `docker-compose.yml`. Do ***NOT*** use the default values for any publicly facing deployment.
+> **NOTE:** The database connection strings are set to static simple values as defined in `docker-compose.yml`. Do ***NOT*** use the default values for any publicly facing deployment.
 
 | Name     | Key         | Value     |
 |----------|-------------|-----------|
@@ -49,7 +49,7 @@ export DB_DATABASE=dirtviz
 
 Alembic is used to manage database migrations. Alembic is a python package and acts as a complement to sqlalchemy which is used to query the database. The following will upgrade the database to the most recent version and should be done any time the database schema changes.
 
-> *NOTE:* It is recommended that a virtual environment is setup and ***ALL*** dependencies are installed via `pip install -r requirements.txt`. If you are unsure what this means, read [this](https://docs.python.org/3/tutorial/venv.html).
+> **NOTE:** It is recommended that a virtual environment is setup and ***ALL*** dependencies are installed via `pip install -r requirements.txt`. If you are unsure what this means, read [this](https://docs.python.org/3/tutorial/venv.html).
 
 ```bash
 alembic -c dirtviz/db/alembic.ini upgrade head
@@ -89,7 +89,7 @@ The HTTP integration is currently under development and will be changed signific
 
 This projects makes use of [alembic](https://alembic.sqlalchemy.org/en/latest/) to handle database migrations. It is recommended to have a understanding of the package first before attempting to modify the database schema. Due to the way that alembic handles package imports, the config file needs to be specified while running from the root project folder. For example the following will autogenerate new migrations from the latest revision of the database.
 
-> *NOTE:* Autogeneration of migrations requires a running version of the database. Refer above to see how to create a local version of the database.
+> **NOTE:** Autogeneration of migrations requires a running version of the database. Refer above to see how to create and connect to a local version of the database
 
 ```bash
 # Migrate to latest version
@@ -113,7 +113,7 @@ docker compose up --build -d
 
 ### How do I import my own TEROS and Rocketlogger data previously collected?
 
-There exist csv importers that can be used to populate the database. Python utilities currently exist to import RocketLogger and TEROS data. These are available as modules under dirtviz. More information on used can be found by running the modules with the `--help` flag.
+There exists csv importers that can be used to populate the database. Python utilities currently exist to import RocketLogger and TEROS data. These are available as modules under dirtviz. More information on used can be found by running the modules with the `--help` flag.
 
 ```bash
 python -m dirtviz.db.utils.import_rl_csv
