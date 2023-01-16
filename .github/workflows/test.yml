@@ -49,11 +49,15 @@ jobs:
         run: |
           curl https://github.com/loadimpact/k6/releases/download/v0.26.2/k6-v0.26.2-linux64.tar.gz -L | tar xvz --strip-components 1
 
-      - name: Start postgresql service
+      - name: Start services
         run: docker compose up -d
 
       - name: Wait for services to start
         run: sleep 10s
+
+      - name: Save timestamp
+        id: timestamp
+        run: echo "start_time=$(date -Is)" >> $GITHUB_OUTPUT
 
       - name: Apply migrations
         run: alembic -c dirtviz/db/alembic.ini upgrade head
@@ -64,16 +68,22 @@ jobs:
       - name: Run smoke test
         run: ./k6 run tests/basic.js
 
-      - name: Save logs
+      - name: Save all logs
         if: always()
-        run: docker compose logs > dirtvizlogs
+        run: docker compose logs -t > dirtviz.log
+
+      - name: Save short logs
+        if: always()
+        run: docker compose logs -t --since ${{ steps.timestamp.outputs.start_time }} > dirtviz_short.log
 
       - name: Check for errors
-        run: grep -i "error" dirtvizlogs
+        run: ! grep -i "error" dirtviz_short.log
 
       - name: Upload log artifact
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: DirtViz Logs
-          path: dirtvizlogs
+          path: |
+            dirtviz.log
+            dirtviz_short.log
