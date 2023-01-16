@@ -36,6 +36,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+
+      - name: Install python dependencies
+        run: pip install -r requirements.txt
+
       - name: Install k6
         run: |
           curl https://github.com/loadimpact/k6/releases/download/v0.26.2/k6-v0.26.2-linux64.tar.gz -L | tar xvz --strip-components 1
