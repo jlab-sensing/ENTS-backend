@@ -16,7 +16,7 @@ services:
       - postgresql
 
   postgresql:
-    image: postgres:14.4
+    image: postgres:13
     environment:
       POSTGRES_USER: dirtviz
       POSTGRES_PASSWORD: password
