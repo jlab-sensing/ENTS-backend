@@ -8,20 +8,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Setup python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
-        cache: 'pip'
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: 'pip'
 
-    - name: Install dependencies
-      run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt -r requirements-dev.txt
 
-    - name: Lint
-      run: pylint dirtviz
+      - name: Lint
+        run: pylint dirtviz
 
   test:
     runs-on: ubuntu-latest
@@ -33,46 +33,46 @@ jobs:
       DB_DATABASE: dirtviz
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v1
+      - name: Checkout
+        uses: actions/checkout@v1
 
-    - name: Setup python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
-        cache: 'pip'
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: 'pip'
 
-    - name: Install dependencies
-      run: pip install -r requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
-    - name: Start postgresql service
-      run: docker compose up postgresql -d
+      - name: Start postgresql service
+        run: docker compose up postgresql -d
 
-    - name: Wait for db to start
-      run: sleep 5s
+      - name: Wait for db to start
+        run: sleep 5s
 
-    - name: Apply migrations
-      run: alembic -c dirtviz/db/alembic.ini upgrade head
+      - name: Apply migrations
+        run: alembic -c dirtviz/db/alembic.ini upgrade head
 
-    - name: Import example data
-      run: python import_example_data.py
+      - name: Import example data
+        run: python import_example_data.py
 
-    - name: Start webserver
-      run: bokeh serve dirtviz > dirtviz_log 2>&1 &
+      - name: Start webserver
+        run: bokeh serve dirtviz > dirtviz_log 2>&1 &
 
-    - name: Wait for webserver to start
-      run: sleep 5s
+      - name: Wait for webserver to start
+        run: sleep 5s
 
-    - name: Send GET request
-      run: curl --connect-timeout 10 http://localhost:5006/dirtviz
+      - name: Send GET request
+        run: curl --connect-timeout 10 http://localhost:5006/dirtviz
 
-    - name: Echo runtime log
-      if: always()
-      run: cat dirtviz_log
+      - name: Echo runtime log
+        if: always()
+        run: cat dirtviz_log
 
-    - name: Upload log artifact
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: DirtViz Portal Logs
-        path: dirtviz_log
+      - name: Upload log artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: DirtViz Portal Logs
+          path: dirtviz_log
