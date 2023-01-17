@@ -58,5 +58,5 @@ jobs:
       - name: Delete environment
         uses: strumwolf/delete-deployment-environment@v2
         with:
-          token: ${{ github.token }}
+          token: ${{ secrets.DELETE_TOKEN }}
           environment: ${{ github.event.ref }}
