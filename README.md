@@ -92,7 +92,6 @@ The Github repo is automatically setup to deploy to a Kubernetes instance. The o
 | DB_PORT         | 5432        | Port of database                                                                                               |
 | DB_USER         | johndoe     | User login for database                                                                                        |
 | DB_PASS         | password    | Password for DB_USER                                                                                           |
-| DELETE_TOKEN    |             | Github token for deleting environments, see [here](https://github.com/strumwolf/delete-deployment-environment) |
 
 ### Accessing Deployments
 
