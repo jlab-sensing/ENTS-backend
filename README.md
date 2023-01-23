@@ -68,6 +68,109 @@ Now some graphs should appear on the website and look like the following.
 ![Example screenshot of Dirtviz](.github/assets/img/screenshot.png)
 
 
+## Running in Production
+
+### TL;DR
+
+To create a new development environment you must create a new branch. For each issue/feature, a new branch should be created. The environment will automatically be created and simultaneously deleted once the branch is deleted. The branch name ***MUST NOT*** be more than 55 characters, see [#52](https://github.com/jlab-sensing/DirtViz/issues/52). The website can be access via [https://dirtviz.jlab.ucsc.edu/dev/branch/portal/](https://dirtviz.jlab.ucsc.edu/dev/branch/portal/). The services `cs-http` and `http-api` are also assessable under [https://dirtviz.jlab.ucsc.edu/dev/branch/cs-http/](https://dirtviz.jlab.ucsc.edu/dev/branch/cs-http/) and [https://dirtviz.jlab.ucsc.edu/dev/branch/http-api/](https://dirtviz.jlab.ucsc.edu/dev/branch/http-api/) respectively. Replace `branch` with the name of the newly created branch.
+
+### Overview
+
+Dirtviz is intended to be deployed to a Kubernetes cluster. This way development work can be completed using a locally running Docker instance via `docker-compose` using the same containers that run in production. The only difference is that the Kubernetes deployments connects to a production database rather than the docker compose stack that runs the postgresql and Adminer instances as services. For our labs purposes, deployments are controlled through Github actions to build the containers then deploy the full stack to our locally hosted Kubernetes cluster.
+
+### Github Setup
+
+The Github repo is automatically setup to deploy to a Kubernetes instance. The only setup required is to setup Github secrets for the hostname, ssh key, and database connection parameters. The following gives the values needed to deploy to production.
+
+| Name            | Example     | Description                                                                                                    |
+|-----------------|-------------|----------------------------------------------------------------------------------------------------------------|
+| USER            | johndoe     | User to perform k8s actions                                                                                    |
+| HOSTNAME        | example.com | Hostname/IP of production server                                                                               |
+| SSH_KNOWN_HOSTS |             | Fingerprint to populate ~/.ssh/known_hosts                                                                     |
+| SSH_PRIVATE_KEY |             | Private SSH key for USER                                                                                       |
+| DB_HOST         | example.com | Hostname/IP of database                                                                                        |
+| DB_PORT         | 5432        | Port of database                                                                                               |
+| DB_USER         | johndoe     | User login for database                                                                                        |
+| DB_PASS         | password    | Password for DB_USER                                                                                           |
+
+### Accessing Deployments
+
+> **NOTE**: The following talks about accessing a deployment in a generic manner, not distinguishing between production and development environments. Think of production as a development branch under the name `main`.
+
+#### Updating a Deployment
+
+A branch is deployed whenever there are changes pushed to the repository. It does **NOT** run tests or lint on the code before being pushed to production. The following are the steps for deployment.
+
+1. Build `portal`, `cs-http`, and `http-api` containers
+2. Generate k8s yaml files from templates
+3. Apply configurations to k8s via ssh
+4. Apply database migrations.
+
+> **NOTE**: Steps 3. and 4. are completed simultaneously.
+
+#### Creating New Deployment
+
+> **NOTE**: Due to name limits of resources in k8s the length of the branch name is limited to 55 characters. See [#52](https://github.com/jlab-sensing/DirtViz/issues/52) for more information.
+
+Whenever a new branch on Github is created a new development environment with a separate database on the postgresql server and separate resources on k8s under a namespace that follows that of the branch. For example if a new branch is created with the name `test-branch`, a new postgres database is created with the name `test-branch` and a new k8s namespace is created with the name `dirtviz-test-branch`. The postgres database is created under the `DB_USER` defined in github secrets. The follows is the order of jobs run when a new branch is created:
+
+1. Create k8s namespace 
+2. Create new database
+3. Populate database with temporary data
+
+Access to the running containers are available from the following paths. Internally, the deployment leverages the [NGINX Ingress Controller](https://github.com/kubernetes/ingress-nginx) to setup paths.
+
+| Service | Path |
+|---------|------|
+|portal|https://localhost/dirtviz/BRANCH/portal/|
+|cs-http|https://localhost/dirtviz/BRANCH/cs-http/|
+|http-api|https://localhost/dirtviz/BRANCH/http-api/|
+
+It is recommended to have a external (aka non k8s) nginx instance to forward traffic to production and development environments and simplify handling of ssl certificates. The following is a sample nginx configuration to do exactly this.
+
+```
+server {
+	listen 443 ssl default_server;
+	server_name YOUR_HOSTNAME;
+
+	include snippets/ssl.conf;
+
+	#access_log  /tmp/bokeh.access.log;
+	#error_log   /tmp/bokeh.error.log debug;
+
+	location / {
+		proxy_pass http://127.0.0.1:6080/dirtviz/main/portal/;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection "upgrade";
+		proxy_http_version 1.1;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header Host $host:$server_port;
+		proxy_buffering off;
+	}	
+	
+	location /integrations/ {
+		proxy_pass http://127.0.0.1:6080/dirtviz/main/;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection "upgrade";
+		proxy_http_version 1.1;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header Host $host:$server_port;
+		proxy_buffering off;
+	}	
+
+	location /dev/ {
+		proxy_pass http://127.0.0.1:6080/dirtviz/;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection "upgrade";
+		proxy_http_version 1.1;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header Host $host:$server_port;
+		proxy_buffering off;
+	}
+}
+```
+
+
 ## Integrations
 
 Currently there are two integrations that allow for data to uploaded to the database.
