@@ -72,7 +72,7 @@ Now some graphs should appear on the website and look like the following.
 
 ### TL;DR
 
-To create a new development environment you must create a new branch. For each issue/feature, a new branch should be created. The environment will automatically be created and simultaneously deleted once the branch is deleted. The branch name ***MUST NOT*** be more than 55 characters, see [#52](https://github.com/jlab-sensing/DirtViz/issues/52). The website can be access via [https://dirtviz.jlab.ucsc.edu/dev/<branch>/portal/](https://dirtviz.jlab.ucsc.edu/dev/<branch>/portal/). The services `cs-http` and `http-api` are also assessable under [https://dirtviz.jlab.ucsc.edu/dev/<branch>/cs-http/](https://dirtviz.jlab.ucsc.edu/dev/<branch>/cs-http/) and [https://dirtviz.jlab.ucsc.edu/dev/<branch>/http-api/](https://dirtviz.jlab.ucsc.edu/dev/<branch>/http-api/) respectively.
+To create a new development environment you must create a new branch. For each issue/feature, a new branch should be created. The environment will automatically be created and simultaneously deleted once the branch is deleted. The branch name ***MUST NOT*** be more than 55 characters, see [#52](https://github.com/jlab-sensing/DirtViz/issues/52). The website can be access via [https://dirtviz.jlab.ucsc.edu/dev/branch/portal/](https://dirtviz.jlab.ucsc.edu/dev/branch/portal/). The services `cs-http` and `http-api` are also assessable under [https://dirtviz.jlab.ucsc.edu/dev/branch/cs-http/](https://dirtviz.jlab.ucsc.edu/dev/branch/cs-http/) and [https://dirtviz.jlab.ucsc.edu/dev/branch/http-api/](https://dirtviz.jlab.ucsc.edu/dev/branch/http-api/) respectively. Replace `branch` with the name of the newly created branch.
 
 ### Overview
 
@@ -111,21 +111,21 @@ A branch is deployed whenever there are changes pushed to the repository. It doe
 
 #### Creating New Deployment
 
+> **NOTE**: Due to name limits of resources in k8s the length of the branch name is limited to 55 characters. See [#52](https://github.com/jlab-sensing/DirtViz/issues/52) for more information.
+
 Whenever a new branch on Github is created a new development environment with a separate database on the postgresql server and separate resources on k8s under a namespace that follows that of the branch. For example if a new branch is created with the name `test-branch`, a new postgres database is created with the name `test-branch` and a new k8s namespace is created with the name `dirtviz-test-branch`. The postgres database is created under the `DB_USER` defined in github secrets. The follows is the order of jobs run when a new branch is created:
 
 1. Create k8s namespace 
 2. Create new database
 3. Populate database with temporary data
 
-> **NOTE**: Due to name limits of resources in k8s the length of the branch name is limited to 55 characters. See [#52](https://github.com/jlab-sensing/DirtViz/issues/52) for more information.
-
 Access to the running containers are available from the following paths. Internally, the deployment leverages the [NGINX Ingress Controller](https://github.com/kubernetes/ingress-nginx) to setup paths.
 
 | Service | Path |
 |---------|------|
-|portal|https://localhost/dirtviz/<BRANCH NAME>/portal/|
-|cs-http|https://localhost/dirtviz/<BRANCH NAME>/cs-http/|
-|http-api|https://localhost/dirtviz/<BRANCH NAME>/http-api/|
+|portal|https://localhost/dirtviz/BRANCH/portal/|
+|cs-http|https://localhost/dirtviz/BRANCH/cs-http/|
+|http-api|https://localhost/dirtviz/BRANCH/http-api/|
 
 It is recommended to have a external (aka non k8s) nginx instance to forward traffic to production and development environments and simplify handling of ssl certificates. The following is a sample nginx configuration to do exactly this.
 
