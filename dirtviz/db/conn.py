@@ -20,7 +20,7 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 
-dburl = URL(
+dburl = URL.create(
     "postgresql",
     username=os.environ["DB_USER"],
     password=os.environ["DB_PASS"],
