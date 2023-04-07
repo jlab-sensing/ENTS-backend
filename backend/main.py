@@ -25,9 +25,11 @@ from bokeh import layouts
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from .db.conn import engine
-from .db.tables import Cell
-from .db.getters import get_power_data, get_teros_data
+from .api import api
+
+# from .db.conn import engine
+# from .db.tables import Cell
+# from .db.getters import get_power_data, get_teros_data
 
 # Create empty data sources
 teros_source = ColumnDataSource()
@@ -89,9 +91,9 @@ vi = figure(
     title="Voltage/Current Measurements",
     x_axis_label='Date',
     y_axis_label='Voltage [V]',
-    y_range=Range1d(start=0,end=1.),
+    y_range=Range1d(start=0, end=1.),
     x_axis_type="datetime",
-    aspect_ratio = 2.,
+    aspect_ratio=2.,
 )
 
 # Create separate y axis for current
@@ -117,9 +119,10 @@ teros_temp_vwc.extra_y_ranges = {"temp": Range1d(start=0, end=40.)}
 teros_temp_vwc.add_layout(LinearAxis(axis_label="Temperature [C]",
                                      y_range_name="temp"), 'right')
 
-teros_temp_vwc.line("timestamp", "vwc", source=teros_source, legend_label="VWC")
+teros_temp_vwc.line("timestamp", "vwc",
+                    source=teros_source, legend_label="VWC")
 teros_temp_vwc.line("timestamp", "temp", source=teros_source,
-           legend_label="Temperature", y_range_name="temp", color="red")
+                    legend_label="Temperature", y_range_name="temp", color="red")
 
 # Plot TEROS EC data
 teros_ec = figure(
@@ -130,16 +133,16 @@ teros_ec = figure(
     aspect_ratio=2.,
 )
 teros_ec.line("timestamp", "ec", source=teros_source,
-           legend_label="Electrical Conductivity [uS/cm]", color="green")
+              legend_label="Electrical Conductivity [uS/cm]", color="green")
 
 
-#date_range= DatetimeRangeSlider(
+# date_range= DatetimeRangeSlider(
 #    title="Date Range",
 #    start=rl_data.index[0],
 #    end=rl_data.index[-1],
 #    value=(rl_data.index[0], rl_data.index[-1]),
 #    step=100000,
-#)
+# )
 
 # pylint: disable=unused-argument
 def update_cell(attrname, old, new):
@@ -147,7 +150,8 @@ def update_cell(attrname, old, new):
 
     update_data(int(new))
 
-#date_range.on_change('value', update_range)
+
+# date_range.on_change('value', update_range)
 cell_select.on_change('value', update_cell)
 
 rl_col = layouts.column(power, vi)

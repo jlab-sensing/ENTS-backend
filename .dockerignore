@@ -1,0 +1,6 @@
+npm-debug.log
+/dirtviz-react/node_modules
+.dockerignore
+**/.git
+**/.DS_Store
+**/node_modules
