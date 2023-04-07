@@ -17,6 +17,8 @@ services:
       - "8000:8000"
     depends_on:
       - postgresql
+
+
   frontend:
     build: 
       context: . 
@@ -25,8 +27,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - '.:/app'
-      - '/app/node_modules'
+      - "./frontend/src:/app/src"
     environment:
        - NODE_ENV="development"
 
