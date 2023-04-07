@@ -4,8 +4,8 @@ services:
   backend:
     build:
       context: . 
-      dockerfile: flask-api-2.Dockerfile
-    image: dirtviz-flask-api
+      dockerfile: backend.Dockerfile
+    image: dirtviz-backend
     environment:
       DB_USER: dirtviz
       DB_PASS: password
