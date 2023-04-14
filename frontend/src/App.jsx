@@ -397,6 +397,7 @@ function App() {
       >
         GetCellData
       </button>
+      <p>test</p>
       <div className="grid-chart">
         <div>
           <Line data={vChartData} options={vChartOptions} height="100%" />

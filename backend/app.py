@@ -9,8 +9,6 @@ import json
 
 from .resources.cell import Cell
 
-from .resources.bokeh_plot import BokehPlot
-
 app = Flask(__name__)
 api = Api(app)
 cors = CORS(app, resources={r'/*': {'methods': '*'}})
@@ -22,5 +20,4 @@ class HelloWorld(Resource):
 
 
 api.add_resource(Cell, '/cell')
-api.add_resource(BokehPlot, '/plot')
 api.add_resource(HelloWorld, '/')
