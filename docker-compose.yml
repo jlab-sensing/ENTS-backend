@@ -23,7 +23,7 @@ services:
     build: 
       context: ./frontend
       dockerfile: ./Dockerfile
-      target: production
+      target: development
     image: dirtviz-frontend
     ports:
       - "3000:80"
