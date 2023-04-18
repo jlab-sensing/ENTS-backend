@@ -17,6 +17,9 @@ RUN npm install
 COPY src ./src
 COPY public ./public
 
+# copying over our nginx config file
+COPY frontend_server.conf ./frontend_server.conf
+
 # start app
 CMD ["npm", "start"]
 #CMD ["nodemon", "--exec", "npm", "start"]
@@ -35,8 +38,8 @@ WORKDIR /app
 
 # install app dependencies
 # copies package.json and package-lock.json to Docker environment
-COPY package.json /app/package.json
-COPY package-lock.json /app/package-lock.json
+COPY package.json /package.json
+COPY package-lock.json /package-lock.json
 
 # Installs all node packages
 RUN npm install 
