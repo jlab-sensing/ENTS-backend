@@ -1,5 +1,5 @@
 # pull official base image
-FROM node:13.12.0-alpine AS development
+FROM node:16.17.0-bullseye-slim AS development
 
 # set working directory
 WORKDIR /app
@@ -28,7 +28,7 @@ CMD ["npm", "start"]
 EXPOSE 3000
 
 # pull official base image
-FROM node:13.12.0-alpine AS builder
+FROM node:16.17.0-bullseye-slim AS builder
 
 # set working directory
 WORKDIR /app

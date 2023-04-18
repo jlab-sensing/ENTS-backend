@@ -12,7 +12,7 @@ env:
 concurrency: production
 
 jobs:
-  portal:
+  frontend:
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -131,11 +131,11 @@ jobs:
           SERVER_SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
         shell: bash
 
-      - name: Generate portal.yaml
+      - name: Generate frontend.yaml
         uses: cuchi/jinja2-action@v1.2.0
         with:
-          template: k8s/portal.yaml.j2
-          output_file: k8s/portal.yaml
+          template: k8s/frontend.yaml.j2
+          output_file: k8s/frontend.yaml
           variables: |
             hostname=${{ secrets.HOSTNAME }}
 
