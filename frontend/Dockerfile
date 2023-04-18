@@ -45,7 +45,7 @@ COPY src ./src
 COPY public ./public
 
 # copying over our nginx config file
-COPY frontend_server.conf ./
+COPY frontend_server.conf ./frontend_server.conf
 
 RUN npm run build
 
