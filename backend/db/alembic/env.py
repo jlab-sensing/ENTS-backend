@@ -7,8 +7,8 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from dirtviz.db.tables import Base
-from dirtviz.db.conn import engine
+from backend.db.tables import Base
+from backend.db.conn import engine
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
