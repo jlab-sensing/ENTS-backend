@@ -38,11 +38,12 @@ jobs:
           images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}-frontend
 
       - name: Build and push frontend
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           push: true
           context: ./frontend
           file: ./frontend/Dockerfile
+          target: production
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
 
