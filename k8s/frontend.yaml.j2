@@ -23,13 +23,11 @@ spec:
           image: ghcr.io/jlab-sensing/dirtviz-frontend:{{ env['GITHUB_REF_NAME'] }}
           imagePullPolicy: Always
           ports:
-            - containerPort: 3000
+            - containerPort: 80
           envFrom:
             - secretRef:
                 name: dburl
           env:
-            - name: BOKEH_ALLOW_WS_ORIGIN
-              value: "{{ hostname }}"
             - name: DB_DATABASE
               value: {{ env['GITHUB_REF_NAME'] }}
 ---
@@ -45,7 +43,7 @@ spec:
     app: frontend
     git-branch: {{ env['GITHUB_REF_NAME'] }}
   ports:
-    - port: 3000
+    - port: 80
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -67,4 +65,4 @@ spec:
             service:
               name: frontend
               port:
-                number: 3000
+                number: 80
