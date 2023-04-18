@@ -41,6 +41,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
+          context: ./frontend
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
 
