@@ -49,6 +49,8 @@ jobs:
         with:
           push: true
           context: ./frontend
+          build-args: |
+            "PUBLIC_URL=/dirtviz/${{ env.GITHUB_REF_NAME }}/frontend"
           file: ./frontend/Dockerfile
           target: production
           tags: ${{ steps.meta-frontend.outputs.tags }}

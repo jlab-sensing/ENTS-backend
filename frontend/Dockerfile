@@ -30,6 +30,8 @@ EXPOSE 3000
 # Build Stage ####################
 # pull official base image
 FROM node:16.17.0-bullseye-slim AS builder
+ARG PUBLIC_URL
+ENV PUBLIC_URL ${PUBLIC_URL}
 
 # set working directory
 WORKDIR /app
