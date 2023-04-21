@@ -44,6 +44,8 @@ jobs:
 
       - name: Build and push frontend
         uses: docker/build-push-action@v4
+        env:
+          PUBLIC_URL: /dirtviz/${{ env.GITHUB_REF_NAME }}/frontend
         with:
           push: true
           context: ./frontend
