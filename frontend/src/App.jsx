@@ -297,7 +297,7 @@ function App() {
 
   async function getCellData() {
     try {
-      await axios.get("/api/cell").then((response) => {
+      await axios.get(`${process.env.PUBLIC_URL}/api/cell`).then((response) => {
         const cellDataObj = JSON.parse(response.data);
         setVChartData({
           labels: cellDataObj.timestamp,
