@@ -30,10 +30,12 @@ services:
     build: 
       context: ./frontend
       dockerfile: ./Dockerfile
-      target: development
+      target: production
     image: dirtviz-frontend
     ports:
       - "3000:80"
+    depends_on:
+      - backend
     # For dev
     # volumes:
     #   - "./frontend/src:/app/src"

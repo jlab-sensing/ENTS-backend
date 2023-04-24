@@ -17,9 +17,6 @@ RUN npm install
 COPY src ./src
 COPY public ./public
 
-# copying over our nginx config file
-COPY frontend_server.conf ./frontend_server.conf
-
 # start app
 CMD ["npm", "start"]
 #CMD ["nodemon", "--exec", "npm", "start"]

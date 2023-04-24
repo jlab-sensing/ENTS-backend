@@ -1,12 +1,13 @@
 FROM python:3.11.0-slim-buster as development
-WORKDIR /app/
+WORKDIR /app/backend/
 COPY requirements.txt ./
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
 ENV FLASK_DEBUG=0
 COPY . ./
+WORKDIR /app/
 EXPOSE 8000
-CMD ["gunicorn", "-b", ":8000", "backend.app:app"]
+CMD ["gunicorn", "-b", ":8000", "backend.app:app", "-c", "./backend/gunicorn_config.py"]
 
 FROM python:3.11.0-slim-buster as builder
 

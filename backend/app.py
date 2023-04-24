@@ -19,5 +19,10 @@ class HelloWorld(Resource):
         return {'hello': 'world'}
 
 
-api.add_resource(Cell, '/cell')
+api.add_resource(Cell, '/api/cell')
 api.add_resource(HelloWorld, '/')
+
+
+@app.errorhandler(404)
+def not_found(e):
+    return app.send_static_file('index.html')
