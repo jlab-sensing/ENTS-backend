@@ -20,7 +20,7 @@ class HelloWorld(Resource):
 
 
 api.add_resource(Cell, '/api/cell')
-api.add_resource(HelloWorld, '/')
+api.add_resource(HelloWorld, '/api/hello')
 
 
 @app.errorhandler(404)
