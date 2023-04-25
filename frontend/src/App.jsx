@@ -14,6 +14,10 @@ Chart.register(CategoryScale);
 Chart.register(zoomPlugin);
 
 function App() {
+  const [selectedCell, setSelectedCell] = useState(0);
+  const [cellIds, setCellIds] = useState({
+    data: [],
+  });
   const [tempChartData, setTempChartData] = useState({
     label: [],
     datasets: [
@@ -295,105 +299,137 @@ function App() {
     },
   };
 
-  async function getCellData() {
+  async function getCellIds() {
     try {
-      await axios.get(`${process.env.PUBLIC_URL}/api/cell`).then((response) => {
-        const cellDataObj = JSON.parse(response.data);
-        setVChartData({
-          labels: cellDataObj.timestamp,
-          // labels: labels,
-          datasets: [
-            {
-              label: "Voltage (v)",
-              data: cellDataObj.v,
-              borderColor: "lightgreen",
-              borderWidth: 2,
-              fill: false,
-              yAxisID: "vAxis",
-              radius: 2,
-              pointRadius: 2,
-            },
-            {
-              label: "Current (µA)",
-              data: cellDataObj.i,
-              borderColor: "purple",
-              borderWidth: 2,
-              fill: false,
-              yAxisID: "cAxis",
-              radius: 2,
-              pointRadius: 2,
-            },
-          ],
+      await axios
+        .get(`${process.env.PUBLIC_URL}/api/cell/id`)
+        .then((response) => {
+          setCellIds({
+            data: JSON.parse(response.data),
+          });
         });
-        setPwrChartData({
-          labels: cellDataObj.timestamp,
-          // labels: labels,
-          datasets: [
-            {
-              label: "Power (µV)",
-              data: cellDataObj.p,
-              borderColor: "orange",
-              borderWidth: 2,
-              fill: false,
-              radius: 2,
-              pointRadius: 2,
-            },
-          ],
-        });
-        setVWCChartData({
-          labels: cellDataObj.timestamp,
-          // labels: labels,
-          datasets: [
-            {
-              label: "Volumetric Water Content (VWC)",
-              data: cellDataObj.vwc,
-              borderColor: "blue",
-              borderWidth: 2,
-              fill: false,
-              yAxisID: "vwcAxis",
-              radius: 2,
-              pointRadius: 2,
-            },
-            {
-              label: "Electrical Conductivity (µS/cm)",
-              data: cellDataObj.ec,
-              borderColor: "black",
-              borderWidth: 2,
-              fill: false,
-              yAxisID: "ecAxis",
-              radius: 2,
-              pointRadius: 2,
-            },
-          ],
-        });
-        setTempChartData({
-          labels: cellDataObj.timestamp,
-          // labels: labels,
-          datasets: [
-            {
-              label: "Temperature",
-              data: cellDataObj.temp,
-              borderColor: "red",
-              borderWidth: 2,
-              fill: false,
-              radius: 2,
-              pointRadius: 2,
-            },
-          ],
-        });
-        console.log(response);
-      });
     } catch (err) {
       console.error(err);
     }
   }
 
+  async function getCellData(cellId) {
+    try {
+      await axios
+        .get(`${process.env.PUBLIC_URL}/api/cell/data/${cellId}`)
+        .then((response) => {
+          const cellDataObj = JSON.parse(response.data);
+          setVChartData({
+            labels: cellDataObj.timestamp,
+            // labels: labels,
+            datasets: [
+              {
+                label: "Voltage (v)",
+                data: cellDataObj.v,
+                borderColor: "lightgreen",
+                borderWidth: 2,
+                fill: false,
+                yAxisID: "vAxis",
+                radius: 2,
+                pointRadius: 2,
+              },
+              {
+                label: "Current (µA)",
+                data: cellDataObj.i,
+                borderColor: "purple",
+                borderWidth: 2,
+                fill: false,
+                yAxisID: "cAxis",
+                radius: 2,
+                pointRadius: 2,
+              },
+            ],
+          });
+          setPwrChartData({
+            labels: cellDataObj.timestamp,
+            // labels: labels,
+            datasets: [
+              {
+                label: "Power (µV)",
+                data: cellDataObj.p,
+                borderColor: "orange",
+                borderWidth: 2,
+                fill: false,
+                radius: 2,
+                pointRadius: 2,
+              },
+            ],
+          });
+          setVWCChartData({
+            labels: cellDataObj.timestamp,
+            // labels: labels,
+            datasets: [
+              {
+                label: "Volumetric Water Content (VWC)",
+                data: cellDataObj.vwc,
+                borderColor: "blue",
+                borderWidth: 2,
+                fill: false,
+                yAxisID: "vwcAxis",
+                radius: 2,
+                pointRadius: 2,
+              },
+              {
+                label: "Electrical Conductivity (µS/cm)",
+                data: cellDataObj.ec,
+                borderColor: "black",
+                borderWidth: 2,
+                fill: false,
+                yAxisID: "ecAxis",
+                radius: 2,
+                pointRadius: 2,
+              },
+            ],
+          });
+          setTempChartData({
+            labels: cellDataObj.timestamp,
+            // labels: labels,
+            datasets: [
+              {
+                label: "Temperature",
+                data: cellDataObj.temp,
+                borderColor: "red",
+                borderWidth: 2,
+                fill: false,
+                radius: 2,
+                pointRadius: 2,
+              },
+            ],
+          });
+          console.log(response);
+        });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function changeCell(e) {
+    setSelectedCell(e.target.value);
+  }
+
   return (
     <div className="App">
+      <div onChange={changeCell}>
+        {cellIds.data.map(([id, name]) => {
+          return (
+            <div key={id}>
+              <input type="radio" value={id} name="selectCell" /> {name}
+            </div>
+          );
+        })}
+      </div>
+      <button type="button" className="btn2" onClick={getCellIds}>
+        GetCellIds
+      </button>
       <button
         type="button"
         className="btn btn-sm btn-primary"
-        onClick={getCellData}
+        onClick={() => getCellData(selectedCell)}
       >
         GetCellData
       </button>

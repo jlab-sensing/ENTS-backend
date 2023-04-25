@@ -7,7 +7,8 @@ from sqlalchemy import select
 
 import json
 
-from .resources.cell import Cell
+from .resources.cell_data import Cell_Data
+from .resources.cell_id import Cell_Id
 
 app = Flask(__name__)
 api = Api(app)
@@ -19,7 +20,9 @@ class HelloWorld(Resource):
         return {'hello': 'world'}
 
 
-api.add_resource(Cell, '/api/cell')
+api.add_resource(Cell_Data, '/api/cell/data/<int:cell_id>',
+                 endpoint='cell_data_ep')
+api.add_resource(Cell_Id, '/api/cell/id')
 api.add_resource(HelloWorld, '/api/hello')
 
 
