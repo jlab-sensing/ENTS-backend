@@ -8,7 +8,7 @@ import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
 import "chartjs-adapter-luxon";
 import zoomPlugin from "chartjs-plugin-zoom";
-import { getCellData } from "./services/cellData.js";
+import { getCellData, getCellId } from "./services/cell.js";
 
 Chart.register(CategoryScale);
 Chart.register(zoomPlugin);
@@ -407,8 +407,8 @@ function App() {
   //   }
   // }
 
-  const updateCharts = (selectedCell) => {
-    getCellData(selectedCell).then((response) => {
+  const updateCharts = (sC) => {
+    getCellData(sC).then((response) => {
       const cellDataObj = JSON.parse(response.data);
       setVChartData({
         labels: cellDataObj.timestamp,
