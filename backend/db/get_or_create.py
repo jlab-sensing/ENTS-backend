@@ -20,11 +20,11 @@ def get_or_create_logger(sess, name, mac=None, hostname=None):
         Object with the inputted attributes
     """
 
-    stmt = select(Logger).where(Logger.name==name)
+    stmt = select(Logger).where(Logger.name == name)
     if mac:
-        stmt = stmt.where(Logger.mac==mac)
+        stmt = stmt.where(Logger.mac == mac)
     if hostname:
-        stmt = stmt.where(Logger.hostname==hostname)
+        stmt = stmt.where(Logger.hostname == hostname)
 
     log = sess.execute(stmt).one_or_none()
 
@@ -46,9 +46,9 @@ def get_or_create_cell(sess, name, location=None):
     Cell object
     """
 
-    stmt = select(Cell).where(Cell.name==name)
+    stmt = select(Cell).where(Cell.name == name)
     if location:
-        stmt = stmt.where(Cell.location==location)
+        stmt = stmt.where(Cell.location == location)
 
     cell = sess.execute(stmt).one_or_none()
 
