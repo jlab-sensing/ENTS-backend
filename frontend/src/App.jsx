@@ -1,14 +1,14 @@
 import "./App.css";
-import { React, useState } from "react";
+import { React, useState, useEffect } from "react";
 
 import axios from "axios";
 
 import { Line } from "react-chartjs-2";
-
 import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
 import "chartjs-adapter-luxon";
 import zoomPlugin from "chartjs-plugin-zoom";
+import { getCellData } from "./services/cellData.js";
 
 Chart.register(CategoryScale);
 Chart.register(zoomPlugin);
@@ -313,103 +313,195 @@ function App() {
     }
   }
 
-  async function getCellData(cellId) {
-    try {
-      await axios
-        .get(`${process.env.PUBLIC_URL}/api/cell/data/${cellId}`)
-        .then((response) => {
-          const cellDataObj = JSON.parse(response.data);
-          setVChartData({
-            labels: cellDataObj.timestamp,
-            // labels: labels,
-            datasets: [
-              {
-                label: "Voltage (v)",
-                data: cellDataObj.v,
-                borderColor: "lightgreen",
-                borderWidth: 2,
-                fill: false,
-                yAxisID: "vAxis",
-                radius: 2,
-                pointRadius: 2,
-              },
-              {
-                label: "Current (µA)",
-                data: cellDataObj.i,
-                borderColor: "purple",
-                borderWidth: 2,
-                fill: false,
-                yAxisID: "cAxis",
-                radius: 2,
-                pointRadius: 2,
-              },
-            ],
-          });
-          setPwrChartData({
-            labels: cellDataObj.timestamp,
-            // labels: labels,
-            datasets: [
-              {
-                label: "Power (µV)",
-                data: cellDataObj.p,
-                borderColor: "orange",
-                borderWidth: 2,
-                fill: false,
-                radius: 2,
-                pointRadius: 2,
-              },
-            ],
-          });
-          setVWCChartData({
-            labels: cellDataObj.timestamp,
-            // labels: labels,
-            datasets: [
-              {
-                label: "Volumetric Water Content (VWC)",
-                data: cellDataObj.vwc,
-                borderColor: "blue",
-                borderWidth: 2,
-                fill: false,
-                yAxisID: "vwcAxis",
-                radius: 2,
-                pointRadius: 2,
-              },
-              {
-                label: "Electrical Conductivity (µS/cm)",
-                data: cellDataObj.ec,
-                borderColor: "black",
-                borderWidth: 2,
-                fill: false,
-                yAxisID: "ecAxis",
-                radius: 2,
-                pointRadius: 2,
-              },
-            ],
-          });
-          setTempChartData({
-            labels: cellDataObj.timestamp,
-            // labels: labels,
-            datasets: [
-              {
-                label: "Temperature",
-                data: cellDataObj.temp,
-                borderColor: "red",
-                borderWidth: 2,
-                fill: false,
-                radius: 2,
-                pointRadius: 2,
-              },
-            ],
-          });
-        });
-    } catch (err) {
-      console.error(err);
-    }
-  }
+  // async function getCellData(cellId) {
+  //   try {
+  //     await axios
+  //       .get(`${process.env.PUBLIC_URL}/api/cell/data/${cellId}`)
+  //       .then((response) => {
+  //         const cellDataObj = JSON.parse(response.data);
+  //         setVChartData({
+  //           labels: cellDataObj.timestamp,
+  //           // labels: labels,
+  //           datasets: [
+  //             {
+  //               label: "Voltage (v)",
+  //               data: cellDataObj.v,
+  //               borderColor: "lightgreen",
+  //               borderWidth: 2,
+  //               fill: false,
+  //               yAxisID: "vAxis",
+  //               radius: 2,
+  //               pointRadius: 2,
+  //             },
+  //             {
+  //               label: "Current (µA)",
+  //               data: cellDataObj.i,
+  //               borderColor: "purple",
+  //               borderWidth: 2,
+  //               fill: false,
+  //               yAxisID: "cAxis",
+  //               radius: 2,
+  //               pointRadius: 2,
+  //             },
+  //           ],
+  //         });
+  //         setPwrChartData({
+  //           labels: cellDataObj.timestamp,
+  //           // labels: labels,
+  //           datasets: [
+  //             {
+  //               label: "Power (µV)",
+  //               data: cellDataObj.p,
+  //               borderColor: "orange",
+  //               borderWidth: 2,
+  //               fill: false,
+  //               radius: 2,
+  //               pointRadius: 2,
+  //             },
+  //           ],
+  //         });
+  //         setVWCChartData({
+  //           labels: cellDataObj.timestamp,
+  //           // labels: labels,
+  //           datasets: [
+  //             {
+  //               label: "Volumetric Water Content (VWC)",
+  //               data: cellDataObj.vwc,
+  //               borderColor: "blue",
+  //               borderWidth: 2,
+  //               fill: false,
+  //               yAxisID: "vwcAxis",
+  //               radius: 2,
+  //               pointRadius: 2,
+  //             },
+  //             {
+  //               label: "Electrical Conductivity (µS/cm)",
+  //               data: cellDataObj.ec,
+  //               borderColor: "black",
+  //               borderWidth: 2,
+  //               fill: false,
+  //               yAxisID: "ecAxis",
+  //               radius: 2,
+  //               pointRadius: 2,
+  //             },
+  //           ],
+  //         });
+  //         setTempChartData({
+  //           labels: cellDataObj.timestamp,
+  //           // labels: labels,
+  //           datasets: [
+  //             {
+  //               label: "Temperature",
+  //               data: cellDataObj.temp,
+  //               borderColor: "red",
+  //               borderWidth: 2,
+  //               fill: false,
+  //               radius: 2,
+  //               pointRadius: 2,
+  //             },
+  //           ],
+  //         });
+  //       });
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // }
+
+  const updateCharts = (selectedCell) => {
+    getCellData(selectedCell).then((response) => {
+      const cellDataObj = JSON.parse(response.data);
+      setVChartData({
+        labels: cellDataObj.timestamp,
+        datasets: [
+          {
+            label: "Voltage (v)",
+            data: cellDataObj.v,
+            borderColor: "lightgreen",
+            borderWidth: 2,
+            fill: false,
+            yAxisID: "vAxis",
+            radius: 2,
+            pointRadius: 2,
+          },
+          {
+            label: "Current (µA)",
+            data: cellDataObj.i,
+            borderColor: "purple",
+            borderWidth: 2,
+            fill: false,
+            yAxisID: "cAxis",
+            radius: 2,
+            pointRadius: 2,
+          },
+        ],
+      });
+      setPwrChartData({
+        labels: cellDataObj.timestamp,
+        datasets: [
+          {
+            label: "Power (µV)",
+            data: cellDataObj.p,
+            borderColor: "orange",
+            borderWidth: 2,
+            fill: false,
+            radius: 2,
+            pointRadius: 2,
+          },
+        ],
+      });
+      setVWCChartData({
+        labels: cellDataObj.timestamp,
+        datasets: [
+          {
+            label: "Volumetric Water Content (VWC)",
+            data: cellDataObj.vwc,
+            borderColor: "blue",
+            borderWidth: 2,
+            fill: false,
+            yAxisID: "vwcAxis",
+            radius: 2,
+            pointRadius: 2,
+          },
+          {
+            label: "Electrical Conductivity (µS/cm)",
+            data: cellDataObj.ec,
+            borderColor: "black",
+            borderWidth: 2,
+            fill: false,
+            yAxisID: "ecAxis",
+            radius: 2,
+            pointRadius: 2,
+          },
+        ],
+      });
+      setTempChartData({
+        labels: cellDataObj.timestamp,
+        datasets: [
+          {
+            label: "Temperature",
+            data: cellDataObj.temp,
+            borderColor: "red",
+            borderWidth: 2,
+            fill: false,
+            radius: 2,
+            pointRadius: 2,
+          },
+        ],
+      });
+    });
+  };
 
   function changeCell(e) {
     setSelectedCell(e.target.value);
   }
+
+  useEffect(() => {
+    updateCharts(selectedCell);
+  }, [selectedCell]);
+
+  useEffect(() => {
+    getCellIds();
+  }, []);
 
   return (
     <div className="App">
@@ -428,7 +520,7 @@ function App() {
       <button
         type="button"
         className="btn btn-sm btn-primary"
-        onClick={() => getCellData(selectedCell)}
+        onClick={() => updateCharts(selectedCell)}
       >
         GetCellData
       </button>
