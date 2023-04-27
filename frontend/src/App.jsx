@@ -8,7 +8,7 @@ import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
 import "chartjs-adapter-luxon";
 import zoomPlugin from "chartjs-plugin-zoom";
-import { getCellData, getCellId } from "./services/cell.js";
+import { getCellData } from "./services/cell";
 
 Chart.register(CategoryScale);
 Chart.register(zoomPlugin);
