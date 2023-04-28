@@ -1,8 +1,6 @@
 import "./App.css";
 import { React, useState, useEffect } from "react";
 
-import axios from "axios";
-
 import { Line } from "react-chartjs-2";
 import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
@@ -226,32 +224,6 @@ function App() {
           drawOnChartArea: false,
         },
       },
-      // yAxes: [
-      //   {
-      //     id: "tAxis",
-      //     type: "linear",
-      //     position: "right",
-      //     title: {
-      //       display: true,
-      //       text: "Temperature (°C)",
-      //     },
-      //   },
-      //   {
-      //     id: "vwcAxis",
-      //     text: "VWC (%)",
-      //     position: "left",
-      //     title: {
-      //       display: true,
-      //       text: "VWC (%)",
-      //     },
-      //   },
-      // ],
-      // vwcAxis: {
-      //   title: {
-      //     display: true,
-      //     text: "VWC",
-      //   },
-      // },
     },
     plugins: {
       zoom: zoomOptions,
