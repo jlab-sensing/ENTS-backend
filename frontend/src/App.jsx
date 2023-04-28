@@ -8,7 +8,7 @@ import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
 import "chartjs-adapter-luxon";
 import zoomPlugin from "chartjs-plugin-zoom";
-import { getCellData } from "./services/cell";
+import { getCellData, getCellIds } from "./services/cell";
 
 Chart.register(CategoryScale);
 Chart.register(zoomPlugin);
@@ -299,19 +299,19 @@ function App() {
     },
   };
 
-  async function getCellIds() {
-    try {
-      await axios
-        .get(`${process.env.PUBLIC_URL}/api/cell/id`)
-        .then((response) => {
-          setCellIds({
-            data: JSON.parse(response.data),
-          });
-        });
-    } catch (err) {
-      console.error(err);
-    }
-  }
+  // async function getCellIds() {
+  //   try {
+  //     await axios
+  //       .get(`${process.env.PUBLIC_URL}/api/cell/id`)
+  //       .then((response) => {
+  //         setCellIds({
+  //           data: JSON.parse(response.data),
+  //         });
+  //       });
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // }
 
   // async function getCellData(cellId) {
   //   try {
@@ -406,6 +406,13 @@ function App() {
   //     console.error(err);
   //   }
   // }
+  const updateCellIds = () => {
+    getCellIds().then((response) => {
+      setCellIds({
+        data: JSON.parse(response.data),
+      });
+    });
+  };
 
   const updateCharts = (sC) => {
     getCellData(sC).then((response) => {
@@ -500,6 +507,7 @@ function App() {
   }, [selectedCell]);
 
   useEffect(() => {
+    updateCellIds();
     getCellIds();
   }, []);
 
