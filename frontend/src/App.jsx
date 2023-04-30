@@ -1,6 +1,5 @@
 import "./App.css";
-import { React, useState, useEffect, useCallback } from "react";
-import { Line } from "react-chartjs-2";
+import { React, useState, useEffect } from "react";
 import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
 import "chartjs-adapter-luxon";
@@ -77,13 +76,13 @@ function App() {
     ],
   });
 
-  const updateCellIds = useCallback(() => {
-    getCellIds().then((response) => {
-      setCellIds({
-        data: JSON.parse(response.data),
-      });
-    });
-  }, [cellIds]);
+  // const updateCellIds = useCallback(() => {
+  //   getCellIds().then((response) => {
+  //     setCellIds({
+  //       data: JSON.parse(response.data),
+  //     });
+  //   });
+  // }, [cellIds]);
 
   const updateCharts = (sC) => {
     getCellData(sC).then((response) => {
@@ -178,11 +177,19 @@ function App() {
   }, [selectedCell]);
 
   useEffect(() => {
-    updateCellIds();
-    console.log(cellIds.data[0]);
-    // getCellIds().then();
-    // setSelectedCell();
+    getCellIds().then((response) => {
+      setCellIds({
+        data: JSON.parse(response.data),
+      });
+
+      // setSelectedCell();
+    });
   }, []);
+  useEffect(() => {
+    if (cellIds.data[0]) {
+      updateCharts(cellIds.data[0][0]);
+    }
+  }, [cellIds]);
 
   return (
     <div className="App">
@@ -205,7 +212,6 @@ function App() {
       >
         GetCellData
       </button>
-      <p>test</p>
       <div className="grid-chart">
         <VChart data={vChartData} />
         <PwrChart data={pwrChartData} />

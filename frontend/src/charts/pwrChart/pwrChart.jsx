@@ -1,10 +1,11 @@
-import { React, useState } from "react";
+import { React } from "react";
 import { Line } from "react-chartjs-2";
 import "chartjs-adapter-luxon";
-import zoomPlugin from "chartjs-plugin-zoom";
 import { zoomOptions } from "../defaultChartOptions";
+import PropTypes from "prop-types";
 
-export default function PwrChart({ data }) {
+export default function PwrChart(props) {
+  const data = props.data;
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -49,3 +50,7 @@ export default function PwrChart({ data }) {
     </div>
   );
 }
+
+PwrChart.propTypes = {
+  data: PropTypes.object,
+};

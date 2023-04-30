@@ -1,11 +1,11 @@
-import { React, useState } from "react";
+import { React } from "react";
 import { Line } from "react-chartjs-2";
-import Chart from "chart.js/auto";
 import "chartjs-adapter-luxon";
-import zoomPlugin from "chartjs-plugin-zoom";
 import { zoomOptions } from "../defaultChartOptions";
+import PropTypes from "prop-types";
 
-export default function VChart({ data }) {
+export default function VChart(props) {
+  const data = props.data;
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -66,3 +66,7 @@ export default function VChart({ data }) {
     </div>
   );
 }
+
+VChart.propTypes = {
+  data: PropTypes.object,
+};

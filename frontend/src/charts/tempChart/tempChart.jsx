@@ -1,10 +1,11 @@
-import { React, useState } from "react";
+import { React } from "react";
 import { Line } from "react-chartjs-2";
 import "chartjs-adapter-luxon";
-import zoomPlugin from "chartjs-plugin-zoom";
 import { zoomOptions } from "../defaultChartOptions";
+import PropTypes from "prop-types";
 
-export default function TempChart({ data }) {
+export default function TempChart(props) {
+  const data = props.data;
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -53,3 +54,6 @@ export default function TempChart({ data }) {
     </div>
   );
 }
+TempChart.propTypes = {
+  data: PropTypes.object,
+};
