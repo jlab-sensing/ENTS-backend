@@ -1,0 +1,34 @@
+.Dashboard{
+  height: 100vh;
+  width: 100vw;
+}
+
+.grid-chart{
+  display: flex;
+  flex-direction: row;
+  width: 95%;
+  height: 100%;
+  margin:auto;
+  flex-wrap: wrap;
+}
+.grid-chart > div{
+  padding: 2%;
+  height: 35%;
+  width: 45%;
+}
+
+@media screen and (min-width: 0em) and (max-width: 48em) { /* 568px - 768px */
+  .grid-chart{
+    display: flex;
+    flex-direction: column;
+    width: 75%;
+    height: 100%;
+    margin:auto;
+    flex-wrap: nowrap;
+  }
+  .grid-chart > div{
+    height: 25%;
+    width: 100%;
+  }
+}
+
