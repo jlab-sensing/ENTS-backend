@@ -1,12 +1,13 @@
 {
     "env": {
         "browser": true,
-        "es2021": true
+        "es2021": true,
+        "node": true
     },
     "extends": [
-        "airbnb",
-        "plugin:react/recommended",
-        "plugin:prettier/recommended" 
+        "eslint:recommended",
+        "plugin:react/recommended"
+
     ],
     "overrides": [
     ],
@@ -18,5 +19,14 @@
         "react"
     ],
     "rules": {
+        "react/jsx-uses-vars": "warn",
+        "react/jsx-uses-react": "warn",
+        "no-use-before-define": "warn",
+        "no-unused-expressions": "warn"
+    },
+    "settings": {
+        "react": {
+          "version": "detect"
+        }
     }
 }
