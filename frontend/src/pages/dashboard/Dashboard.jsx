@@ -14,7 +14,6 @@ import { DateTime } from "luxon";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterLuxon } from "@mui/x-date-pickers/AdapterLuxon";
 import DownloadBtn from "../../components/DownloadBtn";
-import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
@@ -181,10 +180,6 @@ function Dashboard() {
     });
   };
 
-  function changeCell(e) {
-    setSelectedCell(e.target.value);
-  }
-
   useEffect(() => {
     updateCharts(selectedCell);
   }, [selectedCell]);
@@ -235,11 +230,15 @@ function Dashboard() {
             label="Cell"
             defaultValue={selectedCell}
             onChange={(e) => {
-              console.log(e.target.value), setSelectedCell(e.target.value);
+              setSelectedCell(e.target.value);
             }}
           >
             {cellIds.data.map(([id, name]) => {
-              return <MenuItem value={id}>{name}</MenuItem>;
+              return (
+                <MenuItem value={id} key={id}>
+                  {name}
+                </MenuItem>
+              );
             })}
           </Select>
         </FormControl>
