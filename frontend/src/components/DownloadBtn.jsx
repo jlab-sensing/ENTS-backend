@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 
 function DownloadBtn(props) {
   const data = Object.values(props.data);
+  const disabled = props.disabled;
   const downloadFile = ({ data, fileName, fileType }) => {
     const blob = new Blob([data], { type: fileType });
 
@@ -52,7 +53,7 @@ function DownloadBtn(props) {
   };
   return (
     <div className="DownloadBtn">
-      <Button type="button" onClick={exportToCsv}>
+      <Button disabled={disabled} type="button" onClick={exportToCsv}>
         Export to CSV
       </Button>
     </div>

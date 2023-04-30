@@ -179,6 +179,10 @@ function Dashboard() {
   }, [selectedCell]);
 
   useEffect(() => {
+    setDBtnDisabled(false);
+  }, [setCellData]);
+
+  useEffect(() => {
     getCellIds().then((response) => {
       setCellIds({
         data: JSON.parse(response.data),
@@ -221,7 +225,6 @@ function Dashboard() {
         <TempChart data={tempChartData} />
         <Button variant="contained">Hello World</Button>
       </div>
-
       <DownloadBtn disabled={dBtnDisabled} data={cellData} />
 
       <LocalizationProvider dateAdapter={AdapterLuxon}>
