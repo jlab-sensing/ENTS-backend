@@ -60,11 +60,7 @@ export default function VChart(props) {
     },
   };
 
-  return (
-    <div className="v-chart">
-      <Line data={data} options={chartOptions} />
-    </div>
-  );
+  return <Line data={data} options={chartOptions} />;
 }
 
 VChart.propTypes = {

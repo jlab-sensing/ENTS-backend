@@ -1,4 +1,4 @@
-import "./Dashboard.css";
+// import "./Dashboard.css";
 import { React, useState, useEffect } from "react";
 import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
@@ -9,18 +9,29 @@ import PwrChart from "../../charts/pwrChart/pwrChart";
 import VChart from "../../charts/vChart/vChart";
 import VwcChart from "../../charts/vwcChart/vwcChart";
 import TempChart from "../../charts/tempChart/tempChart";
-import Button from "@mui/material/Button";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { DateTime } from "luxon";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterLuxon } from "@mui/x-date-pickers/AdapterLuxon";
 import DownloadBtn from "../../components/DownloadBtn";
-
+import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
+import Stack from "@mui/material/Stack";
+import Divider from "@mui/material/Divider";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import HorizontalRuleRoundedIcon from "@mui/icons-material/HorizontalRuleRounded";
 Chart.register(CategoryScale);
 Chart.register(zoomPlugin);
 
 function Dashboard() {
-  const [startDate, setStartDate] = useState(DateTime.utc());
+  const [startDate, setStartDate] = useState(
+    DateTime.now().minus({ months: 1 })
+  );
+  const [endDate, setEndDate] = useState(DateTime.now());
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [cellData, setCellData] = useState({});
   const [selectedCell, setSelectedCell] = useState(0);
@@ -194,12 +205,72 @@ function Dashboard() {
   useEffect(() => {
     if (cellIds.data[0]) {
       updateCharts(cellIds.data[0][0]);
+      setSelectedCell(parseInt(cellIds.data[0][0]));
     }
   }, [cellIds]);
 
   return (
-    <div className="Dashboard">
-      <div onChange={changeCell}>
+    <Stack
+      direction="column"
+      divider={<Divider orientation="horizontal" flexItem />}
+      justifyContent="spaced-evently"
+      sx={{ height: "100vh", boxSizing: "border-box" }}
+    >
+      <Stack
+        direction="row"
+        divider={<Divider orientation="vertical" flexItem />}
+        alignItems="center"
+        justifyContent="space-evenly"
+        sx={{ p: 2 }}
+        flexItem
+      >
+        {/* <Grid sx={{ marginTop: ".25%" }} container spacing={4}> */}
+        {/* <Grid item xs="auto"> */}
+        <FormControl sx={{ width: 1 / 4 }}>
+          <InputLabel id="cell-select">Cell</InputLabel>
+          <Select
+            labelId="cell-select-label"
+            id="cell-select"
+            value={selectedCell}
+            label="Cell"
+            defaultValue={selectedCell}
+            onChange={(e) => {
+              console.log(e.target.value), setSelectedCell(e.target.value);
+            }}
+          >
+            {cellIds.data.map(([id, name]) => {
+              return <MenuItem value={id}>{name}</MenuItem>;
+            })}
+          </Select>
+        </FormControl>
+        {/* </Grid> */}
+        {/* <Grid item xs="auto"> */}
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <LocalizationProvider dateAdapter={AdapterLuxon}>
+            <DateTimePicker
+              label="Start Date"
+              value={startDate}
+              onChange={(startDate) => setStartDate(startDate)}
+              views={["year", "month", "day", "hours"]}
+            />
+          </LocalizationProvider>
+          <HorizontalRuleRoundedIcon sx={{ mr: 1, ml: 1 }} />
+          <LocalizationProvider dateAdapter={AdapterLuxon}>
+            <DateTimePicker
+              label="End Date"
+              value={endDate}
+              onChange={(endDate) => setEndDate(endDate)}
+              views={["year", "month", "day", "hours"]}
+            />
+          </LocalizationProvider>
+        </Box>
+        {/* </Grid> */}
+        {/* <Grid item xs="auto"> */}
+        <DownloadBtn disabled={dBtnDisabled} data={cellData} />
+        {/* </Grid> */}
+        {/* </Grid> */}
+      </Stack>
+      {/* <div onChange={changeCell}>
         {cellIds.data.map(([id, name]) => {
           return (
             <div key={id}>
@@ -217,24 +288,28 @@ function Dashboard() {
         onClick={() => updateCharts(selectedCell)}
       >
         GetCellData
-      </button>
-      <div className="grid-chart">
-        <VChart data={vChartData} />
-        <PwrChart data={pwrChartData} />
-        <VwcChart data={vwcChartData} />
-        <TempChart data={tempChartData} />
-        <Button variant="contained">Hello World</Button>
-      </div>
-      <DownloadBtn disabled={dBtnDisabled} data={cellData} />
-
-      <LocalizationProvider dateAdapter={AdapterLuxon}>
-        <DateTimePicker
-          label="Controlled picker"
-          value={startDate}
-          onChange={(startDate) => setStartDate(startDate)}
-        />
-      </LocalizationProvider>
-    </div>
+      </button> */}
+      <Grid
+        container
+        sx={{ height: "75%", width: "100%", p: 2 }}
+        alignItems="center"
+        justifyContent="space-evenly"
+        columns={{ xs: 4, sm: 8, md: 12 }}
+      >
+        <Grid item sx={{ height: "50%" }} xs={4} sm={4} md={5.5} p={0.25}>
+          <VChart data={vChartData} />
+        </Grid>
+        <Grid item sx={{ height: "50%" }} xs={4} sm={4} md={5.5} p={0.25}>
+          <PwrChart data={pwrChartData} />
+        </Grid>
+        <Grid item sx={{ height: "50%" }} xs={4} sm={4} md={5.5} p={0.25}>
+          <VwcChart data={vwcChartData} />
+        </Grid>
+        <Grid item sx={{ height: "50%" }} xs={4} sm={4} md={5.5} p={0.25}>
+          <TempChart data={tempChartData} />
+        </Grid>
+      </Grid>
+    </Stack>
   );
 }
 

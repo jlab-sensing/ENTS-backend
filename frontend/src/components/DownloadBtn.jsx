@@ -53,7 +53,7 @@ function DownloadBtn(props) {
   };
   return (
     <div className="DownloadBtn">
-      <Button disabled={disabled} type="button" onClick={exportToCsv}>
+      <Button disabled={disabled} variant="outlined" onClick={exportToCsv}>
         Export to CSV
       </Button>
     </div>

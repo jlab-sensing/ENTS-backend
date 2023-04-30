@@ -59,11 +59,7 @@ export default function VwcChart(props) {
     },
   };
 
-  return (
-    <div className="vwc-chart">
-      <Line data={data} options={chartOptions} />
-    </div>
-  );
+  return <Line data={data} options={chartOptions} />;
 }
 
 VwcChart.propTypes = {

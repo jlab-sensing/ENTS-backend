@@ -48,11 +48,7 @@ export default function TempChart(props) {
     },
   };
 
-  return (
-    <div className="temp-chart">
-      <Line data={data} options={chartOptions} />
-    </div>
-  );
+  return <Line data={data} options={chartOptions} />;
 }
 TempChart.propTypes = {
   data: PropTypes.object,

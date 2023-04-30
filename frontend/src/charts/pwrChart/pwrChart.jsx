@@ -44,11 +44,7 @@ export default function PwrChart(props) {
     },
   };
 
-  return (
-    <div className="pwr-chart">
-      <Line data={data} options={chartOptions} />
-    </div>
-  );
+  return <Line data={data} options={chartOptions} />;
 }
 
 PwrChart.propTypes = {

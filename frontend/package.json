@@ -6,6 +6,7 @@
   "dependencies": {
     "@emotion/react": "^11.10.8",
     "@emotion/styled": "^11.10.8",
+    "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.12.2",
     "@mui/x-date-pickers": "^6.3.0",
     "@testing-library/jest-dom": "^5.16.5",
