@@ -62,6 +62,7 @@ function DownloadBtn(props) {
 
 DownloadBtn.propTypes = {
   data: PropTypes.object,
+  disabled: PropTypes.bool,
 };
 
 export default DownloadBtn;
