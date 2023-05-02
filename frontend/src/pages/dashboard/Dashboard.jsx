@@ -290,7 +290,7 @@ function Dashboard() {
       </button> */}
       <Grid
         container
-        sx={{ height: "75%", width: "100%", p: 2 }}
+        sx={{ height: "100%", width: "100%", p: 2 }}
         alignItems="center"
         justifyContent="space-evenly"
         columns={{ xs: 4, sm: 8, md: 12 }}
