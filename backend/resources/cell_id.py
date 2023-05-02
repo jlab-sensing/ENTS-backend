@@ -1,3 +1,4 @@
+from flask import jsonify
 from flask_restful import Resource
 import json
 from json import JSONEncoder
@@ -17,7 +18,7 @@ class Cell_Id(Resource):
             # Create cell select widget
             stmt = select(Cell).order_by(Cell.name)
             opts = [(str(c.id), repr(c)) for c in sess.scalars(stmt)]
-        return json.dumps(opts)
+        return jsonify(opts)
 
     def post(self):
         pass

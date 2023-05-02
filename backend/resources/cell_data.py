@@ -1,3 +1,4 @@
+from flask import request, jsonify
 from flask_restful import Resource
 import json
 from json import JSONEncoder
@@ -9,6 +10,8 @@ from sqlalchemy import select
 from ..db.conn import engine
 from ..db.getters import get_power_data, get_teros_data
 from datetime import date, datetime
+import csv
+
 
 
 class DateTimeEncoder(JSONEncoder):
@@ -27,20 +30,16 @@ def vwc(raw):
 
 class Cell_Data(Resource):
     def get(self, cell_id=0):
+    # def get(self, cell_id=0, start_date="", end_date=""):
+        classes = request.args.getlist('cell_id') 
         with Session(engine) as sess:
             teros_source = get_teros_data(sess, cell_id)
             power_source = get_power_data(sess, cell_id)
-        # power = json.dumps(
-            # power_source, indent=4, cls=DateTimeEncoder)
         teros_source["vwc"] = list(map(vwc, teros_source["vwc"]))
         mergedData = teros_source | power_source
-        json_data = json.dumps(
-            mergedData, indent=4, cls=DateTimeEncoder)
-        # json_object = {
-        #     # power,
-        #     teros
-        # }
-        return json_data
+        # json_data = json.dumps(
+        #     mergedData, indent=4, cls=DateTimeEncoder)
+        return jsonify(mergedData)
 
     def post(self):
         pass
