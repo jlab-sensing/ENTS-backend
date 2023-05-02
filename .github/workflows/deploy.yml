@@ -3,7 +3,6 @@ name: Build and Deploy
 on:
   push:
     branches:
-      react-flask-init
   workflow_dispatch:
 
 env:
