@@ -4,8 +4,8 @@
 """
 
 # pylint: disable=too-few-public-methods
-
 from sqlalchemy import Column, Integer,  Text, ForeignKey, Float, DateTime
+from ...api import db, ma
 from sqlalchemy.dialects.postgresql import MACADDR
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship
@@ -29,14 +29,14 @@ class Logger(Base):
         return repr(self.name)
 
 
-class Cell(Base):
+class Cell(db.Model):
     """Table of cells"""
 
     __tablename__ = "cell"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(Text(), nullable=False, unique=True)
-    location = Column(Text())
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Text(), nullable=False, unique=True)
+    location = db.Column(db.Text())
 
     def __repr__(self):
         return repr(self.name)
@@ -81,3 +81,12 @@ class TEROSData(Base):
 
     def __repr__(self):
         return f"TEROSData(id={self.id!r}, ts={self.ts!r})"
+    
+# class TEROSDataSchema(SQLAlchemyAutoSchema):
+#     class Meta:
+#         model = TEROSData
+
+class CellSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Cell
+        

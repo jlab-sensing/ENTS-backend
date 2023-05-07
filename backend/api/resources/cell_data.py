@@ -7,8 +7,8 @@ import decimal
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from ..db.conn import engine
-from ..db.getters import get_power_data, get_teros_data
+from ..conn import engine
+from ..getters import get_power_data, get_teros_data
 from datetime import date, datetime
 import csv
 
@@ -31,7 +31,7 @@ def vwc(raw):
 class Cell_Data(Resource):
     def get(self, cell_id=0):
     # def get(self, cell_id=0, start_date="", end_date=""):
-        classes = request.args.getlist('cell_id') 
+        # classes = request.args.getlist('cell_id') 
         with Session(engine) as sess:
             teros_source = get_teros_data(sess, cell_id)
             power_source = get_power_data(sess, cell_id)

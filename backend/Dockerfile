@@ -3,11 +3,14 @@ WORKDIR /app/backend/
 COPY requirements.txt ./
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
-ENV FLASK_DEBUG=0
+ENV FLASK_DEBUG=1
+ENV FLASK_RUN_HOST=0.0.0.0
+ENV FLASK_APP=api
 COPY . ./
 WORKDIR /app/
 EXPOSE 8000
-CMD ["gunicorn", "-b", ":8000", "backend.app:app", "-c", "./backend/gunicorn_config.py"]
+CMD ["flask", "--app", "backend.api", "--debug", "run", "-p", "8000"]
+# CMD ["gunicorn", "-b", ":8000", "backend.app:app", "-c", "./backend/gunicorn_config.py"]
 
 FROM python:3.11.0-slim-buster as builder
 

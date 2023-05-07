@@ -1,4 +1,5 @@
 .dockerignore
+gunicorn_config.py
 Dockerfile
 **/.git
 **/.DS_Store
