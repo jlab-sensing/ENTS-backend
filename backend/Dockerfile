@@ -69,7 +69,7 @@ RUN chown -R app:app $APP_HOME
 # change to the app user
 USER app
 WORKDIR /home/app/
-CMD ["gunicorn", "-b", ":8000", "web.wsgi:wsgi"]
+CMD ["gunicorn", "-b", ":8000", "web.wsgi:handler"]
 
 # CMD ["gunicorn", "-b", ":8000", "web.app:app"]
 
