@@ -10,6 +10,7 @@ COPY . ./
 WORKDIR /app/
 EXPOSE 8000
 CMD ["flask", "--app", "backend.api", "--debug", "run", "-p", "8000"]
+# CMD ["flask", "--app", "backend.api", "--debug", "run", "-p", "8000"]
 # CMD ["gunicorn", "-b", ":8000", "backend.app:app", "-c", "./backend/gunicorn_config.py"]
 
 FROM python:3.11.0-slim-buster as builder
@@ -68,7 +69,9 @@ RUN chown -R app:app $APP_HOME
 # change to the app user
 USER app
 WORKDIR /home/app/
-CMD ["gunicorn", "-b", ":8000", "web.app:app"]
+CMD ["gunicorn", "-b", ":8000", "web.wsgi:wsgi"]
+
+# CMD ["gunicorn", "-b", ":8000", "web.app:app"]
 
 # FROM python:3.10-slim as build
 # RUN apt-get update

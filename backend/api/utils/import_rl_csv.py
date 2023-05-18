@@ -19,8 +19,8 @@ from tqdm import tqdm
 from sqlalchemy.orm import Session
 
 from ..conn import engine
-from ..tables import PowerData
-from ..get_or_create import get_or_create_cell, get_or_create_logger
+from ..database.models.power_data import PowerData
+from ..database.get_or_create import get_or_create_cell, get_or_create_logger
 
 
 def import_rl_csv(path, logger_name, cell1_name, cell2_name, batch_size=10000):
@@ -46,7 +46,6 @@ def import_rl_csv(path, logger_name, cell1_name, cell2_name, batch_size=10000):
 
     with open(path, newline='', encoding="UTF-8") as csvfile:
         rl_reader = csv.reader(csvfile)
-
 
         # Skip header
         for _ in range(11):
@@ -100,12 +99,16 @@ def import_rl_csv(path, logger_name, cell1_name, cell2_name, batch_size=10000):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Rocketlogger csv importer utility")
-    parser.add_argument("--batch-size", type=int, default=10000, help="Batch size of inserts")
+    parser = argparse.ArgumentParser(
+        description="Rocketlogger csv importer utility")
+    parser.add_argument("--batch-size", type=int,
+                        default=10000, help="Batch size of inserts")
     parser.add_argument("path", type=str, help="Name of cell")
     parser.add_argument("rl", type=str, help="Name of rocketlogger")
-    parser.add_argument("cell1", type=str, help="Name of cell connected to channel 1")
-    parser.add_argument("cell2", type=str, help="Name of cell connected to channel 2")
+    parser.add_argument("cell1", type=str,
+                        help="Name of cell connected to channel 1")
+    parser.add_argument("cell2", type=str,
+                        help="Name of cell connected to channel 2")
 
     args = parser.parse_args()
 

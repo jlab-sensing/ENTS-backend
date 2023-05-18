@@ -8,7 +8,9 @@ called while retaining object data from queried objects.
 
 from sqlalchemy import select, func
 
-from .models.models import TEROSData, PowerData
+from .models import power_data as PowerData
+from .models import teros_data as TEROSData
+
 
 def get_power_data(sess, cell_id, resample="hour"):
     """Gets the power data for a given cell. Can be directly passed to
@@ -78,6 +80,7 @@ def get_power_data(sess, cell_id, resample="hour"):
 
     return data
 
+
 def get_teros_data(sess, cell_id, resample='hour'):
     """Gets the TEROS-12 sensor data for a given cell. Returned dictionary can
     be passed directly to bokeh.ColumnDataSource.
@@ -130,5 +133,4 @@ def get_teros_data(sess, cell_id, resample='hour'):
         data['temp'].append(row.temp)
         data['ec'].append(row.ec)
 
-    
     return data
