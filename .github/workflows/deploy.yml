@@ -248,4 +248,4 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run migrations
-        run: alembic -c backend/db/alembic.ini upgrade head
+        run: alembic -c backend/api/alembic.ini upgrade head
