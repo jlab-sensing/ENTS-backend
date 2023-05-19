@@ -7,7 +7,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from ....api import db
+from backend.api import db
 # from backend.db.tables import Base
 # from backend.db.conn import engine
 
