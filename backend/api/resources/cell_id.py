@@ -9,7 +9,6 @@ from ..conn import engine
 from ..database.models.cell import Cell
 from ..database.schemas.cell_schema import CellSchema
 
-cell_schema = CellSchema()
 cells_schema = CellSchema(many=True)
 
 

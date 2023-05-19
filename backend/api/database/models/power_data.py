@@ -1,4 +1,4 @@
-from ....api import db
+from ..models import *
 
 
 class PowerData(db.Model):
@@ -15,8 +15,8 @@ class PowerData(db.Model):
     current = db.Column(db.Integer)
     voltage = db.Column(db.Integer)
 
-    # logger = db.relationship("Logger")
-    # cell = db.relationship("Cell", back_populates="power_data")
+    cell = db.relationship("Cell")
+    logger = db.relationship("Logger")
 
     def __repr__(self):
         return f"PowerData(id={self.id!r}, ts={self.ts!r})"

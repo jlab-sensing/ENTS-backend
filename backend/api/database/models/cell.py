@@ -1,4 +1,4 @@
-from ....api import db
+from ..models import *
 
 
 class Cell(db.Model):

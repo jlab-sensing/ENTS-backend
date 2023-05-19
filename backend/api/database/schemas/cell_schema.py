@@ -1,4 +1,4 @@
-from ... import ma
+from ..schemas import *
 from ..models.cell import Cell
 
 

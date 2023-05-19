@@ -1,4 +1,4 @@
-from ....api import db
+from ..models import *
 from sqlalchemy.sql import func
 
 
@@ -20,7 +20,7 @@ class TEROSData(db.Model):
     temp = db.Column(db.Float)
     ec = db.Column(db.Integer)
 
-    # cell = db.relationship("Cell", back_populates="teros_data")
+    cell = db.relationship("Cell")
 
     def __repr__(self):
         return f"TEROSData(id={self.id!r}, ts={self.ts!r})"
