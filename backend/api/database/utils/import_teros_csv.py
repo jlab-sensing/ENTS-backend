@@ -19,8 +19,8 @@ from tqdm import tqdm
 from sqlalchemy.orm import Session
 
 from ..conn import engine
-from ..tables import TEROSData
-from ..get_or_create import get_or_create_cell
+from ..database.models.teros_data import TEROSData
+from ..database.get_or_create import get_or_create_cell
 
 
 def import_teros_csv(path, mapping, batch_size=10000):
@@ -42,7 +42,6 @@ def import_teros_csv(path, mapping, batch_size=10000):
 
     with open(path, newline='', encoding='utf-8') as csvfile:
         teros_reader = csv.reader(csvfile)
-
 
         # skip first row
         next(teros_reader)
@@ -87,9 +86,11 @@ def import_teros_csv(path, mapping, batch_size=10000):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="TEROSLogger csv importer utility")
-    parser.add_argument("--batch-size", type=int, default=10000, help="Batch size of inserts")
-    parser.add_argument( "--cell", action="append", required=True,
+    parser = argparse.ArgumentParser(
+        description="TEROSLogger csv importer utility")
+    parser.add_argument("--batch-size", type=int,
+                        default=10000, help="Batch size of inserts")
+    parser.add_argument("--cell", action="append", required=True,
                         help="""Mapping of sensorID to cell name in the form of
                         sensorID, cell_name""")
     parser.add_argument("path", type=str, help="Name of cell")
@@ -98,7 +99,7 @@ if __name__ == "__main__":
 
     cell_map = {}
     for pair in args.cell:
-        csv_id,db_id = pair.split(',')
+        csv_id, db_id = pair.split(',')
         cell_map[csv_id] = db_id
 
     print("Cell Mapping")

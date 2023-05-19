@@ -8,7 +8,8 @@ called while retaining object data from queried objects.
 
 from sqlalchemy import select
 
-from .tables import Logger, Cell
+from .models.logger import Logger
+from .models.cell import Cell
 
 
 def get_or_create_logger(sess, name, mac=None, hostname=None):

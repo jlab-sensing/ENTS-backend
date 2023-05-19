@@ -95,9 +95,12 @@ function Dashboard() {
     ],
   });
 
-  const updateCharts = (sC) => {
-    getCellData(sC).then((response) => {
-      const cellDataObj = JSON.parse(response.data);
+  const updateCharts = (sC, sD, eD) => {
+    getCellData(sC, sD, eD).then((response) => {
+      const cellDataObj = response.data;
+      cellDataObj.timestamp = cellDataObj.timestamp.map((dateTime) =>
+        DateTime.fromHTTP(dateTime)
+      );
       setCellData(cellDataObj);
       setVChartData({
         labels: cellDataObj.timestamp,
@@ -181,7 +184,7 @@ function Dashboard() {
   };
 
   useEffect(() => {
-    updateCharts(selectedCell);
+    updateCharts(selectedCell, startDate, endDate);
   }, [selectedCell]);
 
   useEffect(() => {
@@ -191,16 +194,14 @@ function Dashboard() {
   useEffect(() => {
     getCellIds().then((response) => {
       setCellIds({
-        data: JSON.parse(response.data),
+        data: response.data,
       });
-
-      // setSelectedCell();
     });
   }, []);
   useEffect(() => {
     if (cellIds.data[0]) {
-      updateCharts(cellIds.data[0][0]);
-      setSelectedCell(parseInt(cellIds.data[0][0]));
+      updateCharts(cellIds.data[0].id);
+      setSelectedCell(parseInt(cellIds.data[0].id));
     }
   }, [cellIds]);
 
@@ -233,7 +234,7 @@ function Dashboard() {
               setSelectedCell(e.target.value);
             }}
           >
-            {cellIds.data.map(([id, name]) => {
+            {cellIds.data.map(({ id, location, name }) => {
               return (
                 <MenuItem value={id} key={id}>
                   {name}

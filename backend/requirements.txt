@@ -8,4 +8,8 @@ Flask==2.2.3
 Flask-RESTful==0.3.9
 flask_cors
 gunicorn==20.1.0
+marshmallow
+flask_marshmallow
+marshmallow_sqlalchemy
+flask_sqlalchemy
 
