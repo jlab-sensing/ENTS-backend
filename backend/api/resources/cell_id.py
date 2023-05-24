@@ -5,7 +5,7 @@ from json import JSONEncoder
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from ..conn import engine
+# from ..conn import engine
 from ..database.models.cell import Cell
 from ..database.schemas.cell_schema import CellSchema
 

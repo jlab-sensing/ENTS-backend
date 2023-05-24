@@ -4,7 +4,6 @@ import json
 from json import JSONEncoder
 import decimal
 
-from ..conn import engine
 from datetime import date, datetime
 
 
