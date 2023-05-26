@@ -18,9 +18,9 @@ from datetime import datetime
 from tqdm import tqdm
 from sqlalchemy.orm import Session
 
-from ..conn import engine
-from ..database.models.teros_data import TEROSData
-from ..database.get_or_create import get_or_create_cell
+from ...conn import engine
+from ...database.models.teros_data import TEROSData
+from ...database.get_or_create import get_or_create_cell
 
 
 def import_teros_csv(path, mapping, batch_size=10000):
