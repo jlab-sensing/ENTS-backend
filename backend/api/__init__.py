@@ -2,12 +2,14 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_cors import CORS, cross_origin
+from flask_migrate import Migrate
 from flask_restful import Api
 from .config import Config
 
 
 db = SQLAlchemy()
 ma = Marshmallow()
+migrate = Migrate()
 
 
 def create_app() -> Flask:
@@ -15,6 +17,7 @@ def create_app() -> Flask:
     app.config.from_object(Config)
     db.init_app(app)
     ma.init_app(app)
+    migrate.init_app(app, db)
     cors = CORS(app, resources={r'/*': {'methods': '*'}})
     api = Api(app)
     with app.app_context():

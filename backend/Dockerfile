@@ -9,9 +9,7 @@ ENV FLASK_APP=api
 COPY . ./
 WORKDIR /app/
 EXPOSE 8000
-CMD ["flask", "--app", "backend.api", "--debug", "run", "-p", "8000"]
-# CMD ["flask", "--app", "backend.api", "--debug", "run", "-p", "8000"]
-# CMD ["gunicorn", "-b", ":8000", "backend.app:app", "-c", "./backend/gunicorn_config.py"]
+ENTRYPOINT ["/app/backend/entrypoint.sh", "-d"]
 
 FROM python:3.11.0-slim-buster as builder
 
@@ -37,6 +35,9 @@ RUN apt-get update && \
 COPY requirements.txt ./
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
+# entrypoint script
+COPY entrypoint.sh ./
+
 RUN pip install -r requirements.txt
 
 FROM python:3.11.0-slim-buster as production
@@ -49,7 +50,7 @@ RUN addgroup --system app && adduser --system --group app
 
 # create the appropriate directories
 ENV HOME=/home/app
-ENV APP_HOME=/home/app/web
+ENV APP_HOME=/home/app/backend
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 
@@ -57,6 +58,7 @@ WORKDIR $APP_HOME
 RUN apt-get update && apt-get install -y --no-install-recommends netcat
 COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
+COPY --from=builder /usr/src/app/entrypoint.sh .
 RUN pip install --upgrade pip
 RUN pip install --no-cache /wheels/*
 
@@ -69,26 +71,4 @@ RUN chown -R app:app $APP_HOME
 # change to the app user
 USER app
 WORKDIR /home/app/
-CMD ["gunicorn", "-b", ":8000", "web.wsgi:handler"]
-
-# CMD ["gunicorn", "-b", ":8000", "web.app:app"]
-
-# FROM python:3.10-slim as build
-# RUN apt-get update
-# RUN apt-get install -y --no-install-recommends \
-# 	      build-essential gcc 
-
-# WORKDIR /usr/app
-# RUN python -m venv /usr/app/venv
-# ENV PATH="/usr/app/venv/bin:$PATH"
-
-# COPY requirements.txt .
-# RUN pip install -r requirements.txt
-
-# FROM python:3.10-slim@sha256:2bac43769ace90ebd3ad83e5392295e25dfc58e58543d3ab326c3330b505283d
-# WORKDIR /usr/app/venv
-# COPY --from=build /usr/app/venv ./venv
-# COPY . .
-
-# ENV PATH="/usr/app/venv/bin:$PATH"
-# CMD [ "python", "app.py" ]
+ENTRYPOINT ["./backend/entrypoint.sh", "-p"]

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-
 from backend.api.database.utils.import_rl_csv import import_rl_csv
 from backend.api.database.utils.import_teros_csv import import_teros_csv
+
 
 if __name__ == "__main__":
     print("Importing rocketlogger data")

@@ -12,3 +12,4 @@ marshmallow
 flask_marshmallow
 marshmallow_sqlalchemy
 flask_sqlalchemy
+Flask_Migrate

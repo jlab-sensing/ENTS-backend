@@ -18,9 +18,9 @@ from datetime import datetime
 from tqdm import tqdm
 from sqlalchemy.orm import Session
 
-from ..conn import engine
-from ..database.models.power_data import PowerData
-from ..database.get_or_create import get_or_create_cell, get_or_create_logger
+from ...conn import engine
+from ...database.models.power_data import PowerData
+from ...database.get_or_create import get_or_create_cell, get_or_create_logger
 
 
 def import_rl_csv(path, logger_name, cell1_name, cell2_name, batch_size=10000):
