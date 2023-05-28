@@ -1,4 +1,5 @@
 from ..models import *
+from .logger import Logger
 
 
 class PowerData(db.Model):
@@ -20,6 +21,23 @@ class PowerData(db.Model):
 
     def __repr__(self):
         return f"PowerData(id={self.id!r}, ts={self.ts!r})"
+
+    def add_power_data(logger_name, cell_name, ts, v, i):
+        cur_logger = Logger.query.filter_by(name=logger_name).first()
+        cur_cell = Cell.query.filter_by(name=cell_name).first()
+        if cur_cell is None:
+            new_cell = Cell(name=cell_name)
+            new_cell.save()
+            cur_cell = Cell.query.filter_by(name=cell_name).first()
+        if cur_logger is None:
+            new_logger = Logger(name=logger_name)
+            new_logger.save()
+            cur_logger = Logger.query.filter_by(name=logger_name).first()
+        power_data = PowerData(logger_id=cur_logger.id, cell_id=cur_cell.id,
+                               ts=ts, voltage=v, current=i)
+        db.session.add(power_data)
+        db.session.commit()
+        return power_data
 
     def get_power_data(cell_id, resample='hour'):
         data = []
