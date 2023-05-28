@@ -14,3 +14,11 @@ class Logger(db.Model):
 
     def __repr__(self):
         return repr(self.name)
+
+    @classmethod
+    def get_all(cell):
+        cell.query.all()
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()

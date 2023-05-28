@@ -1,4 +1,4 @@
-from ....api import ma
+from ..schemas import *
 
 
 class CellDataSchema(ma.SQLAlchemySchema):

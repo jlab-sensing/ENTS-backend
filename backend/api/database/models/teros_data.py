@@ -1,5 +1,6 @@
 from ..models import *
 from sqlalchemy.sql import func
+from .cell import Cell
 
 
 def vwc(raw):
@@ -17,6 +18,7 @@ class TEROSData(db.Model):
     ts = db.Column(db.DateTime, nullable=False)
     ts_server = db.Column(db.DateTime, server_default=func.now())
     vwc = db.Column(db.Float)
+    raw_vwc = db.Column(db.Float)
     temp = db.Column(db.Float)
     ec = db.Column(db.Integer)
 
@@ -24,6 +26,19 @@ class TEROSData(db.Model):
 
     def __repr__(self):
         return f"TEROSData(id={self.id!r}, ts={self.ts!r})"
+
+    def add_teros_data(cell_name, ts, vwc, raw_vwc, temp, ec):
+        cur_cell = Cell.query.filter_by(name=cell_name).first()
+        if cur_cell is None:
+            new_cell = Cell(name=cell_name)
+            new_cell.save()
+            cur_cell = Cell.query.filter_by(name=cell_name).first()
+        teros_data = TEROSData(cell_id=cur_cell.id, ts=ts,
+                               raw_vwc=raw_vwc, vwc=vwc, temp=temp, ec=ec)
+        db.session.add(teros_data)
+        db.session.commit()
+        print(teros_data, flush=True)
+        return teros_data
 
     def get_teros_data(cell_id, resample='hour'):
         data = []
