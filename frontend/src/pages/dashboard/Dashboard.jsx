@@ -4,7 +4,9 @@ import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
 import "chartjs-adapter-luxon";
 import zoomPlugin from "chartjs-plugin-zoom";
-import { getCellData, getCellIds } from "../../services/cell";
+import { getCellIds } from "../../services/cell";
+import { getTerosData } from "../../services/teros";
+import { getPowerData } from "../../services/power";
 import PwrChart from "../../charts/pwrChart/pwrChart";
 import VChart from "../../charts/vChart/vChart";
 import VwcChart from "../../charts/vwcChart/vwcChart";
@@ -96,18 +98,23 @@ function Dashboard() {
   });
 
   const updateCharts = (sC, sD, eD) => {
-    getCellData(sC, sD, eD).then((response) => {
-      const cellDataObj = response.data;
-      cellDataObj.timestamp = cellDataObj.timestamp.map((dateTime) =>
+    // getCellData(sC, sD, eD).then((response) => {
+    //   const cellDataObj = response.data;
+    //   cellDataObj.timestamp = cellDataObj.timestamp.map((dateTime) =>
+    //     DateTime.fromHTTP(dateTime)
+    //   );
+    // setCellData(cellDataObj);
+    getPowerData(sC, sD, eD).then((response) => {
+      const powerDataObj = response.data;
+      powerDataObj.timestamp = powerDataObj.timestamp.map((dateTime) =>
         DateTime.fromHTTP(dateTime)
       );
-      setCellData(cellDataObj);
       setVChartData({
-        labels: cellDataObj.timestamp,
+        labels: powerDataObj.timestamp,
         datasets: [
           {
             label: "Voltage (v)",
-            data: cellDataObj.v,
+            data: powerDataObj.v,
             borderColor: "lightgreen",
             borderWidth: 2,
             fill: false,
@@ -117,7 +124,7 @@ function Dashboard() {
           },
           {
             label: "Current (µA)",
-            data: cellDataObj.i,
+            data: powerDataObj.i,
             borderColor: "purple",
             borderWidth: 2,
             fill: false,
@@ -128,11 +135,11 @@ function Dashboard() {
         ],
       });
       setPwrChartData({
-        labels: cellDataObj.timestamp,
+        labels: powerDataObj.timestamp,
         datasets: [
           {
             label: "Power (µV)",
-            data: cellDataObj.p,
+            data: powerDataObj.p,
             borderColor: "orange",
             borderWidth: 2,
             fill: false,
@@ -141,12 +148,18 @@ function Dashboard() {
           },
         ],
       });
+    });
+    getTerosData(sC, sD, eD).then((response) => {
+      const terosDataObj = response.data;
+      terosDataObj.timestamp = terosDataObj.timestamp.map((dateTime) =>
+        DateTime.fromHTTP(dateTime)
+      );
       setVWCChartData({
-        labels: cellDataObj.timestamp,
+        labels: terosDataObj.timestamp,
         datasets: [
           {
             label: "Volumetric Water Content (VWC)",
-            data: cellDataObj.vwc,
+            data: terosDataObj.vwc,
             borderColor: "blue",
             borderWidth: 2,
             fill: false,
@@ -156,7 +169,7 @@ function Dashboard() {
           },
           {
             label: "Electrical Conductivity (µS/cm)",
-            data: cellDataObj.ec,
+            data: terosDataObj.ec,
             borderColor: "black",
             borderWidth: 2,
             fill: false,
@@ -167,11 +180,11 @@ function Dashboard() {
         ],
       });
       setTempChartData({
-        labels: cellDataObj.timestamp,
+        labels: terosDataObj.timestamp,
         datasets: [
           {
             label: "Temperature",
-            data: cellDataObj.temp,
+            data: terosDataObj.temp,
             borderColor: "red",
             borderWidth: 2,
             fill: false,

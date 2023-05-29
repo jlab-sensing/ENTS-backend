@@ -85,6 +85,7 @@ class TEROSData(db.Model):
         )
 
         for row in db.session.execute(stmt):
+            print(row.ts, flush=True)
             data['timestamp'].append(row.ts)
             data['vwc'].append(vwc(row.vwc))
             data['temp'].append(row.temp)

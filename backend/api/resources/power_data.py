@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, jsonify
 from flask_restful import Resource
 from ..database.schemas.power_data_schema import PowerDataSchema
 from ..database.schemas.p_input import PInput
@@ -23,3 +23,6 @@ class Power_Data(Resource):
                                                 cell_name, ts, voltage, current)
         print(new_pwr_data, flush=True)
         return power_schema.jsonify(new_pwr_data)
+
+    def get(self, cell_id=0):
+        return jsonify(PowerData.get_power_data_obj(cell_id))

@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, jsonify
 from flask_restful import Resource
 from ..database.schemas.teros_data_schema import TEROSDataSchema
 from ..database.schemas.t_input import TInput
@@ -24,3 +24,6 @@ class Teros_Data(Resource):
             cell_name, ts, vwc, raw_vwc, temp, ec)
         print(new_teros_data, flush=True)
         return teros_schema.jsonify(new_teros_data)
+
+    def get(self, cell_id=0):
+        return jsonify(TEROSData.get_teros_data_obj(cell_id))
