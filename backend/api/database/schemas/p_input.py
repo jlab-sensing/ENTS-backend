@@ -2,7 +2,7 @@ from . import *
 
 
 class PInput(ma.SQLAlchemySchema):
-    c
+    """validates power input"""
     type = ma.String()
     logger = ma.String()
     cell = ma.String()
