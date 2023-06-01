@@ -28,7 +28,7 @@ def create_app() -> Flask:
         api.add_resource(Cell_Data, '/api/cell/data/<int:cell_id>',
                          endpoint='cell_data_ep')
         api.add_resource(Cell_Id, '/api/cell/id')
-        api.add_resource(Power_Data, '/api/power/')
-        api.add_resource(Teros_Data, '/api/teros/')
+        api.add_resource(Power_Data, '/api/power/', '/api/power/<int:cell_id>')
+        api.add_resource(Teros_Data, '/api/teros/', '/api/teros/<int:cell_id>')
 
     return app
