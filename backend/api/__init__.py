@@ -1,3 +1,8 @@
+"""API module
+
+Configures endpoints for DB
+
+"""
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -13,6 +18,7 @@ migrate = Migrate()
 
 
 def create_app() -> Flask:
+    """init flask app"""
     app = Flask(__name__)
     app.config.from_object(Config)
     db.init_app(app)
@@ -21,6 +27,8 @@ def create_app() -> Flask:
     cors = CORS(app, resources={r'/*': {'methods': '*'}})
     api = Api(app)
     with app.app_context():
+        """-routing-"""
+
         from .resources.cell_data import Cell_Data
         from .resources.cell_id import Cell_Id
         from .resources.power_data import Power_Data

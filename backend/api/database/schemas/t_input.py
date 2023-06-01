@@ -2,6 +2,7 @@ from . import *
 
 
 class TInput(ma.SQLAlchemySchema):
+    """validates teros input"""
     type = ma.String()
     cell = ma.String()
     ts = ma.TimeDelta(precision="microseconds")

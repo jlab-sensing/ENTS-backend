@@ -23,6 +23,9 @@ class PowerData(db.Model):
         return f"PowerData(id={self.id!r}, ts={self.ts!r})"
 
     def add_power_data(logger_name, cell_name, ts, v, i):
+        """add new data point for power table
+        creates new logger or cell if they don't exist
+        """
         cur_logger = Logger.query.filter_by(name=logger_name).first()
         cur_cell = Cell.query.filter_by(name=cell_name).first()
         if cur_cell is None:
@@ -40,6 +43,8 @@ class PowerData(db.Model):
         return power_data
 
     def get_power_data(cell_id, resample='hour'):
+        """gets power data aggregated by attributes
+        """
         data = []
 
         resampled = (
@@ -83,6 +88,8 @@ class PowerData(db.Model):
         return data
 
     def get_power_data_obj(cell_id, resample='hour'):
+        """gets teros data as a list of objects
+        """
         data = {
             'timestamp': [],
             'v': [],

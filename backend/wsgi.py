@@ -1,4 +1,11 @@
+"""WSGI module
+
+Deploys on gunicorn
+
+"""
 from . import api
+
+
 handler = api.create_app()
 
 

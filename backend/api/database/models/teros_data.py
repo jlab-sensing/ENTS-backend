@@ -37,10 +37,11 @@ class TEROSData(db.Model):
                                raw_vwc=raw_vwc, vwc=vwc, temp=temp, ec=ec)
         db.session.add(teros_data)
         db.session.commit()
-        print(teros_data, flush=True)
         return teros_data
 
     def get_teros_data(cell_id, resample='hour'):
+        """gets teros data aggregated by attributes
+        """
         data = []
 
         stmt = (
@@ -65,6 +66,8 @@ class TEROSData(db.Model):
         return data
 
     def get_teros_data_obj(cell_id, resample='hour'):
+        """gets teros data as a list of objects
+        """
         data = {
             'timestamp': [],
             'vwc': [],
@@ -85,7 +88,6 @@ class TEROSData(db.Model):
         )
 
         for row in db.session.execute(stmt):
-            print(row.ts, flush=True)
             data['timestamp'].append(row.ts)
             data['vwc'].append(vwc(row.vwc))
             data['temp'].append(row.temp)

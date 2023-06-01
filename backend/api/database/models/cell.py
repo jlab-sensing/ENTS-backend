@@ -9,9 +9,6 @@ class Cell(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text(), nullable=False, unique=True)
     location = db.Column(db.Text())
-    # teros_data = db.relationship(
-    #     "TEROSData", back_populates="cell")
-    # power_data = db.relationship("PowerData", back_populates="cell")
 
     def __repr__(self):
         return repr(self.name)
@@ -24,6 +21,3 @@ class Cell(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    # def delete(self):
-    #     db.session.delete(self)
-    #     db.session.commit()
