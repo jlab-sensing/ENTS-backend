@@ -7,10 +7,10 @@ import zoomPlugin from "chartjs-plugin-zoom";
 import { getCellIds } from "../../services/cell";
 import { getTerosData } from "../../services/teros";
 import { getPowerData } from "../../services/power";
-import PwrChart from "../../charts/pwrChart/pwrChart";
-import VChart from "../../charts/vChart/vChart";
-import VwcChart from "../../charts/vwcChart/vwcChart";
-import TempChart from "../../charts/tempChart/tempChart";
+import PwrChart from "../../charts/pwrChart/PwrChart";
+import VChart from "../../charts/vChart/VChart";
+import VwcChart from "../../charts/vwcChart/VwcChart";
+import TempChart from "../../charts/tempChart/TempChart";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { DateTime } from "luxon";
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -233,8 +233,6 @@ function Dashboard() {
         sx={{ p: 2 }}
         flexItem
       >
-        {/* <Grid sx={{ marginTop: ".25%" }} container spacing={4}> */}
-        {/* <Grid item xs="auto"> */}
         <FormControl sx={{ width: 1 / 4 }}>
           <InputLabel id="cell-select">Cell</InputLabel>
           <Select
@@ -256,8 +254,6 @@ function Dashboard() {
             })}
           </Select>
         </FormControl>
-        {/* </Grid> */}
-        {/* <Grid item xs="auto"> */}
         <Box display="flex" justifyContent="center" alignItems="center">
           <LocalizationProvider dateAdapter={AdapterLuxon}>
             <DateTimePicker
@@ -277,31 +273,8 @@ function Dashboard() {
             />
           </LocalizationProvider>
         </Box>
-        {/* </Grid> */}
-        {/* <Grid item xs="auto"> */}
         <DownloadBtn disabled={dBtnDisabled} data={cellData} />
-        {/* </Grid> */}
-        {/* </Grid> */}
       </Stack>
-      {/* <div onChange={changeCell}>
-        {cellIds.data.map(([id, name]) => {
-          return (
-            <div key={id}>
-              <input type="radio" value={id} name="selectCell" /> {name}
-            </div>
-          );
-        })}
-      </div>
-      <button type="button" className="btn2" onClick={getCellIds}>
-        GetCellIds
-      </button>
-      <button
-        type="button"
-        className="btn btn-sm btn-primary"
-        onClick={() => updateCharts(selectedCell)}
-      >
-        GetCellData
-      </button> */}
       <Grid
         container
         sx={{ height: "100%", width: "100%", p: 2 }}
