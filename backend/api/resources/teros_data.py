@@ -20,9 +20,9 @@ class Teros_Data(Resource):
         raw_vwc = teros_data_obj['raw_vwc']
         temp = teros_data_obj['temp']
         ec = teros_data_obj['ec']
+        water_pot =teros_data_obj['water_pot']
         new_teros_data = TEROSData.add_teros_data(
-            cell_name, ts, vwc, raw_vwc, temp, ec)
-        print(new_teros_data, flush=True)
+            cell_name, ts, vwc, raw_vwc, temp, ec, water_pot)
         return teros_schema.jsonify(new_teros_data)
 
     def get(self, cell_id=0):

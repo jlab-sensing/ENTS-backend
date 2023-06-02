@@ -21,7 +21,6 @@ class Power_Data(Resource):
         current = power_data_obj['i']
         new_pwr_data = PowerData.add_power_data(logger_name,
                                                 cell_name, ts, voltage, current)
-        print(new_pwr_data, flush=True)
         return power_schema.jsonify(new_pwr_data)
 
     def get(self, cell_id=0):
