@@ -52,12 +52,12 @@ jobs:
           target: production
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
-  
+
   backend:
     runs-on: ubuntu-latest
     permissions:
       packages: write
-    
+
     env:
       DB_HOST: ${{ secrets.DB_HOST }}
       DB_PASS: ${{ secrets.DB_PASS }}
@@ -192,7 +192,7 @@ jobs:
           output_file: k8s/frontend.yaml
           variables: |
             hostname=${{ secrets.HOSTNAME }}
-      
+
       - name: Generate backend.yaml
         uses: cuchi/jinja2-action@v1.2.0
         with:
@@ -229,30 +229,30 @@ jobs:
         shell: bash
         run: cat k8s/*.yaml | ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} '/snap/bin/microk8s kubectl apply -f -'
 
-  # apply_db_migrations:
-  #   runs-on: ubuntu-latest
-  #   needs: [frontend, backend, cs-http, http-api]
-  #   environment: ${{ github.ref_name }}
+  apply_db_migrations:
+    runs-on: ubuntu-latest
+    needs: [frontend, backend, cs-http, http-api]
+    environment: ${{ github.ref_name }}
 
-    # env:
-    #   DB_HOST: ${{ secrets.DB_HOST }}
-    #   DB_PASS: ${{ secrets.DB_PASS }}
-    #   DB_PORT: ${{ secrets.DB_PORT }}
-    #   DB_USER: ${{ secrets.DB_USER }}
-    #   DB_DATABASE: ${{ github.ref_name }}
+    env:
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PASS: ${{ secrets.DB_PASS }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_DATABASE: ${{ github.ref_name }}
 
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
 
-  #     - name: Setup python
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: "3.10"
-  #         cache: 'pip'
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "pip"
 
-  #     - name: Install dependencies
-  #       run: pip install -r requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
-  #     - name: Run migrations
-  #       run: alembic -c backend/api/database/alembic.ini upgrade head
+      - name: Run migrations
+        run: flask --app backend.api db migrate -d ./backend/api/migrations
