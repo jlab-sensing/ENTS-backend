@@ -19,7 +19,7 @@ A local version of Dirtviz can be started using `docker-compose.yml`. This will 
 docker compose up --build -d
 ```
 
-At this point the portal is accessible at [http://localhost:5006/dirtviz](http://localhost:5006/dirtviz), but will likely show a blank page in your web browser and throw an error. This is due to the database being empty, therefore there is no data to display.
+At this point the portal is accessible at [http://localhost:3000/frontend](http://localhost:5006/frontend), but will likely show a blank page in your web browser and throw an error. This is due to the database being empty, therefore there is no data to display.
 
 ### Setup Connection Stings
 
@@ -46,15 +46,16 @@ export DB_DATABASE=dirtviz
 ```
 
 <!-- for reference OLD -->
-<!-- ### Migrate Database
+
+### Migrate Database
 
 Alembic is used to manage database migrations. Alembic is a python package and acts as a complement to sqlalchemy which is used to query the database. The following will upgrade the database to the most recent version and should be done any time the database schema changes.
 
-> **NOTE:** It is recommended that a virtual environment is setup and ***ALL*** dependencies are installed via `pip install -r requirements.txt`. If you are unsure what this means, read [this](https://docs.python.org/3/tutorial/venv.html).
+> **NOTE:** It is recommended that a virtual environment is setup and **_ALL_** dependencies are installed via `pip install -r requirements.txt`. If you are unsure what this means, read [this](https://docs.python.org/3/tutorial/venv.html).
 
 ```bash
-alembic -c dirtviz/db/alembic.ini upgrade head
-``` -->
+./migrate.sh
+```
 
 ### Import Example Data
 
@@ -66,7 +67,7 @@ python import_example_data.py
 
 Now some graphs should appear on the website and look like the following.
 
-![Example screenshot of Dirtviz](.github/assets/img/screenshot.png)
+![Example screenshot of Dirtviz](.github/assets/img/dashboard.png)
 
 ## Running in Production
 
@@ -170,6 +171,10 @@ server {
 }
 ```
 
+## Web server
+
+Currently the frontend is served using an Nginx proxy server configured under `./frontend/frontend_server.conf`. The backend is accessed by route: [http://localhost:3000/frontend/api](http://localhost:5006/frontend/api) through a proxy pass.
+
 ## Integrations
 
 Currently there are two integrations that allow for data to uploaded to the database.
@@ -186,31 +191,32 @@ The HTTP integration is currently under development and will be changed signific
 
 ## FAQ
 
-<!-- ### How do I create database migrations?
+### How do I create database migrations?
 
 This projects makes use of [alembic](https://alembic.sqlalchemy.org/en/latest/) to handle database migrations. It is recommended to have a understanding of the package first before attempting to modify the database schema. Due to the way that alembic handles package imports, the config file needs to be specified while running from the root project folder. For example the following will autogenerate new migrations from the latest revision of the database.
+
+The script migrate.sh takes in a "-n" for generating a new migration and by itself runs "alembic upgrade head".
 
 > **NOTE:** Autogeneration of migrations requires a running version of the database. Refer above to see how to create and connect to a local version of the database
 
 ```bash
-# Migrate to latest version
-alembic -c dirtviz/db/alembic.ini upgrade head
-# Autogenerate migration
-alembic -c dirtviz/db/alembic.ini revision --autogenerate -m "<MIGRATION MESSAGE>"
-# Run generated migration
-alembic -c dirtviz/db/alembic.ini upgrade head
+./migrate.sh -n "migration message here"
 ```
 
 ### How do I reset the local database?
 
-Sometime the database breaks and causes errors. Usually deleting the docker volume `postgresqldata` causing the database to be recreated fixes the issue. The following does exactly that and reapplies the migrations to the cleaned database.
+Sometimes the database breaks and causes errors. Usually deleting the docker volume `postgresqldata` causing the database to be recreated fixes the issue. The following does exactly that and reapplies the migrations to the cleaned database.
 
 ```bash
 docker compose down
 docker volume rm dirtviz_postgresqldata
-alembic -c dirtviz/db/alembic.ini upgrade head
+./migrate.sh
 docker compose up --build -d
-``` -->
+```
+
+### \[Flask-migrate\] Error: Can't locate revision identified by 'e5dbb2a59f94'
+
+For this error, it either means that you've deleted a revision corresponding to the id located in `./backend/api/migrations/versions` or that if it's during the deployment process, the alembic version in the table is mismatched. Double check to see if the revision history is the same for both deployment and locally.
 
 ### How do I import my own TEROS and Rocketlogger data previously collected?
 
