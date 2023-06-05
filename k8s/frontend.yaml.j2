@@ -1,0 +1,68 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: dirtviz-{{ env['GITHUB_REF_NAME'] }}
+  name: frontend
+  labels:
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+      git-branch: {{ env['GITHUB_REF_NAME'] }}
+  template:
+    metadata:
+      labels:
+        app: frontend
+        git-branch: {{ env['GITHUB_REF_NAME'] }}
+        git-commit: {{ env['GITHUB_SHA'] }}
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/jlab-sensing/dirtviz-frontend:{{ env['GITHUB_REF_NAME'] }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          envFrom:
+            - secretRef:
+                name: dburl
+          env:
+            - name: DB_DATABASE
+              value: {{ env['GITHUB_REF_NAME'] }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: dirtviz-{{ env['GITHUB_REF_NAME'] }}
+  name: frontend
+  labels:
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+spec:
+  selector:
+    app: frontend
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+  ports:
+    - port: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: dirtviz-{{ env['GITHUB_REF_NAME'] }}
+  name: frontend-ingress
+  labels:
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+        - path: /dirtviz/{{ env['GITHUB_REF_NAME'] }}/frontend(/|$)(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: frontend
+              port:
+                number: 80

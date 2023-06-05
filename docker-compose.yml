@@ -1,19 +1,37 @@
 version: "3.9"
 
 services:
-  portal:
-    build: .
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+      target: production
+    image: dirtviz-backend
     environment:
       DB_USER: dirtviz
       DB_PASS: password
       DB_HOST: postgresql
       DB_PORT: 5432
       DB_DATABASE: dirtviz
-      BOKEH_ALLOW_WS_ORIGIN: "localhost:5006"
     ports:
-      - "5006:5006"
+      - "8000:8000"
     depends_on:
       - postgresql
+
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: ./Dockerfile
+      target: production
+    image: dirtviz-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    # For dev
+    # volumes:
+    #   - "./frontend/src:/app/src"
 
   postgresql:
     image: postgres:13
@@ -42,6 +60,7 @@ services:
     build:
       context: .
       dockerfile: cs-http.Dockerfile
+    image: dirtviz-cs-http
     environment:
       DB_USER: dirtviz
       DB_PASS: password
@@ -57,6 +76,7 @@ services:
     build:
       context: .
       dockerfile: http-api.Dockerfile
+    image: dirtviz-http-api
     environment:
       DB_USER: dirtviz
       DB_PASS: password
@@ -67,6 +87,7 @@ services:
       - "8090"
     depends_on:
       - postgresql
+
 
 volumes:
   postgresqldata:

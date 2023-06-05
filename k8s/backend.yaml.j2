@@ -1,0 +1,47 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: dirtviz-{{ env['GITHUB_REF_NAME'] }}
+  name: backend
+  labels:
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+spec:
+  selector:
+    matchLabels:
+      app: backend
+      git-branch: {{ env['GITHUB_REF_NAME'] }}
+  template:
+    metadata:
+      labels:
+        app: backend
+        git-branch: {{ env['GITHUB_REF_NAME'] }}
+        git-commit: {{ env['GITHUB_SHA'] }}
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/jlab-sensing/dirtviz-backend:{{ env['GITHUB_REF_NAME'] }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - secretRef:
+                name: dburl
+          env:
+            - name: DB_DATABASE
+              value: {{ env['GITHUB_REF_NAME'] }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: dirtviz-{{ env['GITHUB_REF_NAME'] }}
+  name: backend
+  labels:
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+spec:
+  selector:
+    app: backend
+    git-branch: {{ env['GITHUB_REF_NAME'] }}
+  ports:
+    - port: 8000
+---
