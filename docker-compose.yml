@@ -18,13 +18,6 @@ services:
     depends_on:
       - postgresql
 
-  nginx:
-    build: ./nginx
-    ports:
-      - 8001:80
-    depends_on:
-      - backend
-
 
   frontend:
     build: 
@@ -39,20 +32,6 @@ services:
     # For dev
     # volumes:
     #   - "./frontend/src:/app/src"
-
-  # portal:
-  #   build: .
-  #   environment:
-  #     DB_USER: dirtviz
-  #     DB_PASS: password
-  #     DB_HOST: postgresql
-  #     DB_PORT: 5432
-  #     DB_DATABASE: dirtviz
-  #     BOKEH_ALLOW_WS_ORIGIN: "localhost:5006"
-  #   ports:
-  #     - "5006:5006"
-  #   depends_on:
-  #     - postgresql
 
   postgresql:
     image: postgres:13
