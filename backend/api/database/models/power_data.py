@@ -13,8 +13,8 @@ class PowerData(db.Model):
                         nullable=False)
     ts = db.Column(db.DateTime, nullable=False)
     ts_server = db.Column(db.DateTime, server_default=db.func.now())
-    current = db.Column(db.Integer)
-    voltage = db.Column(db.Integer)
+    current = db.Column(db.Float)
+    voltage = db.Column(db.Float)
 
     cell = db.relationship("Cell")
     logger = db.relationship("Logger")

@@ -10,3 +10,4 @@ class TInput(ma.SQLAlchemySchema):
     raw_vwc = ma.Float()
     temp = ma.Float()
     ec = ma.Float()
+    water_pot = ma.Float()
