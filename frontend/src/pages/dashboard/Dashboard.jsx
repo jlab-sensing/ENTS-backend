@@ -25,6 +25,7 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import HorizontalRuleRoundedIcon from "@mui/icons-material/HorizontalRuleRounded";
+import DateRangeSel from "../../components/DateRangeSel";
 Chart.register(CategoryScale);
 Chart.register(zoomPlugin);
 
@@ -33,6 +34,13 @@ function Dashboard() {
     DateTime.now().minus({ months: 1 })
   );
   const [endDate, setEndDate] = useState(DateTime.now());
+  useEffect(() => {
+    // console.log(startDate);
+  }, [startDate]);
+
+  useEffect(() => {
+    // console.log(endDate);
+  }, [endDate]);
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [cellData, setCellData] = useState({});
   const [selectedCell, setSelectedCell] = useState(0);
@@ -255,7 +263,7 @@ function Dashboard() {
           </Select>
         </FormControl>
         <Box display="flex" justifyContent="center" alignItems="center">
-          <LocalizationProvider dateAdapter={AdapterLuxon}>
+          {/* <LocalizationProvider dateAdapter={AdapterLuxon}>
             <DateTimePicker
               label="Start Date"
               value={startDate}
@@ -271,7 +279,8 @@ function Dashboard() {
               onChange={(endDate) => setEndDate(endDate)}
               views={["year", "month", "day", "hours"]}
             />
-          </LocalizationProvider>
+          </LocalizationProvider> */}
+          <DateRangeSel startDate={startDate} endDate={endDate}></DateRangeSel>
         </Box>
         <DownloadBtn disabled={dBtnDisabled} data={cellData} />
       </Stack>
