@@ -1,5 +1,7 @@
 from ..models import *
 from .logger import Logger
+from datetime import datetime
+from dateutil.relativedelta import *
 
 
 class PowerData(db.Model):
@@ -9,8 +11,9 @@ class PowerData(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     logger_id = db.Column(db.Integer, db.ForeignKey("logger.id"))
-    cell_id = db.Column(db.Integer, db.ForeignKey("cell.id", ondelete="CASCADE"),
-                        nullable=False)
+    cell_id = db.Column(
+        db.Integer, db.ForeignKey("cell.id", ondelete="CASCADE"), nullable=False
+    )
     ts = db.Column(db.DateTime, nullable=False)
     ts_server = db.Column(db.DateTime, server_default=db.func.now())
     current = db.Column(db.Float)
@@ -36,96 +39,98 @@ class PowerData(db.Model):
             new_logger = Logger(name=logger_name)
             new_logger.save()
             cur_logger = Logger.query.filter_by(name=logger_name).first()
-        power_data = PowerData(logger_id=cur_logger.id, cell_id=cur_cell.id,
-                               ts=ts, voltage=v, current=i)
+        power_data = PowerData(
+            logger_id=cur_logger.id, cell_id=cur_cell.id, ts=ts, voltage=v, current=i
+        )
         db.session.add(power_data)
         db.session.commit()
         return power_data
 
-    def get_power_data(cell_id, resample='hour'):
-        """gets power data aggregated by attributes
-        """
+    def get_power_data(
+        cell_id,
+        resample="hour",
+        startTime=datetime.now() - relativedelta(months=1),
+        endTime=datetime.now(),
+    ):
+        """gets power data aggregated by attributes"""
         data = []
 
         resampled = (
             db.select(
                 db.func.date_trunc(resample, PowerData.ts).label("ts"),
                 db.func.avg(PowerData.voltage).label("voltage"),
-                db.func.avg(PowerData.current).label("current")
+                db.func.avg(PowerData.current).label("current"),
             )
             .where(PowerData.cell_id == cell_id)
+            # .filter((PowerData.ts > startTime) & (PowerData.ts < endTime))
             .group_by(db.func.date_trunc(resample, PowerData.ts))
             .subquery()
         )
 
-        adj_units = (
-            db.select(
-                resampled.c.ts.label("ts"),
-                (resampled.c.voltage * 10e-9).label("voltage"),
-                (resampled.c.current * 10e-6).label("current")
-            )
-            .subquery()
-        )
+        adj_units = db.select(
+            resampled.c.ts.label("ts"),
+            (resampled.c.voltage * 10e-9).label("voltage"),
+            (resampled.c.current * 10e-6).label("current"),
+        ).subquery()
 
-        stmt = (
-            db.select(
-                adj_units.c.ts.label("ts"),
-                adj_units.c.voltage.label("voltage"),
-                adj_units.c.current.label("current"),
-                (adj_units.c.voltage * adj_units.c.current).label("power")
-            )
-            .order_by(adj_units.c.ts)
-        )
+        stmt = db.select(
+            adj_units.c.ts.label("ts"),
+            adj_units.c.voltage.label("voltage"),
+            adj_units.c.current.label("current"),
+            (adj_units.c.voltage * adj_units.c.current).label("power"),
+        ).order_by(adj_units.c.ts)
 
         for row in db.session.execute(stmt):
-            data.append({
-                "ts": row.ts,
-                "v": row.voltage,
-                "i": row.current,
-                "p": row.power,
-            })
+            data.append(
+                {
+                    "ts": row.ts,
+                    "v": row.voltage,
+                    "i": row.current,
+                    "p": row.power,
+                }
+            )
 
         return data
 
-    def get_power_data_obj(cell_id, resample='hour'):
-        """gets teros data as a list of objects
-        """
+    def get_power_data_obj(
+        cell_id,
+        resample="hour",
+        start_time=datetime.now() - relativedelta(months=1),
+        end_time=datetime.now(),
+    ):
+        """gets teros data as a list of objects"""
         data = {
-            'timestamp': [],
-            'v': [],
-            'i': [],
-            'p': [],
+            "timestamp": [],
+            "v": [],
+            "i": [],
+            "p": [],
         }
 
         resampled = (
             db.select(
                 db.func.date_trunc(resample, PowerData.ts).label("ts"),
                 db.func.avg(PowerData.voltage).label("voltage"),
-                db.func.avg(PowerData.current).label("current")
+                db.func.avg(PowerData.current).label("current"),
             )
-            .where(PowerData.cell_id == cell_id)
+            .where((PowerData.cell_id == cell_id))
+            # .filter((PowerData.ts >= startTime, PowerData.ts <= endTime))
+            .filter((PowerData.ts.between(start_time, end_time)))
             .group_by(db.func.date_trunc(resample, PowerData.ts))
             .subquery()
         )
 
-        adj_units = (
-            db.select(
-                resampled.c.ts.label("ts"),
-                (resampled.c.voltage * 10e-9).label("voltage"),
-                (resampled.c.current * 10e-6).label("current")
-            )
-            .subquery()
-        )
+        adj_units = db.select(
+            resampled.c.ts.label("ts"),
+            (resampled.c.voltage * 10e-9).label("voltage"),
+            (resampled.c.current * 10e-6).label("current"),
+        ).subquery()
 
-        stmt = (
-            db.select(
-                adj_units.c.ts.label("ts"),
-                adj_units.c.voltage.label("voltage"),
-                adj_units.c.current.label("current"),
-                (adj_units.c.voltage * adj_units.c.current).label("power")
-            )
-            .order_by(adj_units.c.ts)
-        )
+        stmt = db.select(
+            adj_units.c.ts.label("ts"),
+            adj_units.c.voltage.label("voltage"),
+            adj_units.c.current.label("current"),
+            (adj_units.c.voltage * adj_units.c.current).label("power"),
+        ).order_by(adj_units.c.ts)
 
         for row in db.session.execute(stmt):
             data["timestamp"].append(row.ts)

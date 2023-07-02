@@ -36,10 +36,12 @@ function Dashboard() {
   const [endDate, setEndDate] = useState(DateTime.now());
   useEffect(() => {
     // console.log(startDate);
+    updateCharts(selectedCell, startDate, endDate);
   }, [startDate]);
 
   useEffect(() => {
     // console.log(endDate);
+    updateCharts(selectedCell, startDate, endDate);
   }, [endDate]);
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [cellData, setCellData] = useState({});
@@ -280,7 +282,12 @@ function Dashboard() {
               views={["year", "month", "day", "hours"]}
             />
           </LocalizationProvider> */}
-          <DateRangeSel startDate={startDate} endDate={endDate}></DateRangeSel>
+          <DateRangeSel
+            startDate={startDate}
+            endDate={endDate}
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
+          ></DateRangeSel>
         </Box>
         <DownloadBtn disabled={dBtnDisabled} data={cellData} />
       </Stack>

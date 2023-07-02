@@ -1,10 +1,17 @@
 from ..models import *
 from sqlalchemy.sql import func
 from .cell import Cell
+from datetime import datetime
+from dateutil.relativedelta import *
 
 
 def vwc(raw):
-    return (6.771*(10**-10)) * (raw**3) + (-5.105*(10**-6)) * (raw**2) + (1.302*(10**-2)) * (raw) - 10.848
+    return (
+        (6.771 * (10**-10)) * (raw**3)
+        + (-5.105 * (10**-6)) * (raw**2)
+        + (1.302 * (10**-2)) * (raw)
+        - 10.848
+    )
 
 
 class TEROSData(db.Model):
@@ -13,8 +20,9 @@ class TEROSData(db.Model):
     __tablename__ = "teros_data"
 
     id = db.Column(db.Integer, primary_key=True)
-    cell_id = db.Column(db.Integer, db.ForeignKey("cell.id", ondelete="CASCADE"),
-                        nullable=False)
+    cell_id = db.Column(
+        db.Integer, db.ForeignKey("cell.id", ondelete="CASCADE"), nullable=False
+    )
     ts = db.Column(db.DateTime, nullable=False)
     ts_server = db.Column(db.DateTime, server_default=func.now())
     vwc = db.Column(db.Float)
@@ -22,7 +30,6 @@ class TEROSData(db.Model):
     temp = db.Column(db.Float)
     ec = db.Column(db.Integer)
     water_pot = db.Column(db.Float)
-    
 
     cell = db.relationship("Cell")
 
@@ -35,15 +42,21 @@ class TEROSData(db.Model):
             new_cell = Cell(name=cell_name)
             new_cell.save()
             cur_cell = Cell.query.filter_by(name=cell_name).first()
-        teros_data = TEROSData(cell_id=cur_cell.id, ts=ts,
-                               raw_vwc=raw_vwc, vwc=vwc, temp=temp, ec=ec, water_pot=water_pot)
+        teros_data = TEROSData(
+            cell_id=cur_cell.id,
+            ts=ts,
+            raw_vwc=raw_vwc,
+            vwc=vwc,
+            temp=temp,
+            ec=ec,
+            water_pot=water_pot,
+        )
         db.session.add(teros_data)
         db.session.commit()
         return teros_data
 
-    def get_teros_data(cell_id, resample='hour'):
-        """gets teros data aggregated by attributes
-        """
+    def get_teros_data(cell_id, resample="hour"):
+        """gets teros data aggregated by attributes"""
         data = []
 
         stmt = (
@@ -59,40 +72,42 @@ class TEROSData(db.Model):
         )
 
         for row in db.session.execute(stmt):
-            data.append({
-                "ts": row.ts,
-                "vwc": vwc(row.vwc),
-                "temp": row.temp,
-                "ec": row.ec,
-            })
+            data.append(
+                {
+                    "ts": row.ts,
+                    "vwc": vwc(row.vwc),
+                    "temp": row.temp,
+                    "ec": row.ec,
+                }
+            )
         return data
 
-    def get_teros_data_obj(cell_id, resample='hour'):
-        """gets teros data as a list of objects
-        """
-        data = {
-            'timestamp': [],
-            'vwc': [],
-            'temp': [],
-            'ec': []
-        }
+    def get_teros_data_obj(
+        cell_id,
+        resample="hour",
+        start_time=datetime.now() - relativedelta(months=1),
+        end_time=datetime.now(),
+    ):
+        """gets teros data as a list of objects"""
+        data = {"timestamp": [], "vwc": [], "temp": [], "ec": []}
 
         stmt = (
             db.select(
                 func.date_trunc(resample, TEROSData.ts).label("ts"),
                 func.avg(TEROSData.vwc).label("vwc"),
                 func.avg(TEROSData.temp).label("temp"),
-                func.avg(TEROSData.ec).label("ec")
+                func.avg(TEROSData.ec).label("ec"),
             )
             .where(TEROSData.cell_id == cell_id)
+            .filter((TEROSData.ts.between(start_time, end_time)))
             .group_by(func.date_trunc(resample, TEROSData.ts))
             .order_by(func.date_trunc(resample, TEROSData.ts))
         )
 
         for row in db.session.execute(stmt):
-            data['timestamp'].append(row.ts)
-            data['vwc'].append(vwc(row.vwc))
-            data['temp'].append(row.temp)
-            data['ec'].append(row.ec)
+            data["timestamp"].append(row.ts)
+            data["vwc"].append(vwc(row.vwc))
+            data["temp"].append(row.temp)
+            data["ec"].append(row.ec)
 
         return data

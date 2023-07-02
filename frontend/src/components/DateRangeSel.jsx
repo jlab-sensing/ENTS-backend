@@ -7,23 +7,24 @@ import HorizontalRuleRoundedIcon from "@mui/icons-material/HorizontalRuleRounded
 import PropTypes from "prop-types";
 
 function DateRangeSel(props) {
-  const [startDate, setStartDate] = useState(
-    DateTime.now().minus({ months: 1 })
-  );
-  useEffect(() => {
-    console.log(startDate);
-  }, [startDate]);
-  const [endDate, setEndDate] = useState(DateTime.now());
-  useEffect(() => {
-    console.log(endDate);
-  }, [endDate]);
+  //   const [startDate, setStartDate] = useState(
+  //     DateTime.now().minus({ months: 1 })
+  //   );
+  //   const [endDate, setEndDate] = useState(DateTime.now());
+  //   useEffect(() => {
+  //     console.log(startDate);
+  //   }, [startDate]);
+
+  //   useEffect(() => {
+  //     console.log(endDate);
+  //   }, [endDate]);
   return (
     <>
       <LocalizationProvider dateAdapter={AdapterLuxon}>
         <DateTimePicker
           label="Start Date"
-          value={startDate}
-          onChange={(startDate) => setStartDate(startDate)}
+          value={props.startTime}
+          onChange={(startDate) => props.setStartDate(startDate)}
           views={["year", "month", "day", "hours"]}
         />
       </LocalizationProvider>
@@ -31,8 +32,8 @@ function DateRangeSel(props) {
       <LocalizationProvider dateAdapter={AdapterLuxon}>
         <DateTimePicker
           label="End Date"
-          value={endDate}
-          onChange={(endDate) => setEndDate(endDate)}
+          value={props.endDate}
+          onChange={(endDate) => props.setEndDate(endDate)}
           views={["year", "month", "day", "hours"]}
         />
       </LocalizationProvider>
@@ -43,6 +44,8 @@ function DateRangeSel(props) {
 DateRangeSel.propTypes = {
   startDate: DateTime,
   endDate: DateTime,
+  setStartDate: Function,
+  setEndDate: Function,
 };
 
 export default DateRangeSel;
