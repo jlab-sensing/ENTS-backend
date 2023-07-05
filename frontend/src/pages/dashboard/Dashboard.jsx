@@ -11,10 +11,7 @@ import PwrChart from "../../charts/PwrChart/PwrChart";
 import VChart from "../../charts/VChart/VChart";
 import VwcChart from "../../charts/VwcChart/VwcChart";
 import TempChart from "../../charts/TempChart/TempChart";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { DateTime } from "luxon";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterLuxon } from "@mui/x-date-pickers/AdapterLuxon";
 import DownloadBtn from "../../components/DownloadBtn";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -24,7 +21,7 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import HorizontalRuleRoundedIcon from "@mui/icons-material/HorizontalRuleRounded";
+import DateRangeSel from "../../components/DateRangeSel";
 Chart.register(CategoryScale);
 Chart.register(zoomPlugin);
 
@@ -33,6 +30,15 @@ function Dashboard() {
     DateTime.now().minus({ months: 1 })
   );
   const [endDate, setEndDate] = useState(DateTime.now());
+  useEffect(() => {
+    // console.log(startDate);
+    updateCharts(selectedCell, startDate, endDate);
+  }, [startDate]);
+
+  useEffect(() => {
+    // console.log(endDate);
+    updateCharts(selectedCell, startDate, endDate);
+  }, [endDate]);
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [cellData, setCellData] = useState({});
   const [selectedCell, setSelectedCell] = useState(0);
@@ -245,7 +251,7 @@ function Dashboard() {
               setSelectedCell(e.target.value);
             }}
           >
-            {cellIds.data.map(({ id, location, name }) => {
+            {cellIds.data.map(({ id, name }) => {
               return (
                 <MenuItem value={id} key={id}>
                   {name}
@@ -255,7 +261,7 @@ function Dashboard() {
           </Select>
         </FormControl>
         <Box display="flex" justifyContent="center" alignItems="center">
-          <LocalizationProvider dateAdapter={AdapterLuxon}>
+          {/* <LocalizationProvider dateAdapter={AdapterLuxon}>
             <DateTimePicker
               label="Start Date"
               value={startDate}
@@ -271,7 +277,13 @@ function Dashboard() {
               onChange={(endDate) => setEndDate(endDate)}
               views={["year", "month", "day", "hours"]}
             />
-          </LocalizationProvider>
+          </LocalizationProvider> */}
+          <DateRangeSel
+            startDate={startDate}
+            endDate={endDate}
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
+          ></DateRangeSel>
         </Box>
         <DownloadBtn disabled={dBtnDisabled} data={cellData} />
       </Stack>
