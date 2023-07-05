@@ -11,10 +11,7 @@ import PwrChart from "../../charts/PwrChart/PwrChart";
 import VChart from "../../charts/VChart/VChart";
 import VwcChart from "../../charts/VwcChart/VwcChart";
 import TempChart from "../../charts/TempChart/TempChart";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { DateTime } from "luxon";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterLuxon } from "@mui/x-date-pickers/AdapterLuxon";
 import DownloadBtn from "../../components/DownloadBtn";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -24,7 +21,6 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import HorizontalRuleRoundedIcon from "@mui/icons-material/HorizontalRuleRounded";
 import DateRangeSel from "../../components/DateRangeSel";
 Chart.register(CategoryScale);
 Chart.register(zoomPlugin);
@@ -255,7 +251,7 @@ function Dashboard() {
               setSelectedCell(e.target.value);
             }}
           >
-            {cellIds.data.map(({ id, location, name }) => {
+            {cellIds.data.map(({ id, name }) => {
               return (
                 <MenuItem value={id} key={id}>
                   {name}
