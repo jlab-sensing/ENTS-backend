@@ -3,6 +3,7 @@ import { Container } from "@mui/material";
 import About from "./About";
 import News from "./News";
 import Intro from "./Intro";
+import Contact from "./Contact";
 function Home() {
   return (
     <Container
@@ -19,6 +20,7 @@ function Home() {
       <About />
       <Intro />
       <News />
+      <Contact />
     </Container>
   );
 }
