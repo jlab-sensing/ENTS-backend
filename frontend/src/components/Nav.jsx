@@ -31,7 +31,7 @@ function Nav() {
       elevation={0}
       sx={{ bgcolor: "transparent", pl: "5%", pr: "5%" }}
     >
-      <Container maxWidth="xl">
+      <Container disableGutters={true} maxWidth="xl">
         <Toolbar disableGutters>
           <DvIcon></DvIcon>
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
