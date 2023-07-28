@@ -54,6 +54,8 @@ function About() {
           </Typography>
           <Box maxWidth="sm" sx={{ display: "flex", flexDirection: "row" }}>
             <Button
+              key="dashboard"
+              onClick={() => navigate("/Dashboard")}
               sx={{
                 backgroundColor: "#B3C297",
                 "&:hover": {

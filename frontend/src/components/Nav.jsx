@@ -33,7 +33,7 @@ function Nav() {
     >
       <Container disableGutters={true} maxWidth="xl">
         <Toolbar disableGutters>
-          <DvIcon></DvIcon>
+          <DvIcon />
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton
               size="large"
@@ -85,6 +85,13 @@ function Nav() {
               sx={{ my: 2, color: "black", display: "block" }}
             >
               Dashboard
+            </Button>
+            <Button
+              key="map"
+              onClick={() => navigate("/map")}
+              sx={{ my: 2, color: "black", display: "block" }}
+            >
+              Map
             </Button>
           </Box>
         </Toolbar>
