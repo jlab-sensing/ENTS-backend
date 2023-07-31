@@ -8,7 +8,7 @@ import reset from '../assets/reset.svg';
 import pan from '../assets/pan.svg';
 
 function Chart(props) {
-  const chartRef = useRef();
+  const chartRef = useRef([]);
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
   const handleResetZoom = () => {
@@ -38,10 +38,10 @@ function Chart(props) {
     }
   };
 
-  const chart = useMemo(
-    () => <Line ref={chartRef} data={props.data} options={props.options} />,
-    [props.data, props.options]
-  );
+  // const chart = useMemo(
+  //   () => <Line ref={chartRef} data={props.data} options={props.options} />,
+  //   [props.data, props.options]
+  // );
   return (
     <Box
       sx={{
@@ -50,7 +50,8 @@ function Chart(props) {
         height: '100%',
       }}
     >
-      {chart}
+      {/* {chart} */}
+      <Line ref={chartRef} data={props.data} options={props.options} />
       <Box
         sx={{
           display: 'flex',
