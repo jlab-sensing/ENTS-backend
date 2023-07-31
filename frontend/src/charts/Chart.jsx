@@ -1,0 +1,104 @@
+import { React, useRef, useState, useMemo } from 'react';
+import { Line } from 'react-chartjs-2';
+import 'chartjs-adapter-luxon';
+import PropTypes from 'prop-types';
+import { Box, ToggleButton } from '@mui/material';
+import zoom from '../assets/zoom.svg';
+import reset from '../assets/reset.svg';
+import pan from '../assets/pan.svg';
+
+function Chart(props) {
+  const chartRef = useRef();
+  const [zoomSelected, setZoomSelected] = useState(false);
+  const [panSelected, setPanSelected] = useState(true);
+  const handleResetZoom = () => {
+    console.log('reset zoom');
+    if (chartRef.current) {
+      chartRef.current.resetZoom();
+    }
+  };
+  const handleToggleZoom = () => {
+    console.log('toggle zoom');
+    if (chartRef.current) {
+      chartRef.current.options.plugins.zoom.zoom.wheel.enabled =
+        !chartRef.current.options.plugins.zoom.zoom.wheel.enabled;
+      chartRef.current.update();
+      setZoomSelected(!zoomSelected);
+    }
+  };
+  const handleTogglePan = () => {
+    console.log('toggle pan');
+    if (chartRef.current) {
+      const pan = chartRef.current.options.plugins.zoom.pan.enabled;
+      chartRef.current.options.plugins.zoom.pan.enabled =
+        !chartRef.current.options.plugins.zoom.pan.enabled;
+      chartRef.current.update();
+      console.log(chartRef.current.options.plugins.zoom.pan.enabled);
+      setPanSelected(!panSelected);
+    }
+  };
+
+  const chart = useMemo(
+    () => <Line ref={chartRef} data={props.data} options={props.options} />,
+    [props.data, props.options]
+  );
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        gap: '1%',
+        height: '100%',
+      }}
+    >
+      {chart}
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1%',
+        }}
+      >
+        <ToggleButton
+          onClick={handleResetZoom}
+          variant='outlined'
+          sx={{ width: '32px', height: '32px' }}
+        >
+          <Box
+            component='img'
+            src={reset}
+            sx={{ width: '16px', height: '16px' }}
+          ></Box>
+        </ToggleButton>
+        <ToggleButton
+          selected={zoomSelected}
+          onClick={handleToggleZoom}
+          sx={{ width: '32px', height: '32px' }}
+        >
+          <Box
+            component='img'
+            src={zoom}
+            sx={{ width: '16px', height: '16px' }}
+          ></Box>
+        </ToggleButton>
+        <ToggleButton
+          selected={panSelected}
+          onClick={handleTogglePan}
+          sx={{ width: '32px', height: '32px' }}
+        >
+          <Box
+            component='img'
+            src={pan}
+            sx={{ width: '16px', height: '16px' }}
+          ></Box>
+        </ToggleButton>
+      </Box>
+    </Box>
+  );
+}
+
+export default Chart;
+
+Chart.propTypes = {
+  data: PropTypes.object,
+  options: PropTypes.object,
+};
