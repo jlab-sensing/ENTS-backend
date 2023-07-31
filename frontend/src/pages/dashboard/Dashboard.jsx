@@ -1,27 +1,27 @@
 // import "./Dashboard.css";
-import { React, useState, useEffect } from "react";
-import Chart from "chart.js/auto";
-import { CategoryScale } from "chart.js";
-import "chartjs-adapter-luxon";
-import zoomPlugin from "chartjs-plugin-zoom";
-import { getCellIds } from "../../services/cell";
-import { getTerosData } from "../../services/teros";
-import { getPowerData } from "../../services/power";
-import PwrChart from "../../charts/PwrChart/PwrChart";
-import VChart from "../../charts/VChart/VChart";
-import VwcChart from "../../charts/VwcChart/VwcChart";
-import TempChart from "../../charts/TempChart/TempChart";
-import { DateTime } from "luxon";
-import DownloadBtn from "../../components/DownloadBtn";
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
-import Stack from "@mui/material/Stack";
-import Divider from "@mui/material/Divider";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import DateRangeSel from "../../components/DateRangeSel";
+import { React, useState, useEffect } from 'react';
+import Chart from 'chart.js/auto';
+import { CategoryScale } from 'chart.js';
+import 'chartjs-adapter-luxon';
+import zoomPlugin from 'chartjs-plugin-zoom';
+import { getCellIds } from '../../services/cell';
+import { getTerosData } from '../../services/teros';
+import { getPowerData } from '../../services/power';
+import PwrChart from '../../charts/PwrChart/PwrChart';
+import VChart from '../../charts/VChart/VChart';
+import VwcChart from '../../charts/VwcChart/VwcChart';
+import TempChart from '../../charts/TempChart/TempChart';
+import { DateTime } from 'luxon';
+import DownloadBtn from '../../components/DownloadBtn';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+import Divider from '@mui/material/Divider';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import DateRangeSel from '../../components/DateRangeSel';
 Chart.register(CategoryScale);
 Chart.register(zoomPlugin);
 
@@ -50,7 +50,7 @@ function Dashboard() {
     datasets: [
       {
         data: [],
-        borderColor: "black",
+        borderColor: 'black',
         borderWidth: 2,
       },
     ],
@@ -60,15 +60,15 @@ function Dashboard() {
     datasets: [
       {
         data: [],
-        borderColor: "black",
+        borderColor: 'black',
         borderWidth: 2,
-        yAxisID: "vAxis",
+        yAxisID: 'vAxis',
       },
       {
         data: [],
-        borderColor: "black",
+        borderColor: 'black',
         borderWidth: 2,
-        yAxisID: "cAxis",
+        yAxisID: 'cAxis',
       },
     ],
   });
@@ -76,9 +76,9 @@ function Dashboard() {
     label: [],
     datasets: [
       {
-        label: "Voltage",
+        label: 'Voltage',
         data: [],
-        borderColor: "black",
+        borderColor: 'black',
         borderWidth: 2,
       },
     ],
@@ -87,18 +87,18 @@ function Dashboard() {
     label: [],
     datasets: [
       {
-        label: "VWC",
+        label: 'VWC',
         data: [],
-        borderColor: "black",
+        borderColor: 'black',
         borderWidth: 2,
-        yAxisID: "vwcAxis",
+        yAxisID: 'vwcAxis',
       },
       {
-        label: "EC",
+        label: 'EC',
         data: [],
-        borderColor: "black",
+        borderColor: 'black',
         borderWidth: 2,
-        yAxisID: "ecAxis",
+        yAxisID: 'ecAxis',
       },
     ],
   });
@@ -119,22 +119,22 @@ function Dashboard() {
         labels: powerDataObj.timestamp,
         datasets: [
           {
-            label: "Voltage (v)",
+            label: 'Voltage (v)',
             data: powerDataObj.v,
-            borderColor: "lightgreen",
+            borderColor: 'lightgreen',
             borderWidth: 2,
             fill: false,
-            yAxisID: "vAxis",
+            yAxisID: 'vAxis',
             radius: 2,
             pointRadius: 2,
           },
           {
-            label: "Current (µA)",
+            label: 'Current (µA)',
             data: powerDataObj.i,
-            borderColor: "purple",
+            borderColor: 'purple',
             borderWidth: 2,
             fill: false,
-            yAxisID: "cAxis",
+            yAxisID: 'cAxis',
             radius: 2,
             pointRadius: 2,
           },
@@ -144,9 +144,9 @@ function Dashboard() {
         labels: powerDataObj.timestamp,
         datasets: [
           {
-            label: "Power (µV)",
+            label: 'Power (µV)',
             data: powerDataObj.p,
-            borderColor: "orange",
+            borderColor: 'orange',
             borderWidth: 2,
             fill: false,
             radius: 2,
@@ -164,22 +164,22 @@ function Dashboard() {
         labels: terosDataObj.timestamp,
         datasets: [
           {
-            label: "Volumetric Water Content (VWC)",
+            label: 'Volumetric Water Content (VWC)',
             data: terosDataObj.vwc,
-            borderColor: "blue",
+            borderColor: 'blue',
             borderWidth: 2,
             fill: false,
-            yAxisID: "vwcAxis",
+            yAxisID: 'vwcAxis',
             radius: 2,
             pointRadius: 2,
           },
           {
-            label: "Electrical Conductivity (µS/cm)",
+            label: 'Electrical Conductivity (µS/cm)',
             data: terosDataObj.ec,
-            borderColor: "black",
+            borderColor: 'black',
             borderWidth: 2,
             fill: false,
-            yAxisID: "ecAxis",
+            yAxisID: 'ecAxis',
             radius: 2,
             pointRadius: 2,
           },
@@ -189,9 +189,9 @@ function Dashboard() {
         labels: terosDataObj.timestamp,
         datasets: [
           {
-            label: "Temperature",
+            label: 'Temperature',
             data: terosDataObj.temp,
-            borderColor: "red",
+            borderColor: 'red',
             borderWidth: 2,
             fill: false,
             radius: 2,
@@ -207,7 +207,9 @@ function Dashboard() {
   }, [selectedCell]);
 
   useEffect(() => {
-    setDBtnDisabled(false);
+    if (Object.keys(cellData).length != 0) {
+      setDBtnDisabled(false);
+    }
   }, [setCellData]);
 
   useEffect(() => {
@@ -226,26 +228,26 @@ function Dashboard() {
 
   return (
     <Stack
-      direction="column"
-      divider={<Divider orientation="horizontal" flexItem />}
-      justifyContent="spaced-evently"
-      sx={{ height: "100vh", boxSizing: "border-box" }}
+      direction='column'
+      divider={<Divider orientation='horizontal' flexItem />}
+      justifyContent='spaced-evently'
+      sx={{ height: '100vh', boxSizing: 'border-box' }}
     >
       <Stack
-        direction="row"
-        divider={<Divider orientation="vertical" flexItem />}
-        alignItems="center"
-        justifyContent="space-evenly"
+        direction='row'
+        divider={<Divider orientation='vertical' flexItem />}
+        alignItems='center'
+        justifyContent='space-evenly'
         sx={{ p: 2 }}
         flexItem
       >
         <FormControl sx={{ width: 1 / 4 }}>
-          <InputLabel id="cell-select">Cell</InputLabel>
+          <InputLabel id='cell-select'>Cell</InputLabel>
           <Select
-            labelId="cell-select-label"
-            id="cell-select"
+            labelId='cell-select-label'
+            id='cell-select'
             value={selectedCell}
-            label="Cell"
+            label='Cell'
             defaultValue={selectedCell}
             onChange={(e) => {
               setSelectedCell(e.target.value);
@@ -260,7 +262,7 @@ function Dashboard() {
             })}
           </Select>
         </FormControl>
-        <Box display="flex" justifyContent="center" alignItems="center">
+        <Box display='flex' justifyContent='center' alignItems='center'>
           {/* <LocalizationProvider dateAdapter={AdapterLuxon}>
             <DateTimePicker
               label="Start Date"
@@ -289,21 +291,21 @@ function Dashboard() {
       </Stack>
       <Grid
         container
-        sx={{ height: "100%", width: "100%", p: 2 }}
-        alignItems="center"
-        justifyContent="space-evenly"
+        sx={{ height: '100%', width: '100%', p: 2 }}
+        alignItems='center'
+        justifyContent='space-evenly'
         columns={{ xs: 4, sm: 8, md: 12 }}
       >
-        <Grid item sx={{ height: "50%" }} xs={4} sm={4} md={5.5} p={0.25}>
+        <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
           <VChart data={vChartData} />
         </Grid>
-        <Grid item sx={{ height: "50%" }} xs={4} sm={4} md={5.5} p={0.25}>
+        <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
           <PwrChart data={pwrChartData} />
         </Grid>
-        <Grid item sx={{ height: "50%" }} xs={4} sm={4} md={5.5} p={0.25}>
+        <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
           <VwcChart data={vwcChartData} />
         </Grid>
-        <Grid item sx={{ height: "50%" }} xs={4} sm={4} md={5.5} p={0.25}>
+        <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
           <TempChart data={tempChartData} />
         </Grid>
       </Grid>
