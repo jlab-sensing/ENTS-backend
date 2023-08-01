@@ -4,7 +4,7 @@ import Chart from 'chart.js/auto';
 import { CategoryScale } from 'chart.js';
 import 'chartjs-adapter-luxon';
 import zoomPlugin from 'chartjs-plugin-zoom';
-import { getCellIds } from '../../services/cell';
+import { getCellIds, getCellData } from '../../services/cell';
 import { getTerosData } from '../../services/teros';
 import { getPowerData } from '../../services/power';
 import PwrChart from '../../charts/PwrChart/PwrChart';
@@ -12,7 +12,7 @@ import VChart from '../../charts/VChart/VChart';
 import VwcChart from '../../charts/VwcChart/VwcChart';
 import TempChart from '../../charts/TempChart/TempChart';
 import { DateTime } from 'luxon';
-import DownloadBtn from '../../components/DownloadBtn';
+import DownloadBtn from './DownloadBtn';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -21,7 +21,7 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import DateRangeSel from '../../components/DateRangeSel';
+import DateRangeSel from './DateRangeSel';
 Chart.register(CategoryScale);
 Chart.register(zoomPlugin);
 
@@ -40,7 +40,7 @@ function Dashboard() {
     updateCharts(selectedCell, startDate, endDate);
   }, [endDate]);
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
-  const [cellData, setCellData] = useState({});
+  const [cellData, setCellData] = useState([]);
   const [selectedCell, setSelectedCell] = useState(0);
   const [cellIds, setCellIds] = useState({
     data: [],
@@ -104,14 +104,17 @@ function Dashboard() {
   });
 
   const updateCharts = (sC, sD, eD) => {
-    // getCellData(sC, sD, eD).then((response) => {
-    //   const cellDataObj = response.data;
-    //   cellDataObj.timestamp = cellDataObj.timestamp.map((dateTime) =>
-    //     DateTime.fromHTTP(dateTime)
-    //   );
-    // setCellData(cellDataObj);
+    getCellData(sC, sD, eD).then((response) => {
+      const cellDataObj = response.data;
+      // console.log(cellDataObj);
+      // cellDataObj.timestamp = cellDataObj.timestamp.map((dateTime) =>
+      //   DateTime.fromHTTP(dateTime)
+      // );
+      setCellData(cellDataObj);
+    });
     getPowerData(sC, sD, eD).then((response) => {
       const powerDataObj = response.data;
+      console.log(powerDataObj);
       powerDataObj.timestamp = powerDataObj.timestamp.map((dateTime) =>
         DateTime.fromHTTP(dateTime)
       );
@@ -207,10 +210,11 @@ function Dashboard() {
   }, [selectedCell]);
 
   useEffect(() => {
+    console.log(cellData);
     if (Object.keys(cellData).length != 0) {
       setDBtnDisabled(false);
     }
-  }, [setCellData]);
+  }, [cellData]);
 
   useEffect(() => {
     getCellIds().then((response) => {
@@ -263,23 +267,6 @@ function Dashboard() {
           </Select>
         </FormControl>
         <Box display='flex' justifyContent='center' alignItems='center'>
-          {/* <LocalizationProvider dateAdapter={AdapterLuxon}>
-            <DateTimePicker
-              label="Start Date"
-              value={startDate}
-              onChange={(startDate) => setStartDate(startDate)}
-              views={["year", "month", "day", "hours"]}
-            />
-          </LocalizationProvider>
-          <HorizontalRuleRoundedIcon sx={{ mr: 1, ml: 1 }} />
-          <LocalizationProvider dateAdapter={AdapterLuxon}>
-            <DateTimePicker
-              label="End Date"
-              value={endDate}
-              onChange={(endDate) => setEndDate(endDate)}
-              views={["year", "month", "day", "hours"]}
-            />
-          </LocalizationProvider> */}
           <DateRangeSel
             startDate={startDate}
             endDate={endDate}

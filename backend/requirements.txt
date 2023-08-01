@@ -14,3 +14,4 @@ marshmallow_sqlalchemy
 flask_sqlalchemy
 Flask-Migrate
 python-dateutil
+pandas
