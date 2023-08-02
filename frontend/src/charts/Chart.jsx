@@ -36,7 +36,7 @@ function Chart(props) {
       setPanSelected(!panSelected);
     }
   };
-
+  
   return (
     <Box
       sx={{
