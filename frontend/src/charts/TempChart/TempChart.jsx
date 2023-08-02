@@ -1,6 +1,5 @@
 import { React } from 'react';
 import 'chartjs-adapter-luxon';
-import { zoomOptions } from '../defaultChartOptions';
 import PropTypes from 'prop-types';
 import Chart from '../Chart';
 
