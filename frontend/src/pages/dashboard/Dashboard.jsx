@@ -278,6 +278,7 @@ function Dashboard() {
       </Stack>
       <Grid
         container
+        spacing={3}
         sx={{ height: '100%', width: '100%', p: 2 }}
         alignItems='center'
         justifyContent='space-evenly'
