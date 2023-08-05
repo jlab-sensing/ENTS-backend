@@ -34,7 +34,7 @@ export default function PwrChart(props) {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Power (µV)',
+          text: 'Power (µW)',
         },
       },
     },

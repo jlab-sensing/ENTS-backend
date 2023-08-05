@@ -36,7 +36,7 @@ export default function VChart(props) {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Cell Voltage (V)',
+          text: 'Cell Voltage (mV)',
         },
         suggestedMax: 0.28,
         min: 0,
