@@ -67,18 +67,18 @@ class PowerData(db.Model):
             .subquery()
         )
 
-        adj_units = db.select(
-            resampled.c.ts.label("ts"),
-            (resampled.c.voltage * 10e-9).label("voltage"),
-            (resampled.c.current * 10e-6).label("current"),
-        ).subquery()
+        # adj_units = db.select(
+        #     resampled.c.ts.label("ts"),
+        #     (resampled.c.voltage * 1e3).label("voltage"),
+        #     (resampled.c.current * 1e6).label("current"),
+        # ).subquery()
 
         stmt = db.select(
-            adj_units.c.ts.label("ts"),
-            adj_units.c.voltage.label("voltage"),
-            adj_units.c.current.label("current"),
-            (adj_units.c.voltage * adj_units.c.current).label("power"),
-        ).order_by(adj_units.c.ts)
+            resampled.c.ts.label("ts"),
+            (resampled.c.voltage * 1e3).label("voltage"),
+            (resampled.c.current * 1e6).label("current"),
+            (resampled.c.voltage * resampled.c.current * 1e6).label("power"),
+        ).order_by(resampled.c.ts)
 
         for row in db.session.execute(stmt):
             data.append(
@@ -119,18 +119,18 @@ class PowerData(db.Model):
             .subquery()
         )
 
-        adj_units = db.select(
-            resampled.c.ts.label("ts"),
-            (resampled.c.voltage * 10e-9).label("voltage"),
-            (resampled.c.current * 10e-6).label("current"),
-        ).subquery()
+        # adj_units = db.select(
+        #     resampled.c.ts.label("ts"),
+        #     resampled.c.voltage.label("voltage"),
+        #     resampled.c.current.label("current"),
+        # ).subquery()
 
         stmt = db.select(
-            adj_units.c.ts.label("ts"),
-            adj_units.c.voltage.label("voltage"),
-            adj_units.c.current.label("current"),
-            (adj_units.c.voltage * adj_units.c.current).label("power"),
-        ).order_by(adj_units.c.ts)
+            resampled.c.ts.label("ts"),
+            (resampled.c.voltage * 1e3).label("voltage"),
+            (resampled.c.current * 1e6).label("current"),
+            (resampled.c.voltage * resampled.c.current * 1e6).label("power"),
+        ).order_by(resampled.c.ts)
 
         for row in db.session.execute(stmt):
             data["timestamp"].append(row.ts)

@@ -17,7 +17,7 @@ class Teros_Data(Resource):
         json_data = request.json
         teros_data_obj = t_in.load(json_data)
         cell_name = teros_data_obj["cell"]
-        ts = datetime.fromtimestamp(json_data["ts"] // 1000000000)
+        ts = datetime.fromtimestamp(json_data["ts"])
         vwc = teros_data_obj["vwc"]
         raw_vwc = teros_data_obj["raw_vwc"]
         temp = teros_data_obj["temp"]
