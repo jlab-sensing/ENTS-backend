@@ -1,4 +1,4 @@
-import { React, useRef, useState, useMemo } from 'react';
+import { React, useRef, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
@@ -8,7 +8,7 @@ import reset from '../assets/reset.svg';
 import pan from '../assets/pan.svg';
 
 function Chart(props) {
-  const chartRef = useRef([]);
+  const chartRef = useRef();
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
   const handleResetZoom = () => {
@@ -29,7 +29,6 @@ function Chart(props) {
   const handleTogglePan = () => {
     console.log('toggle pan');
     if (chartRef.current) {
-      const pan = chartRef.current.options.plugins.zoom.pan.enabled;
       chartRef.current.options.plugins.zoom.pan.enabled =
         !chartRef.current.options.plugins.zoom.pan.enabled;
       chartRef.current.update();
@@ -37,11 +36,7 @@ function Chart(props) {
       setPanSelected(!panSelected);
     }
   };
-
-  // const chart = useMemo(
-  //   () => <Line ref={chartRef} data={props.data} options={props.options} />,
-  //   [props.data, props.options]
-  // );
+  
   return (
     <Box
       sx={{
@@ -50,7 +45,6 @@ function Chart(props) {
         height: '100%',
       }}
     >
-      {/* {chart} */}
       <Line ref={chartRef} data={props.data} options={props.options} />
       <Box
         sx={{

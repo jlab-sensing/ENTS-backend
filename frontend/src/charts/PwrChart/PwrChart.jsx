@@ -1,6 +1,5 @@
 import { React } from 'react';
 import 'chartjs-adapter-luxon';
-import { zoomOptions } from '../defaultChartOptions';
 import PropTypes from 'prop-types';
 import Chart from '../Chart';
 
@@ -35,7 +34,7 @@ export default function PwrChart(props) {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Power (µV)',
+          text: 'Power (µW)',
         },
       },
     },
