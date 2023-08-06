@@ -19,17 +19,6 @@ function DownloadBtn(props) {
     a.dispatchEvent(clickEvt);
     a.remove();
   };
-
-  function convertToCSV(arr) {
-    const array = [Object.keys(arr[0])].concat(arr);
-    console.log(array);
-    return array
-      .map((it) => {
-        return Object.values(it).toString();
-      })
-      .join('\n');
-  }
-
   /** 
     exports cell data from json obj to csv.
     runs with static number of headers
