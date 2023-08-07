@@ -212,7 +212,6 @@ function Dashboard() {
   }, []);
   useEffect(() => {
     if (cellIds.data[0]) {
-      // updateCharts(cellIds.data[0].id);
       setSelectedCell(parseInt(cellIds.data[0].id));
     }
   }, [cellIds]);
