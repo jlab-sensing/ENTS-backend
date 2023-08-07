@@ -32,7 +32,7 @@ function Dashboard() {
   const [endDate, setEndDate] = useState(DateTime.now());
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [cellData, setCellData] = useState([]);
-  const [selectedCell, setSelectedCell] = useState(0);
+  const [selectedCell, setSelectedCell] = useState(-1);
   const [cellIds, setCellIds] = useState({
     data: [],
   });
@@ -101,7 +101,6 @@ function Dashboard() {
     });
     getPowerData(sC, sD, eD).then((response) => {
       const powerDataObj = response.data;
-      console.log(powerDataObj);
       powerDataObj.timestamp = powerDataObj.timestamp.map((dateTime) =>
         DateTime.fromHTTP(dateTime)
       );
@@ -193,7 +192,9 @@ function Dashboard() {
   };
 
   useEffect(() => {
-    updateCharts(selectedCell, startDate, endDate);
+    if (selectedCell != -1){
+      updateCharts(selectedCell, startDate, endDate);
+    }
   }, [selectedCell]);
 
   useEffect(() => {
@@ -211,7 +212,7 @@ function Dashboard() {
   }, []);
   useEffect(() => {
     if (cellIds.data[0]) {
-      updateCharts(cellIds.data[0].id);
+      // updateCharts(cellIds.data[0].id);
       setSelectedCell(parseInt(cellIds.data[0].id));
     }
   }, [cellIds]);
