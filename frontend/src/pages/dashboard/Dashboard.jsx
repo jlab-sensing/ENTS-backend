@@ -30,15 +30,6 @@ function Dashboard() {
     DateTime.now().minus({ days: 14 })
   );
   const [endDate, setEndDate] = useState(DateTime.now());
-  useEffect(() => {
-    // console.log(startDate);
-    updateCharts(selectedCell, startDate, endDate);
-  }, [startDate]);
-
-  useEffect(() => {
-    // console.log(endDate);
-    updateCharts(selectedCell, startDate, endDate);
-  }, [endDate]);
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [cellData, setCellData] = useState([]);
   const [selectedCell, setSelectedCell] = useState(0);
@@ -106,10 +97,6 @@ function Dashboard() {
   const updateCharts = (sC, sD, eD) => {
     getCellData(sC, sD, eD).then((response) => {
       const cellDataObj = response.data;
-      // console.log(cellDataObj);
-      // cellDataObj.timestamp = cellDataObj.timestamp.map((dateTime) =>
-      //   DateTime.fromHTTP(dateTime)
-      // );
       setCellData(cellDataObj);
     });
     getPowerData(sC, sD, eD).then((response) => {
@@ -210,7 +197,6 @@ function Dashboard() {
   }, [selectedCell]);
 
   useEffect(() => {
-    console.log(cellData);
     if (Object.keys(cellData).length != 0) {
       setDBtnDisabled(false);
     }
