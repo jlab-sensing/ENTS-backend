@@ -27,7 +27,7 @@ Chart.register(zoomPlugin);
 
 function Dashboard() {
   const [startDate, setStartDate] = useState(
-    DateTime.now().minus({ months: 1 })
+    DateTime.now().minus({ days: 14 })
   );
   const [endDate, setEndDate] = useState(DateTime.now());
   useEffect(() => {
