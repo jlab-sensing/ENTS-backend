@@ -38,9 +38,11 @@ export default function VChart(props) {
           display: true,
           text: 'Cell Voltage (mV)',
         },
-        suggestedMax: 0.28,
         min: 0,
-        stepSize: 5,
+        max: 400,
+        ticks: {
+          stepSize: 50,
+        },
         grid: {
           drawOnChartArea: false,
         },
@@ -53,6 +55,10 @@ export default function VChart(props) {
           text: 'Current (µA)',
         },
         min: 0,
+        max: 160,
+        ticks: {
+          stepSize: 20,
+        }
       },
     },
     plugins: {
