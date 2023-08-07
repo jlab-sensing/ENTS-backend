@@ -30,12 +30,12 @@ function DownloadBtn(props) {
       data: [
         [
           'timestamp',
-          'voltage',
-          'current',
-          'power',
-          'electrical conductivity',
-          'volumetric water content',
-          'temperature',
+          'Voltage (mV)',
+          'Current (uA)',
+          'Power (uW)',
+          'EC (uS/cm)',
+          'VWC (%)',
+          'Temperature (C)',
         ],
         ...data.map((point) => [
           point.timestamp.slice(4),
