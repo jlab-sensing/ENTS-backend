@@ -192,10 +192,10 @@ function Dashboard() {
   };
 
   useEffect(() => {
-    if (selectedCell != -1){
+    if (selectedCell != -1) {
       updateCharts(selectedCell, startDate, endDate);
     }
-  }, [selectedCell]);
+  }, [selectedCell, startDate, endDate]);
 
   useEffect(() => {
     if (Object.keys(cellData).length != 0) {
