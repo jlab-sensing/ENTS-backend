@@ -58,24 +58,6 @@ export default function VChart(props) {
         max: 160,
         ticks: {
           stepSize: 20,
-        }
-      },
-    },
-    plugins: {
-      zoom: {
-        zoom: {
-          wheel: {
-            enabled: false,
-          },
-          pinch: {
-            enabled: false,
-          },
-          mode: 'xy',
-          scaleMode: 'xy',
-        },
-        pan: {
-          enabled: true,
-          mode: 'xy',
         },
       },
     },

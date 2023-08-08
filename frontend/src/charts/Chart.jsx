@@ -1,4 +1,4 @@
-import { React, useRef, useState } from 'react';
+import { React, useEffect, useRef, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
@@ -18,7 +18,7 @@ function Chart(props) {
     }
   };
   const handleToggleZoom = () => {
-    console.log('toggle zoom');
+    console.log('toggle zoom1');
     if (chartRef.current) {
       chartRef.current.options.plugins.zoom.zoom.wheel.enabled =
         !chartRef.current.options.plugins.zoom.zoom.wheel.enabled;
@@ -36,7 +36,13 @@ function Chart(props) {
       setPanSelected(!panSelected);
     }
   };
-  
+  useEffect(() => {
+    if (chartRef.current) {
+      setZoomSelected(chartRef.current.options.plugins.zoom.zoom.wheel.enabled);
+      setPanSelected(chartRef.current.options.plugins.zoom.pan.enabled);
+    }
+  });
+
   return (
     <Box
       sx={{
