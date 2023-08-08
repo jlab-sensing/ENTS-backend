@@ -3,17 +3,17 @@ FROM node:16.17.0-bullseye-slim AS development
 
 # set working directory
 WORKDIR /app
-ENV PORT=80
 # add `/app/node_modules/.bin` to $PATH
 # ENV PATH /app/frontend/node_modules/.bin:$PATH
 
 # install app dependencies
 COPY package.json /app/package.json
 COPY package-lock.json /app/package-lock.json
+COPY vite.config.js /app/vite.config.js
 
 RUN npm install
 # RUN npm install nodemon --save-dev
-
+COPY index.html ./index.html
 COPY src ./src
 COPY public ./public
 

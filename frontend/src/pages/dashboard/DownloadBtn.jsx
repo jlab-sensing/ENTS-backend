@@ -63,7 +63,7 @@ function DownloadBtn(props) {
 }
 
 DownloadBtn.propTypes = {
-  data: PropTypes.object,
+  data: PropTypes.array,
   disabled: PropTypes.bool,
 };
 
