@@ -3,6 +3,9 @@ FROM node:16.17.0-bullseye-slim AS development
 
 # set working directory
 WORKDIR /app
+
+ENV PUBLIC_URL "http://localhost:3000"
+
 # add `/app/node_modules/.bin` to $PATH
 # ENV PATH /app/frontend/node_modules/.bin:$PATH
 
@@ -18,7 +21,7 @@ COPY src ./src
 COPY public ./public
 
 # start app
-CMD ["npm", "start"]
+CMD ["npm", "start", "--", "--port", "80"]
 #CMD ["nodemon", "--exec", "npm", "start"]
 
 EXPOSE 3000
