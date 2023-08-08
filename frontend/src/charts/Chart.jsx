@@ -12,13 +12,11 @@ function Chart(props) {
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
   const handleResetZoom = () => {
-    console.log('reset zoom');
     if (chartRef.current) {
       chartRef.current.resetZoom();
     }
   };
   const handleToggleZoom = () => {
-    console.log('toggle zoom1');
     if (chartRef.current) {
       chartRef.current.options.plugins.zoom.zoom.wheel.enabled =
         !chartRef.current.options.plugins.zoom.zoom.wheel.enabled;
@@ -27,12 +25,10 @@ function Chart(props) {
     }
   };
   const handleTogglePan = () => {
-    console.log('toggle pan');
     if (chartRef.current) {
       chartRef.current.options.plugins.zoom.pan.enabled =
         !chartRef.current.options.plugins.zoom.pan.enabled;
       chartRef.current.update();
-      console.log(chartRef.current.options.plugins.zoom.pan.enabled);
       setPanSelected(!panSelected);
     }
   };
