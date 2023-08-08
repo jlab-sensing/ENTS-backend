@@ -42,24 +42,6 @@ export default function TempChart(props) {
         },
       },
     },
-    plugins: {
-      zoom: {
-        zoom: {
-          wheel: {
-            enabled: false,
-          },
-          pinch: {
-            enabled: false,
-          },
-          mode: 'xy',
-          scaleMode: 'xy',
-        },
-        pan: {
-          enabled: true,
-          mode: 'xy',
-        },
-      },
-    },
   };
 
   return <Chart data={data} options={chartOptions} />;
