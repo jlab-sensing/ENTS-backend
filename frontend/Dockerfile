@@ -4,7 +4,7 @@ FROM node:16.17.0-bullseye-slim AS development
 # set working directory
 WORKDIR /app
 
-ENV PUBLIC_URL "http://localhost:3000"
+ENV PUBLIC_URL ""
 
 # add `/app/node_modules/.bin` to $PATH
 # ENV PATH /app/frontend/node_modules/.bin:$PATH

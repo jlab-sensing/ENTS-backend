@@ -14,6 +14,15 @@ export default defineConfig(({ mode }) => {
   return {
     define: processEnvValues,
     server: {
+      proxy: {
+        '^/api': {
+          target: 'http://backend:8000',
+          changeOrigin: true,
+          secure: false,
+          ws: true,
+          rewrite: (path) => path.replace('^/api', ''),
+        },
+      },
       watch: {
         usePolling: true,
       },
