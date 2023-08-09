@@ -1,4 +1,4 @@
-version: "3.9"
+version: '3.9'
 
 services:
   backend:
@@ -14,24 +14,23 @@ services:
       DB_PORT: 5432
       DB_DATABASE: dirtviz
     ports:
-      - "8000:8000"
+      - '8000:8000'
     depends_on:
       - postgresql
 
-
   frontend:
-    build: 
+    build:
       context: ./frontend
       dockerfile: ./Dockerfile
       target: production
     image: dirtviz-frontend
     ports:
-      - "3000:80"
+      - '3000:80'
     depends_on:
       - backend
-    # For dev
-    # volumes:
-    #   - "./frontend/src:/app/src"
+    tty: true
+    volumes:
+      - './frontend/src:/app/src'
 
   postgresql:
     image: postgres:13
@@ -39,7 +38,7 @@ services:
       POSTGRES_USER: dirtviz
       POSTGRES_PASSWORD: password
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgresqldata:/var/lib/postgresql/data
     networks:
@@ -54,7 +53,7 @@ services:
   adminer:
     image: adminer
     ports:
-      - "8060:8080"
+      - '8060:8080'
 
   cs-http:
     build:
@@ -68,7 +67,7 @@ services:
       DB_PORT: 5432
       DB_DATABASE: dirtviz
     expose:
-      - "8100"
+      - '8100'
     depends_on:
       - postgresql
 
@@ -84,10 +83,9 @@ services:
       DB_PORT: 5432
       DB_DATABASE: dirtviz
     expose:
-      - "8090"
+      - '8090'
     depends_on:
       - postgresql
-
 
 volumes:
   postgresqldata:

@@ -233,24 +233,26 @@ function Dashboard() {
       >
         <FormControl sx={{ width: 1 / 4 }}>
           <InputLabel id='cell-select'>Cell</InputLabel>
-          <Select
-            labelId='cell-select-label'
-            id='cell-select'
-            value={selectedCell}
-            label='Cell'
-            defaultValue={selectedCell}
-            onChange={(e) => {
-              setSelectedCell(e.target.value);
-            }}
-          >
-            {cellIds.data.map(({ id, name }) => {
-              return (
-                <MenuItem value={id} key={id}>
-                  {name}
-                </MenuItem>
-              );
-            })}
-          </Select>
+          {selectedCell != -1 && (
+            <Select
+              labelId='cell-select-label'
+              id='cell-select'
+              value={selectedCell}
+              label='Cell'
+              defaultValue={selectedCell}
+              onChange={(e) => {
+                setSelectedCell(e.target.value);
+              }}
+            >
+              {cellIds.data.map(({ id, name }) => {
+                return (
+                  <MenuItem value={id} key={id}>
+                    {name}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          )}
         </FormControl>
         <Box display='flex' justifyContent='center' alignItems='center'>
           <DateRangeSel

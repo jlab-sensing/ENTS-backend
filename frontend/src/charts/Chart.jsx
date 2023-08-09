@@ -67,6 +67,7 @@ function Chart(props) {
           ></Box>
         </ToggleButton>
         <ToggleButton
+          value={zoomSelected}
           selected={zoomSelected}
           onClick={handleToggleZoom}
           sx={{ width: '32px', height: '32px' }}
@@ -78,6 +79,7 @@ function Chart(props) {
           ></Box>
         </ToggleButton>
         <ToggleButton
+          value={panSelected}
           selected={panSelected}
           onClick={handleTogglePan}
           sx={{ width: '32px', height: '32px' }}
