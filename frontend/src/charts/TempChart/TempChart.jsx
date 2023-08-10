@@ -1,7 +1,8 @@
 import { React } from 'react';
 import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
-import Chart from '../Chart';
+import ChartWrapper from '../ChartWrapper';
+import { chartPlugins } from '../plugins';
 
 export default function TempChart(props) {
   const data = props.data;
@@ -42,9 +43,10 @@ export default function TempChart(props) {
         },
       },
     },
+    plugins: structuredClone(chartPlugins),
   };
 
-  return <Chart data={data} options={chartOptions} />;
+  return <ChartWrapper data={data} options={chartOptions} />;
 }
 TempChart.propTypes = {
   data: PropTypes.object,

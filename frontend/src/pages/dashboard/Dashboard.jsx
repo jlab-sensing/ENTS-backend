@@ -1,9 +1,6 @@
 // import "./Dashboard.css";
 import { React, useState, useEffect } from 'react';
-import Chart from 'chart.js/auto';
-import { CategoryScale } from 'chart.js';
 import 'chartjs-adapter-luxon';
-import zoomPlugin from 'chartjs-plugin-zoom';
 import { getCellIds, getCellData } from '../../services/cell';
 import { getTerosData } from '../../services/teros';
 import { getPowerData } from '../../services/power';
@@ -22,8 +19,6 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import DateRangeSel from './DateRangeSel';
-Chart.register(CategoryScale);
-Chart.register(zoomPlugin);
 
 function Dashboard() {
   const [startDate, setStartDate] = useState(
@@ -33,9 +28,7 @@ function Dashboard() {
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [cellData, setCellData] = useState([]);
   const [selectedCell, setSelectedCell] = useState(-1);
-  const [cellIds, setCellIds] = useState({
-    data: [],
-  });
+  const [cellIds, setCellIds] = useState([]);
   const [tempChartData, setTempChartData] = useState({
     label: [],
     datasets: [
@@ -205,14 +198,12 @@ function Dashboard() {
 
   useEffect(() => {
     getCellIds().then((response) => {
-      setCellIds({
-        data: response.data,
-      });
+      setCellIds(response.data);
     });
   }, []);
   useEffect(() => {
-    if (cellIds.data[0]) {
-      setSelectedCell(parseInt(cellIds.data[0].id));
+    if (cellIds[0]) {
+      setSelectedCell(parseInt(cellIds[0].id));
     }
   }, [cellIds]);
 
@@ -244,13 +235,15 @@ function Dashboard() {
                 setSelectedCell(e.target.value);
               }}
             >
-              {cellIds.data.map(({ id, name }) => {
-                return (
-                  <MenuItem value={id} key={id}>
-                    {name}
-                  </MenuItem>
-                );
-              })}
+              {Array.isArray(cellIds)
+                ? cellIds.map(({ id, name }) => {
+                    return (
+                      <MenuItem value={id} key={id}>
+                        {name}
+                      </MenuItem>
+                    );
+                  })
+                : ''}
             </Select>
           )}
         </FormControl>
