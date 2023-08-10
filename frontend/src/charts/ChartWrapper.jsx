@@ -6,11 +6,17 @@ import { Box, ToggleButton } from '@mui/material';
 import zoom from '../assets/zoom.svg';
 import reset from '../assets/reset.svg';
 import pan from '../assets/pan.svg';
+import { chartPlugins } from './plugins';
+import Chart from 'chart.js/auto';
+import zoomPlugin from 'chartjs-plugin-zoom';
+Chart.register(zoomPlugin);
 
-function Chart(props) {
-  const chartRef = useRef();
+function ChartWrapper(props) {
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
+
+  const chartRef = useRef();
+
   const handleResetZoom = () => {
     if (chartRef.current) {
       chartRef.current.resetZoom();
@@ -18,8 +24,8 @@ function Chart(props) {
   };
   const handleToggleZoom = () => {
     if (chartRef.current) {
-      chartRef.current.options.plugins.zoom.zoom.wheel.enabled =
-        !chartRef.current.options.plugins.zoom.zoom.wheel.enabled;
+      chartRef.current.config.options.plugins.zoom.zoom.wheel.enabled =
+        !chartRef.current.config.options.plugins.zoom.zoom.wheel.enabled;
       chartRef.current.update();
       setZoomSelected(!zoomSelected);
     }
@@ -32,9 +38,35 @@ function Chart(props) {
       setPanSelected(!panSelected);
     }
   };
+
+  const lineChart = () => {
+    return (
+      <Line
+        key={props.id}
+        ref={chartRef}
+        data={props.data}
+        options={props.options}
+      ></Line>
+    );
+  };
+
+  // useEffect(() => {
+  //   if (chartRef.current) {
+  //     console.log('test');
+  //     chartRef.current.config.options.plugins.zoom.zoom.wheel.enabled = false;
+  //     chartRef.current.options.plugins.zoom.pan.enabled = true;
+  //     chartRef.current.update();
+  //     setZoomSelected(
+  //       chartRef.current.config.options.plugins.zoom.zoom.wheel.enabled
+  //     );
+  //     setPanSelected(chartRef.current.options.plugins.zoom.pan.enabled);
+  //   }
+  // }, [props.data]);
   useEffect(() => {
     if (chartRef.current) {
-      setZoomSelected(chartRef.current.options.plugins.zoom.zoom.wheel.enabled);
+      setZoomSelected(
+        chartRef.current.config.options.plugins.zoom.zoom.wheel.enabled
+      );
       setPanSelected(chartRef.current.options.plugins.zoom.pan.enabled);
     }
   });
@@ -47,7 +79,7 @@ function Chart(props) {
         height: '100%',
       }}
     >
-      <Line ref={chartRef} data={props.data} options={props.options} />
+      {lineChart()}
       <Box
         sx={{
           display: 'flex',
@@ -95,9 +127,9 @@ function Chart(props) {
   );
 }
 
-export default Chart;
+export default ChartWrapper;
 
-Chart.propTypes = {
+ChartWrapper.propTypes = {
   data: PropTypes.object,
   options: PropTypes.object,
 };
