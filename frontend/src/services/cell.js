@@ -1,7 +1,14 @@
-import axios from "axios";
+import axios from 'axios';
+import { DateTime } from 'luxon';
 
-export async function getCellData(cellId) {
-  return axios.get(`${process.env.PUBLIC_URL}/api/cell/data/${cellId}`);
+export async function getCellData(
+  cellId,
+  startTime = DateTime.now().minus({ months: 1 }),
+  endTime = DateTime.now()
+) {
+  return axios.get(
+    `${process.env.PUBLIC_URL}/api/cell/data/${cellId}?startTime=${startTime}&endTime=${endTime}`
+  );
 }
 
 export async function getCellIds() {

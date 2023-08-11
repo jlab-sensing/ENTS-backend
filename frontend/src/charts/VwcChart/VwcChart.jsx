@@ -1,8 +1,8 @@
-import { React } from "react";
-import { Line } from "react-chartjs-2";
-import "chartjs-adapter-luxon";
-import { zoomOptions } from "../defaultChartOptions";
-import PropTypes from "prop-types";
+import { React } from 'react';
+import 'chartjs-adapter-luxon';
+import PropTypes from 'prop-types';
+import ChartWrapper from '../ChartWrapper';
+import { chartPlugins } from '../plugins';
 
 export default function VwcChart(props) {
   const data = props.data;
@@ -11,12 +11,12 @@ export default function VwcChart(props) {
     responsive: true,
     scales: {
       x: {
-        position: "bottom",
+        position: 'bottom',
         title: {
           display: true,
-          text: "Time",
+          text: 'Time',
         },
-        type: "time",
+        type: 'time',
         ticks: {
           autoSkip: false,
           autoSkipPadding: 50,
@@ -27,26 +27,26 @@ export default function VwcChart(props) {
         },
         time: {
           displayFormats: {
-            hour: "hh:mm a",
-            day: "D",
+            hour: 'hh:mm a',
+            day: 'D',
           },
         },
       },
       ecAxis: {
-        position: "right",
+        position: 'right',
         beginAtZero: true,
         title: {
           display: true,
-          text: "EC (µS/cm)",
+          text: 'EC (µS/cm)',
         },
       },
       vwcAxis: {
-        position: "left",
+        position: 'left',
         beginAtZero: true,
         suggestedMax: 0.9,
         title: {
           display: true,
-          text: "VWC (%)",
+          text: 'VWC (%)',
         },
         min: 0,
         grid: {
@@ -54,14 +54,13 @@ export default function VwcChart(props) {
         },
       },
     },
-    plugins: {
-      zoom: zoomOptions,
-    },
+    plugins: structuredClone(chartPlugins),
   };
 
-  return <Line data={data} options={chartOptions} />;
+  return <ChartWrapper id='vwc' data={data} options={chartOptions} />;
 }
 
 VwcChart.propTypes = {
+  id: PropTypes.string,
   data: PropTypes.object,
 };

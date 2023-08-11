@@ -18,7 +18,7 @@ class Power_Data(Resource):
         power_data_obj = p_in.load(json_data)
         logger_name = power_data_obj["logger"]
         cell_name = power_data_obj["cell"]
-        ts = datetime.fromtimestamp(json_data["ts"] // 1000000000)
+        ts = datetime.fromtimestamp(json_data["ts"])
         voltage = power_data_obj["v"]
         current = power_data_obj["i"]
         new_pwr_data = PowerData.add_power_data(

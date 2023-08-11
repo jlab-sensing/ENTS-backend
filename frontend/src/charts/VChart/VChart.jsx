@@ -1,8 +1,8 @@
-import { React } from "react";
-import { Line } from "react-chartjs-2";
-import "chartjs-adapter-luxon";
-import { zoomOptions } from "../defaultChartOptions";
-import PropTypes from "prop-types";
+import { React } from 'react';
+import 'chartjs-adapter-luxon';
+import PropTypes from 'prop-types';
+import ChartWrapper from '../ChartWrapper';
+import { chartPlugins } from '../plugins';
 
 export default function VChart(props) {
   const data = props.data;
@@ -11,12 +11,12 @@ export default function VChart(props) {
     responsive: true,
     scales: {
       x: {
-        position: "bottom",
+        position: 'bottom',
         title: {
           display: true,
-          text: "Time",
+          text: 'Time',
         },
-        type: "time",
+        type: 'time',
         ticks: {
           autoSkip: false,
           autoSkipPadding: 50,
@@ -27,40 +27,45 @@ export default function VChart(props) {
         },
         time: {
           displayFormats: {
-            hour: "hh:mm",
-            day: "D",
+            hour: 'hh:mm',
+            day: 'D',
           },
         },
       },
       vAxis: {
-        position: "left",
+        position: 'left',
         beginAtZero: true,
         title: {
           display: true,
-          text: "Cell Voltage (V)",
+          text: 'Cell Voltage (mV)',
         },
-        suggestedMax: 0.28,
         min: 0,
-        stepSize: 5,
+        max: 400,
+        ticks: {
+          stepSize: 50,
+        },
         grid: {
           drawOnChartArea: false,
         },
       },
       cAxis: {
-        position: "right",
+        position: 'right',
         beginAtZero: true,
         title: {
           display: true,
-          text: "Current (µA)",
+          text: 'Current (µA)',
+        },
+        min: 0,
+        max: 160,
+        ticks: {
+          stepSize: 20,
         },
       },
     },
-    plugins: {
-      zoom: zoomOptions,
-    },
+    plugins: structuredClone(chartPlugins),
   };
 
-  return <Line data={data} options={chartOptions} />;
+  return <ChartWrapper data={data} options={chartOptions} />;
 }
 
 VChart.propTypes = {

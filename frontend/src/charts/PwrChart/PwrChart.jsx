@@ -1,8 +1,8 @@
-import { React } from "react";
-import { Line } from "react-chartjs-2";
-import "chartjs-adapter-luxon";
-import { zoomOptions } from "../defaultChartOptions";
-import PropTypes from "prop-types";
+import { React } from 'react';
+import 'chartjs-adapter-luxon';
+import PropTypes from 'prop-types';
+import ChartWrapper from '../ChartWrapper';
+import { chartPlugins } from '../plugins';
 
 export default function PwrChart(props) {
   const data = props.data;
@@ -11,12 +11,12 @@ export default function PwrChart(props) {
     responsive: true,
     scales: {
       x: {
-        position: "bottom",
+        position: 'bottom',
         title: {
           display: true,
-          text: "Time",
+          text: 'Time',
         },
-        type: "time",
+        type: 'time',
         ticks: {
           autoSkip: false,
           autoSkipPadding: 50,
@@ -27,7 +27,7 @@ export default function PwrChart(props) {
         },
         time: {
           displayFormats: {
-            day: "D",
+            day: 'D',
           },
         },
       },
@@ -35,16 +35,14 @@ export default function PwrChart(props) {
         beginAtZero: true,
         title: {
           display: true,
-          text: "Power (µV)",
+          text: 'Power (µW)',
         },
       },
     },
-    plugins: {
-      zoom: zoomOptions,
-    },
+    plugins: structuredClone(chartPlugins),
   };
 
-  return <Line data={data} options={chartOptions} />;
+  return <ChartWrapper data={data} options={chartOptions} />;
 }
 
 PwrChart.propTypes = {

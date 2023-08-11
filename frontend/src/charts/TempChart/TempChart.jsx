@@ -1,8 +1,8 @@
-import { React } from "react";
-import { Line } from "react-chartjs-2";
-import "chartjs-adapter-luxon";
-import { zoomOptions } from "../defaultChartOptions";
-import PropTypes from "prop-types";
+import { React } from 'react';
+import 'chartjs-adapter-luxon';
+import PropTypes from 'prop-types';
+import ChartWrapper from '../ChartWrapper';
+import { chartPlugins } from '../plugins';
 
 export default function TempChart(props) {
   const data = props.data;
@@ -11,12 +11,12 @@ export default function TempChart(props) {
     responsive: true,
     scales: {
       x: {
-        position: "bottom",
+        position: 'bottom',
         title: {
           display: true,
-          text: "Time",
+          text: 'Time',
         },
-        type: "time",
+        type: 'time',
         ticks: {
           autoSkip: false,
           autoSkipPadding: 50,
@@ -27,28 +27,26 @@ export default function TempChart(props) {
         },
         time: {
           displayFormats: {
-            hour: "hh:mm a",
-            day: "MM/dd",
+            hour: 'hh:mm a',
+            day: 'MM/dd',
           },
         },
       },
       y: {
-        type: "linear",
-        position: "left",
+        type: 'linear',
+        position: 'left',
         beginAtZero: true,
         suggestedMax: 35,
         title: {
           display: true,
-          text: "Temperature (°C)",
+          text: 'Temperature (°C)',
         },
       },
     },
-    plugins: {
-      zoom: zoomOptions,
-    },
+    plugins: structuredClone(chartPlugins),
   };
 
-  return <Line data={data} options={chartOptions} />;
+  return <ChartWrapper data={data} options={chartOptions} />;
 }
 TempChart.propTypes = {
   data: PropTypes.object,

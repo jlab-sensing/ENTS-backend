@@ -5,15 +5,6 @@ from datetime import datetime
 from dateutil.relativedelta import *
 
 
-def vwc(raw):
-    return (
-        (6.771 * (10**-10)) * (raw**3)
-        + (-5.105 * (10**-6)) * (raw**2)
-        + (1.302 * (10**-2)) * (raw)
-        - 10.848
-    )
-
-
 class TEROSData(db.Model):
     """Table for TEROS-12 Data"""
 
@@ -75,7 +66,7 @@ class TEROSData(db.Model):
             data.append(
                 {
                     "ts": row.ts,
-                    "vwc": vwc(row.vwc),
+                    "vwc": row.vwc,
                     "temp": row.temp,
                     "ec": row.ec,
                 }
@@ -106,7 +97,7 @@ class TEROSData(db.Model):
 
         for row in db.session.execute(stmt):
             data["timestamp"].append(row.ts)
-            data["vwc"].append(vwc(row.vwc))
+            data["vwc"].append(row.vwc)
             data["temp"].append(row.temp)
             data["ec"].append(row.ec)
 
