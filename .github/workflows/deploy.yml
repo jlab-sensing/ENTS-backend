@@ -55,9 +55,11 @@ jobs:
             ${{ runner.os }}-frontend-site-build-
 
       - name: Install dependencies
+        working-directory: ./frontend
         run: npm install
 
       - name: Build frontend
+        working-directory: ./frontend
         run: npm run build
 
       - name: Set AWS credentials
