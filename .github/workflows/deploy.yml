@@ -54,17 +54,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-frontend-site-build-
 
-      - name: Build and push frontend
-        uses: docker/build-push-action@v4
-        with:
-          push: true
-          context: ./frontend
-          # build-args: |
-          #   "PUBLIC_URL=/dev/${{ github.ref_name }}/frontend"
-          file: ./frontend/Dockerfile
-          target: production
-          tags: ${{ steps.meta-frontend.outputs.tags }}
-          labels: ${{ steps.meta-frontend.outputs.labels }}
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build frontend
+        run: npm run build
 
       - name: Set AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
