@@ -38,7 +38,7 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requir
 # entrypoint script
 COPY entrypoint.sh ./
 
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 FROM python:3.11.0-slim-buster as production
 
@@ -47,6 +47,20 @@ RUN mkdir -p /home/app
 
 # create the app user
 RUN addgroup --system app && adduser --system --group app
+
+# set AWS args
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SECRET_ACCESS_KEY
+ARG AWS_DEFAULT_REGION
+# -- AWS RDS vars -- #
+# ARG POSTGRES_USER
+# ARG POSTGRES_PW
+# ARG POSTGRES_URL
+# ARG POSTGRES_DB
+
+ENV AWS_ACCESS_KEY_ID $AWS_ACCESS_KEY_ID
+ENV AWS_SECRET_ACCESS_KEY $AWS_SECRET_ACCESS_KEY
+ENV AWS_DEFAULT_REGION $AWS_DEFAULT_REGION
 
 # create the appropriate directories
 ENV HOME=/home/app
