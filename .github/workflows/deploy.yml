@@ -20,7 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
-
+    env:
+      PUBLIC_URL: ''
     steps:
       - name: Checkout
         uses: actions/checkout@v1
