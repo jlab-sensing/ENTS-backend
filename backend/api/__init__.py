@@ -33,6 +33,8 @@ def create_app() -> Flask:
         from .resources.cell_id import Cell_Id
         from .resources.power_data import Power_Data
         from .resources.teros_data import Teros_Data
+        from .resources.health_check import Health_Check
+        api.add_resource(Health_Check, '/')
         api.add_resource(Cell_Data, '/api/cell/data/<int:cell_id>',
                          endpoint='cell_data_ep')
         api.add_resource(Cell_Id, '/api/cell/id')
