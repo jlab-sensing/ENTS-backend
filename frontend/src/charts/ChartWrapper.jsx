@@ -16,6 +16,12 @@ function ChartWrapper(props) {
   const [panSelected, setPanSelected] = useState(true);
 
   const chartRef = useRef();
+  const globalChartOpts = {
+    interaction: {
+      intersect: false,
+      mode: 'index',
+    },
+  };
 
   const handleResetZoom = () => {
     if (chartRef.current) {
@@ -45,23 +51,11 @@ function ChartWrapper(props) {
         key={props.id}
         ref={chartRef}
         data={props.data}
-        options={props.options}
+        options={{ ...props.options, ...globalChartOpts }}
       ></Line>
     );
   };
 
-  // useEffect(() => {
-  //   if (chartRef.current) {
-  //     console.log('test');
-  //     chartRef.current.config.options.plugins.zoom.zoom.wheel.enabled = false;
-  //     chartRef.current.options.plugins.zoom.pan.enabled = true;
-  //     chartRef.current.update();
-  //     setZoomSelected(
-  //       chartRef.current.config.options.plugins.zoom.zoom.wheel.enabled
-  //     );
-  //     setPanSelected(chartRef.current.options.plugins.zoom.pan.enabled);
-  //   }
-  // }, [props.data]);
   useEffect(() => {
     if (chartRef.current) {
       setZoomSelected(
