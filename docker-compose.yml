@@ -22,7 +22,7 @@ services:
     build:
       context: ./frontend
       dockerfile: ./Dockerfile
-      target: production
+      target: development
     image: dirtviz-frontend
     ports:
       - '3000:80'
@@ -54,38 +54,6 @@ services:
     image: adminer
     ports:
       - '8060:8080'
-
-  cs-http:
-    build:
-      context: .
-      dockerfile: cs-http.Dockerfile
-    image: dirtviz-cs-http
-    environment:
-      DB_USER: dirtviz
-      DB_PASS: password
-      DB_HOST: postgresql
-      DB_PORT: 5432
-      DB_DATABASE: dirtviz
-    expose:
-      - '8100'
-    depends_on:
-      - postgresql
-
-  http-api:
-    build:
-      context: .
-      dockerfile: http-api.Dockerfile
-    image: dirtviz-http-api
-    environment:
-      DB_USER: dirtviz
-      DB_PASS: password
-      DB_HOST: postgresql
-      DB_PORT: 5432
-      DB_DATABASE: dirtviz
-    expose:
-      - '8090'
-    depends_on:
-      - postgresql
 
 volumes:
   postgresqldata:
