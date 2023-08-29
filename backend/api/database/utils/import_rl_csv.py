@@ -28,7 +28,8 @@ def import_rl_csv(path, logger_name, cell1_name, cell2_name, batch_size=10000):
     the rokcet locker must be created first.
 
     Expects columns in the following format
-    timestamp,I1L_valid,I2L_valid,I1H [nA],I1L [10pA],V1 [10nV],V2 [10nV],I2H [nA],I2L [10pA]
+    timestamp,I1L_valid,I2L_valid,I1H [nA],I1L [10pA],
+    V1 [10nV],V2 [10nV],I2H [nA],I2L [10pA]
 
     Parameters
     ----------
