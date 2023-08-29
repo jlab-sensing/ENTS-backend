@@ -26,14 +26,8 @@
     "start": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "lint": "eslint . ",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint --fix ."
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
@@ -49,14 +43,17 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.4",
-    "eslint": "^8.37.0",
+    "eslint": "^8.48.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^8.8.0",
+    "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
     "prettier": "^2.8.7",
-    "vite": "^4.4.9"
+    "vite": "^4.4.9",
+    "vite-plugin-eslint": "^1.8.1"
   }
 }
