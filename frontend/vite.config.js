@@ -41,6 +41,13 @@ export default defineConfig(({ mode }) => {
       },
       outDir: 'build',
     },
+    test: {
+      environment: 'jsdom',
+      setupFiles: ['./src/tests/setup.js'],
+      coverage: {
+        provider: 'istanbul',
+      },
+    },
     plugins: [react()],
   };
 });
