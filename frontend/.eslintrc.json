@@ -14,7 +14,7 @@
         "plugin:jsx-a11y/recommended",
         "eslint-config-prettier"
     ],
-    "ignorePatterns": ["node_modules", "build", ".eslintrc.json", ".prettierrc.js"],
+    "ignorePatterns": ["node_modules", "build", "coverage", ".eslintrc.json", ".prettierrc.js"],
     "overrides": [
     ],
     "parserOptions": {
