@@ -1,16 +1,26 @@
 import { React, useEffect, useRef, useState } from 'react';
-import { Line } from 'react-chartjs-2';
-import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
 import { Box, ToggleButton } from '@mui/material';
 import zoom from '../assets/zoom.svg';
 import reset from '../assets/reset.svg';
 import pan from '../assets/pan.svg';
-import { Chart } from 'chart.js/auto';
+import {
+  Chart as ChartJS,
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  Tooltip,
+  Legend,
+  TimeScale,
+} from 'chart.js';
+import 'chartjs-adapter-luxon';
 import zoomPlugin from 'chartjs-plugin-zoom';
-Chart.register(zoomPlugin);
+ChartJS.register(LineController, LineElement, PointElement, LinearScale, Tooltip, Legend, TimeScale, zoomPlugin);
+import { Line } from 'react-chartjs-2';
 
 function ChartWrapper(props) {
+  const [resetSelected] = useState(false);
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
 
@@ -68,7 +78,12 @@ function ChartWrapper(props) {
           gap: '1%',
         }}
       >
-        <ToggleButton onClick={handleResetZoom} variant='outlined' sx={{ width: '32px', height: '32px' }}>
+        <ToggleButton
+          value={resetSelected}
+          onClick={handleResetZoom}
+          variant='outlined'
+          sx={{ width: '32px', height: '32px' }}
+        >
           <Box component='img' src={reset} sx={{ width: '16px', height: '16px' }}></Box>
         </ToggleButton>
         <ToggleButton

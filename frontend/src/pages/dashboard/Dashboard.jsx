@@ -1,6 +1,4 @@
-// import "./Dashboard.css";
 import { React, useState, useEffect } from 'react';
-import 'chartjs-adapter-luxon';
 import { getCellIds, getCellData } from '../../services/cell';
 import { getTerosData } from '../../services/teros';
 import { getPowerData } from '../../services/power';
@@ -18,12 +16,10 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import DateRangeSel from './DateRangeSel';
+import DateRangeSel from './components/DateRangeSel';
 
 function Dashboard() {
-  const [startDate, setStartDate] = useState(
-    DateTime.now().minus({ days: 14 })
-  );
+  const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
   const [endDate, setEndDate] = useState(DateTime.now());
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [cellData, setCellData] = useState([]);
@@ -94,9 +90,7 @@ function Dashboard() {
     });
     getPowerData(sC, sD, eD).then((response) => {
       const powerDataObj = response.data;
-      powerDataObj.timestamp = powerDataObj.timestamp.map((dateTime) =>
-        DateTime.fromHTTP(dateTime)
-      );
+      powerDataObj.timestamp = powerDataObj.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
       setVChartData({
         labels: powerDataObj.timestamp,
         datasets: [
@@ -139,9 +133,7 @@ function Dashboard() {
     });
     getTerosData(sC, sD, eD).then((response) => {
       const terosDataObj = response.data;
-      terosDataObj.timestamp = terosDataObj.timestamp.map((dateTime) =>
-        DateTime.fromHTTP(dateTime)
-      );
+      terosDataObj.timestamp = terosDataObj.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
       setVWCChartData({
         labels: terosDataObj.timestamp,
         datasets: [
@@ -220,7 +212,7 @@ function Dashboard() {
         alignItems='center'
         justifyContent='space-evenly'
         sx={{ p: 2 }}
-        flexItem
+        flex
       >
         <FormControl sx={{ width: 1 / 4 }}>
           <InputLabel id='cell-select'>Cell</InputLabel>

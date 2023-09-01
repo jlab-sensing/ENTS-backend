@@ -46,7 +46,7 @@ export default function TempChart(props) {
     plugins: structuredClone(chartPlugins),
   };
 
-  return <ChartWrapper data={data} options={chartOptions} />;
+  return <ChartWrapper id='temp' data={data} options={chartOptions} />;
 }
 TempChart.propTypes = {
   data: PropTypes.object,

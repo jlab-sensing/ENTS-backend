@@ -43,9 +43,10 @@ export default defineConfig(({ mode }) => {
     },
     test: {
       environment: 'jsdom',
-      setupFiles: ['./src/tests/setup.js'],
+      setupFiles: ['./src/setupTests.js'],
       coverage: {
         provider: 'istanbul',
+        reporter: ['text', 'json', 'html'],
       },
     },
     plugins: [react()],
