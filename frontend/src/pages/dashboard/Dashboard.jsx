@@ -1,6 +1,4 @@
-// import "./Dashboard.css";
 import { React, useState, useEffect } from 'react';
-import 'chartjs-adapter-luxon';
 import { getCellIds, getCellData } from '../../services/cell';
 import { getTerosData } from '../../services/teros';
 import { getPowerData } from '../../services/power';
@@ -18,7 +16,7 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import DateRangeSel from './DateRangeSel';
+import DateRangeSel from './components/DateRangeSel';
 
 function Dashboard() {
   const chartSettings = {
@@ -31,6 +29,13 @@ function Dashboard() {
       },
     ],
   };
+  const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
+  const [endDate, setEndDate] = useState(DateTime.now());
+  const [dBtnDisabled, setDBtnDisabled] = useState(true);
+  const [cellData, setCellData] = useState([]);
+  const [selectedCell, setSelectedCell] = useState(-1);
+  const [cellIds, setCellIds] = useState([]);
+  const [tempChartData, setTempChartData] = useState({
   const [startDate, setStartDate] = useState(
     DateTime.now().minus({ days: 14 })
   );
@@ -256,7 +261,7 @@ function Dashboard() {
         alignItems='center'
         justifyContent='space-evenly'
         sx={{ p: 2 }}
-        flexItem
+        flex
       >
         <FormControl sx={{ width: 1 / 4 }}>
           <InputLabel id='cell-select'>Cell</InputLabel>

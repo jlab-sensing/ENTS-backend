@@ -5,6 +5,9 @@ on:
   delete:
     branches-ignore:
       - main
+  pull_request:
+    types:
+      - closed
 
 jobs:
   delete_resources:
@@ -55,10 +58,9 @@ jobs:
           ssh ${{ secrets.USER }}@${{ secrets.HOSTNAME }} \
           psql -U ${{ secrets.DB_USER }} -d ${{ github.event.ref }}
 
-      - name: Delete environment
-        uses: strumwolf/delete-deployment-environment@v2
+      - name: Delete Deployment Environment
+        uses: strumwolf/delete-deployment-environment@v2.3.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           environment: ${{ github.event.ref }}
           ref: ${{ github.event.ref }}
-          onlyRemoveDeployments: true

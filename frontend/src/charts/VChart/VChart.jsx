@@ -65,7 +65,7 @@ export default function VChart(props) {
     plugins: structuredClone(chartPlugins),
   };
 
-  return <ChartWrapper data={data} options={chartOptions} />;
+  return <ChartWrapper id='v' data={data} options={chartOptions} />;
 }
 
 VChart.propTypes = {
