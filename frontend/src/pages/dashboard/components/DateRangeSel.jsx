@@ -4,15 +4,18 @@ import { DateTime } from 'luxon';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import HorizontalRuleRoundedIcon from '@mui/icons-material/HorizontalRuleRounded';
+import PropTypes from 'prop-types';
 
 function DateRangeSel(props) {
+  const startDate = props.startDate;
+  const endDate = props.endDate;
   return (
     <>
       <LocalizationProvider dateAdapter={AdapterLuxon}>
         <DateTimePicker
           label='Start Date'
-          value={props.startDate}
-          onChange={(startDate) => props.setStartDate(startDate)}
+          value={startDate}
+          onChange={(newStartDate) => props.setStartDate(newStartDate)}
           views={['year', 'month', 'day', 'hours']}
         />
       </LocalizationProvider>
@@ -20,8 +23,8 @@ function DateRangeSel(props) {
       <LocalizationProvider dateAdapter={AdapterLuxon}>
         <DateTimePicker
           label='End Date'
-          value={props.endDate}
-          onChange={(endDate) => props.setEndDate(endDate)}
+          value={endDate}
+          onChange={(newEndDate) => props.setEndDate(newEndDate)}
           views={['year', 'month', 'day', 'hours']}
         />
       </LocalizationProvider>
@@ -30,10 +33,10 @@ function DateRangeSel(props) {
 }
 
 DateRangeSel.propTypes = {
-  startDate: DateTime,
-  endDate: DateTime,
-  setStartDate: Function,
-  setEndDate: Function,
+  startDate: PropTypes.any,
+  endDate: PropTypes.any,
+  setStartDate: PropTypes.func.isRequired,
+  setEndDate: PropTypes.func.isRequired,
 };
 
 export default DateRangeSel;

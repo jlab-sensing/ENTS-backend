@@ -1,4 +1,4 @@
-from ..schemas import *
+from ..schemas import ma
 from ..models.power_data import PowerData
 
 

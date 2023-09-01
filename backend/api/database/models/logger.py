@@ -1,4 +1,4 @@
-from ..models import *
+from ..models import db
 from sqlalchemy.dialects.postgresql import MACADDR
 
 

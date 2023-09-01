@@ -1,8 +1,8 @@
-from ..models import *
+from ..models import db
 from sqlalchemy.sql import func
 from .cell import Cell
 from datetime import datetime
-from dateutil.relativedelta import *
+from dateutil.relativedelta import relativedelta
 
 
 class TEROSData(db.Model):

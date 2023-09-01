@@ -1,7 +1,7 @@
-from ..models import *
+from ..models import db, Cell
 from .logger import Logger
 from datetime import datetime
-from dateutil.relativedelta import *
+from dateutil.relativedelta import relativedelta
 
 
 class PowerData(db.Model):

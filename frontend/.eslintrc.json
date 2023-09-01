@@ -6,9 +6,15 @@
     },
     "extends": [
         "eslint:recommended",
-        "plugin:react/recommended"
-
+        "plugin:react/recommended",
+        "plugin:react/recommended",
+        "plugin:react/jsx-runtime",
+        "plugin:react-hooks/recommended",
+        "plugin:import/recommended",
+        "plugin:jsx-a11y/recommended",
+        "eslint-config-prettier"
     ],
+    "ignorePatterns": ["node_modules", "build", ".eslintrc.json", ".prettierrc.js"],
     "overrides": [
     ],
     "parserOptions": {
@@ -16,17 +22,27 @@
         "sourceType": "module"
     },
     "plugins": [
-        "react"
+        "react",
+        "react-refresh"
     ],
     "rules": {
         "react/jsx-uses-vars": "warn",
         "react/jsx-uses-react": "warn",
         "no-use-before-define": "warn",
-        "no-unused-expressions": "warn"
+        "no-unused-expressions": "warn",
+        "react-refresh/only-export-components": [
+            "warn",
+            { "allowConstantExport": true }
+        ]
     },
     "settings": {
         "react": {
           "version": "detect"
+        },
+        "import/resolver": {
+            "node": {
+              "extensions": [".js", ".jsx", ".ts", ".tsx"]
+            }
         }
     }
 }
