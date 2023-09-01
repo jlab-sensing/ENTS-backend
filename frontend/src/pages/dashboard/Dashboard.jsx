@@ -1,4 +1,4 @@
-import { React, useState, useEffect } from 'react';
+import { React, useState, useEffect, useCallback } from 'react';
 import { getCellIds, getCellData } from '../../services/cell';
 import { getTerosData } from '../../services/teros';
 import { getPowerData } from '../../services/power';
@@ -33,78 +33,18 @@ function Dashboard() {
   const [endDate, setEndDate] = useState(DateTime.now());
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [cellData, setCellData] = useState([]);
-  const [selectedCell, setSelectedCell] = useState(-1);
   const [cellIds, setCellIds] = useState([]);
-  const [tempChartData, setTempChartData] = useState({
-  const [startDate, setStartDate] = useState(
-    DateTime.now().minus({ days: 14 })
-  );
-  const [endDate, setEndDate] = useState(DateTime.now());
-  const [dBtnDisabled, setDBtnDisabled] = useState(true);
-  const [cellData, setCellData] = useState([]);
   const [selectedCells, setSelectedCells] = useState([]);
-  const [cellIds, setCellIds] = useState([]);
   const [tempChartData, setTempChartData] = useState(chartSettings);
-  const [vChartData, setVChartData] = useState({
-    label: [],
-    datasets: [
-      {
-        data: [],
-        borderColor: 'black',
-        borderWidth: 2,
-        yAxisID: 'vAxis',
-      },
-      {
-        data: [],
-        borderColor: 'black',
-        borderWidth: 2,
-        yAxisID: 'cAxis',
-      },
-    ],
-  });
-  const [pwrChartData, setPwrChartData] = useState({
-    label: [],
-    datasets: [
-      {
-        label: 'Voltage',
-        data: [],
-        borderColor: 'black',
-        borderWidth: 2,
-      },
-    ],
-  });
-  const [vwcChartData, setVwcChartData] = useState({
-    label: [],
-    datasets: [
-      {
-        label: 'VWC',
-        data: [],
-        borderColor: 'black',
-        borderWidth: 2,
-        yAxisID: 'vwcAxis',
-      },
-      {
-        label: 'EC',
-        data: [],
-        borderColor: 'black',
-        borderWidth: 2,
-        yAxisID: 'ecAxis',
-      },
-    ],
-  });
-  async function getCellChartData() {
-    const data = {};
-    for (const cell of selectedCells) {
-      data[cell.id] = {
-        name: cell.name,
-        powerData: await getPowerData(cell.id, startDate, endDate),
-        terosData: await getTerosData(cell.id, startDate, endDate),
-      };
-    }
-    return data;
-  }
+  const [vChartData, setVChartData] = useState(chartSettings);
+  const [pwrChartData, setPwrChartData] = useState(chartSettings);
+  const [vwcChartData, setVwcChartData] = useState(chartSettings);
 
-  const updateCharts = () => {
+  const updateCharts = useCallback(() => {
+    getCellData(selectedCells[0], startDate, endDate).then((response) => {
+      const cellDataObj = response.data;
+      setCellData(cellDataObj);
+    });
     // Initialize the combined chart data with empty datasets
     const newVChartData = {
       ...vChartData,
@@ -131,6 +71,18 @@ function Dashboard() {
     const ecColors = ['purple', 'blue'];
     const vwcColors = ['orange', 'red'];
 
+    async function getCellChartData() {
+      const data = {};
+      for (const cell of selectedCells) {
+        data[cell.id] = {
+          name: cell.name,
+          powerData: await getPowerData(cell.id, startDate, endDate),
+          terosData: await getTerosData(cell.id, startDate, endDate),
+        };
+      }
+      return data;
+    }
+
     getCellChartData().then((cellChartData) => {
       let selectCounter = 0;
       for (const { id } of selectedCells) {
@@ -138,12 +90,8 @@ function Dashboard() {
         const name = cellChartData[cellid].name;
         const powerData = cellChartData[cellid].powerData;
         const terosData = cellChartData[cellid].terosData;
-        const pTimestamp = powerData.data.timestamp.map((dateTime) =>
-          DateTime.fromHTTP(dateTime)
-        );
-        const tTimestamp = terosData.data.timestamp.map((dateTime) =>
-          DateTime.fromHTTP(dateTime)
-        );
+        const pTimestamp = powerData.data.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
+        const tTimestamp = terosData.data.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
         newVChartData.labels = pTimestamp;
         newVChartData.datasets.push(
           {
@@ -165,7 +113,7 @@ function Dashboard() {
             yAxisID: 'cAxis',
             radius: 2,
             pointRadius: 1,
-          }
+          },
         );
         //power data
         newPwrChartData.labels = pTimestamp;
@@ -200,7 +148,7 @@ function Dashboard() {
             yAxisID: 'ecAxis',
             radius: 2,
             pointRadius: 1,
-          }
+          },
         );
 
         // Update the combined Temperature Chart data for the specific cell
@@ -221,13 +169,13 @@ function Dashboard() {
       setPwrChartData(newPwrChartData);
       setVwcChartData(newVwcChartData);
     });
-  };
+  }, [selectedCells, startDate, endDate]);
 
   useEffect(() => {
     if (Array.isArray(selectedCells) && selectedCells.length) {
-      updateCharts(startDate, endDate);
+      updateCharts();
     }
-  }, [selectedCells, startDate, endDate]);
+  }, [selectedCells, startDate, endDate, updateCharts]);
 
   useEffect(() => {
     if (Object.keys(cellData).length != 0) {
