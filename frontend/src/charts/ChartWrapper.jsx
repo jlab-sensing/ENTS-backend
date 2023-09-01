@@ -25,6 +25,12 @@ function ChartWrapper(props) {
   const [panSelected, setPanSelected] = useState(true);
 
   const chartRef = useRef();
+  const globalChartOpts = {
+    interaction: {
+      intersect: false,
+      mode: 'index',
+    },
+  };
 
   const handleResetZoom = () => {
     if (chartRef.current) {
@@ -48,7 +54,7 @@ function ChartWrapper(props) {
   };
 
   const lineChart = () => {
-    return <Line key={props.id} ref={chartRef} data={props.data} options={props.options}></Line>;
+    return <Line key={props.id} ref={chartRef} data={props.data} options={{ ...props.options, ...globalChartOpts }}></Line>;
   };
 
   /**

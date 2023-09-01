@@ -39,8 +39,8 @@ export default function VChart(props) {
           display: true,
           text: 'Cell Voltage (mV)',
         },
-        min: 0,
-        max: 400,
+        suggestedMin: 0,
+        suggestedMax: 400,
         ticks: {
           stepSize: 50,
         },
