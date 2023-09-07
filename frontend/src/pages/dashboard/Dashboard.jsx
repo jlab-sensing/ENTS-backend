@@ -19,6 +19,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import DateRangeSel from './DateRangeSel';
+import BackBtn from './BackBtn';
 
 function Dashboard() {
   const [startDate, setStartDate] = useState(
@@ -222,6 +223,7 @@ function Dashboard() {
         sx={{ p: 2 }}
         flexItem
       >
+        <BackBtn />
         <FormControl sx={{ width: 1 / 4 }}>
           <InputLabel id='cell-select'>Cell</InputLabel>
           {selectedCell != -1 && (

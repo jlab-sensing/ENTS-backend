@@ -1,15 +1,11 @@
+import { React } from 'react';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import { useNavigate } from 'react-router-dom';
 
 function BackBtn() {
-  <Button
-    key='map'
-    onClick={() => navigate('/map')}
-    sx={{ my: 2, color: 'black', display: 'block' }}
-  >
-    Map
-  </Button>;
+  const navigate = useNavigate();
   return (
-    <button key='prev' onClick={() => navigate('/map')}>
+    <button key='prev' onClick={() => navigate(-1)}>
       <img src={ChevronLeftIcon} />
     </button>
   );
