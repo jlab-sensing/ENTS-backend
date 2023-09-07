@@ -1,5 +1,5 @@
 import { React, useState, useEffect, useCallback } from 'react';
-import { getCellIds, getCellData } from '../../services/cell';
+import { getCells, getCellData } from '../../services/cell';
 import { getTerosData } from '../../services/teros';
 import { getPowerData } from '../../services/power';
 import PwrChart from '../../charts/PwrChart/PwrChart';
@@ -7,16 +7,11 @@ import VChart from '../../charts/VChart/VChart';
 import VwcChart from '../../charts/VwcChart/VwcChart';
 import TempChart from '../../charts/TempChart/TempChart';
 import { DateTime } from 'luxon';
-import DownloadBtn from './DownloadBtn';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
-import Divider from '@mui/material/Divider';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
+import DownloadBtn from './components/DownloadBtn';
+import { Box, Grid, Stack, Divider, InputLabel, FormControl, Select, MenuItem } from '@mui/material';
 import DateRangeSel from './components/DateRangeSel';
+import CellSelect from './components/CellSelect';
+import PowerCharts from './components/PowerCharts';
 
 function Dashboard() {
   const chartSettings = {
@@ -39,7 +34,6 @@ function Dashboard() {
   const [vChartData, setVChartData] = useState(chartSettings);
   const [pwrChartData, setPwrChartData] = useState(chartSettings);
   const [vwcChartData, setVwcChartData] = useState(chartSettings);
-
   const updateCharts = useCallback(() => {
     getCellData(selectedCells[0], startDate, endDate).then((response) => {
       const cellDataObj = response.data;
@@ -171,11 +165,11 @@ function Dashboard() {
     });
   }, [selectedCells, startDate, endDate]);
 
-  useEffect(() => {
-    if (Array.isArray(selectedCells) && selectedCells.length) {
-      updateCharts();
-    }
-  }, [selectedCells, startDate, endDate, updateCharts]);
+  // useEffect(() => {
+  //   if (Array.isArray(selectedCells) && selectedCells.length) {
+  //     updateCharts();
+  //   }
+  // }, [selectedCells, startDate, endDate, updateCharts]);
 
   useEffect(() => {
     if (Object.keys(cellData).length != 0) {
@@ -184,7 +178,7 @@ function Dashboard() {
   }, [cellData]);
 
   useEffect(() => {
-    getCellIds().then((response) => {
+    getCells().then((response) => {
       setCellIds(response.data);
     });
   }, []);
@@ -211,32 +205,7 @@ function Dashboard() {
         sx={{ p: 2 }}
         flex
       >
-        <FormControl sx={{ width: 1 / 4 }}>
-          <InputLabel id='cell-select'>Cell</InputLabel>
-          {selectedCells && (
-            <Select
-              labelId='cell-select-label'
-              id='cell-select'
-              value={selectedCells}
-              multiple
-              label='Cell'
-              defaultValue={selectedCells}
-              onChange={(e) => {
-                setSelectedCells(e.target.value);
-              }}
-            >
-              {Array.isArray(cellIds)
-                ? cellIds.map((cell) => {
-                    return (
-                      <MenuItem value={cell} key={cell.id}>
-                        {cell.name}
-                      </MenuItem>
-                    );
-                  })
-                : ''}
-            </Select>
-          )}
-        </FormControl>
+        <CellSelect selectedCells={selectedCells} setSelectedCells={setSelectedCells} />
         <Box display='flex' justifyContent='center' alignItems='center'>
           <DateRangeSel
             startDate={startDate}
@@ -255,18 +224,19 @@ function Dashboard() {
         justifyContent='space-evenly'
         columns={{ xs: 4, sm: 8, md: 12 }}
       >
-        <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-          <VChart data={vChartData} />
-        </Grid>
-        <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-          <PwrChart data={pwrChartData} />
-        </Grid>
-        <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-          <VwcChart data={vwcChartData} />
-        </Grid>
-        <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-          <TempChart data={tempChartData} />
-        </Grid>
+        <PowerCharts cells={selectedCells} startDate={startDate} endDate={endDate} />
+        {/* // <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+        //   <VChart data={vChartData} />
+        // </Grid>
+        // <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+        //   <PwrChart data={pwrChartData} />
+        // </Grid>
+        // <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+        //   <VwcChart data={vwcChartData} />
+        // </Grid>
+        // <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+        //   <TempChart data={tempChartData} />
+        // </Grid> */}
       </Grid>
     </Stack>
   );
