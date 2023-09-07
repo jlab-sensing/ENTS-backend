@@ -1,13 +1,14 @@
 import { React } from 'react';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import { Button } from '@mui/material';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import { useNavigate } from 'react-router-dom';
 
 function BackBtn() {
   const navigate = useNavigate();
   return (
-    <button key='prev' onClick={() => navigate(-1)}>
-      <img src={ChevronLeftIcon} />
-    </button>
+    <Button sx={{ color: 'black' }} key='prev' onClick={() => navigate(-1)}>
+      <NavigateBeforeIcon />
+    </Button>
   );
 }
 
