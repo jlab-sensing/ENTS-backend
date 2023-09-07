@@ -1,4 +1,4 @@
-from ..schemas import *
+from ..schemas import ma
 from ..models.teros_data import TEROSData
 
 

@@ -1,4 +1,4 @@
-from . import *
+from . import ma
 
 
 class GetCellDataSchema(ma.SQLAlchemySchema):

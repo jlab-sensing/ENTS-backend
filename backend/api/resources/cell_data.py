@@ -1,17 +1,9 @@
 from flask import request, jsonify
 from flask_restful import Resource
-import json
-from json import JSONEncoder
-import decimal
 import pandas as pd
-
-from datetime import date, datetime
-
-
 from ..database.schemas.get_cell_data_schema import GetCellDataSchema
 from ..database.models.power_data import PowerData
 from ..database.models.teros_data import TEROSData
-from ..database.getters import get_power_data, get_teros_data
 
 get_cell_data = GetCellDataSchema()
 

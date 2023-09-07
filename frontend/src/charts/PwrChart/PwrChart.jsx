@@ -42,7 +42,7 @@ export default function PwrChart(props) {
     plugins: structuredClone(chartPlugins),
   };
 
-  return <ChartWrapper data={data} options={chartOptions} />;
+  return <ChartWrapper id='pwr' data={data} options={chartOptions} />;
 }
 
 PwrChart.propTypes = {

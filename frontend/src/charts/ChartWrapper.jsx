@@ -1,21 +1,36 @@
 import { React, useEffect, useRef, useState } from 'react';
-import { Line } from 'react-chartjs-2';
-import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
 import { Box, ToggleButton } from '@mui/material';
 import zoom from '../assets/zoom.svg';
 import reset from '../assets/reset.svg';
 import pan from '../assets/pan.svg';
-import { chartPlugins } from './plugins';
-import Chart from 'chart.js/auto';
+import {
+  Chart as ChartJS,
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  Tooltip,
+  Legend,
+  TimeScale,
+} from 'chart.js';
+import 'chartjs-adapter-luxon';
 import zoomPlugin from 'chartjs-plugin-zoom';
-Chart.register(zoomPlugin);
+ChartJS.register(LineController, LineElement, PointElement, LinearScale, Tooltip, Legend, TimeScale, zoomPlugin);
+import { Line } from 'react-chartjs-2';
 
 function ChartWrapper(props) {
+  const [resetSelected] = useState(false);
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
 
   const chartRef = useRef();
+  const globalChartOpts = {
+    interaction: {
+      intersect: false,
+      mode: 'index',
+    },
+  };
 
   const handleResetZoom = () => {
     if (chartRef.current) {
@@ -32,41 +47,23 @@ function ChartWrapper(props) {
   };
   const handleTogglePan = () => {
     if (chartRef.current) {
-      chartRef.current.options.plugins.zoom.pan.enabled =
-        !chartRef.current.options.plugins.zoom.pan.enabled;
+      chartRef.current.options.plugins.zoom.pan.enabled = !chartRef.current.options.plugins.zoom.pan.enabled;
       chartRef.current.update();
       setPanSelected(!panSelected);
     }
   };
 
   const lineChart = () => {
-    return (
-      <Line
-        key={props.id}
-        ref={chartRef}
-        data={props.data}
-        options={props.options}
-      ></Line>
-    );
+    return <Line key={props.id} ref={chartRef} data={props.data} options={{ ...props.options, ...globalChartOpts }}></Line>;
   };
 
-  // useEffect(() => {
-  //   if (chartRef.current) {
-  //     console.log('test');
-  //     chartRef.current.config.options.plugins.zoom.zoom.wheel.enabled = false;
-  //     chartRef.current.options.plugins.zoom.pan.enabled = true;
-  //     chartRef.current.update();
-  //     setZoomSelected(
-  //       chartRef.current.config.options.plugins.zoom.zoom.wheel.enabled
-  //     );
-  //     setPanSelected(chartRef.current.options.plugins.zoom.pan.enabled);
-  //   }
-  // }, [props.data]);
+  /**
+   * Triggers on refresh to maintain different states of chart components. Fix for maintaining toggle for when chart refreshes
+   */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (chartRef.current) {
-      setZoomSelected(
-        chartRef.current.config.options.plugins.zoom.zoom.wheel.enabled
-      );
+      setZoomSelected(chartRef.current.config.options.plugins.zoom.zoom.wheel.enabled);
       setPanSelected(chartRef.current.options.plugins.zoom.pan.enabled);
     }
   });
@@ -88,15 +85,12 @@ function ChartWrapper(props) {
         }}
       >
         <ToggleButton
+          value={resetSelected}
           onClick={handleResetZoom}
           variant='outlined'
           sx={{ width: '32px', height: '32px' }}
         >
-          <Box
-            component='img'
-            src={reset}
-            sx={{ width: '16px', height: '16px' }}
-          ></Box>
+          <Box component='img' src={reset} sx={{ width: '16px', height: '16px' }}></Box>
         </ToggleButton>
         <ToggleButton
           value={zoomSelected}
@@ -104,11 +98,7 @@ function ChartWrapper(props) {
           onClick={handleToggleZoom}
           sx={{ width: '32px', height: '32px' }}
         >
-          <Box
-            component='img'
-            src={zoom}
-            sx={{ width: '16px', height: '16px' }}
-          ></Box>
+          <Box component='img' src={zoom} sx={{ width: '16px', height: '16px' }}></Box>
         </ToggleButton>
         <ToggleButton
           value={panSelected}
@@ -116,11 +106,7 @@ function ChartWrapper(props) {
           onClick={handleTogglePan}
           sx={{ width: '32px', height: '32px' }}
         >
-          <Box
-            component='img'
-            src={pan}
-            sx={{ width: '16px', height: '16px' }}
-          ></Box>
+          <Box component='img' src={pan} sx={{ width: '16px', height: '16px' }}></Box>
         </ToggleButton>
       </Box>
     </Box>
@@ -130,6 +116,7 @@ function ChartWrapper(props) {
 export default ChartWrapper;
 
 ChartWrapper.propTypes = {
+  id: PropTypes.string,
   data: PropTypes.object,
   options: PropTypes.object,
 };

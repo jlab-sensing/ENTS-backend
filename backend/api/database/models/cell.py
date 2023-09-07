@@ -1,4 +1,4 @@
-from ..models import *
+from ..models import db
 
 
 class Cell(db.Model):

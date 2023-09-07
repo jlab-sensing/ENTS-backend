@@ -1,6 +1,4 @@
-// import "./Dashboard.css";
-import { React, useState, useEffect } from 'react';
-import 'chartjs-adapter-luxon';
+import { React, useState, useEffect, useCallback } from 'react';
 import { getCellIds, getCellData } from '../../services/cell';
 import { getTerosData } from '../../services/teros';
 import { getPowerData } from '../../services/power';
@@ -18,178 +16,167 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import DateRangeSel from './DateRangeSel';
+import DateRangeSel from './components/DateRangeSel';
 import BackBtn from './BackBtn';
 
 function Dashboard() {
-  const [startDate, setStartDate] = useState(
-    DateTime.now().minus({ days: 14 })
-  );
+  const chartSettings = {
+    label: [],
+    datasets: [
+      {
+        data: [],
+        borderColor: 'black',
+        borderWidth: 2,
+      },
+    ],
+  };
+  const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
   const [endDate, setEndDate] = useState(DateTime.now());
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [cellData, setCellData] = useState([]);
-  const [selectedCell, setSelectedCell] = useState(-1);
   const [cellIds, setCellIds] = useState([]);
-  const [tempChartData, setTempChartData] = useState({
-    label: [],
-    datasets: [
-      {
-        data: [],
-        borderColor: 'black',
-        borderWidth: 2,
-      },
-    ],
-  });
-  const [vChartData, setVChartData] = useState({
-    label: [],
-    datasets: [
-      {
-        data: [],
-        borderColor: 'black',
-        borderWidth: 2,
-        yAxisID: 'vAxis',
-      },
-      {
-        data: [],
-        borderColor: 'black',
-        borderWidth: 2,
-        yAxisID: 'cAxis',
-      },
-    ],
-  });
-  const [pwrChartData, setPwrChartData] = useState({
-    label: [],
-    datasets: [
-      {
-        label: 'Voltage',
-        data: [],
-        borderColor: 'black',
-        borderWidth: 2,
-      },
-    ],
-  });
-  const [vwcChartData, setVWCChartData] = useState({
-    label: [],
-    datasets: [
-      {
-        label: 'VWC',
-        data: [],
-        borderColor: 'black',
-        borderWidth: 2,
-        yAxisID: 'vwcAxis',
-      },
-      {
-        label: 'EC',
-        data: [],
-        borderColor: 'black',
-        borderWidth: 2,
-        yAxisID: 'ecAxis',
-      },
-    ],
-  });
+  const [selectedCells, setSelectedCells] = useState([]);
+  const [tempChartData, setTempChartData] = useState(chartSettings);
+  const [vChartData, setVChartData] = useState(chartSettings);
+  const [pwrChartData, setPwrChartData] = useState(chartSettings);
+  const [vwcChartData, setVwcChartData] = useState(chartSettings);
 
-  const updateCharts = (sC, sD, eD) => {
-    getCellData(sC, sD, eD).then((response) => {
+  const updateCharts = useCallback(() => {
+    getCellData(selectedCells[0], startDate, endDate).then((response) => {
       const cellDataObj = response.data;
       setCellData(cellDataObj);
     });
-    getPowerData(sC, sD, eD).then((response) => {
-      const powerDataObj = response.data;
-      powerDataObj.timestamp = powerDataObj.timestamp.map((dateTime) =>
-        DateTime.fromHTTP(dateTime)
-      );
-      setVChartData({
-        labels: powerDataObj.timestamp,
-        datasets: [
+    // Initialize the combined chart data with empty datasets
+    const newVChartData = {
+      ...vChartData,
+      datasets: [],
+    };
+    const newTempChartData = {
+      ...tempChartData,
+      datasets: [],
+    };
+    const newPwrChartData = {
+      ...pwrChartData,
+      datasets: [],
+    };
+    const newVwcChartData = {
+      ...vwcChartData,
+      datasets: [],
+      data: [],
+    };
+    // Access data for each cell and update the combined charts accordingly
+    const pColors = ['lightgreen', 'darkgreen'];
+    const vColors = ['purple', 'blue'];
+    const iColors = ['orange', 'red'];
+    const tempColors = ['lightgreen', 'darkgreen'];
+    const ecColors = ['purple', 'blue'];
+    const vwcColors = ['orange', 'red'];
+
+    async function getCellChartData() {
+      const data = {};
+      for (const cell of selectedCells) {
+        data[cell.id] = {
+          name: cell.name,
+          powerData: await getPowerData(cell.id, startDate, endDate),
+          terosData: await getTerosData(cell.id, startDate, endDate),
+        };
+      }
+      return data;
+    }
+
+    getCellChartData().then((cellChartData) => {
+      let selectCounter = 0;
+      for (const { id } of selectedCells) {
+        const cellid = id;
+        const name = cellChartData[cellid].name;
+        const powerData = cellChartData[cellid].powerData;
+        const terosData = cellChartData[cellid].terosData;
+        const pTimestamp = powerData.data.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
+        const tTimestamp = terosData.data.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
+        newVChartData.labels = pTimestamp;
+        newVChartData.datasets.push(
           {
-            label: 'Voltage (mV)',
-            data: powerDataObj.v,
-            borderColor: 'lightgreen',
+            label: name + ' Voltage (v)',
+            data: powerData.data.v,
+            borderColor: vColors[selectCounter],
             borderWidth: 2,
             fill: false,
             yAxisID: 'vAxis',
             radius: 2,
-            pointRadius: 2,
+            pointRadius: 1,
           },
           {
-            label: 'Current (µA)',
-            data: powerDataObj.i,
-            borderColor: 'purple',
+            label: name + ' Current (µA)',
+            data: powerData.data.i,
+            borderColor: iColors[selectCounter],
             borderWidth: 2,
             fill: false,
             yAxisID: 'cAxis',
             radius: 2,
-            pointRadius: 2,
+            pointRadius: 1,
           },
-        ],
-      });
-      setPwrChartData({
-        labels: powerDataObj.timestamp,
-        datasets: [
+        );
+        //power data
+        newPwrChartData.labels = pTimestamp;
+        newPwrChartData.datasets.push({
+          label: name + ' Power (µV)',
+          data: powerData.data.p,
+          borderColor: pColors[selectCounter],
+          borderWidth: 2,
+          fill: false,
+          radius: 2,
+          pointRadius: 1,
+        });
+        // Teros
+        newVwcChartData.labels = tTimestamp;
+        newVwcChartData.datasets.push(
           {
-            label: 'Power (µW)',
-            data: powerDataObj.p,
-            borderColor: 'orange',
-            borderWidth: 2,
-            fill: false,
-            radius: 2,
-            pointRadius: 2,
-          },
-        ],
-      });
-    });
-    getTerosData(sC, sD, eD).then((response) => {
-      const terosDataObj = response.data;
-      terosDataObj.timestamp = terosDataObj.timestamp.map((dateTime) =>
-        DateTime.fromHTTP(dateTime)
-      );
-      setVWCChartData({
-        labels: terosDataObj.timestamp,
-        datasets: [
-          {
-            label: 'Volumetric Water Content (VWC)',
-            data: terosDataObj.vwc,
-            borderColor: 'blue',
+            label: name + ' Volumetric Water Content (VWC)',
+            data: terosData.data.vwc,
+            borderColor: vwcColors[selectCounter],
             borderWidth: 2,
             fill: false,
             yAxisID: 'vwcAxis',
             radius: 2,
-            pointRadius: 2,
+            pointRadius: 1,
           },
           {
-            label: 'Electrical Conductivity (µS/cm)',
-            data: terosDataObj.ec,
-            borderColor: 'black',
+            label: name + ' Electrical Conductivity (µS/cm)',
+            data: terosData.data.ec,
+            borderColor: ecColors[selectCounter],
             borderWidth: 2,
             fill: false,
             yAxisID: 'ecAxis',
             radius: 2,
-            pointRadius: 2,
+            pointRadius: 1,
           },
-        ],
-      });
-      setTempChartData({
-        labels: terosDataObj.timestamp,
-        datasets: [
-          {
-            label: 'Temperature',
-            data: terosDataObj.temp,
-            borderColor: 'red',
-            borderWidth: 2,
-            fill: false,
-            radius: 2,
-            pointRadius: 2,
-          },
-        ],
-      });
+        );
+
+        // Update the combined Temperature Chart data for the specific cell
+        newTempChartData.labels = tTimestamp;
+        newTempChartData.datasets.push({
+          label: name + ' Temperature',
+          data: terosData.data.temp,
+          borderColor: tempColors[selectCounter],
+          borderWidth: 2,
+          fill: false,
+          radius: 2,
+          pointRadius: 1,
+        });
+        selectCounter += 1;
+      }
+      setVChartData(newVChartData);
+      setTempChartData(newTempChartData);
+      setPwrChartData(newPwrChartData);
+      setVwcChartData(newVwcChartData);
     });
-  };
+  }, [selectedCells, startDate, endDate]);
 
   useEffect(() => {
-    if (selectedCell != -1) {
-      updateCharts(selectedCell, startDate, endDate);
+    if (Array.isArray(selectedCells) && selectedCells.length) {
+      updateCharts();
     }
-  }, [selectedCell, startDate, endDate]);
+  }, [selectedCells, startDate, endDate, updateCharts]);
 
   useEffect(() => {
     if (Object.keys(cellData).length != 0) {
@@ -202,9 +189,11 @@ function Dashboard() {
       setCellIds(response.data);
     });
   }, []);
+
   useEffect(() => {
-    if (cellIds[0]) {
-      setSelectedCell(parseInt(cellIds[0].id));
+    if (Array.isArray(cellIds) && cellIds.length) {
+      console.log(cellIds[0]);
+      setSelectedCells([cellIds[0]]);
     }
   }, [cellIds]);
 
@@ -221,27 +210,28 @@ function Dashboard() {
         alignItems='center'
         justifyContent='space-evenly'
         sx={{ p: 2 }}
-        flexItem
+        flex
       >
         <BackBtn />
         <FormControl sx={{ width: 1 / 4 }}>
           <InputLabel id='cell-select'>Cell</InputLabel>
-          {selectedCell != -1 && (
+          {selectedCells && (
             <Select
               labelId='cell-select-label'
               id='cell-select'
-              value={selectedCell}
+              value={selectedCells}
+              multiple
               label='Cell'
-              defaultValue={selectedCell}
+              defaultValue={selectedCells}
               onChange={(e) => {
-                setSelectedCell(e.target.value);
+                setSelectedCells(e.target.value);
               }}
             >
               {Array.isArray(cellIds)
-                ? cellIds.map(({ id, name }) => {
+                ? cellIds.map((cell) => {
                     return (
-                      <MenuItem value={id} key={id}>
-                        {name}
+                      <MenuItem value={cell} key={cell.id}>
+                        {cell.name}
                       </MenuItem>
                     );
                   })
