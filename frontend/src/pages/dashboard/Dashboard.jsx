@@ -17,6 +17,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import DateRangeSel from './components/DateRangeSel';
+import BackBtn from './BackBtn';
 
 function Dashboard() {
   const chartSettings = {
@@ -203,14 +204,8 @@ function Dashboard() {
       justifyContent='spaced-evently'
       sx={{ height: '100vh', boxSizing: 'border-box' }}
     >
-      <Stack
-        direction='row'
-        divider={<Divider orientation='vertical' flexItem />}
-        alignItems='center'
-        justifyContent='space-evenly'
-        sx={{ p: 2 }}
-        flex
-      >
+      <Stack direction='row' alignItems='center' justifyContent='space-evenly' sx={{ p: 2 }} flex>
+        <BackBtn />
         <FormControl sx={{ width: 1 / 4 }}>
           <InputLabel id='cell-select'>Cell</InputLabel>
           {selectedCells && (
