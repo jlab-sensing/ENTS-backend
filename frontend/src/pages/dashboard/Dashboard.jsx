@@ -12,6 +12,7 @@ import { Box, Grid, Stack, Divider, InputLabel, FormControl, Select, MenuItem } 
 import DateRangeSel from './components/DateRangeSel';
 import CellSelect from './components/CellSelect';
 import PowerCharts from './components/PowerCharts';
+import TerosCharts from './components/TerosCharts';
 
 function Dashboard() {
   const chartSettings = {
@@ -225,18 +226,7 @@ function Dashboard() {
         columns={{ xs: 4, sm: 8, md: 12 }}
       >
         <PowerCharts cells={selectedCells} startDate={startDate} endDate={endDate} />
-        {/* // <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        //   <VChart data={vChartData} />
-        // </Grid>
-        // <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        //   <PwrChart data={pwrChartData} />
-        // </Grid>
-        // <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        //   <VwcChart data={vwcChartData} />
-        // </Grid>
-        // <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        //   <TempChart data={tempChartData} />
-        // </Grid> */}
+        <TerosCharts cells={selectedCells} startDate={startDate} endDate={endDate} />
       </Grid>
     </Stack>
   );

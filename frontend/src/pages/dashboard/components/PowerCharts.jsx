@@ -21,29 +21,6 @@ function PowerCharts({ cells, startDate, endDate }) {
   const [vChartData, setVChartData] = useState(chartSettings);
   const [pwrChartData, setPwrChartData] = useState(chartSettings);
   const [loadedCells, setLoadedCells] = useState([]);
-  useEffect(() => {
-    if (Array.isArray(cells) && cells.length) {
-      updateCharts(cells, startDate, endDate);
-    }
-  }, [cells, startDate, endDate]);
-  // const powerDataQuery = usePowerData(cells, startDate, endDate);
-  // console.log(powerDataQuery);
-  // if (powerDataQuery.some((query) => query.isLoading)) {
-  //   console.log('loading');
-  //   return <span>Loading...</span>;
-  // }
-  // if (powerDataQuery.some((query) => query.isLoading)) {
-  //   for (q of powerDataQuery) {
-  //     console.log(q.error.message);
-  //   }
-  //   // return <span>Error: {powerDataQuery.error.message}</span>;
-  // }
-  // if (powerDataQuery.every((query) => query.isLoading)) {
-  //   for (q of powerDataQuery) {
-  //     console.log(q);
-  //   }
-  // }
-
   // Initialize the combined chart data with empty datasets
   const newVChartData = {
     ...vChartData,
@@ -57,9 +34,6 @@ function PowerCharts({ cells, startDate, endDate }) {
   const pColors = ['lightgreen', 'darkgreen'];
   const vColors = ['purple', 'blue'];
   const iColors = ['orange', 'red'];
-  const tempColors = ['lightgreen', 'darkgreen'];
-  const ecColors = ['purple', 'blue'];
-  const vwcColors = ['orange', 'red'];
 
   async function getCellChartData() {
     const data = {};
@@ -75,13 +49,6 @@ function PowerCharts({ cells, startDate, endDate }) {
     }
     return data;
   }
-  // const loadCells = cells.map((c) => !(c.id in loadedCells));
-  // console.log(loadCells);
-  // for (let c of loadCells) {
-  //   getPowerData(c.id, startDate, endDate).then((response) => {
-  //     console.log(response);
-  //     setLoadedCells([loadedCells + c.id]);
-  //   });
   function updateCharts() {
     getCellChartData().then((cellChartData) => {
       console.log(cellChartData);
@@ -129,11 +96,18 @@ function PowerCharts({ cells, startDate, endDate }) {
           radius: 2,
           pointRadius: 1,
         });
+        selectCounter += 1;
       }
       setVChartData(newVChartData);
       setPwrChartData(newPwrChartData);
+      setLoadedCells(loadCells);
     });
   }
+  useEffect(() => {
+    if (Array.isArray(cells) && cells.length) {
+      updateCharts(cells, startDate, endDate);
+    }
+  }, [cells, startDate, endDate]);
 
   return (
     <>
