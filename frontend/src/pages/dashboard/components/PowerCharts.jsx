@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import PwrChart from '../../../charts/PwrChart/PwrChart';
 import VChart from '../../../charts/VChart/VChart';
 import { DateTime } from 'luxon';
-import { usePowerData } from '../api/getPowerData';
 import { getPowerData } from '../../../services/power';
 
 function PowerCharts({ cells, startDate, endDate }) {
@@ -37,11 +36,8 @@ function PowerCharts({ cells, startDate, endDate }) {
 
   async function getCellChartData() {
     const data = {};
-    console.log(cells);
     const loadCells = cells.filter((c) => !(c.id in loadedCells));
-    console.log(loadCells);
     for (const { id, name } of loadCells) {
-      console.log(id);
       data[id] = {
         name: name,
         powerData: await getPowerData(id, startDate, endDate),
@@ -51,11 +47,9 @@ function PowerCharts({ cells, startDate, endDate }) {
   }
   function updateCharts() {
     getCellChartData().then((cellChartData) => {
-      console.log(cellChartData);
       let selectCounter = 0;
       const loadCells = cells.filter((c) => !(c.id in loadedCells));
       for (const { id } of loadCells) {
-        console.log(id);
         const cellid = id;
         const name = cellChartData[cellid].name;
         const powerData = cellChartData[cellid].powerData;
@@ -107,6 +101,8 @@ function PowerCharts({ cells, startDate, endDate }) {
     if (Array.isArray(cells) && cells.length) {
       updateCharts(cells, startDate, endDate);
     }
+    // TODO: need to memoize updating charts
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cells, startDate, endDate]);
 
   return (

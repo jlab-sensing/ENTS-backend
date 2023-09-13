@@ -36,11 +36,8 @@ function TerosCharts({ cells, startDate, endDate }) {
 
   async function getCellChartData() {
     const data = {};
-    console.log(cells);
     const loadCells = cells.filter((c) => !(c.id in loadedCells));
-    console.log(loadCells);
     for (const { id, name } of loadCells) {
-      console.log(id);
       data[id] = {
         name: name,
         terosData: await getTerosData(id, startDate, endDate),
@@ -103,6 +100,8 @@ function TerosCharts({ cells, startDate, endDate }) {
     if (Array.isArray(cells) && cells.length) {
       updateCharts(cells, startDate, endDate);
     }
+    // TODO: need to memoize updating charts
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cells, startDate, endDate]);
   return (
     <>

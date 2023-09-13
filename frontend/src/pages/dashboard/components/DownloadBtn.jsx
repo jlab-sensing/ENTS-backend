@@ -1,10 +1,9 @@
 import { React } from 'react';
 import { Button } from '@mui/material';
 import PropTypes from 'prop-types';
+import { getCellData } from '../../../services/cell';
 
-function DownloadBtn(props) {
-  const data = Object.values(props.data);
-  const disabled = props.disabled;
+function DownloadBtn({ cells, startDate, endDate }) {
   const downloadFile = ({ data, fileName, fileType }) => {
     const blob = new Blob([data], { type: fileType });
 
@@ -26,36 +25,32 @@ function DownloadBtn(props) {
   const exportToCsv = (e) => {
     e.preventDefault();
     // Note: timestamp string slices of "Wed," in "Wed, 29 Jun 2022 14:00:00 GMT"
-    downloadFile({
-      data: [
-        [
-          'timestamp',
-          'Voltage (mV)',
-          'Current (uA)',
-          'Power (uW)',
-          'EC (uS/cm)',
-          'VWC (%)',
-          'Temperature (C)',
-        ],
-        ...data.map((point) => [
-          point.timestamp.slice(4),
-          point.v,
-          point.i,
-          point.p,
-          point.ec,
-          point.vwc,
-          point.temp,
-        ]),
-      ]
-        .map((e) => e.join(','))
-        .join('\n'),
-      fileName: 'data.csv',
-      fileType: 'text/csv',
-    });
+    for (const { id, name } of cells) {
+      getCellData(id, startDate, endDate).then((data) => {
+        downloadFile({
+          data: [
+            ['timestamp', 'Voltage (mV)', 'Current (uA)', 'Power (uW)', 'EC (uS/cm)', 'VWC (%)', 'Temperature (C)'],
+            ...data.map((point) => [
+              point.timestamp.slice(4),
+              point.v,
+              point.i,
+              point.p,
+              point.ec,
+              point.vwc,
+              point.temp,
+            ]),
+          ]
+            .map((e) => e.join(','))
+            .join('\n'),
+          fileName: name + '.csv',
+          fileType: 'text/csv',
+        });
+      });
+    }
   };
   return (
     <div className='DownloadBtn'>
-      <Button disabled={disabled} variant='outlined' onClick={exportToCsv}>
+      <Button disabled={false} variant='outlined' onClick={exportToCsv}>
         Export to CSV
       </Button>
     </div>
@@ -63,8 +58,11 @@ function DownloadBtn(props) {
 }
 
 DownloadBtn.propTypes = {
-  data: PropTypes.array,
+  cells: PropTypes.array,
+  startDate: PropTypes.any,
+  endDate: PropTypes.any,
   disabled: PropTypes.bool,
+  setDBtnDisabled: PropTypes.func.isRequired,
 };
 
 export default DownloadBtn;

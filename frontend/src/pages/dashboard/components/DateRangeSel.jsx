@@ -49,6 +49,10 @@ function DateRangeSel({ startDate, endDate, setStartDate, setEndDate }) {
       />
     );
   }
+  DateTimePickerWithAccept.propTypes = {
+    value: PropTypes.any,
+    onAccept: PropTypes.func.isRequired,
+  };
 
   return (
     <>
@@ -56,9 +60,12 @@ function DateRangeSel({ startDate, endDate, setStartDate, setEndDate }) {
         <DateTimePickerWithAccept
           label='Start Date'
           value={startDate}
-          onAccept={useCallback((newStartDate) => {
-            setStartDate(newStartDate);
-          }, [])}
+          onAccept={useCallback(
+            (newStartDate) => {
+              setStartDate(newStartDate);
+            },
+            [setStartDate],
+          )}
           views={['year', 'month', 'day', 'hours']}
         />
       </LocalizationProvider>
@@ -67,9 +74,12 @@ function DateRangeSel({ startDate, endDate, setStartDate, setEndDate }) {
         <DateTimePicker
           label='End Date'
           value={endDate}
-          onAccept={useCallback((newEndDate) => {
-            setEndDate(newEndDate);
-          }, [])}
+          onAccept={useCallback(
+            (newEndDate) => {
+              setEndDate(newEndDate);
+            },
+            [setEndDate],
+          )}
           views={['year', 'month', 'day', 'hours']}
         />
       </LocalizationProvider>
