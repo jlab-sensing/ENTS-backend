@@ -11,27 +11,7 @@ function Dashboard() {
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
   const [endDate, setEndDate] = useState(DateTime.now());
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
-  // const [cellData, setCellData] = useState([]);
-  // const [cellIds, setCellIds] = useState([]);
   const [selectedCells, setSelectedCells] = useState([]);
-  // useEffect(() => {
-  //   if (Object.keys(cellData).length != 0) {
-  //     setDBtnDisabled(false);
-  //   }
-  // }, [cellData]);
-
-  // useEffect(() => {
-  //   getCells().then((response) => {
-  //     setCellIds(response.data);
-  //   });
-  // }, []);
-
-  // useEffect(() => {
-  //   if (Array.isArray(cellIds) && cellIds.length) {
-  //     console.log(cellIds[0]);
-  //     setSelectedCells([cellIds[0]]);
-  //   }
-  // }, [cellIds]);
 
   return (
     <Stack
