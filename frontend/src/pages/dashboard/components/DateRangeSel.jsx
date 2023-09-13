@@ -1,20 +1,71 @@
-import { React } from 'react';
+import { React, useCallback, useMemo } from 'react';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
+import useControlled from '@mui/utils/useControlled';
 import HorizontalRuleRoundedIcon from '@mui/icons-material/HorizontalRuleRounded';
 import PropTypes from 'prop-types';
 
-function DateRangeSel(props) {
-  const startDate = props.startDate;
-  const endDate = props.endDate;
+function DateRangeSel({ startDate, endDate, setStartDate, setEndDate }) {
+  // debounce function
+  function debounce(func, wait = 500) {
+    let timeout;
+    function debounced(...args) {
+      const later = () => {
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    }
+
+    debounced.clear = () => {
+      clearTimeout(timeout);
+    };
+
+    return debounced;
+  }
+
+  /** Added debounce to select (call api on completetion of date rather then on change) */
+  function DateTimePickerWithAccept(props) {
+    const { value: valueProp, onAccept } = props;
+
+    const [value, setValue] = useControlled({
+      name: 'FieldAcceptValue',
+      state: 'value',
+      controlled: valueProp,
+      default: null,
+    });
+
+    // Debounced function needs to be memoized to keep the same timeout beween each render.
+    // For the same reason, the `onAccept` needs to be wrapped in useCallback.
+    const deboucedOnAccept = useMemo(() => debounce(onAccept, 1000), [onAccept]);
+    return (
+      <DateTimePicker
+        value={value}
+        onChange={(newValue) => {
+          setValue(newValue);
+          deboucedOnAccept(newValue);
+        }}
+      />
+    );
+  }
+  DateTimePickerWithAccept.propTypes = {
+    value: PropTypes.any,
+    onAccept: PropTypes.func.isRequired,
+  };
+
   return (
     <>
       <LocalizationProvider dateAdapter={AdapterLuxon}>
-        <DateTimePicker
+        <DateTimePickerWithAccept
           label='Start Date'
           value={startDate}
-          onChange={(newStartDate) => props.setStartDate(newStartDate)}
+          onAccept={useCallback(
+            (newStartDate) => {
+              setStartDate(newStartDate);
+            },
+            [setStartDate],
+          )}
           views={['year', 'month', 'day', 'hours']}
         />
       </LocalizationProvider>
@@ -23,7 +74,12 @@ function DateRangeSel(props) {
         <DateTimePicker
           label='End Date'
           value={endDate}
-          onChange={(newEndDate) => props.setEndDate(newEndDate)}
+          onAccept={useCallback(
+            (newEndDate) => {
+              setEndDate(newEndDate);
+            },
+            [setEndDate],
+          )}
           views={['year', 'month', 'day', 'hours']}
         />
       </LocalizationProvider>

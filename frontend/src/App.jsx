@@ -1,9 +1,12 @@
 import { React } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import Dashboard from './pages/dashboard/Dashboard';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Map from './pages/map/Map';
 import Home from './pages/home/Home';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+const queryClient = new QueryClient();
 
 function App() {
   const theme = createTheme({
@@ -31,15 +34,17 @@ function App() {
   });
 
   return (
-    <div className='App'>
-      <ThemeProvider theme={theme}>
-        <Routes>
-          <Route path='/dashboard' exact element={<Dashboard />} />
-          <Route path='/map' exact element={<Map />} />
-          <Route path='/' exact element={<Home />} />
-        </Routes>
-      </ThemeProvider>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <div className='App'>
+        <ThemeProvider theme={theme}>
+          <Routes>
+            <Route path='/dashboard' exact element={<Dashboard />} />
+            <Route path='/map' exact element={<Map />} />
+            <Route path='/' exact element={<Home />} />
+          </Routes>
+        </ThemeProvider>
+      </div>
+    </QueryClientProvider>
   );
 }
 

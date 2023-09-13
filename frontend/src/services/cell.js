@@ -1,34 +1,34 @@
+import { useQuery, useQueries } from '@tanstack/react-query';
 import axios from 'axios';
 import { DateTime } from 'luxon';
 
-export async function getCellData(
-  cellId,
-  startTime = DateTime.now().minus({ months: 1 }),
-  endTime = DateTime.now()
-) {
-  return axios.get(
-    `${process.env.PUBLIC_URL}/api/cell/data/${cellId}?startTime=${startTime}&endTime=${endTime}`
-  );
-}
+export const getCellData = (cellId, startTime, endTime) => {
+  return axios
+    .get(`${process.env.PUBLIC_URL}/api/cell/data/${cellId}?startTime=${startTime}&endTime=${endTime}`)
+    .then((res) => res.data);
+};
 
-// export async function getCellDataChartFormat(
-//   cellId,
-//   startTime = DateTime.now().minus({ months: 1 }),
-//   endTime = DateTime.now()
-// ) {
-//   const res = await Promise.all([
-//     axios.get(
-//       `${process.env.PUBLIC_URL}/api/power/${cellId}?startTime=${startTime}&endTime=${endTime}`
-//     ),
-//     axios.get(
-//       `${process.env.PUBLIC_URL}/api/teros/${cellId}?startTime=${startTime}&endTime=${endTime}`
-//     ),
-//   ]);
-//   const data = res.map((res) => res.data);
-//   console.log(data.flat());
-//   return data;
-// }
+export const useCellData = (cells, startTime = DateTime.now().minus({ months: 1 }), endTime = DateTime.now()) =>
+  useQueries({
+    queries: [
+      cells.map((cell) => {
+        return {
+          queryKey: [cell.id],
+          queryFn: () => getCellData(cell.id, startTime, endTime),
+          enabled: cells.length != 0,
+          refetchOnWindowFocus: false,
+        };
+      }),
+    ],
+  });
 
-export async function getCellIds() {
-  return axios.get(`${process.env.PUBLIC_URL}/api/cell/id`);
-}
+export const getCells = () => {
+  return axios.get(`${process.env.PUBLIC_URL}/api/cell/id`).then((res) => res.data);
+};
+
+export const useCells = () =>
+  useQuery({
+    queryKey: ['cell info'],
+    queryFn: () => getCells(),
+    refetchOnWindowFocus: false,
+  });
