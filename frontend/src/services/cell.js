@@ -21,12 +21,6 @@ export const useCellData = (cells, startTime = DateTime.now().minus({ months: 1 
       }),
     ],
   });
-// useQuery({
-//   queryKey: ['cell data'],
-//   queryFn: () => getCellData(cellId, startTime, endTime),
-//   refetchOnWindowFocus: false,
-//   enabled: cellId.length != 0,
-// });
 
 export const getCells = () => {
   return axios.get(`${process.env.PUBLIC_URL}/api/cell/id`).then((res) => res.data);
