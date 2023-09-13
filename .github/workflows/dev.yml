@@ -186,7 +186,7 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r ./backend/requirements.txt
 
       - name: Run migrations
         run: flask --app backend.api db upgrade -d ./backend/api/migrations
