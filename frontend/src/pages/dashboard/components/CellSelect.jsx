@@ -13,33 +13,31 @@ function CellSelect({ selectedCells, setSelectedCells }) {
     return <span>Error: {cells.error.message}</span>;
   }
   return (
-    <>
-      <FormControl sx={{ width: 1 / 4 }}>
-        <InputLabel id='cell-select'>Cell</InputLabel>
-        <Select
-          labelId='cell-select-label'
-          id='cell-select'
-          value={selectedCells}
-          multiple
-          label='Cell'
-          defaultValue={selectedCells}
-          onChange={(e) => {
-            console.log(e.target.value);
-            setSelectedCells(e.target.value);
-          }}
-        >
-          {Array.isArray(cells.data)
-            ? cells.data.map((cell) => {
-                return (
-                  <MenuItem value={cell} key={cell.id}>
-                    {cell.name}
-                  </MenuItem>
-                );
-              })
-            : ''}
-        </Select>
-      </FormControl>
-    </>
+    <FormControl sx={{ width: 1 / 4 }}>
+      <InputLabel id='cell-select'>Cell</InputLabel>
+      <Select
+        labelId='cell-select-label'
+        id='cell-select'
+        value={selectedCells}
+        multiple
+        label='select-cell'
+        defaultValue={selectedCells}
+        onChange={(e) => {
+          console.log(e.target.value);
+          setSelectedCells(e.target.value);
+        }}
+      >
+        {Array.isArray(cells.data)
+          ? cells.data.map((cell) => {
+              return (
+                <MenuItem value={cell} key={cell.id}>
+                  {cell.name}
+                </MenuItem>
+              );
+            })
+          : ''}
+      </Select>
+    </FormControl>
   );
 }
 
