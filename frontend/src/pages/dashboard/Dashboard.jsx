@@ -6,7 +6,7 @@ import DateRangeSel from './components/DateRangeSel';
 import CellSelect from './components/CellSelect';
 import PowerCharts from './components/PowerCharts';
 import TerosCharts from './components/TerosCharts';
-import BackBtn from './BackBtn';
+import BackBtn from './components/BackBtn';
 
 function Dashboard() {
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
@@ -21,13 +21,7 @@ function Dashboard() {
       justifyContent='spaced-evently'
       sx={{ height: '100vh', boxSizing: 'border-box' }}
     >
-      <Stack
-        direction='row'
-        alignItems='center'
-        justifyContent='space-evenly'
-        sx={{ p: 2 }}
-        flex
-      >
+      <Stack direction='row' alignItems='center' justifyContent='space-evenly' sx={{ p: 2 }} flex>
         <BackBtn />
         <CellSelect selectedCells={selectedCells} setSelectedCells={setSelectedCells} />
         <Box display='flex' justifyContent='center' alignItems='center'>
