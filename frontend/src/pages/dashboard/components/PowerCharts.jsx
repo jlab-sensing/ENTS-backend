@@ -9,13 +9,7 @@ import { getPowerData } from '../../../services/power';
 function PowerCharts({ cells, startDate, endDate }) {
   const chartSettings = {
     label: [],
-    datasets: [
-      {
-        data: [],
-        borderColor: 'black',
-        borderWidth: 2,
-      },
-    ],
+    datasets: [],
   };
   const [vChartData, setVChartData] = useState(chartSettings);
   const [pwrChartData, setPwrChartData] = useState(chartSettings);
