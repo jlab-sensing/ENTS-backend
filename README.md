@@ -62,7 +62,7 @@ Alembic is used to manage database migrations. Alembic is a python package and a
 Real life example data is provided and can be imported with the following. The data was collected at UC Santa Cruz by jlab.
 
 ```bash
-python import_example_data.py
+python ./import_example_data.py
 ```
 
 Now some graphs should appear on the website and look like the following.
@@ -210,8 +210,8 @@ Sometimes the database breaks and causes errors. Usually deleting the docker vol
 ```bash
 docker compose down
 docker volume rm dirtviz_postgresqldata
-./migrate.sh
 docker compose up --build -d
+./migrate.sh
 ```
 
 ### \[Flask-migrate\] Error: Can't locate revision identified by 'e5dbb2a59f94'
@@ -223,6 +223,5 @@ For this error, it either means that you've deleted a revision corresponding to 
 There exists csv importers that can be used to populate the database. Python utilities currently exist to import RocketLogger and TEROS data. These are available as modules under dirtviz. More information on used can be found by running the modules with the `--help` flag.
 
 ```bash
-python -m dirtviz.db.utils.import_rl_csv
-python -m dirtviz.db.utils.import_teros_csv
+python -m backend.api.database.utils.import_cell_data
 ```
