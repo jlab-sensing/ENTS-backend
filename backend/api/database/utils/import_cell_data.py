@@ -64,7 +64,6 @@ def import_cell_data(path, logger_name, cell_name, batch_size=10000):
                 cleaned_ts = row[0][1:-4]
                 # print("\n" + repr(cleaned_ts))
                 ts = datetime.strptime(cleaned_ts, '%d %b %Y %H:%M:%S').replace(tzinfo=None)
-                print(float(row[2]) * 1e-3)
 
                 tmp.append(
                     PowerData(

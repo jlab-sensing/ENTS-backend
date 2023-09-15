@@ -2,10 +2,17 @@
 from backend.api.database.utils.import_cell_data import import_cell_data
 # from backend.api.database.utils.import_teros_csv import import_teros_csv
 from tqdm import tqdm
+import os
 import csv
 
 if __name__ == "__main__":
-    print("Importing sample data")
-    import_cell_data("data/imwut_v1_1.csv", "examplelogger", "imwut_v1_1")
-    print("Done!")
+
+    csv_files = os.listdir("./data")
+    csv_files = [f for f in csv_files if os.path.isfile("./data"+'/'+f)] #Filtering only the files.
+    print(*csv_files, sep="\n")
+    for f in csv_files:
+        name = f[:-4]
+        print("Importing " + f + " data")
+        import_cell_data("data/" + f, "examplelogger", name)
+        print("Finished importing " + f + "!")
 
