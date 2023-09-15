@@ -4,25 +4,6 @@ import PropTypes from 'prop-types';
 import ChartWrapper from '../ChartWrapper';
 import { chartPlugins } from '../plugins';
 
-// const defChartData = {
-//   label: [],
-//   datasets: [
-//     {
-//       label: 'VWC',
-//       data: [],
-//       borderColor: 'black',
-//       borderWidth: 2,
-//       yAxisID: 'vwcAxis',
-//     },
-//     {
-//       label: 'EC',
-//       data: [],
-//       borderColor: 'black',
-//       borderWidth: 2,
-//       yAxisID: 'ecAxis',
-//     },
-//   ],
-// };
 export default function VwcChart({ data }) {
   const chartOptions = {
     maintainAspectRatio: false,
