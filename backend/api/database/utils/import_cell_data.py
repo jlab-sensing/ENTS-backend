@@ -105,10 +105,10 @@ if __name__ == "__main__":
         description="Rocketlogger csv importer utility")
     parser.add_argument("--batch-size", type=int,
                         default=10000, help="Batch size of inserts")
-    parser.add_argument("path", type=str, help="Name of cell")
+    parser.add_argument("path", type=str, help="Path to cell data csv")
     parser.add_argument("rl", type=str, help="Name of rocketlogger")
     parser.add_argument("cell", type=str,
-                        help="Name of cell connected to channel 1")
+                        help="Name of cell")
 
     args = parser.parse_args()
 
