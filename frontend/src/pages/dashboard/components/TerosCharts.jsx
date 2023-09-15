@@ -9,13 +9,7 @@ import { getTerosData } from '../../../services/teros';
 function TerosCharts({ cells, startDate, endDate }) {
   const chartSettings = {
     label: [],
-    datasets: [
-      {
-        data: [],
-        borderColor: 'black',
-        borderWidth: 2,
-      },
-    ],
+    datasets: [],
   };
   const [vwcChartData, setVwcChartData] = useState(chartSettings);
   const [tempChartData, setTempChartData] = useState(chartSettings);

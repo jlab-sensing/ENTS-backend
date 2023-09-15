@@ -4,8 +4,7 @@ import PropTypes from 'prop-types';
 import ChartWrapper from '../ChartWrapper';
 import { chartPlugins } from '../plugins';
 
-export default function PwrChart(props) {
-  const data = props.data;
+export default function PwrChart({ data }) {
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,

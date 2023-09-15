@@ -3,9 +3,7 @@ import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
 import ChartWrapper from '../ChartWrapper';
 import { chartPlugins } from '../plugins';
-
-export default function VChart(props) {
-  const data = props.data;
+export default function VChart({ data }) {
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
