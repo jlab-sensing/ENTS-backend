@@ -23,7 +23,6 @@ function CellSelect({ selectedCells, setSelectedCells }) {
         label='select-cell'
         defaultValue={selectedCells}
         onChange={(e) => {
-          console.log(e.target.value);
           setSelectedCells(e.target.value);
         }}
       >
