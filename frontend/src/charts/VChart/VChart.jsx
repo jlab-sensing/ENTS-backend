@@ -37,11 +37,11 @@ export default function VChart({ data }) {
           display: true,
           text: 'Cell Voltage (mV)',
         },
-        suggestedMin: 0,
-        suggestedMax: 400,
-        ticks: {
-          stepSize: 50,
-        },
+        min: 0,
+        max: 400,
+        // ticks: {
+        //   stepSize: 50,
+        // },
         grid: {
           drawOnChartArea: false,
         },
@@ -55,9 +55,9 @@ export default function VChart({ data }) {
         },
         min: 0,
         max: 160,
-        ticks: {
-          stepSize: 20,
-        },
+        // ticks: {
+        //   stepSize: 20,
+        // },
       },
     },
     plugins: structuredClone(chartPlugins),

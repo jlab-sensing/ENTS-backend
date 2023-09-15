@@ -2,9 +2,9 @@
 
 Examples
 --------
-Import data for cell1 and cell2 that was logged using rocket1::
+Import data for cell and cell2 that was logged using rocket1::
 
-    $ python -m dirtviz.db.utils.import_teros_csv data.csv rocket1 cell1 cell2
+    $ python -m dirtviz.db.utils.import_teros_csv data.csv rocket1 cell cell2
 
 
 Help prompt for utility::
@@ -19,17 +19,17 @@ from tqdm import tqdm
 from sqlalchemy.orm import Session
 
 from ...conn import engine
-from ...database.models.power_data import PowerData
-from ...database.get_or_create import get_or_create_cell, get_or_create_logger
+from ..models.power_data import PowerData
+from ..models.teros_data import TEROSData
+from ..get_or_create import get_or_create_cell, get_or_create_logger
 
 
-def import_rl_csv(path, logger_name, cell1_name, cell2_name, batch_size=10000):
+def import_cell_data(path, logger_name, cell_name, batch_size=10000):
     """Imports raw RocketLogger data in PowerData table. A logger instance for
     the rokcet locker must be created first.
 
     Expects columns in the following format
-    timestamp,I1L_valid,I2L_valid,I1H [nA],I1L [10pA],
-    V1 [10nV],V2 [10nV],I2H [nA],I2L [10pA]
+    timestamp, Voltage (mV), Current (uA), Power(uW), EC (uS/cm), VWC (%), Temperature (C)
 
     Parameters
     ----------
@@ -37,53 +37,55 @@ def import_rl_csv(path, logger_name, cell1_name, cell2_name, batch_size=10000):
         Path to csv file.
     logger_name : str
         Logger name for the Rocketlogger
-    cell1_name : str
-        Name of cell being measured on channel 1.
-    cell2_name : str
-        Name of cell being measured on channel 2.
+    cell_name : str
+        Name of cell.
     """
 
     # pylint: disable=R0801
 
     with open(path, newline='', encoding="UTF-8") as csvfile:
-        rl_reader = csv.reader(csvfile)
+        data_reader = csv.reader(csvfile)
 
         # Skip header
         for _ in range(11):
-            next(rl_reader)
+            next(data_reader)
+            
 
         tmp = []
 
         with Session(engine) as sess:
             # Get or create objects
             logger = get_or_create_logger(sess, logger_name)
-            cell1 = get_or_create_cell(sess, cell1_name)
-            cell2 = get_or_create_cell(sess, cell2_name)
+            cell = get_or_create_cell(sess, cell_name)
 
-            for row in tqdm(rl_reader):
+            for row in tqdm(data_reader):
 
                 # convert string to timestamp
-                ts = datetime.fromtimestamp(float(row[0]))
+                cleaned_ts = row[0][1:-4]
+                # print("\n" + repr(cleaned_ts))
+                ts = datetime.strptime(cleaned_ts, '%d %b %Y %H:%M:%S').replace(tzinfo=None)
+                print(float(row[2]) * 1e-3)
 
                 tmp.append(
                     PowerData(
                         logger_id=logger.id,
-                        cell_id=cell1.id,
+                        cell_id=cell.id,
                         ts=ts,
-                        current=row[4],
-                        voltage=row[5],
+                        current=float(row[2]) * 1e-6,
+                        voltage=float(row[1])* 1e-3,
                     )
                 )
 
-                tmp.append(
-                    PowerData(
-                        logger_id=logger.id,
-                        cell_id=cell2.id,
-                        ts=ts,
-                        current=row[8],
-                        voltage=row[6],
-                    )
+
+                tdata = TEROSData(
+                    cell_id=cell.id,
+                    ts=ts,
+                    vwc=float(row[5]),
+                    temp=float(row[6]),
+                    ec=float(row[4])
                 )
+
+                tmp.append(tdata)
 
                 if (len(tmp) > batch_size and tmp):
                     # Save objects
@@ -106,11 +108,9 @@ if __name__ == "__main__":
                         default=10000, help="Batch size of inserts")
     parser.add_argument("path", type=str, help="Name of cell")
     parser.add_argument("rl", type=str, help="Name of rocketlogger")
-    parser.add_argument("cell1", type=str,
+    parser.add_argument("cell", type=str,
                         help="Name of cell connected to channel 1")
-    parser.add_argument("cell2", type=str,
-                        help="Name of cell connected to channel 2")
 
     args = parser.parse_args()
 
-    import_rl_csv(args.path, args.rl, args.cell1, args.cell2, args.batch_size)
+    import_cell_data(args.path, args.rl, args.cell, args.cell2, args.batch_size)

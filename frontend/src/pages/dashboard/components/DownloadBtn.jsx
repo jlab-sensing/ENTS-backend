@@ -2,6 +2,7 @@ import { React } from 'react';
 import { Button } from '@mui/material';
 import PropTypes from 'prop-types';
 import { getCellData } from '../../../services/cell';
+import { DateTime } from 'luxon';
 
 function DownloadBtn({ cells, startDate, endDate }) {
   const downloadFile = ({ data, fileName, fileType }) => {
@@ -32,7 +33,7 @@ function DownloadBtn({ cells, startDate, endDate }) {
           data: [
             ['timestamp', 'Voltage (mV)', 'Current (uA)', 'Power (uW)', 'EC (uS/cm)', 'VWC (%)', 'Temperature (C)'],
             ...data.map((point) => [
-              point.timestamp.slice(5), // to get rid of str day format
+              DateTime.fromHTTP(point.timestamp.slice()), // to get rid of str day format
               point.v,
               point.i,
               point.p,
