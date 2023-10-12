@@ -1,6 +1,7 @@
 import { React } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import Dashboard from './pages/dashboard/Dashboard';
+import Profile from './pages/profile/Profile';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Map from './pages/map/Map';
 import Home from './pages/home/Home';
@@ -38,6 +39,7 @@ function App() {
       <div className='App'>
         <ThemeProvider theme={theme}>
           <Routes>
+            <Route path='/profile' exact element={<Profile />} />
             <Route path='/dashboard' exact element={<Dashboard />} />
             <Route path='/map' exact element={<Map />} />
             <Route path='/' exact element={<Home />} />
