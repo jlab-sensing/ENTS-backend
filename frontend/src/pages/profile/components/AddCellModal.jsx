@@ -46,6 +46,7 @@ function AddCellModal() {
           <Typography sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
             {/* name, location name, coordinates*/}
             <TextField id='outlined-basic' label='Name' variant='outlined' />
+            <TextField id='outlined-basic' label='Logger' variant='outlined' />
             <TextField id='outlined-basic' label='Location' variant='outlined' />
             <TextField id='outlined-basic' label='Coordinates' variant='outlined' />
           </Typography>
