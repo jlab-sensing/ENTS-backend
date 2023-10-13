@@ -1,5 +1,4 @@
 from ..models import db
-from ..models import Logger
 
 
 class Cell(db.Model):
@@ -10,6 +9,8 @@ class Cell(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text(), nullable=False, unique=True)
     location = db.Column(db.Text())
+    latitude = db.Column(db.Float())
+    longitude = db.Column(db.Float())
 
     def __repr__(self):
         return repr(self.name)

@@ -34,7 +34,7 @@ def create_app() -> Flask:
         from .resources.power_data import Power_Data
         from .resources.teros_data import Teros_Data
         from .resources.health_check import Health_Check
-        from .resources.health_check import Cell
+        from .resources.cell import Cell
 
         api.add_resource(Health_Check, "/")
         api.add_resource(Cell, "/api/cell/")

@@ -13,6 +13,9 @@ class Cell(Resource):
         return cells_schema.dump(cells)
 
     def post(self, cellName, location, coordinates):
-        new_cell = CellModel(name=cellName, location=location, coordinates=coordinates)
+        lat, long = coordinates
+        new_cell = CellModel(
+            name=cellName, location=location, latitude=lat, longitude=long
+        )
         new_cell.save()
         return CellSchema.jsonify(new_cell)
