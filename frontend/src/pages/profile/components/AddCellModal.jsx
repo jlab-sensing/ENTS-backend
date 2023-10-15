@@ -1,4 +1,4 @@
-import { React, useState } from 'react';
+import { React, useState, useEffect } from 'react';
 import { Modal, Box, Typography, Button, TextField, IconButton, FormControl } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -6,13 +6,21 @@ import { addCell } from '../../../services/cell';
 
 function AddCellModal() {
   const [isOpen, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
+  const handleOpen = () => {
+    setOpen(true);
+    setResponse(null);
+  };
   const handleClose = () => setOpen(false);
 
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [long, setLong] = useState('');
   const [lat, setLat] = useState('');
+  const [response, setResponse] = useState(null);
+
+  useEffect(() => {
+    console.log(response);
+  }, [response]);
 
   return (
     <>
@@ -39,66 +47,102 @@ function AddCellModal() {
           }}
           component='form'
         >
-          <IconButton
-            sx={{ position: 'absolute', top: 5, right: 5 }}
-            aria-label='delete'
-            size='small'
-            onClick={handleClose}
-          >
-            <CloseIcon fontSize='small' />
-          </IconButton>
-          <Typography variant='h6' component='h2'>
-            Cell Info
-          </Typography>
+          {response == null && (
+            <>
+              <IconButton
+                sx={{ position: 'absolute', top: 5, right: 5 }}
+                aria-label='delete'
+                size='small'
+                onClick={handleClose}
+              >
+                <CloseIcon fontSize='small' />
+              </IconButton>
+              <Typography variant='h6' component='h2'>
+                Cell Info
+              </Typography>
+              <Typography sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {/* name, location name, coordinates*/}
+                <TextField
+                  id='outlined-basic'
+                  label='Name'
+                  variant='outlined'
+                  error={name.length === 0}
+                  helperText={!name.length ? 'name is required' : ''}
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                  }}
+                />
+                <TextField
+                  id='outlined-basic'
+                  label='Location'
+                  variant='outlined'
+                  error={location.length === 0}
+                  helperText={!location.length ? 'location is required' : ''}
+                  value={location}
+                  onChange={(e) => {
+                    setLocation(e.target.value);
+                  }}
+                />
+                <TextField
+                  id='outlined-basic'
+                  label='Longitude'
+                  variant='outlined'
+                  error={long.length === 0}
+                  helperText={!long.length ? 'longitude is required' : ''}
+                  value={long}
+                  onChange={(e) => {
+                    setLong(e.target.value);
+                  }}
+                />
+                <TextField
+                  id='outlined-basic'
+                  label='Latitude'
+                  variant='outlined'
+                  error={lat.length === 0}
+                  helperText={!lat.length ? 'latitude is required' : ''}
+                  value={lat}
+                  onChange={(e) => {
+                    setLat(e.target.value);
+                  }}
+                />
+              </Typography>
+              <Button
+                onClick={() => {
+                  addCell(name, location, lat, long).then((res) => setResponse(res));
+                }}
+              >
+                Add Cell
+              </Button>
+            </>
+          )}
 
-          <Typography sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* name, location name, coordinates*/}
-            <TextField
-              id='outlined-basic'
-              label='Name'
-              variant='outlined'
-              error={name.length === 0}
-              helperText={!name.length ? 'name is required' : ''}
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-              }}
-            />
-            <TextField
-              id='outlined-basic'
-              label='Location'
-              variant='outlined'
-              error={location.length === 0}
-              helperText={!location.length ? 'location is required' : ''}
-              value={location}
-              onChange={(e) => {
-                setLocation(e.target.value);
-              }}
-            />
-            <TextField
-              id='outlined-basic'
-              label='Longitude'
-              variant='outlined'
-              error={long.length === 0}
-              helperText={!long.length ? 'longitude is required' : ''}
-              value={long}
-              onChange={(e) => {
-                setLong(e.target.value);
-              }}
-            />
-            <TextField
-              id='outlined-basic'
-              label='Latitude'
-              variant='outlined'
-              error={lat.length === 0}
-              helperText={!lat.length ? 'latitude is required' : ''}
-              value={lat}
-              onChange={(e) => {
-                setLat(e.target.value);
-              }}
-            />
-          </Typography>
-          <Button onClick={() => console.log(name, location, lat, long)}>Add Cell</Button>
+          {response && (
+            <>
+              <IconButton
+                sx={{ position: 'absolute', top: 5, right: 5 }}
+                aria-label='delete'
+                size='small'
+                onClick={handleClose}
+              >
+                <CloseIcon fontSize='small' />
+              </IconButton>
+              <h1>Created new cell {response.name}</h1>
+              <p>
+                Here's the endpoint to start uploading power data, https://dirtviz.jlab.ucsc.edu/api/power/{response.id}
+              </p>
+              <p>
+                Here's the endpoint to start uploading teros data, https://dirtviz.jlab.ucsc.edu/api/teros/{response.id}
+              </p>
+              <Button
+                onClick={() => {
+                  handleClose();
+                }}
+              >
+                Done
+              </Button>
+            </>
+          )}
         </Box>
       </Modal>
     </>
