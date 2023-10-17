@@ -29,7 +29,8 @@ def import_cell_data(path, logger_name, cell_name, batch_size=10000):
     the rokcet locker must be created first.
 
     Expects columns in the following format
-    timestamp, Voltage (mV), Current (uA), Power(uW), EC (uS/cm), VWC (%), Temperature (C)
+    timestamp, Voltage (mV), Current (uA), Power(uW), EC (uS/cm),
+    VWC (%), Temperature (C)
 
     Parameters
     ----------
@@ -43,13 +44,12 @@ def import_cell_data(path, logger_name, cell_name, batch_size=10000):
 
     # pylint: disable=R0801
 
-    with open(path, newline='', encoding="UTF-8") as csvfile:
+    with open(path, newline="", encoding="UTF-8") as csvfile:
         data_reader = csv.reader(csvfile)
 
         # Skip header
         for _ in range(11):
             next(data_reader)
-            
 
         tmp = []
 
@@ -59,11 +59,12 @@ def import_cell_data(path, logger_name, cell_name, batch_size=10000):
             cell = get_or_create_cell(sess, cell_name)
 
             for row in tqdm(data_reader):
-
                 # convert string to timestamp
                 cleaned_ts = row[0][1:-4]
                 # print("\n" + repr(cleaned_ts))
-                ts = datetime.strptime(cleaned_ts, '%d %b %Y %H:%M:%S').replace(tzinfo=None)
+                ts = datetime.strptime(cleaned_ts, "%d %b %Y %H:%M:%S").replace(
+                    tzinfo=None
+                )
 
                 tmp.append(
                     PowerData(
@@ -71,22 +72,21 @@ def import_cell_data(path, logger_name, cell_name, batch_size=10000):
                         cell_id=cell.id,
                         ts=ts,
                         current=float(row[2]) * 1e-6,
-                        voltage=float(row[1])* 1e-3,
+                        voltage=float(row[1]) * 1e-3,
                     )
                 )
-
 
                 tdata = TEROSData(
                     cell_id=cell.id,
                     ts=ts,
                     vwc=float(row[5]),
                     temp=float(row[6]),
-                    ec=float(row[4])
+                    ec=float(row[4]),
                 )
 
                 tmp.append(tdata)
 
-                if (len(tmp) > batch_size and tmp):
+                if len(tmp) > batch_size and tmp:
                     # Save objects
                     sess.bulk_save_objects(tmp)
                     sess.commit()
@@ -101,14 +101,13 @@ def import_cell_data(path, logger_name, cell_name, batch_size=10000):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Rocketlogger csv importer utility")
-    parser.add_argument("--batch-size", type=int,
-                        default=10000, help="Batch size of inserts")
+    parser = argparse.ArgumentParser(description="Rocketlogger csv importer utility")
+    parser.add_argument(
+        "--batch-size", type=int, default=10000, help="Batch size of inserts"
+    )
     parser.add_argument("path", type=str, help="Path to cell data csv")
     parser.add_argument("rl", type=str, help="Name of rocketlogger")
-    parser.add_argument("cell", type=str,
-                        help="Name of cell")
+    parser.add_argument("cell", type=str, help="Name of cell")
 
     args = parser.parse_args()
 

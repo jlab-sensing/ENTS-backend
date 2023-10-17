@@ -24,7 +24,7 @@ def create_app() -> Flask:
     db.init_app(app)
     ma.init_app(app)
     migrate.init_app(app, db)
-    CORS(app, resources={r'/*': {'methods': '*'}})
+    CORS(app, resources={r"/*": {"methods": "*"}})
     api = Api(app)
     with app.app_context():
         """-routing-"""
@@ -34,11 +34,15 @@ def create_app() -> Flask:
         from .resources.power_data import Power_Data
         from .resources.teros_data import Teros_Data
         from .resources.health_check import Health_Check
-        api.add_resource(Health_Check, '/')
-        api.add_resource(Cell_Data, '/api/cell/data/<int:cell_id>',
-                         endpoint='cell_data_ep')
-        api.add_resource(Cell_Id, '/api/cell/id')
-        api.add_resource(Power_Data, '/api/power/', '/api/power/<int:cell_id>')
-        api.add_resource(Teros_Data, '/api/teros/', '/api/teros/<int:cell_id>')
+        from .resources.cell import Cell
+
+        api.add_resource(Health_Check, "/")
+        api.add_resource(Cell, "/api/cell/")
+        api.add_resource(
+            Cell_Data, "/api/cell/data/<int:cell_id>", endpoint="cell_data_ep"
+        )
+        api.add_resource(Cell_Id, "/api/cell/id")
+        api.add_resource(Power_Data, "/api/power/", "/api/power/<int:cell_id>")
+        api.add_resource(Teros_Data, "/api/teros/", "/api/teros/<int:cell_id>")
 
     return app

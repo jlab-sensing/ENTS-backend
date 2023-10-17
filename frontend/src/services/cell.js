@@ -26,6 +26,20 @@ export const getCells = () => {
   return axios.get(`${process.env.PUBLIC_URL}/api/cell/id`).then((res) => res.data);
 };
 
+export const addCell = (cellName, location, longitude, latitude) => {
+  return axios
+    .post(`${process.env.PUBLIC_URL}/api/cell/`, {
+      name: cellName,
+      location: location,
+      longitude: longitude,
+      latitude: latitude,
+    })
+    .then((res) => res.data)
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
 export const useCells = () =>
   useQuery({
     queryKey: ['cell info'],
