@@ -1,22 +1,21 @@
 import { React, useState, useEffect } from 'react';
-import { Modal, Box, Typography, Button, TextField, IconButton, FormControl } from '@mui/material';
+import { Modal, Box, Typography, Button, TextField, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { addCell } from '../../../services/cell';
 
 function AddCellModal() {
   const [isOpen, setOpen] = useState(false);
-  const handleOpen = () => {
-    setOpen(true);
-    setResponse(null);
-  };
-  const handleClose = () => setOpen(false);
-
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [long, setLong] = useState('');
   const [lat, setLat] = useState('');
   const [response, setResponse] = useState(null);
+  const handleOpen = () => {
+    setOpen(true);
+    setResponse(null);
+  };
+  const handleClose = () => setOpen(false);
 
   useEffect(() => {
     console.log(response);
@@ -129,10 +128,12 @@ function AddCellModal() {
               </IconButton>
               <h1>Created new cell {response.name}</h1>
               <p>
-                Here's the endpoint to start uploading power data, https://dirtviz.jlab.ucsc.edu/api/power/{response.id}
+                Here&apos;s the endpoint to start uploading power data, https://dirtviz.jlab.ucsc.edu/api/power/
+                {response.id}
               </p>
               <p>
-                Here's the endpoint to start uploading teros data, https://dirtviz.jlab.ucsc.edu/api/teros/{response.id}
+                Here&apos;,s the endpoint to start uploading teros data, https://dirtviz.jlab.ucsc.edu/api/teros/
+                {response.id}
               </p>
               <Button
                 onClick={() => {
