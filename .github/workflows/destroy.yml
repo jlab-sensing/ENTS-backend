@@ -2,12 +2,13 @@
 name: Delete deployment
 
 on:
-  workflow_run:
-    branches-ignore:
-      - main
-  pull_request:
-    types:
-      - closed
+  workflow_dispatch
+  # workflow_run:
+  #   branches-ignore:
+  #     - main
+  # pull_request:
+  #   types:
+  #     - closed
 
 jobs:
   delete_resources:
