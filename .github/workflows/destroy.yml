@@ -2,7 +2,7 @@
 name: Delete deployment
 
 on:
-  delete:
+  workflow_run:
     branches-ignore:
       - main
   pull_request:
