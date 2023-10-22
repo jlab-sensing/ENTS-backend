@@ -13,6 +13,8 @@ services:
       DB_HOST: postgresql
       DB_PORT: 5432
       DB_DATABASE: dirtviz
+    env_file:
+      - ./.env
     ports:
       - '8000:8000'
     depends_on:
