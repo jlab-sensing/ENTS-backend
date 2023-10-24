@@ -4,7 +4,7 @@ Configures endpoints for DB
 
 """
 import os
-from flask import Flask, url_for, redirect, session, render_template
+from flask import Flask, url_for, redirect, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_cors import CORS
@@ -12,12 +12,14 @@ from flask_migrate import Migrate
 from flask_restful import Api
 from .config import Config
 from authlib.integrations.flask_client import OAuth
-
+from flask_bcrypt import Bcrypt
+from .database.models.user import User
 
 db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
 oauth = OAuth()
+bcrypt = Bcrypt()
 google = oauth.register(
     name="google",
     client_kwargs={"scope": "openid email profile"},
@@ -35,6 +37,7 @@ def create_app() -> Flask:
     ma.init_app(app)
     migrate.init_app(app, db)
     oauth.init_app(app)
+    bcrypt.init_app(app)
     CORS(app, resources={r"/*": {"methods": "*"}})
     api = Api(app)
 
@@ -51,7 +54,14 @@ def create_app() -> Flask:
     @app.route("/auth")
     def auth():
         token = oauth.google.authorize_access_token()
-        session["user"] = token["userinfo"]
+        email = token["userinfo"]["email"]
+        user_exists = User.query.filter_by(email=email).first() is not None
+        if not user_exists:
+            new_user = User(email=email)
+            db.session.add(new_user)
+            db.session.commit()
+            user_exists = new_user
+        session["user"] = {"id": user_exists.id, "email": user_exists.email}
         return redirect("/test")
 
     @app.route("/logout")

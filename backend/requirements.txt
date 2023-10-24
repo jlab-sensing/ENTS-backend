@@ -16,3 +16,4 @@ Flask-Migrate
 python-dateutil
 pandas
 Authlib
+flask-bcrypt
