@@ -5,6 +5,7 @@ Configures endpoints for DB
 """
 import os
 from flask import Flask, url_for, redirect, session, jsonify
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_cors import CORS
@@ -13,7 +14,6 @@ from flask_restful import Api
 from .config import Config
 from authlib.integrations.flask_client import OAuth
 from flask_bcrypt import Bcrypt
-from .database.models.user import User
 
 db = SQLAlchemy()
 ma = Marshmallow()
@@ -41,34 +41,6 @@ def create_app() -> Flask:
     CORS(app, resources={r"/*": {"methods": "*"}})
     api = Api(app)
 
-    @app.route("/test")
-    def test():
-        user = session.get("user")
-        return {"user": user}
-
-    @app.route("/login")
-    def login():
-        redirect_uri = url_for("auth", _external=True)
-        return oauth.google.authorize_redirect(redirect_uri)
-
-    @app.route("/auth")
-    def auth():
-        token = oauth.google.authorize_access_token()
-        email = token["userinfo"]["email"]
-        user_exists = User.query.filter_by(email=email).first() is not None
-        if not user_exists:
-            new_user = User(email=email)
-            db.session.add(new_user)
-            db.session.commit()
-            user_exists = new_user
-        session["user"] = {"id": user_exists.id, "email": user_exists.email}
-        return redirect("/test")
-
-    @app.route("/logout")
-    def logout():
-        session.pop("user", None)
-        return redirect("/")
-
     with app.app_context():
         """-routing-"""
 
@@ -77,6 +49,7 @@ def create_app() -> Flask:
         from .resources.power_data import Power_Data
         from .resources.teros_data import Teros_Data
         from .resources.health_check import Health_Check
+        from .database.models.user import User
 
         api.add_resource(Health_Check, "/")
         api.add_resource(
@@ -85,5 +58,33 @@ def create_app() -> Flask:
         api.add_resource(Cell_Id, "/api/cell/id")
         api.add_resource(Power_Data, "/api/power/", "/api/power/<int:cell_id>")
         api.add_resource(Teros_Data, "/api/teros/", "/api/teros/<int:cell_id>")
+
+        @app.route("/test")
+        def test():
+            user = session.get("user")
+            return {"user": user}
+
+        @app.route("/login")
+        def login():
+            redirect_uri = url_for("auth", _external=True)
+            return oauth.google.authorize_redirect(redirect_uri)
+
+        @app.route("/auth")
+        def auth():
+            token = oauth.google.authorize_access_token()
+            email = token["userinfo"]["email"]
+            user_exists = User.query.filter_by(email=email).first() is not None
+            if not user_exists:
+                new_user = User(email=email)
+                db.session.add(new_user)
+                db.session.commit()
+                user_exists = new_user
+            session["user"] = {"id": user_exists.id, "email": user_exists.email}
+            return redirect("/test")
+
+        @app.route("/logout")
+        def logout():
+            session.pop("user", None)
+            return redirect("/")
 
     return app
