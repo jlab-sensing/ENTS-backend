@@ -17,3 +17,5 @@ python-dateutil
 pandas
 Authlib
 flask-bcrypt
+flask-session
+redis
