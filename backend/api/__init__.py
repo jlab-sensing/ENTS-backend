@@ -75,7 +75,7 @@ def create_app() -> Flask:
             email = token["userinfo"]["email"]
             user_exists = User.query.filter_by(email=email).first() is not None
             if not user_exists:
-                new_user = User(email=email)
+                new_user = User(email=email, password="")
                 db.session.add(new_user)
                 db.session.commit()
                 user_exists = new_user
