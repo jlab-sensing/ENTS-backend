@@ -43,6 +43,12 @@ function Nav() {
               <MenuItem key='Dashboard' onClick={() => navigate('/dashboard')}>
                 <Typography textAlign='center'>Dashboard</Typography>
               </MenuItem>
+              <MenuItem key='Map' onClick={() => navigate('/')}>
+                <Typography textAlign='center'>Map</Typography>
+              </MenuItem>
+              <MenuItem key='Sign-in' onClick={() => navigate('/api/login')}>
+                <Typography textAlign='center'>Sign In</Typography>
+              </MenuItem>
             </Menu>
           </Box>
 
@@ -63,8 +69,15 @@ function Nav() {
             >
               Dashboard
             </Button>
-            <Button key='map' onClick={() => navigate('/map')} sx={{ my: 2, color: 'black', display: 'block' }}>
+            <Button key='Map' onClick={() => navigate('/map')} sx={{ my: 2, color: 'black', display: 'block' }}>
               Map
+            </Button>
+            <Button
+              key='Sign-in'
+              onClick={() => navigate('/api/login')}
+              sx={{ my: 2, color: 'black', display: 'block' }}
+            >
+              Sign in
             </Button>
           </Box>
         </Toolbar>

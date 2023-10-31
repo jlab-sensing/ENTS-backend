@@ -56,13 +56,11 @@ def create_app() -> Flask:
         from .database.models.user import User
 
         api.add_resource(Health_Check, "/")
-        api.add_resource(
-            Cell_Data, "/api/cell/data/<int:cell_id>", endpoint="cell_data_ep"
-        )
-        api.add_resource(Cell_Id, "/api/cell/id")
-        api.add_resource(Power_Data, "/api/power/", "/api/power/<int:cell_id>")
-        api.add_resource(Teros_Data, "/api/teros/", "/api/teros/<int:cell_id>")
-        api.add_resource(Session_r, "/api/session/")
+        api.add_resource(Cell_Data, "/cell/data/<int:cell_id>", endpoint="cell_data_ep")
+        api.add_resource(Cell_Id, "/cell/id")
+        api.add_resource(Power_Data, "/power", "/power/<int:cell_id>")
+        api.add_resource(Teros_Data, "/teros", "/teros/<int:cell_id>")
+        api.add_resource(Session_r, "/session")
 
         @app.route("/login")
         def login():
