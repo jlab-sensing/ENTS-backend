@@ -7,6 +7,7 @@ Environment variables for flask application
 import os
 from .conn import dburl
 from datetime import timedelta
+import redis
 
 
 class Config(object):
@@ -20,3 +21,8 @@ class Config(object):
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
     SESSION_COOKIE_NAME = "google-login-session"
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=5)
+
+    SESSION_TYPE = "redis"
+    SESSION_PERMANENT = False
+    SESSION_USE_SIGNER = True
+    SESSION_REDIS = redis.from_url("redis://redis:6379")

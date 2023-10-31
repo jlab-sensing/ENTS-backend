@@ -14,6 +14,7 @@ from flask_restful import Api
 from .config import Config
 from authlib.integrations.flask_client import OAuth
 from flask_bcrypt import Bcrypt
+from flask_session import Session
 
 db = SQLAlchemy()
 ma = Marshmallow()
@@ -25,6 +26,7 @@ google = oauth.register(
     client_kwargs={"scope": "openid email profile"},
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
 )
+server_session = Session()
 
 
 def create_app() -> Flask:
@@ -40,6 +42,7 @@ def create_app() -> Flask:
     bcrypt.init_app(app)
     CORS(app, resources={r"/*": {"methods": "*"}})
     api = Api(app)
+    server_session.init_app(app)
 
     with app.app_context():
         """-routing-"""
@@ -49,6 +52,7 @@ def create_app() -> Flask:
         from .resources.power_data import Power_Data
         from .resources.teros_data import Teros_Data
         from .resources.health_check import Health_Check
+        from .resources.session import Session_r
         from .database.models.user import User
 
         api.add_resource(Health_Check, "/")
@@ -58,11 +62,7 @@ def create_app() -> Flask:
         api.add_resource(Cell_Id, "/api/cell/id")
         api.add_resource(Power_Data, "/api/power/", "/api/power/<int:cell_id>")
         api.add_resource(Teros_Data, "/api/teros/", "/api/teros/<int:cell_id>")
-
-        @app.route("/test")
-        def test():
-            user = session.get("user")
-            return {"user": user}
+        api.add_resource(Session_r, "/api/session/")
 
         @app.route("/login")
         def login():
@@ -73,14 +73,14 @@ def create_app() -> Flask:
         def auth():
             token = oauth.google.authorize_access_token()
             email = token["userinfo"]["email"]
-            user_exists = User.query.filter_by(email=email).first() is not None
-            if not user_exists:
+            user = User.query.filter_by(email=email).first()
+            if not user:
                 new_user = User(email=email, password="")
                 db.session.add(new_user)
                 db.session.commit()
-                user_exists = new_user
-            session["user"] = {"id": user_exists.id, "email": user_exists.email}
-            return redirect("/test")
+                user = new_user
+            session["user"] = {"id": user.id, "email": user.email}
+            return redirect("/")
 
         @app.route("/logout")
         def logout():
