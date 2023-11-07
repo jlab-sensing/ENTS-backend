@@ -19,6 +19,7 @@ class Config(object):
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+    REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URL")
     SESSION_COOKIE_NAME = "google-login-session"
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=5)
 
