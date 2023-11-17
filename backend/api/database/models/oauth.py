@@ -1,6 +1,5 @@
 import time
 from ..models import db
-from flask_sqlalchemy import SQLAlchemy
 from authlib.integrations.sqla_oauth2 import (
     OAuth2ClientMixin,
     OAuth2AuthorizationCodeMixin,

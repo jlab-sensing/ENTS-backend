@@ -21,3 +21,6 @@ Authlib
 flask-bcrypt
 flask-session
 redis
+PyJWT
+Requests
+google-auth

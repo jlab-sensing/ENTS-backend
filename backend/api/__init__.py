@@ -12,32 +12,31 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_restful import Api
 from .config import Config
-from authlib.integrations.flask_client import OAuth
 from flask_bcrypt import Bcrypt
 from flask_session import Session
-from .oauth2 import config_oauth
-from .auth import bp
-from .database.models import db
+
+# from .oauth2 import config_oauth
+from authlib.integrations.flask_client import OAuth
 
 
+from flask_sqlalchemy import SQLAlchemy
+
+# from .database.models import db
+
+
+db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
-oauth = OAuth()
 bcrypt = Bcrypt()
-google = oauth.register(
-    name="google",
-    client_kwargs={"scope": "openid email profile"},
-    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-)
 server_session = Session()
+oauth = OAuth()
 
 
-def create_app() -> Flask:
+def create_app(debug: bool = False) -> Flask:
     """init flask app"""
     app = Flask(__name__)
     app.secret_key = os.getenv("APP_SECRET_KEY")
     app.config.from_object(Config)
-
     db.init_app(app)
     ma.init_app(app)
     migrate.init_app(app, db)
@@ -47,25 +46,29 @@ def create_app() -> Flask:
     api = Api(app)
     server_session.init_app(app)
 
-    with app.app_context():
-        """-routing-"""
+    # with app.app_context():
+    """-routing-"""
+    app.app_context().push()
+    from .resources.cell_data import Cell_Data
+    from .resources.cell_id import Cell_Id
+    from .resources.power_data import Power_Data
+    from .resources.teros_data import Teros_Data
+    from .resources.health_check import Health_Check
+    from .resources.session import Session_r
+    from .database.models.user import User
+    from .auth.routes import bp
 
-        from .resources.cell_data import Cell_Data
-        from .resources.cell_id import Cell_Id
-        from .resources.power_data import Power_Data
-        from .resources.teros_data import Teros_Data
-        from .resources.health_check import Health_Check
-        from .resources.session import Session_r
-        from .database.models.user import User
+    db.create_all()
+    db.session.commit()
 
-        api.add_resource(Health_Check, "/")
-        api.add_resource(Cell_Data, "/cell/data/<int:cell_id>", endpoint="cell_data_ep")
-        api.add_resource(Cell_Id, "/cell/id")
-        api.add_resource(Power_Data, "/power", "/power/<int:cell_id>")
-        api.add_resource(Teros_Data, "/teros", "/teros/<int:cell_id>")
-        api.add_resource(Session_r, "/session")
+    api.add_resource(Health_Check, "/")
+    api.add_resource(Cell_Data, "/cell/data/<int:cell_id>", endpoint="cell_data_ep")
+    api.add_resource(Cell_Id, "/cell/id")
+    api.add_resource(Power_Data, "/power", "/power/<int:cell_id>")
+    api.add_resource(Teros_Data, "/teros", "/teros/<int:cell_id>")
+    api.add_resource(Session_r, "/session")
 
-    config_oauth(app)
+    # config_oauth(app)
     app.register_blueprint(bp, url_prefix="")
 
     # def current_user():
