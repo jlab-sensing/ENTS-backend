@@ -177,6 +177,8 @@ def get_token():
         # )
         print("response: ", req, flush=True)
         print("data: ", req.json(), flush=True)
+        if req == None:
+            return jsonify({"msg": "Auth error"}), 500
         token = req.json()["id_token"]
 
         # Specify the CLIENT_ID of the app that accesses the backend:
@@ -191,6 +193,18 @@ def get_token():
         email = idinfo["email"]
         user = db.session.query(User).filter_by(email=email).first()
         print("found", user, flush=True)
+
+        # // Exchange authorization code for access token (id token is returned here too)
+        # const { data: { id_token} } = await axios.post(`${config.tokenUrl}?${tokenParam}`);
+        # if (!id_token) return res.status(400).json({ message: 'Auth error' });
+        # // Get user info from id token
+        # const { email, name, picture } = jwt.decode(id_token);
+        # const user = { name, email, picture };
+        # // Sign a new token
+        # const token = jwt.sign({ user }, config.tokenSecret, { expiresIn: config.tokenExpiration });
+        # // Set cookies for user
+        # res.cookie('token', token, { maxAge: config.tokenExpiration, httpOnly: true,  })
+
         if not user:
             print("creating new user", flush=True)
             user = User(email=email, password="")
@@ -271,7 +285,8 @@ def check_logged_in():
         if not user:
             return jsonify({"loggedIn": False}), 200
         session["id"] = user.id
-        return jsonify({"loggedIn": True, user}), 200
+        print(user, flush=True)
+        return jsonify({"loggedIn": True}, user), 200
     except Exception as e:
         print(e)
         return jsonify({"loggedIn": False}), 500
