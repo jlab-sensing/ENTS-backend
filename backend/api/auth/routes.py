@@ -175,6 +175,34 @@ def get_token():
         #     #     "redirect_uri": config["redirectUrl"],
         #     # },
         # )
+        print("response: ", req, flush=True)
+        print("data: ", req.json(), flush=True)
+        token = req.json()["id_token"]
+
+        # Specify the CLIENT_ID of the app that accesses the backend:
+        idinfo = id_token.verify_oauth2_token(
+            token, g_requests.Request(), config["clientId"]
+        )
+        userid = idinfo["sub"]
+        # token = jwt.sign(
+        #     {user}, config.tokenSecret, {"expiresIn": config.tokenExpiration}
+        # )
+        print(idinfo["email"], flush=True)
+        email = idinfo["email"]
+        user = db.session.query(User).filter_by(email=email).first()
+        print("found", user, flush=True)
+        if not user:
+            print("creating new user", flush=True)
+            user = User(email=email, password="")
+            db.session.add(user)
+            db.session.commit()
+        session["id"] = user.id
+        return jsonify({"msg": "Logged in"}), 200
+
+        # add user to data base!!!!!
+    except ValueError:
+        return jsonify({"msg": "Authentication Error"}), 500
+
     except requests.exceptions.ConnectionError as errc:
         return jsonify({"error": "Connection Error"}, errc), 500
     except requests.exceptions.HTTPError as errh:
@@ -196,37 +224,6 @@ def get_token():
     #         },
     #     )
     # )
-    print("response: ", req, flush=True)
-    print("data: ", req.json(), flush=True)
-    token = req.json()["id_token"]
-
-    try:
-        # Specify the CLIENT_ID of the app that accesses the backend:
-        idinfo = id_token.verify_oauth2_token(
-            token, g_requests.Request(), config["clientId"]
-        )
-        userid = idinfo["sub"]
-        # token = jwt.sign(
-        #     {user}, config.tokenSecret, {"expiresIn": config.tokenExpiration}
-        # )
-        print(idinfo["email"], flush=True)
-        email = idinfo["email"]
-
-        # session["user"] = email
-        # .get(1)
-        user = db.session.query(User).filter_by(email=email).first()
-        print("found", user, flush=True)
-        ## TODO: fix user query, can't find user right now for some reason :(
-        if not user:
-            print("creating new user", flush=True)
-            user = User(email=email)
-            db.session.add(user)
-            db.session.commit()
-        session["id"] = user.id
-
-        # add user to data base!!!!!
-    except ValueError:
-        return jsonify({"msg": "Authentication Error"}), 500
 
     # email, name, picture = jwt.decode(
     #     id_token, config["tokenSecret"], algorithms=["HS256"]
@@ -247,7 +244,7 @@ def get_token():
     #     db.session.add(user)
     #     db.session.commit()
     # session["id"] = user.id
-    return jsonify({"msg": "Logged in"}), 200
+
     # except Exception as e:
     #     print("Error", e, flush=True)
     #     return jsonify({"msg": "Server Error"}), 500
@@ -274,7 +271,7 @@ def check_logged_in():
         if not user:
             return jsonify({"loggedIn": False}), 200
         session["id"] = user.id
-        return jsonify({"loggedIn": True}, user)
+        return jsonify({"loggedIn": True, user}), 200
     except Exception as e:
         print(e)
         return jsonify({"loggedIn": False}), 500
