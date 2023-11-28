@@ -283,13 +283,13 @@ def check_logged_in():
     try:
         user = current_user()
         if not user:
-            return jsonify({"loggedIn": False}), 200
+            return jsonify({"loggedIn": False}, None), 200
         session["id"] = user.id
         print(user, flush=True)
         return jsonify({"loggedIn": True}, user), 200
     except Exception as e:
         print(e)
-        return jsonify({"loggedIn": False}), 500
+        return jsonify({"loggedIn": False}, None), 500
 
 
 # @bp.route("/authorize")

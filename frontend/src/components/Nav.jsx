@@ -3,6 +3,7 @@ import { AppBar, Button, Container, IconButton, Toolbar, Box, Typography, Menu, 
 import MenuIcon from '@mui/icons-material/Menu';
 import DvIcon from './DvIcon';
 import { useNavigate } from 'react-router-dom';
+import { signIn } from '../services/auth';
 
 function Nav() {
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ function Nav() {
               <MenuItem key='Map' onClick={() => navigate('/')}>
                 <Typography textAlign='center'>Map</Typography>
               </MenuItem>
-              <MenuItem key='Sign-in' onClick={() => navigate('/api/login')}>
+              <MenuItem key='Sign-in' onClick={() => signIn()}>
                 <Typography textAlign='center'>Sign In</Typography>
               </MenuItem>
             </Menu>
@@ -72,11 +73,7 @@ function Nav() {
             <Button key='Map' onClick={() => navigate('/map')} sx={{ my: 2, color: 'black', display: 'block' }}>
               Map
             </Button>
-            <Button
-              key='Sign-in'
-              onClick={() => navigate('/api/login')}
-              sx={{ my: 2, color: 'black', display: 'block' }}
-            >
+            <Button key='Sign-in' onClick={() => signIn()} sx={{ my: 2, color: 'black', display: 'block' }}>
               Sign in
             </Button>
           </Box>
