@@ -1,11 +1,13 @@
-import { React, useState } from 'react';
+import { React, useState, useContext } from 'react';
 import { AppBar, Button, Container, IconButton, Toolbar, Box, Typography, Menu, MenuItem } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import DvIcon from './DvIcon';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../auth/AuthContextProvider';
 import { signIn } from '../services/auth';
 
 function Nav() {
+  const { loggedIn, user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [anchorElNav, setAnchorElNav] = useState(null);
   const handleOpenNavMenu = (event) => {
@@ -14,6 +16,7 @@ function Nav() {
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
   };
+  console.log(loggedIn, user);
 
   return (
     <AppBar position='static' elevation={0} sx={{ bgcolor: 'transparent', pl: '5%', pr: '5%' }}>
@@ -47,9 +50,15 @@ function Nav() {
               <MenuItem key='Map' onClick={() => navigate('/')}>
                 <Typography textAlign='center'>Map</Typography>
               </MenuItem>
-              <MenuItem key='Sign-in' onClick={() => signIn()}>
-                <Typography textAlign='center'>Sign In</Typography>
-              </MenuItem>
+              {loggedIn === false ? (
+                <MenuItem key='Sign-in' onClick={() => signIn()}>
+                  <Typography textAlign='center'>Sign In</Typography>
+                </MenuItem>
+              ) : (
+                <MenuItem key='Name'>
+                  <Typography textAlign='center'>Hi, {user?.email}</Typography>
+                </MenuItem>
+              )}
             </Menu>
           </Box>
 
@@ -73,9 +82,15 @@ function Nav() {
             <Button key='Map' onClick={() => navigate('/map')} sx={{ my: 2, color: 'black', display: 'block' }}>
               Map
             </Button>
-            <Button key='Sign-in' onClick={() => signIn()} sx={{ my: 2, color: 'black', display: 'block' }}>
-              Sign in
-            </Button>
+            {loggedIn === false ? (
+              <Button key='Sign-in' onClick={() => signIn()} sx={{ my: 2, color: 'black', display: 'block' }}>
+                Sign in
+              </Button>
+            ) : (
+              <Button key='Sign-in' onClick={() => {}} sx={{ my: 2, color: 'black', display: 'block' }}>
+                Hi, {user?.email}
+              </Button>
+            )}
           </Box>
         </Toolbar>
       </Container>

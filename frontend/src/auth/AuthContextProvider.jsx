@@ -1,5 +1,6 @@
 import { React, createContext, useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
+import PropTypes from 'prop-types';
 export const AuthContext = createContext();
 
 const AuthContextProvider = ({ children }) => {
@@ -11,8 +12,6 @@ const AuthContextProvider = ({ children }) => {
       const {
         data: [{ loggedIn: loggedIn }, user],
       } = await axios.get(`${process.env.PUBLIC_URL}/api/auth/logged_in`);
-      // const data = await axios.get(`${process.env.PUBLIC_URL}/api/auth/logged_in`);
-      // console.log(data, loggedIn, user);
       setLoggedIn(loggedIn);
       user && setUser(user);
     } catch (err) {
@@ -24,6 +23,10 @@ const AuthContextProvider = ({ children }) => {
     checkLoginState();
   }, [checkLoginState]);
   return <AuthContext.Provider value={{ loggedIn, checkLoginState, user }}>{children}</AuthContext.Provider>;
+};
+
+AuthContextProvider.propTypes = {
+  children: PropTypes.any,
 };
 
 export default AuthContextProvider;
