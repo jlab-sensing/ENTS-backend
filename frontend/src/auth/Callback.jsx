@@ -11,11 +11,9 @@ const Callback = () => {
     (async () => {
       if (loggedIn === false) {
         try {
-          console.log('notlogged in');
           if (called.current) return; // prevent rerender caused by StrictMode
           called.current = true;
           const res = await axios.get(`${process.env.PUBLIC_URL}/api/auth/token${window.location.search}`);
-          console.log('response: ', res);
           checkLoginState();
           navigate('/');
         } catch (err) {
