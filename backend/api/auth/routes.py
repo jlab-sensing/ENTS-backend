@@ -1,6 +1,5 @@
 import os
-from flask import Blueprint, request, session, redirect
-from flask import redirect, jsonify
+from flask import Blueprint, request, session, redirect, jsonify
 from ...api import db
 from ..database.models.user import User
 import requests
@@ -9,7 +8,7 @@ from google.auth.transport import requests as g_requests
 from functools import wraps
 
 
-bp = Blueprint("login", __name__)
+auth = Blueprint("login", __name__)
 
 
 config = {
@@ -65,7 +64,7 @@ def logged_in():
     def decorator(func):
         @wraps(func)
         def authorize(*args, **kwargs):
-            if current_user() == None:
+            if current_user() is None:
                 return jsonify({"msg": "Unauthorized"}), 401
             return func(*args, **kwargs)
 
@@ -91,7 +90,7 @@ def logged_in():
 #     return decorator
 
 
-@bp.route("/auth/token")
+@auth.route("/auth/token")
 def get_token():
     """Trades in authorization code for access token from Google auth"""
     code = request.args.get("code")
@@ -113,7 +112,7 @@ def get_token():
         )
         print("response: ", req, flush=True)
         print("data: ", req.json(), flush=True)
-        if req == None:
+        if req is None:
             return jsonify({"msg": "Auth error"}), 500
         token = req.json()["id_token"]
 
@@ -145,7 +144,7 @@ def get_token():
         return jsonify({"Other error:", err}), 500
 
 
-@bp.route("/oauth/url", methods=["GET"])
+@auth.route("/oauth/url", methods=["GET"])
 def auth_url():
     """Returns redirect to Google auth"""
     return jsonify(
@@ -155,7 +154,7 @@ def auth_url():
     )
 
 
-@bp.route("/auth/logged_in")
+@auth.route("/auth/logged_in")
 def check_logged_in():
     """Checks if session is active"""
     try:
@@ -170,7 +169,7 @@ def check_logged_in():
         return jsonify({"loggedIn": False}, None), 500
 
 
-@bp.route("/logout")
+@auth.route("/logout")
 def logout():
     """Deletes active session"""
     del session["id"]
