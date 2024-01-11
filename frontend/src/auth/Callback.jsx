@@ -13,7 +13,7 @@ const Callback = () => {
         try {
           if (called.current) return; // prevent rerender caused by StrictMode
           called.current = true;
-          await axios.get(`${process.env.PUBLIC_URL}/api/auth/token${window.location.search}`);
+          res = await axios.get(`${process.env.PUBLIC_URL}/api/auth/token${window.location.search}`);
           checkLoginState();
           navigate('/');
         } catch (err) {

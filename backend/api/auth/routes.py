@@ -1,11 +1,13 @@
 import os
-from flask import Blueprint, request, session, redirect, jsonify
+from flask import Blueprint, request, session, redirect, jsonify, make_response
 from ...api import db
 from ..database.models.user import User
 import requests
 from google.oauth2 import id_token
 from google.auth.transport import requests as g_requests
 from functools import wraps
+from datetime import datetime, timedelta
+import jwt
 
 
 auth = Blueprint("login", __name__)
@@ -44,6 +46,25 @@ tokenParams = {
 REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI")
 
 
+def token_required(f):
+    """Decorator for protecting resources from invalid/missing jwt tokens"""
+
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        try:
+            token = request.cookies.get("token")
+            if not token:
+                return jsonify({"msg": "Unauthorized"}), 401
+            data = jwt.decode(token, config["tokenSecret"], algorithms=["HS256"])
+            current_user = User.query.get(data["uid"])
+            return f(current_user, *args, **kwargs)
+        except Exception as e:
+            print(e)
+            return jsonify({"msg": "Unauthorized"}), 401
+
+    return decorated
+
+
 def current_user():
     if "id" in session:
         uid = session["id"]
@@ -71,23 +92,6 @@ def logged_in():
         return authorize
 
     return decorator
-
-
-# TODO: add user roles to protect routes
-# @logged_in()
-# def role_required(role_name):
-#     def decorator(func):
-#         @wraps(func)
-#         def authorize(*args, **kwargs):
-#             if not current_user()["role"]:
-#                 return jsonify({"msg": "Unauthorized"}), 401
-#             elif current_user()["role"] != role_name:
-#                 return jsonify({"msg": "Unauthorized"}), 401
-#             return func(*args, **kwargs)
-
-#         return authorize
-
-#     return decorator
 
 
 @auth.route("/auth/token")
@@ -129,8 +133,18 @@ def get_token():
             user = User(email=email, password="")
             db.session.add(user)
             db.session.commit()
+        jwt_token = jwt.encode(
+            {
+                "uid": user.id,
+                "exp": datetime.utcnow() + timedelta(seconds=5),
+            },
+            config["tokenSecret"],
+            algorithm="HS256",
+        )
         session["id"] = user.id
-        return jsonify({"msg": "Logged in"}), 200
+        resp = make_response("Logged In", 201)
+        resp.set_cookie("token", jwt_token)
+        return resp
 
     except ValueError:
         return jsonify({"msg": "Authentication Error"}), 500
@@ -158,15 +172,26 @@ def auth_url():
 def check_logged_in():
     """Checks if session is active"""
     try:
-        user = current_user()
-        if not user:
+        token = request.cookies.get("token")
+        if not token:
             return jsonify({"loggedIn": False}, None), 200
-        session["id"] = user.id
-        print(user, flush=True)
+        data = jwt.decode(token, config["tokenSecret"], algorithms=["HS256"])
+        user = User.query.get(data["uid"])
         return jsonify({"loggedIn": True}, user), 200
     except Exception as e:
-        print(e)
-        return jsonify({"loggedIn": False}, None), 500
+        print(e, flush=True)
+        return jsonify({"loggedIn": False}, None), 401
+
+    # try:
+    #     user = current_user()
+    #     if not user:
+    #         return jsonify({"loggedIn": False}, None), 200
+    #     session["id"] = user.id
+    #     print(user, flush=True)
+    #     return jsonify({"loggedIn": True}, user), 200
+    # except Exception as e:
+    #     print(e)
+    #     return jsonify({"loggedIn": False}, None), 500
 
 
 @auth.route("/logout")

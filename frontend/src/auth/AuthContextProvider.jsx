@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 export const AuthContext = createContext();
 
 const AuthContextProvider = ({ children }) => {
-  const [loggedIn, setLoggedIn] = useState(null);
+  const [loggedIn, setLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
 
   const checkLoginState = useCallback(async () => {
