@@ -28,12 +28,12 @@ def create_app() -> Flask:
     api = Api(app)
     with app.app_context():
         """-routing-"""
-
+        from .resources.health_check import Health_Check
         from .resources.cell_data import Cell_Data
         from .resources.cell_id import Cell_Id
         from .resources.power_data import Power_Data
         from .resources.teros_data import Teros_Data
-        from .resources.health_check import Health_Check
+        from .resources.sensor_data import Sensor_Data
         from .resources.cell import Cell
 
         api.add_resource(Health_Check, "/")
@@ -44,5 +44,5 @@ def create_app() -> Flask:
         api.add_resource(Cell_Id, "/api/cell/id")
         api.add_resource(Power_Data, "/api/power/", "/api/power/<int:cell_id>")
         api.add_resource(Teros_Data, "/api/teros/", "/api/teros/<int:cell_id>")
-
+        api.add_resource(Sensor_Data, "/api/sensor/", "/api/sensor/<int:sensor_id>")
     return app
