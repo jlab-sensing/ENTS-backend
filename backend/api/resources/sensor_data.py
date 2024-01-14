@@ -1,8 +1,9 @@
-from flask import request, jsonify
+from flask import request, jsonify, make_response
 from flask_restful import Resource
 from ..database.schemas.data_schema import DataSchema
 from ..database.schemas.get_sensor_data_schema import GetSensorDataSchema
 from ..database.models.sensor import Sensor
+from soil_power_sensor_protobuf import encode, decode
 
 from datetime import datetime
 
@@ -19,6 +20,9 @@ class Sensor_Data(Resource):
             "data_type": {"power": "float", "current": "int"},
             "ts": 1705176162,
         }
+        meas_dict = decode(request.data)
+        print(meas_dict, flush=True)
+        print(meas_dict.items(), flush=True)
 
         for measurement, data in meas_sensor["data"].items():
             Sensor.add_data(
@@ -29,7 +33,11 @@ class Sensor_Data(Resource):
                 meas_sensor["data_type"],
                 datetime.fromtimestamp(meas_sensor["ts"]),
             )
-        return {"msg": "added data"}, 201
+        encoded_data = encode(success=True)
+        response = make_response(encoded_data)
+        response.headers["content-type"] = "text/octet-stream"
+        response.status_code = 201
+        return response
 
     def get(self, sensor_id=0):
         v_args = get_sensor_data_schema.load(request.args)
