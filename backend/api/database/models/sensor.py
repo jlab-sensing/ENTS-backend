@@ -34,13 +34,17 @@ class Sensor(db.Model):
 
     @staticmethod
     def get_sensor_data_obj(
-        sensor_id,
+        cell_id,
+        measurement,
         resample="hour",
         start_time=datetime.now() - relativedelta(months=1),
         end_time=datetime.now(),
     ):
         """gets sensor data as a list of objects"""
-        cur_sensor = Sensor.query.filter_by(id=sensor_id).first()
+        print("running", flush=True)
+        cur_sensor = Sensor.query.filter_by(
+            measurement=measurement, cell_id=cell_id
+        ).first()
         if cur_sensor is None:
             return None
         match cur_sensor.data_type:
@@ -55,7 +59,7 @@ class Sensor(db.Model):
                 db.func.date_trunc(resample, Data.ts).label("ts"),
                 db.func.avg(t_data).label("data"),
             )
-            .where(Data.sensor_id == sensor_id)
+            .where(Data.sensor_id == cur_sensor.id)
             .filter(Data.ts.between(start_time, end_time))
             .group_by(db.func.date_trunc(resample, Data.ts))
             .subquery()

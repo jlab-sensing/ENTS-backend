@@ -13,11 +13,18 @@ get_sensor_data_schema = GetSensorDataSchema()
 
 class Sensor_Data(Resource):
     def post(self):
+        # meas_sensor = {
+        #     "type": "sensor_leaf",
+        #     "cellId": "1",
+        #     "data": {"power": 3, "current": 6},
+        #     "data_type": {"power": "float", "current": "int"},
+        #     "ts": 1705176162,
+        # }
         meas_sensor = {
             "type": "sensor_leaf",
-            "cellId": "1",
-            "data": {"power": 3, "current": 6},
-            "data_type": {"power": "float", "current": "int"},
+            "cellId": "33",
+            "data": {"leaf_wetness": 3},
+            "data_type": {"leaf_wetness": "int"},
             "ts": 1705176162,
         }
         meas_dict = decode(request.data)
@@ -39,10 +46,11 @@ class Sensor_Data(Resource):
         response.status_code = 201
         return response
 
-    def get(self, sensor_id=0):
+    def get(self):
         v_args = get_sensor_data_schema.load(request.args)
         sensor_obj = Sensor.get_sensor_data_obj(
-            sensor_id,
+            cell_id=v_args["cellId"],
+            measurement=v_args["measurement"],
             start_time=v_args["startTime"],
             end_time=v_args["endTime"],
         )
