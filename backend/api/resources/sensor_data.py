@@ -20,19 +20,19 @@ class Sensor_Data(Resource):
         #     "data_type": {"power": "float", "current": "int"},
         #     "ts": 1705176162,
         # }
-        meas_sensor = {
-            "type": "sensor_leaf",
-            "cellId": "33",
-            "data": {"leaf_wetness": 3},
-            "data_type": {"leaf_wetness": "int"},
-            "ts": 1705176162,
-        }
-        meas_dict = decode(request.data)
-        print(meas_dict, flush=True)
-        print(meas_dict.items(), flush=True)
+        # meas_sensor = {
+        #     "type": "sensor_leaf",
+        #     "cellId": "33",
+        #     "data": {"leaf_wetness": 3},
+        #     "data_type": {"leaf_wetness": "int"},
+        #     "ts": 1705176162,
+        # }
+        meas_sensor = decode(request.data)
+        print(meas_sensor, flush=True)
+        print(meas_sensor.items(), flush=True)
 
         for measurement, data in meas_sensor["data"].items():
-            Sensor.add_data(
+            res = Sensor.add_data(
                 meas_sensor["cellId"],
                 meas_sensor["type"],
                 measurement,
@@ -40,6 +40,12 @@ class Sensor_Data(Resource):
                 meas_sensor["data_type"],
                 datetime.fromtimestamp(meas_sensor["ts"]),
             )
+        if res is None:
+            encoded_data = encode(success=False)
+            response = make_response(encoded_data)
+            response.headers["content-type"] = "text/octet-stream"
+            response.status_code = 500
+            return response
         encoded_data = encode(success=True)
         response = make_response(encoded_data)
         response.headers["content-type"] = "text/octet-stream"

@@ -88,7 +88,7 @@ class Sensor(db.Model):
 
     @staticmethod
     def add_data(
-        cell_name,
+        cell_id,
         sensor_name,
         measurement,
         data,
@@ -97,19 +97,20 @@ class Sensor(db.Model):
     ):
         """add new data point for sensor"""
         type = data_types[measurement]
-        cur_cell = Cell.query.filter_by(name=cell_name).first()
+        cur_cell = Cell.query.filter_by(id=cell_id).first()
         if cur_cell is None:
-            new_cell = Cell(name=cell_name)
-            new_cell.save()
-            cur_cell = Cell.query.filter_by(name=cell_name).first()
-            new_sensor = Sensor(
-                name=sensor_name,
-                cell_id=cur_cell.id,
-                measurement=measurement,
-                data_type=type,
-            )
-            new_sensor.save()
-            cur_sensor = Sensor.query.filter_by(id=new_sensor.id).first()
+            return None
+            # new_cell = Cell(name=cell_name)
+            # new_cell.save()
+            # cur_cell = Cell.query.filter_by(id=cell_id).first()
+            # new_sensor = Sensor(
+            #     name=sensor_name,
+            #     cell_id=cur_cell.id,
+            #     measurement=measurement,
+            #     data_type=type,
+            # )
+            # new_sensor.save()
+            # cur_sensor = Sensor.query.filter_by(id=new_sensor.id).first()
         else:
             cur_sensor = Sensor.query.filter_by(
                 measurement=measurement,

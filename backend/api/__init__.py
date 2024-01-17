@@ -33,6 +33,8 @@ def create_app() -> Flask:
         from .resources.cell_id import Cell_Id
         from .resources.power_data import Power_Data
         from .resources.teros_data import Teros_Data
+        from .resources.power_data_protobuf import Power_Data_Protobuf
+        from .resources.teros_data_protobuf import Teros_Data_Protobuf
         from .resources.sensor_data import Sensor_Data
         from .resources.cell import Cell
 
@@ -44,5 +46,11 @@ def create_app() -> Flask:
         api.add_resource(Cell_Id, "/api/cell/id")
         api.add_resource(Power_Data, "/api/power/", "/api/power/<int:cell_id>")
         api.add_resource(Teros_Data, "/api/teros/", "/api/teros/<int:cell_id>")
+        api.add_resource(
+            Power_Data_Protobuf, "/api/power-proto/", "/api/power-proto/<int:sensor_id>"
+        )
+        api.add_resource(
+            Teros_Data_Protobuf, "/api/teros-proto/", "/api/teros-proto/<int:cell_id>"
+        )
         api.add_resource(Sensor_Data, "/api/sensor/", "/api/sensor/<int:sensor_id>")
     return app
