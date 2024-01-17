@@ -51,7 +51,7 @@ function TerosCharts({ cells, startDate, endDate }) {
         newVwcChartData.labels = tTimestamp;
         newVwcChartData.datasets.push(
           {
-            label: name + ' Volumetric Water Content (VWC)',
+            label: name + ' Volumetric Water Content (%)',
             data: terosData.vwc,
             borderColor: vwcColors[selectCounter],
             borderWidth: 2,
@@ -75,7 +75,7 @@ function TerosCharts({ cells, startDate, endDate }) {
         // Update the combined Temperature Chart data for the specific cell
         newTempChartData.labels = tTimestamp;
         newTempChartData.datasets.push({
-          label: name + ' Temperature',
+          label: name + ' Temperature (°C)',
           data: terosData.temp,
           borderColor: tempColors[selectCounter],
           borderWidth: 2,

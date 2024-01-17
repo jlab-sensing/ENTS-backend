@@ -53,7 +53,7 @@ function PowerCharts({ cells, startDate, endDate }) {
         newVChartData.labels = pTimestamp;
         newVChartData.datasets.push(
           {
-            label: name + ' Voltage (v)',
+            label: name + ' Voltage (mV)',
             data: powerData.v,
             borderColor: vColors[selectCounter],
             borderWidth: 2,
@@ -76,7 +76,7 @@ function PowerCharts({ cells, startDate, endDate }) {
         //power data
         newPwrChartData.labels = pTimestamp;
         newPwrChartData.datasets.push({
-          label: name + ' Power (µV)',
+          label: name + ' Power (µW)',
           data: powerData.p,
           borderColor: pColors[selectCounter],
           borderWidth: 2,
