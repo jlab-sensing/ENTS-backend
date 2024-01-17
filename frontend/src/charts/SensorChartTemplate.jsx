@@ -32,7 +32,7 @@ export default function SensorChartTemplate({ data }) {
         },
       },
       leafAxis: {
-        position: 'right',
+        position: 'left',
         beginAtZero: true,
         title: {
           display: true,
