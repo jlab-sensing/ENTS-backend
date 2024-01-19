@@ -10,7 +10,6 @@ class Data(db.Model):
     sensor_id = db.Column(
         db.Integer, db.ForeignKey("cell.id", ondelete="CASCADE"), nullable=False
     )
-    # measurement = db.Column(db.String(345))
     ts = db.Column(db.DateTime, nullable=False)
     ts_server = db.Column(db.DateTime, server_default=db.func.now())
     float_val = db.Column(db.Float, nullable=True)
