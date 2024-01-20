@@ -28,12 +28,14 @@ function SensorChart({ cells, startDate, endDate }) {
   };
   const [sensorChartData, setSensorChartData] = useState(chartSettings);
   const [loadedCells, setLoadedCells] = useState([]);
+
   // Initialize the combined chart data with empty datasets
   const newSensorChartData = {
     ...sensorChartData,
     datasets: [],
   };
 
+  /** service call to get cell chat data */
   async function getCellChartData() {
     const data = {};
     const loadCells = cells.filter((c) => !(c.id in loadedCells));
@@ -41,7 +43,6 @@ function SensorChart({ cells, startDate, endDate }) {
       data[id] = {
         name: name,
       };
-      console.log('cellid', id);
       for (const meas of measurements) {
         data[id] = {
           ...data[id],
@@ -51,19 +52,7 @@ function SensorChart({ cells, startDate, endDate }) {
     }
     return data;
   }
-  /**
-   * Data = {
-   * name: cell_1
-   * leaf_wetness:{
-   *  ts
-   *  data
-   * }:
-   * measurement2:{
-   *  ts
-   *  data
-   * }:
-   */
-
+  /** updates chart data state */
   function updateCharts() {
     getCellChartData().then((sensorChartData) => {
       let selectCounter = 0;
@@ -72,13 +61,7 @@ function SensorChart({ cells, startDate, endDate }) {
         const cellid = id;
         const name = sensorChartData[cellid].name;
         const measurements = Object.keys(sensorChartData[cellid]).filter((k) => k != 'name');
-        console.log('obj', sensorChartData);
-        console.log(measurements);
         for (const [idx, meas] of measurements.entries()) {
-          console.log('idx, mea', idx, meas);
-          // console.log('mea data0', sensorChartData['leaf_wetness']);
-          console.log('mea data1', sensorChartData[meas]);
-          console.log('mea data2', sensorChartData[cellid][meas]['data']);
           const timestamp = sensorChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime));
           newSensorChartData.labels = timestamp;
           newSensorChartData.datasets.push({
@@ -92,18 +75,6 @@ function SensorChart({ cells, startDate, endDate }) {
             pointRadius: 1,
           });
         }
-
-        // // Update the combined Temperature Chart data for the specific cell
-        // newTempChartData.labels = tTimestamp;
-        // newTempChartData.datasets.push({
-        //   label: name + ' Temperature',
-        //   data: terosData.temp,
-        //   borderColor: tempColors[selectCounter],
-        //   borderWidth: 2,
-        //   fill: false,
-        //   radius: 2,
-        //   pointRadius: 1,
-        // });
         selectCounter += 1;
       }
       setSensorChartData(newSensorChartData);
@@ -122,12 +93,6 @@ function SensorChart({ cells, startDate, endDate }) {
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
         <SensorChartTemplate data={sensorChartData} />
       </Grid>
-      {/* <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <VwcChart data={vwcChartData} />
-      </Grid>
-      <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <TempChart data={tempChartData} />
-      </Grid> */}
     </>
   );
 }
