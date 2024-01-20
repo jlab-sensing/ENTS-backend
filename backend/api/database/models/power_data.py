@@ -46,6 +46,24 @@ class PowerData(db.Model):
         db.session.commit()
         return power_data
 
+    @staticmethod
+    def add_protobuf_power_data(logger_id, cell_id, ts, v, i):
+        """add new data point for power table
+        creates new logger or cell if they don't exist
+        """
+        cur_logger = Logger.query.filter_by(id=logger_id).first()
+        cur_cell = Cell.query.filter_by(id=cell_id).first()
+        if cur_cell is None:
+            return None
+        if cur_logger is None:
+            return None
+        power_data = PowerData(
+            logger_id=cur_logger.id, cell_id=cur_cell.id, ts=ts, voltage=v, current=i
+        )
+        db.session.add(power_data)
+        db.session.commit()
+        return power_data
+
     def get_power_data(
         cell_id,
         resample="hour",

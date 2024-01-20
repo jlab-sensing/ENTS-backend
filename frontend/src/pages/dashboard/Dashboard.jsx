@@ -7,6 +7,7 @@ import CellSelect from './components/CellSelect';
 import PowerCharts from './components/PowerCharts';
 import TerosCharts from './components/TerosCharts';
 import BackBtn from './components/BackBtn';
+import SensorChart from './components/SensorChart';
 
 function Dashboard() {
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
@@ -51,6 +52,7 @@ function Dashboard() {
         <PowerCharts cells={selectedCells} startDate={startDate} endDate={endDate} />
         <TerosCharts cells={selectedCells} startDate={startDate} endDate={endDate} />
       </Grid>
+      <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} />
     </Stack>
   );
 }
