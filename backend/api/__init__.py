@@ -59,13 +59,13 @@ def create_app(debug: bool = False) -> Flask:
     api.add_resource(Health_Check, "/")
     api.add_resource(Cell_Data, "/cell/data/<int:cell_id>", endpoint="cell_data_ep")
     api.add_resource(Cell_Id, "/cell/id")
-    api.add_resource(Power_Data, "/power", "/power/<int:cell_id>")
-    api.add_resource(Teros_Data, "/teros", "/teros/<int:cell_id>")
+    api.add_resource(Power_Data, "/power/", "/power/<int:cell_id>")
+    api.add_resource(Teros_Data, "/teros/", "/teros/<int:cell_id>")
     api.add_resource(
-        Power_Data_Protobuf, "/power-proto/", "/power-proto/<int:sensor_id>"
+        Power_Data_Protobuf, "/power-proto", "/power-proto/<int:sensor_id>"
     )
-    api.add_resource(Teros_Data_Protobuf, "/teros-proto/", "/teros-proto/<int:cell_id>")
-    api.add_resource(Sensor_Data, "/sensor/", "/sensor/<int:sensor_id>")
+    api.add_resource(Teros_Data_Protobuf, "/teros-proto", "/teros-proto/<int:cell_id>")
+    api.add_resource(Sensor_Data, "/sensor", "/sensor/<int:sensor_id>")
     api.add_resource(Session_r, "/session")
     app.register_blueprint(auth, url_prefix="")
 
