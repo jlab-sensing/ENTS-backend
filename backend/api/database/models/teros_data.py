@@ -46,6 +46,24 @@ class TEROSData(db.Model):
         db.session.commit()
         return teros_data
 
+    @staticmethod
+    def add_protobuf_power_data(cell_id, ts, vwc, raw_vwc, temp, ec, water_pot):
+        cur_cell = Cell.query.filter_by(id=cell_id).first()
+        if cur_cell is None:
+            return None
+        teros_data = TEROSData(
+            cell_id=cur_cell.id,
+            ts=ts,
+            raw_vwc=raw_vwc,
+            vwc=vwc,
+            temp=temp,
+            ec=ec,
+            water_pot=water_pot,
+        )
+        db.session.add(teros_data)
+        db.session.commit()
+        return teros_data
+
     def get_teros_data(cell_id, resample="hour"):
         """gets teros data aggregated by attributes"""
         data = []

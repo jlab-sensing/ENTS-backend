@@ -2,11 +2,9 @@ sqlalchemy
 alembic
 psycopg2-binary==2.9.5
 chirpstack-api==3.7.2
-protobuf<=3.20
+protobuf
 tqdm
-# due to flask-session not updated
-Flask==2.3.3
-Werkzeug==2.3.7
+Flask
 Flask-RESTful
 flask_cors
 gunicorn
@@ -24,3 +22,5 @@ redis
 PyJWT
 Requests
 google-auth
+--extra-index-url https://test.pypi.org/simple/ 
+soil-power-sensor-protobuf

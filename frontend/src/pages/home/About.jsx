@@ -47,10 +47,7 @@ function About() {
             A DATA VISUALIZATION PROGRAM FOR XYZ
           </Typography>
           <Typography variant='subtitle1' component='sub'>
-            sub-header to explain use case.... Lorem ipsum dolor sit amet,
-            consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-            labore et dolore magna aliqua. In aliquam sem fringilla ut. Sed
-            egestas egestas fringilla phasellus faucibus scelerisque.
+            sub-header to explain use case.... 🚧 under construction 🚧
           </Typography>
           <Box maxWidth='sm' sx={{ display: 'flex', flexDirection: 'row' }}>
             <Button
@@ -71,11 +68,7 @@ function About() {
             </Button>
           </Box>
         </Box>
-        <Box
-          component='img'
-          sx={{ alignSelf: 'start', width: 'auto' }}
-          src={chart}
-        ></Box>
+        <Box component='img' sx={{ alignSelf: 'start', width: 'auto' }} src={chart}></Box>
       </Box>
       <Box
         sx={{
