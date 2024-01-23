@@ -8,6 +8,7 @@ from google.auth.transport import requests as g_requests
 from functools import wraps
 from datetime import datetime, timedelta
 import jwt
+from .auth import handle_refresh_token, handle_login
 
 
 auth = Blueprint("login", __name__)
@@ -133,18 +134,20 @@ def get_token():
             user = User(email=email, password="")
             db.session.add(user)
             db.session.commit()
-        jwt_token = jwt.encode(
-            {
-                "uid": user.id,
-                "exp": datetime.utcnow() + timedelta(seconds=5),
-            },
-            config["tokenSecret"],
-            algorithm="HS256",
-        )
-        session["id"] = user.id
-        resp = make_response("Logged In", 201)
-        resp.set_cookie("token", jwt_token)
-        return resp
+
+        # Handle login
+        return handle_login(user)
+        # jwt_token = jwt.encode(
+        #     {
+        #         "uid": user.id,
+        #         "exp": datetime.utcnow() + timedelta(seconds=5),
+        #     },
+        #     config["tokenSecret"],
+        #     algorithm="HS256",
+        # )
+        # session["id"] = user.id
+        # resp = make_response("Logged In", 201)
+        # resp.set_cookie("token", jwt_token)
 
     except ValueError:
         return jsonify({"msg": "Authentication Error"}), 500
@@ -199,3 +202,9 @@ def logout():
     """Deletes active session"""
     del session["id"]
     return redirect("/")
+
+
+@auth.route("/auth/refresh")
+def refresh():
+    refresh_token = request.cookies.get("refresh-token")
+    return handle_refresh_token(refresh_token)
