@@ -51,10 +51,11 @@ def create_app(debug: bool = False) -> Flask:
     from .resources.sensor_data import Sensor_Data
     from .resources.cell import Cell
     from .resources.session import Session_r
+
     from .auth.routes import auth
 
-    db.create_all()
-    db.session.commit()
+    # db.create_all()
+    # db.session.commit()
 
     api.add_resource(Health_Check, "/")
     api.add_resource(Cell_Data, "/cell/data/<int:cell_id>", endpoint="cell_data_ep")
