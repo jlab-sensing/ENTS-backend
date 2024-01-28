@@ -9,6 +9,7 @@ from google.auth.transport import requests as g_requests
 from functools import wraps
 from datetime import datetime, timedelta
 import jwt
+from .uuid_json_encoder import UUIDSerializer
 
 config = {
     "clientId": os.getenv("GOOGLE_CLIENT_ID"),
@@ -32,21 +33,25 @@ def handle_login(user: User):
         },
         config["accessToken"],
         algorithm="HS256",
+        json_encoder=UUIDSerializer,
     )
-    refresh_token = jwt.endcode(
+    refresh_token = jwt.encode(
         {
             "uid": user.id,
             "exp": datetime.utcnow() + timedelta(days=1),
         },
         config["refreshToken"],
         algorithm="HS256",
+        json_encoder=UUIDSerializer,
     )
     oauth_token = OAuthToken(
         user_id=user.id, access_token=access_token, refresh_token=refresh_token
     )
     oauth_token.save()
     resp = make_response(access_token, 201)
-    resp.set_cookie("token", refresh_token)
+    resp.set_cookie("jwt", refresh_token)
+    print("reponse", flush=True)
+    print(resp, flush=True)
     return resp
 
 

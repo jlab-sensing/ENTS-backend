@@ -9,6 +9,7 @@ from functools import wraps
 from datetime import datetime, timedelta
 import jwt
 from .auth import handle_refresh_token, handle_login
+from uuid import UUID
 
 
 auth = Blueprint("login", __name__)
@@ -22,7 +23,7 @@ config = {
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
     "redirectUrl": os.getenv("OAUTH_REDIRECT_URI"),
     "clientUrl": os.getenv("CLIENT_URL"),
-    "tokenSecret": os.getenv("TOKEN_SECRET"),
+    "accessToken": os.getenv("ACCESS_TOKEN_SECRET"),
     "tokenExpiration": 36000,
 }
 
@@ -47,23 +48,23 @@ tokenParams = {
 REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI")
 
 
-def token_required(f):
-    """Decorator for protecting resources from invalid/missing jwt tokens"""
+# def token_required(f):
+#     """Decorator for protecting resources from invalid/missing jwt tokens"""
 
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        try:
-            token = request.cookies.get("token")
-            if not token:
-                return jsonify({"msg": "Unauthorized"}), 401
-            data = jwt.decode(token, config["tokenSecret"], algorithms=["HS256"])
-            current_user = User.query.get(data["uid"])
-            return f(current_user, *args, **kwargs)
-        except Exception as e:
-            print(e)
-            return jsonify({"msg": "Unauthorized"}), 401
+#     @wraps(f)
+#     def decorated(*args, **kwargs):
+#         try:
+#             token = request.cookies.get("token")
+#             if not token:
+#                 return jsonify({"msg": "Unauthorized"}), 401
+#             data = jwt.decode(token, config["tokenSecret"], algorithms=["HS256"])
+#             current_user = User.query.get(data["uid"])
+#             return f(current_user, *args, **kwargs)
+#         except Exception as e:
+#             print(e)
+#             return jsonify({"msg": "Unauthorized"}), 401
 
-    return decorated
+#     return decorated
 
 
 def current_user():
@@ -74,7 +75,6 @@ def current_user():
 
 
 def query_string(params):
-    print("query", params, flush=True)
     return [k + "=" + v for k, v in params.items()]
 
 
@@ -115,8 +115,6 @@ def get_token():
                 "redirect_uri": config["redirectUrl"],
             },
         )
-        print("response: ", req, flush=True)
-        print("data: ", req.json(), flush=True)
         if req is None:
             return jsonify({"msg": "Auth error"}), 500
         token = req.json()["id_token"]
@@ -174,16 +172,30 @@ def auth_url():
 @auth.route("/auth/logged_in")
 def check_logged_in():
     """Checks if session is active"""
+    token = request.headers["Authorization"]
+    print("loggedin", token, flush=True)
     try:
-        token = request.cookies.get("token")
+        token = request.headers["Authorization"]
+        print("loggedin", token, flush=True)
         if not token:
             return jsonify({"loggedIn": False}, None), 200
         data = jwt.decode(token, config["tokenSecret"], algorithms=["HS256"])
-        user = User.query.get(data["uid"])
+        user = User.query.get(UUID(data["uid"]))
         return jsonify({"loggedIn": True}, user), 200
     except Exception as e:
         print(e, flush=True)
         return jsonify({"loggedIn": False}, None), 401
+    # old cookie based approach
+    # try:
+    #     token = request.cookies.get("token")
+    #     if not token:
+    #         return jsonify({"loggedIn": False}, None), 200
+    #     data = jwt.decode(token, config["tokenSecret"], algorithms=["HS256"])
+    #     user = User.query.get(data["uid"])
+    #     return jsonify({"loggedIn": True}, user), 200
+    # except Exception as e:
+    #     print(e, flush=True)
+    #     return jsonify({"loggedIn": False}, None), 401
 
     # try:
     #     user = current_user()
