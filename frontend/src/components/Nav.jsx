@@ -4,10 +4,11 @@ import MenuIcon from '@mui/icons-material/Menu';
 import DvIcon from './DvIcon';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../auth/AuthContextProvider';
+import useAuth from '../auth/hooks/useAuth';
 import { signIn } from '../services/auth';
 
 function Nav() {
-  const { loggedIn, user } = useContext(AuthContext);
+  const { auth, user, loggedIn } = useAuth();
   const navigate = useNavigate();
   const [anchorElNav, setAnchorElNav] = useState(null);
   const handleOpenNavMenu = (event) => {

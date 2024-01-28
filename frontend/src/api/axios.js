@@ -1,7 +1,7 @@
 import axios from 'axios';
 const RESOURCES_URL = `${process.env.PUBLIC_URL}/api`;
 
-export default axiosClient = axios.create({
+export default axios.create({
   baseURL: RESOURCES_URL,
 });
 
