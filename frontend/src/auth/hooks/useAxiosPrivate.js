@@ -7,12 +7,12 @@ const useAxiosPrivate = () => {
   const refresh = useRefreshToken();
   const { auth } = useAuth();
 
-  // interceptors to refresh
+  // interceptors to refresh token and add access token to header
   useEffect(() => {
     const requestIntercept = axiosPrivate.interceptors.request.use(
       (config) => {
         if (!config.headers['Authorization']) {
-          config.headers['Authroization'] = `Bearer ${auth?.accessToken}`;
+          config.headers['Authorization'] = `Bearer ${auth?.accessToken}`;
         }
         return config;
       },
@@ -36,7 +36,7 @@ const useAxiosPrivate = () => {
 
     // Clean up for interceptors
     return () => {
-      axiosPrivate.interceptors.request.eject(responseIntercept);
+      axiosPrivate.interceptors.request.eject(requestIntercept);
       axiosPrivate.interceptors.response.eject(responseIntercept);
     };
   }, [auth, refresh]);

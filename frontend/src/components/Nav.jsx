@@ -1,4 +1,4 @@
-import { React, useState, useContext } from 'react';
+import { React, useState, useContext, useEffect, useMemo } from 'react';
 import { AppBar, Button, Container, IconButton, Toolbar, Box, Typography, Menu, MenuItem } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import DvIcon from './DvIcon';
@@ -6,9 +6,11 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../auth/AuthContextProvider';
 import useAuth from '../auth/hooks/useAuth';
 import { signIn } from '../services/auth';
+import useAxiosPrivate from '../auth/hooks/useAxiosPrivate';
 
 function Nav() {
-  const { auth, user, loggedIn } = useAuth();
+  const { auth, user, setUser, loggedIn, setLoggedIn } = useAuth();
+  const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const [anchorElNav, setAnchorElNav] = useState(null);
   const handleOpenNavMenu = (event) => {
@@ -17,7 +19,22 @@ function Nav() {
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
   };
-  console.log(loggedIn, user);
+  useEffect(() => {
+    async function getUserData() {
+      try {
+        const user = await axiosPrivate.get(`${process.env.PUBLIC_URL}/user`).then((res) => res.data);
+        user && setUser(user);
+        user && setLoggedIn(true);
+        console.log(user, loggedIn);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    if (Object.keys(auth).length !== 0 && loggedIn) {
+      console.log('user data run', auth);
+      getUserData();
+    }
+  }, [loggedIn]);
 
   return (
     <AppBar position='static' elevation={0} sx={{ bgcolor: 'transparent', pl: '5%', pr: '5%' }}>

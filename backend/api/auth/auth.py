@@ -9,7 +9,9 @@ from google.auth.transport import requests as g_requests
 from functools import wraps
 from datetime import datetime, timedelta
 import jwt
-from .uuid_json_encoder import UUIDSerializer
+from .json_encoder import UUIDSerializer
+from flask_restful import abort
+from uuid import UUID
 
 config = {
     "clientId": os.getenv("GOOGLE_CLIENT_ID"),
@@ -23,6 +25,31 @@ config = {
     "refreshToken": os.getenv("REFRESH_TOKEN_SECRET"),
     "tokenExpiration": 36000,
 }
+
+
+def authenticate(f):
+    """Decorator for protecting resources from invalid/missing jwt tokens"""
+
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        token = request.headers["Authorization"]
+        # remove bearer
+        token = token.split(" ")[1]
+        print("loggedin", token, flush=True)
+        # try:
+        print("loggedin", token, flush=True)
+        if not token:
+            return jsonify({"loggedIn": False}, None), 200
+        data = jwt.decode(token, config["accessToken"], algorithms=["HS256"])
+        user = User.query.get(UUID(data["uid"]))
+        if user:
+            return f(user, *args, **kwargs)
+        return abort(401)
+        # except Exception as e:
+        #     print(e, flush=True)
+        #     return abort(401)
+
+    return wrapper
 
 
 def handle_login(user: User):

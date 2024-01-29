@@ -1,11 +1,11 @@
 import { React, useContext, useRef, useEffect } from 'react';
-import { AuthContext } from './AuthContextProvider';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../api/axios';
+import useAuth from './hooks/useAuth';
+
 const Callback = () => {
   const called = useRef(false);
-  const { checkLoginState, loggedIn } = useContext(AuthContext);
-  console.log('Calledback', loggedIn);
+  const { setAuth, loggedIn, setLoggedIn } = useAuth();
   const navigate = useNavigate();
   useEffect(() => {
     (async () => {
@@ -13,8 +13,11 @@ const Callback = () => {
         try {
           if (called.current) return; // prevent rerender caused by StrictMode
           called.current = true;
-          res = await axios.get(`${process.env.PUBLIC_URL}/api/auth/token${window.location.search}`);
-          checkLoginState();
+          const data = await axios
+            .get(`${process.env.PUBLIC_URL}/auth/token${window.location.search}`)
+            .then((resp) => resp.data);
+          setAuth({ accessToken: data });
+          setLoggedIn(true);
           navigate('/');
         } catch (err) {
           console.error(err);
@@ -24,7 +27,7 @@ const Callback = () => {
         navigate('/');
       }
     })();
-  }, [checkLoginState, loggedIn, navigate]);
+  }, [loggedIn, navigate]);
   return <></>;
 };
 

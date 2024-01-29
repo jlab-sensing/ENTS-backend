@@ -15,5 +15,6 @@ class User(db.Model):
     def set_refresh_token(self, refresh_token):
         self.refresh_token = refresh_token
 
-    def get_user_id(self):
-        return self.id
+    @staticmethod
+    def get_user(id):
+        return User.query.filter_by(id=id).first()

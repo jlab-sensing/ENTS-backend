@@ -51,6 +51,7 @@ def create_app(debug: bool = False) -> Flask:
     from .resources.sensor_data import Sensor_Data
     from .resources.cell import Cell
     from .resources.session import Session_r
+    from .resources.users_data import User_Data
 
     from .auth.routes import auth
 
@@ -68,6 +69,7 @@ def create_app(debug: bool = False) -> Flask:
     api.add_resource(Teros_Data_Protobuf, "/teros-proto", "/teros-proto/<int:cell_id>")
     api.add_resource(Sensor_Data, "/sensor", "/sensor/<int:sensor_id>")
     api.add_resource(Session_r, "/session")
+    api.add_resource(User_Data, "/user")
     app.register_blueprint(auth, url_prefix="")
 
     # with app.app_context():
