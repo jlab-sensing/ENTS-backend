@@ -29,11 +29,9 @@ function Nav() {
         console.error(err);
       }
     }
-    if (Object.keys(auth).length !== 0 && loggedIn) {
-      console.log('user data run', auth);
-      getUserData();
-    }
-  }, [loggedIn]);
+    console.log('user data run', auth);
+    getUserData();
+  }, []);
 
   return (
     <AppBar position='static' elevation={0} sx={{ bgcolor: 'transparent', pl: '5%', pr: '5%' }}>
