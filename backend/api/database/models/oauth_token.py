@@ -17,14 +17,15 @@ class OAuthToken(db.Model):
     )
     access_token = db.Column(db.String(255), unique=True, nullable=False)
     refresh_token = db.Column(db.String(255), index=True)
+    updated_at = db.Column(
+        db.DateTime, server_default=db.func.now(), onupdate=db.func.now()
+    )
+
+    __mapper_args__ = {"eager_defaults": True}
     user = db.relationship("User")
 
     def delete(self):
         db.session.delete(self)
-        db.session.commit()
-
-    def update(self):
-        db.session.merge(self)
         db.session.commit()
 
     def save(self):

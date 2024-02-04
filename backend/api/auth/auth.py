@@ -58,7 +58,7 @@ def handle_login(user: User):
     access_token = jwt.encode(
         {
             "uid": user.id,
-            "exp": datetime.utcnow() + timedelta(seconds=60),
+            "exp": datetime.utcnow() + timedelta(seconds=30),
         },
         config["accessToken"],
         algorithm="HS256",
@@ -67,22 +67,26 @@ def handle_login(user: User):
     refresh_token = jwt.encode(
         {
             "uid": user.id,
-            "exp": datetime.utcnow() + timedelta(days=1),
+            "exp": datetime.utcnow() + timedelta(seconds=30),
         },
         config["refreshToken"],
         algorithm="HS256",
         json_encoder=UUIDSerializer,
     )
-
-    found_token = (
-        db.session.query(User).join(OAuthToken, OAuthToken.user_id == User.id).first()
-    )
-    oauth_token = OAuthToken(
-        user_id=user.id, access_token=access_token, refresh_token=refresh_token
-    )
-    if found_token is None:
-        oauth_token.save()
-    oauth_token.update()
+    user.set_refresh_token(refresh_token)
+    # found_token = (
+    #     db.session.query(User).join(OAuthToken, OAuthToken.user_id == User.id).first()
+    # )
+    # print("found", found_token, flush=True)
+    # oauth_token = OAuthToken(
+    #     user_id=user.id, access_token=access_token, refresh_token=refresh_token
+    # )
+    # if found_token is None:
+    #     print("not found saving", flush=True)
+    #     oauth_token.save()
+    # else:
+    #     oauth_token.refresh_token = refresh_token
+    #     db.session.commit()
     resp = make_response(access_token, 201)
     resp.set_cookie("refresh-token", refresh_token)
     print("reponse", flush=True)

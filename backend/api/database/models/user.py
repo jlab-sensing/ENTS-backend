@@ -7,9 +7,7 @@ import uuid
 class User(db.Model):
     __tablename__ = "user"
 
-    id = db.Column(
-        UUID(as_uuid=True), primary_key=True, unique=True, default=uuid.uuid4
-    )
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email: str = db.Column(db.String(345), unique=True)
     password = db.Column(db.String(72), nullable=False)
 
@@ -18,7 +16,8 @@ class User(db.Model):
         token.refresh_token = refresh_token
         if not token:
             token.save()
-        token.update()
+        else:
+            db.session.commit()
 
     def clear_refresh_token(self):
         token = OAuthToken.query.filter(OAuthToken.user_id == self.id).first()
