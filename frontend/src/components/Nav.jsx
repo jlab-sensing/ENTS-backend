@@ -71,14 +71,9 @@ function Nav() {
                   <Typography textAlign='center'>Sign In</Typography>
                 </MenuItem>
               ) : (
-                <>
-                  <MenuItem key='Name'>
-                    <Typography textAlign='center'>Hi, {user?.email}</Typography>
-                  </MenuItem>
-                  <MenuItem key='Logout' onClick={() => logout()}>
-                    <Typography textAlign='center'></Typography>
-                  </MenuItem>
-                </>
+                <MenuItem key='Logout' onClick={() => logout()}>
+                  <Typography textAlign='center'></Typography>
+                </MenuItem>
               )}
             </Menu>
           </Box>
