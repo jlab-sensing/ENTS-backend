@@ -20,18 +20,28 @@ function Nav() {
     setAnchorElNav(null);
   };
   useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
     async function getUserData() {
       try {
-        const user = await axiosPrivate.get(`${process.env.PUBLIC_URL}/user`).then((res) => res.data);
-        user && setUser(user);
-        user && setLoggedIn(true);
+        const user = await axiosPrivate
+          .get(`${process.env.PUBLIC_URL}/user`, {
+            signal: controller.signal,
+          })
+          .then((res) => res.data);
+        isMounted && user && setUser(user);
+        isMounted && user && setLoggedIn(true);
         console.log(user, loggedIn);
       } catch (err) {
         console.error(err);
       }
     }
-    console.log('user data run', auth);
     getUserData();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, []);
 
   return (
