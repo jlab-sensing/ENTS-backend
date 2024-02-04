@@ -210,11 +210,12 @@ def check_logged_in():
     #     return jsonify({"loggedIn": False}, None), 500
 
 
-@auth.route("/logout")
+@auth.route("/auth/logout")
 def logout():
-    """Deletes active session"""
-    del session["id"]
-    return redirect("/")
+    # """Deletes active session"""
+    # del session["id"]
+    refresh_token = request.cookies.get("refresh-token")
+    return handle_logout(refresh_token)
 
 
 @auth.route("/auth/refresh")

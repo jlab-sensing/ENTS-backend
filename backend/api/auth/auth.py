@@ -155,7 +155,9 @@ def handle_refresh_token(refresh_token):
 def handle_logout(refresh_token):
     if refresh_token is None:
         return jsonify({"msg": "No content"}), 204
-    found_user = User.query.filter(User.refresh_token == refresh_token)
+    found_user = (
+        User.query.join(OAuthToken).filter(User.id == OAuthToken.user_id).first()
+    )
 
     # clear old refresh token
     if not found_user:

@@ -4,7 +4,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 import DvIcon from './DvIcon';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../auth/hooks/useAuth';
-import { signIn } from '../services/auth';
+import { signIn, logout } from '../services/auth';
+
 import useAxiosPrivate from '../auth/hooks/useAxiosPrivate';
 
 function Nav() {
@@ -70,9 +71,14 @@ function Nav() {
                   <Typography textAlign='center'>Sign In</Typography>
                 </MenuItem>
               ) : (
-                <MenuItem key='Name'>
-                  <Typography textAlign='center'>Hi, {user?.email}</Typography>
-                </MenuItem>
+                <>
+                  <MenuItem key='Name'>
+                    <Typography textAlign='center'>Hi, {user?.email}</Typography>
+                  </MenuItem>
+                  <MenuItem key='Logout' onClick={() => logout()}>
+                    <Typography textAlign='center'></Typography>
+                  </MenuItem>
+                </>
               )}
             </Menu>
           </Box>
@@ -102,9 +108,14 @@ function Nav() {
                 Sign in
               </Button>
             ) : (
-              <Button key='Sign-in' onClick={() => {}} sx={{ my: 2, color: 'black', display: 'block' }}>
-                Hi, {user?.email}
-              </Button>
+              <>
+                <Button key='Sign-in' onClick={() => {}} sx={{ my: 2, color: 'black', display: 'block' }}>
+                  Hi, {user?.email}
+                </Button>
+                <Button key='Logout' onClick={() => logout()} sx={{ my: 2, color: 'black', display: 'block' }}>
+                  Logout
+                </Button>
+              </>
             )}
           </Box>
         </Toolbar>
