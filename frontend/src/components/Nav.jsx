@@ -38,6 +38,7 @@ function Nav() {
     }
     getUserData();
 
+    // Clean up
     return () => {
       isMounted = false;
       controller.abort();
