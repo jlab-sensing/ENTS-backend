@@ -32,22 +32,24 @@ def authenticate(f):
 
     @wraps(f)
     def wrapper(*args, **kwargs):
-        token = request.headers["Authorization"]
-        # remove bearer
-        token = token.split(" ")[1]
-        print("loggedin", token, flush=True)
-        # try:
-        print("loggedin", token, flush=True)
-        if not token:
-            return jsonify({"loggedIn": False}, None), 200
-        data = jwt.decode(token, config["accessToken"], algorithms=["HS256"])
-        user = User.query.get(UUID(data["uid"]))
-        if user:
-            return f(user, *args, **kwargs)
-        return abort(401)
-        # except Exception as e:
-        #     print(e, flush=True)
-        #     return abort(401)
+        try:
+            token = request.headers["Authorization"]
+            # remove bearer
+
+            token = token.split(" ")[1]
+            print("loggedin", token, flush=True)
+
+            print("loggedin", token, flush=True)
+            if not token:
+                return jsonify({"loggedIn": False}, None), 200
+            data = jwt.decode(token, config["accessToken"], algorithms=["HS256"])
+            user = User.query.get(UUID(data["uid"]))
+            if user:
+                return f(user, *args, **kwargs)
+            return abort(500)
+        except Exception as e:
+            print(e, flush=True)
+            return abort(403)
 
     return wrapper
 
@@ -76,21 +78,21 @@ def handle_login(user: User):
     )
     oauth_token.save()
     resp = make_response(access_token, 201)
-    resp.set_cookie("jwt", refresh_token)
+    resp.set_cookie("refresh-token", refresh_token)
     print("reponse", flush=True)
     print(resp, flush=True)
     return resp
 
 
 def handle_refresh_token(refresh_token):
-    found_user = (
-        db.session.query(User)
-        .join(OAuthToken, OAuthToken.user_id == User.id)
-        .filter(OAuthToken.refresh_token == refresh_token)
-    )
     try:
-        data = jwt.decode(refresh_token, config["tokenSecret"], algorithms="HS256")
-        user = User.query.get(data["uid"])
+        found_user = (
+            db.session.query(User)
+            .join(OAuthToken, OAuthToken.user_id == User.id)
+            .filter(OAuthToken.refresh_token == refresh_token)
+        )
+        data = jwt.decode(refresh_token, config["refreshToken"], algorithms="HS256")
+        user = User.query.get(UUID(data["uid"]))
         if user.id != found_user.id:
             return make_response(jsonify({"msg": "Unauthorized user"}), 403)
         access_token = jwt.encode(
@@ -102,11 +104,72 @@ def handle_refresh_token(refresh_token):
             algorithm="HS256",
         )
         resp = make_response(access_token, 201)
+        resp.set_cookie(
+            "refresh-token",
+            refresh_token,
+            secure=True,
+            httponly=True,
+            samesite="None",
+            expires=24 * 60 * 60 * 1000,
+        )
         return resp
     except jwt.exceptions.InvalidTokenError as e:
-        print(repr(e))
+        print(repr(e), flush=True)
         return make_response(jsonify({"msg": "Invalid token"}), 403)
     except Exception as e:
         print("WARNING NORMAL EXCEPTION CAUGHT")
-        print(repr(e))
+        print(repr(e), flush=True)
         return jsonify({"msg": "Unauthorized user"}), 403
+
+
+#  const handleLogout = async (req, res) => {
+#     // On client, also delete the accessToken
+
+#     const cookies = req.cookies;
+#     if (!cookies?.jwt) return res.sendStatus(204); //No content
+#     const refreshToken = cookies.jwt;
+
+#     // Is refreshToken in db?
+#     const foundUser = usersDB.users.find(person => person.refreshToken === refreshToken);
+#     if (!foundUser) {
+#         res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });
+#         return res.sendStatus(204);
+#     }
+
+#     // Delete refreshToken in db
+#     const otherUsers = usersDB.users.filter(person => person.refreshToken !== foundUser.refreshToken);
+#     const currentUser = { ...foundUser, refreshToken: '' };
+#     usersDB.setUsers([...otherUsers, currentUser]);
+#     await fsPromises.writeFile(
+#         path.join(__dirname, '..', 'model', 'users.json'),
+#         JSON.stringify(usersDB.users)
+#     );
+
+#     res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });
+#     res.sendStatus(204);
+# }
+
+# module.exports = {handleLogout}
+
+
+def handle_logout(refresh_token):
+    if refresh_token is None:
+        return jsonify({"msg": "No content"}), 204
+    found_user = User.query.filter(User.refresh_token == refresh_token)
+
+    # clear old refresh token
+    if not found_user:
+        resp = make_response(jsonify({"msg": "No content"}), 204)
+        resp.set_cookie(
+            "refresh-token", "", secure=True, httponly=True, samesite="None", expires=0
+        )
+        return resp
+
+    # delete refresh token
+    found_user.clear_refresh_token()
+
+    resp = make_response(jsonify({"msg": "No content"}), 204)
+    resp.set_cookie(
+        "refresh-token", "", secure=True, httponly=True, samesite="None", expires=0
+    )
+    return resp

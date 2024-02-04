@@ -8,9 +8,9 @@ from google.auth.transport import requests as g_requests
 from functools import wraps
 from datetime import datetime, timedelta
 import jwt
-from .auth import handle_refresh_token, handle_login
-from uuid import UUID
 
+from .auth import handle_refresh_token, handle_login, handle_logout
+from uuid import UUID
 
 auth = Blueprint("login", __name__)
 
@@ -135,6 +135,7 @@ def get_token():
 
         # Handle login
         return handle_login(user)
+
         # jwt_token = jwt.encode(
         #     {
         #         "uid": user.id,
