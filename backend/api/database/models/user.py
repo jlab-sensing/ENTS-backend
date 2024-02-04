@@ -13,10 +13,13 @@ class User(db.Model):
 
     def set_refresh_token(self, refresh_token):
         token = OAuthToken.query.filter(OAuthToken.user_id == self.id).first()
-        token.refresh_token = refresh_token
         if not token:
+            token = OAuthToken(
+                user_id=self.id, access_token="", refresh_token=refresh_token
+            )
             token.save()
         else:
+            token.refresh_token = refresh_token
             db.session.commit()
 
     def clear_refresh_token(self):

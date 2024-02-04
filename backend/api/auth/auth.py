@@ -67,28 +67,22 @@ def handle_login(user: User):
     refresh_token = jwt.encode(
         {
             "uid": user.id,
-            "exp": datetime.utcnow() + timedelta(seconds=30),
+            "exp": datetime.utcnow() + timedelta(days=1),
         },
         config["refreshToken"],
         algorithm="HS256",
         json_encoder=UUIDSerializer,
     )
     user.set_refresh_token(refresh_token)
-    # found_token = (
-    #     db.session.query(User).join(OAuthToken, OAuthToken.user_id == User.id).first()
-    # )
-    # print("found", found_token, flush=True)
-    # oauth_token = OAuthToken(
-    #     user_id=user.id, access_token=access_token, refresh_token=refresh_token
-    # )
-    # if found_token is None:
-    #     print("not found saving", flush=True)
-    #     oauth_token.save()
-    # else:
-    #     oauth_token.refresh_token = refresh_token
-    #     db.session.commit()
     resp = make_response(access_token, 201)
-    resp.set_cookie("refresh-token", refresh_token)
+    resp.set_cookie(
+        "refresh-token",
+        refresh_token,
+        secure=True,
+        httponly=True,
+        samesite="None",
+        expires=datetime.utcnow() + timedelta(days=1),
+    )
     print("reponse", flush=True)
     print(resp, flush=True)
     return resp
@@ -117,24 +111,25 @@ def handle_refresh_token(refresh_token):
             algorithm="HS256",
             json_encoder=UUIDSerializer,
         )
-        # refresh_token = jwt.encode(
-        #     {
-        #         "uid": user.id,
-        #         "exp": datetime.utcnow() + timedelta(days=1),
-        #     },
-        #     config["refreshToken"],
-        #     algorithm="HS256",
-        #     json_encoder=UUIDSerializer,
-        # )
+        refresh_token = jwt.encode(
+            {
+                "uid": user.id,
+                "exp": datetime.utcnow() + timedelta(days=1),
+            },
+            config["refreshToken"],
+            algorithm="HS256",
+            json_encoder=UUIDSerializer,
+        )
+        user.set_refresh_token(refresh_token)
         resp = make_response(access_token, 201)
-        # resp.set_cookie(
-        #     "refresh-token",
-        #     refresh_token,
-        #     secure=True,
-        #     httponly=True,
-        #     samesite="None",
-        #     expires=24 * 60 * 60 * 1000,
-        # )
+        resp.set_cookie(
+            "refresh-token",
+            refresh_token,
+            secure=True,
+            httponly=True,
+            samesite="None",
+            expires=datetime.utcnow() + timedelta(days=1),
+        )
         return resp
     except jwt.exceptions.InvalidTokenError as e:
         print(repr(e), flush=True)
