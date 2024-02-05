@@ -34,6 +34,7 @@ export default function VwcChart({ data }) {
       ecAxis: {
         position: 'right',
         beginAtZero: true,
+        suggestedMax: 650,
         title: {
           display: true,
           text: 'EC (µS/cm)',
@@ -42,7 +43,7 @@ export default function VwcChart({ data }) {
       vwcAxis: {
         position: 'left',
         beginAtZero: true,
-        suggestedMax: 0.9,
+        suggestedMax: 0.65,
         title: {
           display: true,
           text: 'VWC (%)',
