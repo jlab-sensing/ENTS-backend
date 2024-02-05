@@ -39,6 +39,7 @@ export default function VwcChart({ data }) {
           display: true,
           text: 'EC (µS/cm)',
         },
+        min: 0,
       },
       vwcAxis: {
         position: 'left',
