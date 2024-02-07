@@ -5,7 +5,7 @@ services:
     build:
       context: ./backend
       dockerfile: ./Dockerfile
-      target: production
+      target: development
     image: dirtviz-backend
     environment:
       DB_USER: dirtviz
@@ -13,8 +13,9 @@ services:
       DB_HOST: postgresql
       DB_PORT: 5432
       DB_DATABASE: dirtviz
-    env_file:
-      - ./.env
+    # uncomment to run local .env, comment for testing
+    # env_file:
+    #   - ./.env
     ports:
       - '8000:8000'
     depends_on:
@@ -26,7 +27,7 @@ services:
     build:
       context: ./frontend
       dockerfile: ./Dockerfile
-      target: production
+      target: development
     image: dirtviz-frontend
     ports:
       - '3000:80'
