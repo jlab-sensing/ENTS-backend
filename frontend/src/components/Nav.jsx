@@ -29,8 +29,10 @@ function Nav() {
             signal: controller.signal,
           })
           .then((res) => res.data);
-        isMounted && user && setUser(user);
-        isMounted && user && setLoggedIn(true);
+        if (isMounted && user) {
+          setUser(user);
+          setLoggedIn(true);
+        }
       } catch (err) {
         console.error(err);
       }
@@ -42,7 +44,7 @@ function Nav() {
       isMounted = false;
       controller.abort();
     };
-  }, []);
+  }, [axiosPrivate, setLoggedIn, setUser]);
 
   return (
     <AppBar position='static' elevation={0} sx={{ bgcolor: 'transparent', pl: '5%', pr: '5%' }}>

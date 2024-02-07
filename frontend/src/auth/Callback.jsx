@@ -27,7 +27,7 @@ const Callback = () => {
         navigate('/');
       }
     })();
-  }, [loggedIn, navigate]);
+  }, [loggedIn, setAuth, setLoggedIn, navigate]);
   return <></>;
 };
 
