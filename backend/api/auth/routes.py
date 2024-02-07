@@ -1,5 +1,5 @@
 import os
-from flask import Blueprint, request, session, redirect, jsonify, make_response
+from flask import Blueprint, request, session, jsonify
 from ...api import db
 from ..database.models.user import User
 import requests
@@ -46,25 +46,6 @@ tokenParams = {
     "redirect_uri": config["redirectUrl"],
 }
 REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI")
-
-
-# def token_required(f):
-#     """Decorator for protecting resources from invalid/missing jwt tokens"""
-
-#     @wraps(f)
-#     def decorated(*args, **kwargs):
-#         try:
-#             token = request.cookies.get("token")
-#             if not token:
-#                 return jsonify({"msg": "Unauthorized"}), 401
-#             data = jwt.decode(token, config["tokenSecret"], algorithms=["HS256"])
-#             current_user = User.query.get(data["uid"])
-#             return f(current_user, *args, **kwargs)
-#         except Exception as e:
-#             print(e)
-#             return jsonify({"msg": "Unauthorized"}), 401
-
-#     return decorated
 
 
 def current_user():
@@ -136,18 +117,6 @@ def get_token():
         # Handle login
         return handle_login(user)
 
-        # jwt_token = jwt.encode(
-        #     {
-        #         "uid": user.id,
-        #         "exp": datetime.utcnow() + timedelta(seconds=5),
-        #     },
-        #     config["tokenSecret"],
-        #     algorithm="HS256",
-        # )
-        # session["id"] = user.id
-        # resp = make_response("Logged In", 201)
-        # resp.set_cookie("token", jwt_token)
-
     except ValueError:
         return jsonify({"msg": "Authentication Error"}), 500
     except requests.exceptions.ConnectionError as errc:
@@ -186,34 +155,11 @@ def check_logged_in():
     except Exception as e:
         print(e, flush=True)
         return jsonify({"loggedIn": False}, None), 401
-    # old cookie based approach
-    # try:
-    #     token = request.cookies.get("token")
-    #     if not token:
-    #         return jsonify({"loggedIn": False}, None), 200
-    #     data = jwt.decode(token, config["tokenSecret"], algorithms=["HS256"])
-    #     user = User.query.get(data["uid"])
-    #     return jsonify({"loggedIn": True}, user), 200
-    # except Exception as e:
-    #     print(e, flush=True)
-    #     return jsonify({"loggedIn": False}, None), 401
-
-    # try:
-    #     user = current_user()
-    #     if not user:
-    #         return jsonify({"loggedIn": False}, None), 200
-    #     session["id"] = user.id
-    #     print(user, flush=True)
-    #     return jsonify({"loggedIn": True}, user), 200
-    # except Exception as e:
-    #     print(e)
-    #     return jsonify({"loggedIn": False}, None), 500
 
 
 @auth.route("/auth/logout")
 def logout():
-    # """Deletes active session"""
-    # del session["id"]
+    # """Deletes active tokens"""
     refresh_token = request.cookies.get("refresh-token")
     return handle_logout(refresh_token)
 

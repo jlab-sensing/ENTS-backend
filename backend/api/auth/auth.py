@@ -1,11 +1,8 @@
 import os
-from flask import Blueprint, request, session, redirect, jsonify, make_response
+from flask import request, jsonify, make_response
 from ...api import db
 from ..database.models.user import User
 from ..database.models.oauth_token import OAuthToken
-import requests
-from google.oauth2 import id_token
-from google.auth.transport import requests as g_requests
 from functools import wraps
 from datetime import datetime, timedelta
 import jwt
@@ -38,7 +35,6 @@ def authenticate(f):
 
             token = token.split(" ")[1]
 
-            print("loggedin", token, flush=True)
             if token is None:
                 return jsonify({"loggedIn": False}, None), 200
             data = jwt.decode(token, config["accessToken"], algorithms=["HS256"])
@@ -83,13 +79,10 @@ def handle_login(user: User):
         samesite="None",
         expires=datetime.utcnow() + timedelta(days=1),
     )
-    print("reponse", flush=True)
-    print(resp, flush=True)
     return resp
 
 
 def handle_refresh_token(refresh_token):
-    print("handling refresh-token", refresh_token)
     try:
         found_user = (
             db.session.query(User)
@@ -99,7 +92,6 @@ def handle_refresh_token(refresh_token):
         )
         data = jwt.decode(refresh_token, config["refreshToken"], algorithms="HS256")
         user = User.query.get(UUID(data["uid"]))
-        print("found", user.id)
         if user.id != found_user.id:
             return make_response(jsonify({"msg": "Unauthorized user"}), 403)
         access_token = jwt.encode(

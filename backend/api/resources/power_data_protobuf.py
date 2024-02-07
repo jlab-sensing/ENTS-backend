@@ -15,25 +15,7 @@ p_in = PInput()
 
 class Power_Data_Protobuf(Resource):
     def post(self):
-        # json_data = request.json
-        # power_data_obj = p_in.load(json_data)
-        # logger_name = power_data_obj["logger"]
-        # cell_name = power_data_obj["cell"]
-        # ts = datetime.fromtimestamp(json_data["ts"])
-        # voltage = power_data_obj["v"]
-        # current = power_data_obj["i"]
-        # meas_dict = {
-        #     "type": "power",
-        #     "loggerId": ...,
-        #     "cellId": ...,
-        #     "ts": ...,
-        #     "power": ...,
-        #     "current": ...,
-        # }
-
         meas_power = decode(request.data)
-        print(meas_power, flush=True)
-        print(meas_power.items(), flush=True)
 
         new_pwr_data = PowerData.add_protobuf_power_data(
             meas_power["loggerId"],

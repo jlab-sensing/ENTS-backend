@@ -15,30 +15,7 @@ t_in = TInput()
 
 class Teros_Data_Protobuf(Resource):
     def post(self):
-        # json_data = request.json
-        # teros_data_obj = t_in.load(json_data)
-        # cell_name = teros_data_obj["cell"]
-        # ts = datetime.fromtimestamp(json_data["ts"])
-        # vwc = teros_data_obj["vwc"]
-        # raw_vwc = teros_data_obj["raw_vwc"]
-        # temp = teros_data_obj["temp"]
-        # ec = teros_data_obj["ec"]
-        # water_pot = teros_data_obj["water_pot"]
-
-        # meas_dict = {
-        #     "type": "teros12",
-        #     "loggerId": ...,
-        #     "cellId": ...,
-        #     "ts": ...,
-        #     "vwcRaw": ...,
-        #     "vwcAdj": ...,
-        #     "temp": ...,
-        #     "ec": ...
-        # }
-
         meas_teros = decode(request.data)
-        print(meas_teros, flush=True)
-        print(meas_teros.items(), flush=True)
 
         new_pwr_data = TEROSData.add_protobuf_power_data(
             meas_teros["cellId"],
