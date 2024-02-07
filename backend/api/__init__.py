@@ -56,6 +56,7 @@ def create_app(debug: bool = False) -> Flask:
     from .auth.routes import auth
 
     api.add_resource(Health_Check, "/")
+    api.add_resource(Cell, "/api/cell/")
     api.add_resource(Cell_Data, "/cell/data/<int:cell_id>", endpoint="cell_data_ep")
     api.add_resource(Cell_Id, "/cell/id")
     api.add_resource(Power_Data, "/power/", "/power/<int:cell_id>")
