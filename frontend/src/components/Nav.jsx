@@ -9,7 +9,7 @@ import { signIn, logout } from '../services/auth';
 import useAxiosPrivate from '../auth/hooks/useAxiosPrivate';
 
 function Nav() {
-  const { auth, user, setUser, loggedIn, setLoggedIn } = useAuth();
+  const { user, setUser, loggedIn, setLoggedIn } = useAuth();
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const [anchorElNav, setAnchorElNav] = useState(null);
