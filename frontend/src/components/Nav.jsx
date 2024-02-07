@@ -31,7 +31,6 @@ function Nav() {
           .then((res) => res.data);
         isMounted && user && setUser(user);
         isMounted && user && setLoggedIn(true);
-        console.log(user, loggedIn);
       } catch (err) {
         console.error(err);
       }
