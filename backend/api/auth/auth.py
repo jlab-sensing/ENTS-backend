@@ -54,7 +54,7 @@ def handle_login(user: User):
     access_token = jwt.encode(
         {
             "uid": user.id,
-            "exp": datetime.utcnow() + timedelta(seconds=30),
+            "exp": datetime.utcnow() + timedelta(minutes=15),
         },
         config["accessToken"],
         algorithm="HS256",
@@ -97,7 +97,7 @@ def handle_refresh_token(refresh_token):
         access_token = jwt.encode(
             {
                 "uid": user.id,
-                "exp": datetime.utcnow() + timedelta(seconds=60),
+                "exp": datetime.utcnow() + timedelta(minutes=15),
             },
             config["accessToken"],
             algorithm="HS256",
