@@ -1,12 +1,10 @@
 import os
-from flask import Blueprint, request, session, jsonify
+from flask import Blueprint, request, jsonify
 from ...api import db
 from ..database.models.user import User
 import requests
 from google.oauth2 import id_token
 from google.auth.transport import requests as g_requests
-from functools import wraps
-from datetime import datetime, timedelta
 import jwt
 
 from .auth import handle_refresh_token, handle_login, handle_logout

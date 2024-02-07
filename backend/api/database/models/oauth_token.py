@@ -1,11 +1,5 @@
 from ..models import db
 from sqlalchemy.dialects.postgresql import UUID
-import time
-from authlib.integrations.sqla_oauth2 import (
-    OAuth2ClientMixin,
-    OAuth2AuthorizationCodeMixin,
-    OAuth2TokenMixin,
-)
 
 
 class OAuthToken(db.Model):
