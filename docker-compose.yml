@@ -5,7 +5,7 @@ services:
     build:
       context: ./backend
       dockerfile: ./Dockerfile
-      target: development
+      target: production
     image: dirtviz-backend
     environment:
       DB_USER: dirtviz
@@ -27,7 +27,7 @@ services:
     build:
       context: ./frontend
       dockerfile: ./Dockerfile
-      target: development
+      target: production
     image: dirtviz-frontend
     ports:
       - '3000:80'
