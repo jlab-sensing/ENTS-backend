@@ -48,32 +48,8 @@ tokenParams = {
 REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI")
 
 
-def current_user():
-    if "id" in session:
-        uid = session["id"]
-        return User.query.get(uid)
-    return None
-
-
 def query_string(params):
     return [k + "=" + v for k, v in params.items()]
-
-
-def split_by_crlf(s):
-    return [v for v in s.splitlines() if v]
-
-
-def logged_in():
-    def decorator(func):
-        @wraps(func)
-        def authorize(*args, **kwargs):
-            if current_user() is None:
-                return jsonify({"msg": "Unauthorized"}), 401
-            return func(*args, **kwargs)
-
-        return authorize
-
-    return decorator
 
 
 @auth.route("/auth/token")
