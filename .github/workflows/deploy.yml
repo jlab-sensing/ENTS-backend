@@ -122,6 +122,13 @@ jobs:
               --build-arg DB_PORT="${{ secrets.DB_PORT }}" \
               --build-arg DB_USER="${{ secrets.DB_USER }}" \
               --build-arg DB_DATABASE="${{ github.ref_name }}" \
+              --build-arg SECRET_KEY="${{ secrets.SECRET_KEY }}" \
+              --build-arg ACCESS_TOKEN_SECRET="${{ secrets.ACCESS_TOKEN_SECRET }}" \
+              --build-arg REFRESH_TOKEN_SECRET="${{ secrets.REFRESH_TOKEN_SECRET }}" \
+              --build-arg GOOGLE_CLIENT_ID="${{ github.GOOGLE_CLIENT_ID }}" \
+              --build-arg GOOGLE_CLIENT_SECRET="${{ github.GOOGLE_CLIENT_SECRET }}" \
+              --build-arg CLIENT_URL="${{ secrets.CLIENT_URL }}" \
+              --build-arg OAUTH_REDIRECT_URI="${{ secrets.OAUTH_REDIRECT_URI }}" \
               -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
