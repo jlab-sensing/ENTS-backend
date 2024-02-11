@@ -13,23 +13,7 @@ get_sensor_data_schema = GetSensorDataSchema()
 
 class Sensor_Data(Resource):
     def post(self):
-        # meas_sensor = {
-        #     "type": "sensor_leaf",
-        #     "cellId": "1",
-        #     "data": {"power": 3, "current": 6},
-        #     "data_type": {"power": "float", "current": "int"},
-        #     "ts": 1705176162,
-        # }
-        # meas_sensor = {
-        #     "type": "sensor_leaf",
-        #     "cellId": "33",
-        #     "data": {"leaf_wetness": 3},
-        #     "data_type": {"leaf_wetness": "int"},
-        #     "ts": 1705176162,
-        # }
         meas_sensor = decode(request.data)
-        print(meas_sensor, flush=True)
-        print(meas_sensor.items(), flush=True)
 
         for measurement, data in meas_sensor["data"].items():
             res = Sensor.add_data(

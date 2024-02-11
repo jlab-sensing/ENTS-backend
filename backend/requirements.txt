@@ -15,5 +15,12 @@ flask_sqlalchemy
 Flask-Migrate
 python-dateutil
 pandas
+Authlib
+flask-bcrypt
+flask-session
+redis
+PyJWT
+Requests
+google-auth
 --extra-index-url https://test.pypi.org/simple/ 
 soil-power-sensor-protobuf

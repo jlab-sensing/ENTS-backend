@@ -16,11 +16,11 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '^/api': {
-          target: 'http://backend:8000',
+          target: 'http://backend:8000/',
           changeOrigin: true,
           secure: false,
           ws: true,
-          rewrite: (path) => path.replace('^/api', ''),
+          rewrite: (path) => path.replace(/^\/api/, ''),
         },
       },
       watch: {

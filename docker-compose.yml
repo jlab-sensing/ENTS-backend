@@ -13,16 +13,21 @@ services:
       DB_HOST: postgresql
       DB_PORT: 5432
       DB_DATABASE: dirtviz
+    # uncomment to run local .env, comment for testing
+    # env_file:
+    #   - ./.env
     ports:
       - '8000:8000'
     depends_on:
       - postgresql
+    volumes:
+      - './backend:/app/backend'
 
   frontend:
     build:
       context: ./frontend
       dockerfile: ./Dockerfile
-      target: development
+      target: production
     image: dirtviz-frontend
     ports:
       - '3000:80'
@@ -50,10 +55,27 @@ services:
         reservations:
           memory: 3g
 
+  redis:
+    image: redis:latest
+    ports:
+      - '6379:6379'
+
   adminer:
     image: adminer
     ports:
       - '8060:8080'
+
+  phpredisadmin:
+    image: erikdubbelboer/phpredisadmin
+    environment:
+      - ADMIN_USER=admin
+      - ADMIN_PASS=admin
+      - REDIS_1_HOST=redis
+      - REDIS_1_PORT=6379
+    links:
+      - redis
+    ports:
+      - '80:80'
 
 volumes:
   postgresqldata:

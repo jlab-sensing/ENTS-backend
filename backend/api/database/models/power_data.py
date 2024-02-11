@@ -1,4 +1,5 @@
-from ..models import db, Cell
+from ..models import db
+from .cell import Cell
 from .logger import Logger
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
