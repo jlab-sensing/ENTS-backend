@@ -80,6 +80,10 @@ jobs:
       - name: Run smoke test
         run: ./k6 run tests/basic.js
 
+      - name: Run frontend tests
+        working-directory: ./frontend
+        run: npm run test
+
       - name: Save all logs
         if: always()
         run: docker compose logs -t > dirtviz.log
