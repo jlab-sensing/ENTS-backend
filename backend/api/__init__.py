@@ -36,7 +36,7 @@ def create_app(debug: bool = False) -> Flask:
     oauth.init_app(app)
     bcrypt.init_app(app)
     CORS(app, resources={r"/*": {"methods": "*"}})
-    api = Api(app)
+    api = Api(app, prefix="/api")
     server_session.init_app(app)
 
     """-routing-"""
@@ -56,7 +56,7 @@ def create_app(debug: bool = False) -> Flask:
     from .auth.routes import auth
 
     api.add_resource(Health_Check, "/")
-    api.add_resource(Cell, "/api/cell/")
+    api.add_resource(Cell, "/cell/")
     api.add_resource(Cell_Data, "/cell/data/<int:cell_id>", endpoint="cell_data_ep")
     api.add_resource(Cell_Id, "/cell/id")
     api.add_resource(Power_Data, "/power/", "/power/<int:cell_id>")
@@ -68,5 +68,5 @@ def create_app(debug: bool = False) -> Flask:
     api.add_resource(Sensor_Data, "/sensor", "/sensor/<int:sensor_id>")
     api.add_resource(Session_r, "/session")
     api.add_resource(User_Data, "/user")
-    app.register_blueprint(auth, url_prefix="")
+    app.register_blueprint(auth, url_prefix="/api")
     return app
