@@ -54,8 +54,12 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install dependencies
+      - name: Install backend dependencies
         run: pip install -r ./backend/requirements.txt
+
+      - name: Install frontend packages
+        working-directory: ./frontend
+        run: npm ci
 
       - name: Install k6
         run: |
