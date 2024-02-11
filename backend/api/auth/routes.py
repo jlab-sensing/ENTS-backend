@@ -79,12 +79,16 @@ def get_token():
             token, g_requests.Request(), config["clientId"]
         )
         email = idinfo["email"]
+        first_name = idinfo["given_name"]
+        last_name = idinfo["family_name"]
         user = db.session.query(User).filter_by(email=email).first()
 
         # Add user to DB if new user
         if not user:
             print("creating new user", flush=True)
-            user = User(email=email, password="")
+            user = User(
+                first_name=first_name, last_name=last_name, email=email, password=""
+            )
             db.session.add(user)
             db.session.commit()
 
@@ -117,10 +121,8 @@ def auth_url():
 def check_logged_in():
     """Checks if session is active"""
     token = request.headers["Authorization"]
-    print("loggedin", token, flush=True)
     try:
         token = request.headers["Authorization"]
-        print("loggedin", token, flush=True)
         if not token:
             return jsonify({"loggedIn": False}, None), 200
         data = jwt.decode(token, config["tokenSecret"], algorithms=["HS256"])

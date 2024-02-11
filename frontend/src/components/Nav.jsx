@@ -84,7 +84,7 @@ function Nav() {
                 </MenuItem>
               ) : (
                 <MenuItem key='Logout' onClick={() => logout()}>
-                  <Typography textAlign='center'></Typography>
+                  <Typography textAlign='center'>Logout</Typography>
                 </MenuItem>
               )}
             </Menu>
@@ -117,7 +117,7 @@ function Nav() {
             ) : (
               <>
                 <Button key='Sign-in' onClick={() => {}} sx={{ my: 2, color: 'black', display: 'block' }}>
-                  Hi, {user?.email}
+                  Hi, {user?.first_name}
                 </Button>
                 <Button key='Logout' onClick={() => logout()} sx={{ my: 2, color: 'black', display: 'block' }}>
                   Logout
