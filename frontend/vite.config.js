@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           secure: false,
           ws: true,
+          // rewrite: (path) => path.replace(/^\/api/, ''),
         },
       },
       watch: {
@@ -39,6 +40,9 @@ export default defineConfig(({ mode }) => {
         },
       },
       outDir: 'build',
+    },
+    esbuild: {
+      drop: ['console', 'debugger'],
     },
     test: {
       environment: 'jsdom',
