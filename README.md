@@ -53,8 +53,11 @@ Alembic is used to manage database migrations. Alembic is a python package and a
 
 > **NOTE:** It is recommended that a virtual environment is setup and **_ALL_** dependencies are installed via `pip install -r requirements.txt`. If you are unsure what this means, read [this](https://docs.python.org/3/tutorial/venv.html).
 
+A migration script is provided in this repository that abstracts the migration process.
+
 ```bash
-./migrate.sh
+# To check out usage run
+./migrate.sh -h
 ```
 
 ### Import Example Data
@@ -193,14 +196,14 @@ The HTTP integration is currently under development and will be changed signific
 
 ### How do I create database migrations?
 
-This projects makes use of [alembic](https://alembic.sqlalchemy.org/en/latest/) to handle database migrations. It is recommended to have a understanding of the package first before attempting to modify the database schema. Due to the way that alembic handles package imports, the config file needs to be specified while running from the root project folder. For example the following will autogenerate new migrations from the latest revision of the database.
+This projects makes use of [alembic](https://alembic.sqlalchemy.org/en/latest/) to handle database migrations and [flask-migrate](https://flask-migrate.readthedocs.io/en/latest/) as an extension to make alembic operations avaliable through the Flask cli. It is recommended to have a understanding of the package first before attempting to modify the database schema. Due to the way that alembic handles package imports, the config file needs to be specified while running from the root project folder. For example the following will autogenerate new migrations from the latest revision of the database.
 
-The script migrate.sh takes in a "-n" for generating a new migration and by itself runs "alembic upgrade head".
+The script migrate.sh takes in a "-m \<msg\>" for generating a new migration and by itself runs "alembic upgrade head".
 
 > **NOTE:** Autogeneration of migrations requires a running version of the database. Refer above to see how to create and connect to a local version of the database
 
 ```bash
-./migrate.sh -n "migration message here"
+./migrate.sh -m "migration message here"
 ```
 
 ### How do I reset the local database?
@@ -211,12 +214,12 @@ Sometimes the database breaks and causes errors. Usually deleting the docker vol
 docker compose down
 docker volume rm dirtviz_postgresqldata
 docker compose up --build -d
-./migrate.sh
+./migrate.sh -u
 ```
 
 ### \[Flask-migrate\] Error: Can't locate revision identified by 'e5dbb2a59f94'
 
-For this error, it either means that you've deleted a revision corresponding to the id located in `./backend/api/migrations/versions` or that if it's during the deployment process, the alembic version in the table is mismatched. Double check to see if the revision history is the same for both deployment and locally.
+For this error, it either means that you've deleted a revision corresponding to the id located in `./backend/api/migrations/versions` or that if it's during the deployment process, the alembic version in the db (under the alembic version table) is mismatched. Double check to see if the revision history is the same for both deployment and locally.
 
 ### How do I import my own TEROS and Rocketlogger data previously collected?
 
