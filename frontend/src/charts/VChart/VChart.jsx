@@ -1,4 +1,4 @@
-import { React } from 'react';
+import { React, useEffect } from 'react';
 import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
 import ChartWrapper from '../ChartWrapper';
@@ -56,8 +56,15 @@ export default function VChart({ data }) {
     },
     plugins: structuredClone(chartPlugins),
   };
+  useEffect(() => {
+    console.log('changed', data);
+  }, [data]);
 
-  return <ChartWrapper id='v' data={data} options={chartOptions} />;
+  return (
+    <>
+      <ChartWrapper id='v' data={data} options={chartOptions} />;
+    </>
+  );
 }
 
 VChart.propTypes = {

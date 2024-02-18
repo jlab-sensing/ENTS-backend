@@ -7,8 +7,11 @@ export const chartPlugins = {
       pinch: {
         enabled: false,
       },
-      mode: 'xy',
-      scaleMode: 'xy',
+      drag: {
+        enabled: true,
+      },
+      mode: 'x',
+      scaleMode: 'x',
     },
     pan: {
       enabled: true,

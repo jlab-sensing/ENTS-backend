@@ -19,12 +19,12 @@ import zoomPlugin from 'chartjs-plugin-zoom';
 ChartJS.register(LineController, LineElement, PointElement, LinearScale, Tooltip, Legend, TimeScale, zoomPlugin);
 import { Line } from 'react-chartjs-2';
 
-function ChartWrapper(props) {
+function ChartWrapper({ id, data, options }) {
   const [resetSelected] = useState(false);
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
 
-  const chartRef = useRef();
+  const chartRef = useRef({ id, data, options });
   const globalChartOpts = {
     interaction: {
       intersect: false,
@@ -52,9 +52,8 @@ function ChartWrapper(props) {
       setPanSelected(!panSelected);
     }
   };
-
   const lineChart = () => {
-    return <Line key={props.id} ref={chartRef} data={props.data} options={{ ...props.options, ...globalChartOpts }}></Line>;
+    return <Line key={id} ref={chartRef} data={data} options={{ ...options, ...globalChartOpts }}></Line>;
   };
 
   /**
@@ -76,7 +75,8 @@ function ChartWrapper(props) {
         height: '100%',
       }}
     >
-      {lineChart()}
+      {/* {lineChart()} */}
+      <Line key={id} ref={chartRef} data={data} options={{ ...options, ...globalChartOpts }} redraw={true}></Line>
       <Box
         sx={{
           display: 'flex',
