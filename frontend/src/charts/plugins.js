@@ -13,9 +13,9 @@ export const chartPlugins = {
       mode: 'x',
       scaleMode: 'x',
     },
-    pan: {
-      enabled: true,
-      mode: 'xy',
-    },
+    // pan: {
+    //   enabled: true,
+    //   mode: 'xy',
+    // },
   },
 };

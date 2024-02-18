@@ -8,13 +8,14 @@ import { getPowerData, streamPowerData } from '../../../services/power';
 import useInterval from '../../../hooks/useInterval';
 function PowerCharts({ cells, startDate, endDate, watch }) {
   const chartSettings = {
-    label: [],
+    labels: [],
     datasets: [],
   };
   const [vChartData, setVChartData] = useState(chartSettings);
   const [pwrChartData, setPwrChartData] = useState(chartSettings);
   const [loadedCells, setLoadedCells] = useState([]);
   // Initialize the combined chart data with empty datasets
+
   // Access data for each cell and update the combined charts accordingly
   const pColors = ['lightgreen', 'darkgreen'];
   const vColors = ['purple', 'blue'];
@@ -48,7 +49,7 @@ function PowerCharts({ cells, startDate, endDate, watch }) {
     return data;
   }
 
-  function updateCharts(watch) {
+  function updateCharts() {
     const newVChartData = {
       ...vChartData,
       datasets: [],
@@ -57,7 +58,7 @@ function PowerCharts({ cells, startDate, endDate, watch }) {
       ...pwrChartData,
       datasets: [],
     };
-    getPowerChartData(watch).then((cellChartData) => {
+    getPowerChartData().then((cellChartData) => {
       let selectCounter = 0;
       let loadCells = cells;
       if (!watch) {
@@ -67,6 +68,7 @@ function PowerCharts({ cells, startDate, endDate, watch }) {
         const cellid = id;
         const name = cellChartData[cellid].name;
         const powerData = cellChartData[cellid].powerData;
+        console.log(powerData);
         // const terosData = cellChartData[cellid].terosData;
         const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
         // const tTimestamp = terosData.data.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
@@ -107,6 +109,7 @@ function PowerCharts({ cells, startDate, endDate, watch }) {
         selectCounter += 1;
       }
       console.log(newVChartData, newPwrChartData);
+      console.log(loadCells);
       setVChartData(newVChartData);
       setPwrChartData(newPwrChartData);
       setLoadedCells(loadCells);
@@ -175,6 +178,20 @@ function PowerCharts({ cells, startDate, endDate, watch }) {
     });
   }
 
+  function clearCharts() {
+    console.log('CLEARNIGN');
+    const newVChartData = {
+      datasets: [],
+    };
+    const newPwrChartData = {
+      datasets: [],
+    };
+
+    console.log(newVChartData, newPwrChartData);
+    setVChartData(newVChartData);
+    setPwrChartData(newPwrChartData);
+  }
+
   useInterval(
     () => {
       streamCharts();
@@ -185,25 +202,16 @@ function PowerCharts({ cells, startDate, endDate, watch }) {
     watch ? 1000 * 10 : null,
   );
 
-  use(() => {
-    console.log('test', watch);
+  useEffect(() => {
     if (Array.isArray(cells) && cells.length) {
-      if (watch === true) {
-        updateCharts(cells, startDate, endDate);
-        // const interval = setInterval(() => {
-        //   streamCharts(cells, startDate, endDate);
-        //   console.log('updating');
-        //   console.log(vChartData);
-        //   console.log(pwrChartData);
-        // }, 10 * 1000);
-        // return () => clearInterval(interval);
-      } else {
-        updateCharts(cells, startDate, endDate);
-      }
+      updateCharts();
+    } else {
+      // no selected cells
+      clearCharts();
     }
     // TODO: need to memoize updating charts
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cells, startDate, endDate, watch]);
+  }, [cells, watch]);
 
   return (
     <>

@@ -58,8 +58,7 @@ export default function VChart({ data }) {
   };
   useEffect(() => {
     console.log('changed', data);
-  }, [data]);
-
+  });
   return (
     <>
       <ChartWrapper id='v' data={data} options={chartOptions} />;
