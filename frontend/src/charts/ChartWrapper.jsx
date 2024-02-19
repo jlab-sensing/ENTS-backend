@@ -18,30 +18,23 @@ import 'chartjs-adapter-luxon';
 import zoomPlugin from 'chartjs-plugin-zoom';
 ChartJS.register(LineController, LineElement, PointElement, LinearScale, Tooltip, Legend, TimeScale, zoomPlugin);
 import { Line } from 'react-chartjs-2';
-import { chartPlugins } from './plugins';
 import usePrevious from '../hooks/usePrevious';
 
 function ChartWrapper({ id, data, options }) {
   const [resetSelected] = useState(false);
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
-  const [zoomRef, setZoomRef] = useState({});
-  const [panRef, setPanRef] = useState({});
   const [scaleRef, setScaleRef] = useState({});
-  // let zoomLvl = 0;
-  const prevZoomRef = usePrevious(zoomRef);
-  const prevPanRef = usePrevious(panRef);
   const prevScaleRef = usePrevious(scaleRef);
-  const prevZoomSel = usePrevious(zoomSelected);
-  const prevPanSel = usePrevious(panSelected);
 
+  // defines axis for charts, charts may have different axis names
   const axes = Object.keys(options.scales);
   const axesWithScaleKeys = [];
   for (const a of axes) {
-    // console.log('axes loop', a);
     axesWithScaleKeys.push({ axis: a, axisMin: `${a}Min`, axisMax: `${a}Max` });
   }
 
+  //** Turns axes into scales object */
   function getScaleRef(chart) {
     const axesWithScale = axesWithScaleKeys.reduce(
       (ac, { axis, axisMin, axisMax }) => ({
@@ -54,6 +47,7 @@ function ChartWrapper({ id, data, options }) {
     return axesWithScale;
   }
 
+  //** Modifies chart ref with new scales object */
   function setScales(scaleRef) {
     if (chartRef.current) {
       for (const { axis, axisMin, axisMax } of axesWithScaleKeys) {
@@ -64,28 +58,23 @@ function ChartWrapper({ id, data, options }) {
     }
   }
 
+  //** Callback for when zoom action is completed */
   function onZoomComplete({ chart }) {
-    console.log('zoom changed', chart.getZoomLevel(), prevZoomRef);
     setScaleRef(getScaleRef(chart));
-    console.log('z scale min', chart.scales.x.options.min);
-    console.log('z scale max', chart.scales.x.options.max);
   }
 
+  //** Callback for when pan action is completed */
   function onPanComplete({ chart }) {
-    // console.log(chart);
-    console.log('pan changed');
     setScaleRef(getScaleRef(chart));
-    console.log('scale min', chart.scales.x.options.min);
-    console.log('scale max', chart.scales.x.options.max);
   }
 
+  //** Defines options object */
   function Options() {
     return {
       ...options,
       plugins: {
         zoom: {
           zoom: {
-            // ...chartPlugins.zoom.zoom,
             drag: {
               enabled: zoomSelected,
             },
@@ -104,7 +93,6 @@ function ChartWrapper({ id, data, options }) {
   }
 
   let optionsWithPlugins = new Options();
-  // console.log('opt', optionsWithPlugins);
   const chartRef = useRef({ id, data, optionsWithPlugins });
 
   const globalChartOpts = {
@@ -114,6 +102,8 @@ function ChartWrapper({ id, data, options }) {
     },
   };
 
+  //* Event Handlers */
+
   const handleResetZoom = () => {
     if (chartRef.current) {
       chartRef.current.resetZoom();
@@ -121,10 +111,7 @@ function ChartWrapper({ id, data, options }) {
   };
   const handleToggleZoom = () => {
     if (chartRef.current) {
-      // chartRef.current.config.options.plugins.zoom.zoom.drag.enabled = !zoomSelected;
-
       if (!zoomSelected === true) {
-        console.log('turning off pan');
         chartRef.current.options.plugins.zoom.pan.enabled = false;
         setPanSelected(false);
       }
@@ -134,73 +121,42 @@ function ChartWrapper({ id, data, options }) {
   };
   const handleTogglePan = () => {
     if (chartRef.current) {
-      // console.log('pan', chartRef.current);
-      // chartRef.current.config.options.plugins.zoom.pan.enabled = !panSelected;
-      // console.log('pan', chartRef.current.config.options.plugins.zoom.pan.enabled);
-      // console.log('pan', chartRef.current);
       if (!panSelected === true) {
-        console.log('turning off zoom');
         chartRef.current.config.options.plugins.zoom.zoom.drag.enabled = false;
-        console.log('pan', chartRef.current);
         setZoomSelected(false);
       }
       chartRef.current.update();
-      // console.log('pan', chartRef.current);
       setPanSelected(!panSelected);
     }
   };
 
-  // Defines line chart to prevent rerendering
   const lineChart = () => {
     return <Line key={id} ref={chartRef} data={data} options={{ ...optionsWithPlugins, ...globalChartOpts }}></Line>;
   };
 
-  /**
-   * Triggers on refresh to maintain different states of chart components. Fix for maintaining toggle for when chart refreshes
-   */
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-
   /** Maintain zoom and pan ref from previous render */
   useEffect(() => {
     if (chartRef.current) {
-      // setZoomLvl(chartRef.current.getZoomLevel());
-      // console.log(chartRef.current.options.plugins);
       if (prevScaleRef != undefined) {
-        console.log('preventing reset');
         setScales(prevScaleRef);
-        // chartRef.current.scales.x.options.min = prevScaleRef.xMin;
-        // chartRef.current.scales.x.options.max = prevScaleRef.xMax;
-        // chartRef.current.scales.y.options.min = prevScaleRef.yMin;
-        // chartRef.current.scales.y.options.max = prevScaleRef.yMax;
         chartRef.current.update();
       } else if (scaleRef != undefined) {
         setScales(scaleRef);
-        // chartRef.current.scales.x.options.min = scaleRef.xMin;
-        // chartRef.current.scales.x.options.max = scaleRef.xMax;
-        // chartRef.current.update();
       }
       return;
     }
   }, [zoomSelected, panSelected]);
 
+  //** Maintain zoom and pan when streaming new data */
   useEffect(() => {
-    // console.log(data);
     if (chartRef.current && chartRef.current.config.data != data) {
-      console.log(chartRef.current.config.data);
       chartRef.current.config.data.label = data.label;
       chartRef.current.config.data.datasets = data.datasets;
       if (prevScaleRef != undefined) {
-        console.log('preventing reset');
         setScales(prevScaleRef);
-        // chartRef.current.scales.x.options.min = prevScaleRef.xMin;
-        // chartRef.current.scales.x.options.max = prevScaleRef.xMax;
-        // chartRef.current.scales.y.options.min = prevScaleRef.yMin;
-        // chartRef.current.scales.y.options.max = prevScaleRef.yMax;
         chartRef.current.update();
       } else if (scaleRef != undefined) {
         setScales(scaleRef);
-        // chartRef.current.scales.x.options.min = scaleRef.xMin;
-        // chartRef.current.scales.x.options.max = scaleRef.xMax;
         chartRef.current.update();
       }
       chartRef.current.update('none');
@@ -208,21 +164,13 @@ function ChartWrapper({ id, data, options }) {
     }
   }, [data]);
 
+  /** Sets zoom / pan when state is updated onZoomComplete or onPanComplete */
   useEffect(() => {
-    console.log('zoom', zoomRef);
-    console.log(scaleRef);
     if (scaleRef != undefined) {
-      console.log('zoomScaleRef');
       setScales(scaleRef);
-      // chartRef.current.scales.x.options.min = scaleRef.xMin;
-      // chartRef.current.scales.x.options.max = scaleRef.xMax;
-      // chartRef.current.scales.y.options.min = scaleRef.yMin;
-      // chartRef.current.scales.y.options.max = scaleRef.yMax;
       chartRef.current.update();
     } else if (scaleRef != undefined) {
       setScales(scaleRef);
-      // chartRef.current.scales.x.options.min = scaleRef.xMin;
-      // chartRef.current.scales.x.options.max = scaleRef.xMax;
       chartRef.current.update();
     }
     return;
@@ -237,7 +185,6 @@ function ChartWrapper({ id, data, options }) {
       }}
     >
       {lineChart()}
-      {/* <Line key={id} ref={chartRef} data={data} options={{ ...options, ...globalChartOpts }} redraw></Line>; */}
       <Box
         sx={{
           display: 'flex',
