@@ -124,21 +124,10 @@ function PowerCharts({ cells, startDate, endDate, watch }) {
       ...pwrChartData,
     };
     streamPowerChartData().then((cellChartData) => {
-      console.log(cellChartData);
       let selectCounter = 0;
       let foundNewData = false;
       for (const { id } of cells) {
         const cellid = id;
-        console.log(Array.isArray(cellChartData[cellid].powerData.i));
-        console.log(Array.isArray(cellChartData[cellid].powerData.v));
-        console.log(cellChartData[cellid].powerData.i.length);
-        console.log(cellChartData[cellid].powerData.v.length);
-        console.log(
-          Array.isArray(cellChartData[cellid].powerData.i) &&
-            cellChartData[cellid].powerData.i.length &&
-            Array.isArray(cellChartData[cellid].powerData.v) &&
-            cellChartData[cellid].powerData.v.length,
-        );
         if (
           Array.isArray(cellChartData[cellid].powerData.i) &&
           cellChartData[cellid].powerData.i.length &&

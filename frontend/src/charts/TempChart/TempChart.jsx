@@ -42,7 +42,6 @@ export default function TempChart({ data }) {
         },
       },
     },
-    plugins: structuredClone(chartPlugins),
   };
 
   return <ChartWrapper id='temp' data={data} options={chartOptions} />;

@@ -30,8 +30,12 @@ class Teros_Data(Resource):
 
     def get(self, cell_id=0):
         v_args = get_cell_data.load(request.args)
+        stream = v_args["stream"] if "stream" in v_args else False
         return jsonify(
             TEROSData.get_teros_data_obj(
-                cell_id, start_time=v_args["startTime"], end_time=v_args["endTime"]
+                cell_id,
+                start_time=v_args["startTime"],
+                end_time=v_args["endTime"],
+                stream=stream,
             )
         )

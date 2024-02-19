@@ -54,7 +54,6 @@ export default function VwcChart({ data }) {
         },
       },
     },
-    plugins: structuredClone(chartPlugins),
   };
 
   return <ChartWrapper id='vwc' data={data} options={chartOptions} />;
