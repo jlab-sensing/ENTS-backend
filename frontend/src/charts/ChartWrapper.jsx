@@ -35,17 +35,38 @@ function ChartWrapper({ id, data, options }) {
   const prevZoomSel = usePrevious(zoomSelected);
   const prevPanSel = usePrevious(panSelected);
 
+  const axes = Object.keys(options.scales);
+  const axesWithScaleKeys = [];
+  for (const a of axes) {
+    // console.log('axes loop', a);
+    axesWithScaleKeys.push({ axis: a, axisMin: `${a}Min`, axisMax: `${a}Max` });
+  }
+
+  function getScaleRef(chart) {
+    const axesWithScale = axesWithScaleKeys.reduce(
+      (ac, { axis, axisMin, axisMax }) => ({
+        ...ac,
+        [axisMin]: chart.scales[axis].options.min,
+        [axisMax]: chart.scales[axis].options.max,
+      }),
+      {},
+    );
+    return axesWithScale;
+  }
+
+  function setScales(scaleRef) {
+    if (chartRef.current) {
+      for (const { axis, axisMin, axisMax } of axesWithScaleKeys) {
+        chartRef.current.scales[axis].options.min = scaleRef[axisMin];
+        chartRef.current.scales[axis].options.max = scaleRef[axisMax];
+      }
+      chartRef.current.update();
+    }
+  }
+
   function onZoomComplete({ chart }) {
-    // console.log(chart);
     console.log('zoom changed', chart.getZoomLevel(), prevZoomRef);
-    // zoomLvl = chart.getZoomLevel();
-    setScaleRef({
-      xMin: chart.scales.x.options.min,
-      xMax: chart.scales.x.options.max,
-      yMin: chart.scales.y.options.min,
-      yMax: chart.scales.y.options.max,
-    });
-    // setZoomRef({ min: chart.scales.x.options.min, max: chart.scales.x.options.max, lvl: chart.getZoomLevel() });
+    setScaleRef(getScaleRef(chart));
     console.log('z scale min', chart.scales.x.options.min);
     console.log('z scale max', chart.scales.x.options.max);
   }
@@ -53,13 +74,7 @@ function ChartWrapper({ id, data, options }) {
   function onPanComplete({ chart }) {
     // console.log(chart);
     console.log('pan changed');
-    // zoomLvl = chart.getZoomLevel();
-    setScaleRef({
-      xMin: chart.scales.x.options.min,
-      xMax: chart.scales.x.options.max,
-      yMin: chart.scales.y.options.min,
-      yMax: chart.scales.y.options.max,
-    });
+    setScaleRef(getScaleRef(chart));
     console.log('scale min', chart.scales.x.options.min);
     console.log('scale max', chart.scales.x.options.max);
   }
@@ -150,23 +165,19 @@ function ChartWrapper({ id, data, options }) {
     if (chartRef.current) {
       // setZoomLvl(chartRef.current.getZoomLevel());
       // console.log(chartRef.current.options.plugins);
-      if (
-        prevScaleRef != undefined &&
-        prevScaleRef.xMin &&
-        prevScaleRef.xMax &&
-        prevScaleRef.yMin &&
-        prevScaleRef.yMax
-      ) {
+      if (prevScaleRef != undefined) {
         console.log('preventing reset');
-        chartRef.current.scales.x.options.min = prevScaleRef.xMin;
-        chartRef.current.scales.x.options.max = prevScaleRef.xMax;
-        chartRef.current.scales.y.options.min = prevScaleRef.yMin;
-        chartRef.current.scales.y.options.max = prevScaleRef.yMax;
+        setScales(prevScaleRef);
+        // chartRef.current.scales.x.options.min = prevScaleRef.xMin;
+        // chartRef.current.scales.x.options.max = prevScaleRef.xMax;
+        // chartRef.current.scales.y.options.min = prevScaleRef.yMin;
+        // chartRef.current.scales.y.options.max = prevScaleRef.yMax;
         chartRef.current.update();
-      } else if (chartRef.current && scaleRef.xMin && scaleRef.xMax) {
-        chartRef.current.scales.x.options.min = scaleRef.xMin;
-        chartRef.current.scales.x.options.max = scaleRef.xMax;
-        chartRef.current.update();
+      } else if (scaleRef != undefined) {
+        setScales(scaleRef);
+        // chartRef.current.scales.x.options.min = scaleRef.xMin;
+        // chartRef.current.scales.x.options.max = scaleRef.xMax;
+        // chartRef.current.update();
       }
       return;
     }
@@ -178,22 +189,18 @@ function ChartWrapper({ id, data, options }) {
       console.log(chartRef.current.config.data);
       chartRef.current.config.data.label = data.label;
       chartRef.current.config.data.datasets = data.datasets;
-      if (
-        prevScaleRef != undefined &&
-        prevScaleRef.xMin &&
-        prevScaleRef.xMax &&
-        prevScaleRef.yMin &&
-        prevScaleRef.yMax
-      ) {
+      if (prevScaleRef != undefined) {
         console.log('preventing reset');
-        chartRef.current.scales.x.options.min = prevScaleRef.xMin;
-        chartRef.current.scales.x.options.max = prevScaleRef.xMax;
-        chartRef.current.scales.y.options.min = prevScaleRef.yMin;
-        chartRef.current.scales.y.options.max = prevScaleRef.yMax;
+        setScales(prevScaleRef);
+        // chartRef.current.scales.x.options.min = prevScaleRef.xMin;
+        // chartRef.current.scales.x.options.max = prevScaleRef.xMax;
+        // chartRef.current.scales.y.options.min = prevScaleRef.yMin;
+        // chartRef.current.scales.y.options.max = prevScaleRef.yMax;
         chartRef.current.update();
-      } else if (chartRef.current && scaleRef.xMin && scaleRef.xMax) {
-        chartRef.current.scales.x.options.min = scaleRef.xMin;
-        chartRef.current.scales.x.options.max = scaleRef.xMax;
+      } else if (scaleRef != undefined) {
+        setScales(scaleRef);
+        // chartRef.current.scales.x.options.min = scaleRef.xMin;
+        // chartRef.current.scales.x.options.max = scaleRef.xMax;
         chartRef.current.update();
       }
       chartRef.current.update('none');
@@ -204,16 +211,18 @@ function ChartWrapper({ id, data, options }) {
   useEffect(() => {
     console.log('zoom', zoomRef);
     console.log(scaleRef);
-    if (chartRef.current && scaleRef.xMin && scaleRef.xMax && scaleRef.yMin && scaleRef.yMax) {
+    if (scaleRef != undefined) {
       console.log('zoomScaleRef');
-      chartRef.current.scales.x.options.min = scaleRef.xMin;
-      chartRef.current.scales.x.options.max = scaleRef.xMax;
-      chartRef.current.scales.y.options.min = scaleRef.yMin;
-      chartRef.current.scales.y.options.max = scaleRef.yMax;
+      setScales(scaleRef);
+      // chartRef.current.scales.x.options.min = scaleRef.xMin;
+      // chartRef.current.scales.x.options.max = scaleRef.xMax;
+      // chartRef.current.scales.y.options.min = scaleRef.yMin;
+      // chartRef.current.scales.y.options.max = scaleRef.yMax;
       chartRef.current.update();
-    } else if (chartRef.current && scaleRef.xMin && scaleRef.xMax) {
-      chartRef.current.scales.x.options.min = scaleRef.xMin;
-      chartRef.current.scales.x.options.max = scaleRef.xMax;
+    } else if (scaleRef != undefined) {
+      setScales(scaleRef);
+      // chartRef.current.scales.x.options.min = scaleRef.xMin;
+      // chartRef.current.scales.x.options.max = scaleRef.xMax;
       chartRef.current.update();
     }
     return;
