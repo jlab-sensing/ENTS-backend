@@ -8,14 +8,14 @@ export const chartPlugins = {
         enabled: false,
       },
       drag: {
-        enabled: true,
+        enabled: false,
       },
       mode: 'x',
       scaleMode: 'x',
     },
-    // pan: {
-    //   enabled: true,
-    //   mode: 'xy',
-    // },
+    pan: {
+      enabled: false,
+      mode: 'xy',
+    },
   },
 };

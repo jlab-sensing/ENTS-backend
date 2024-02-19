@@ -26,14 +26,40 @@ function ChartWrapper({ id, data, options }) {
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
   const [zoomRef, setZoomRef] = useState({});
+  const [panRef, setPanRef] = useState({});
+  const [scaleRef, setScaleRef] = useState({});
   // let zoomLvl = 0;
   const prevZoomRef = usePrevious(zoomRef);
+  const prevPanRef = usePrevious(panRef);
+  const prevScaleRef = usePrevious(scaleRef);
+  const prevZoomSel = usePrevious(zoomSelected);
+  const prevPanSel = usePrevious(panSelected);
 
   function onZoomComplete({ chart }) {
     // console.log(chart);
     console.log('zoom changed', chart.getZoomLevel(), prevZoomRef);
     // zoomLvl = chart.getZoomLevel();
-    setZoomRef({ min: chart.scales.x.options.min, max: chart.scales.x.options.max, lvl: chart.getZoomLevel() });
+    setScaleRef({
+      xMin: chart.scales.x.options.min,
+      xMax: chart.scales.x.options.max,
+      yMin: chart.scales.y.options.min,
+      yMax: chart.scales.y.options.max,
+    });
+    // setZoomRef({ min: chart.scales.x.options.min, max: chart.scales.x.options.max, lvl: chart.getZoomLevel() });
+    console.log('z scale min', chart.scales.x.options.min);
+    console.log('z scale max', chart.scales.x.options.max);
+  }
+
+  function onPanComplete({ chart }) {
+    // console.log(chart);
+    console.log('pan changed');
+    // zoomLvl = chart.getZoomLevel();
+    setScaleRef({
+      xMin: chart.scales.x.options.min,
+      xMax: chart.scales.x.options.max,
+      yMin: chart.scales.y.options.min,
+      yMax: chart.scales.y.options.max,
+    });
     console.log('scale min', chart.scales.x.options.min);
     console.log('scale max', chart.scales.x.options.max);
   }
@@ -44,8 +70,18 @@ function ChartWrapper({ id, data, options }) {
       plugins: {
         zoom: {
           zoom: {
-            ...chartPlugins.zoom.zoom,
+            // ...chartPlugins.zoom.zoom,
+            drag: {
+              enabled: zoomSelected,
+            },
+            mode: 'x',
+            scaleMode: 'x',
             onZoomComplete,
+          },
+          pan: {
+            enabled: panSelected,
+            mode: 'xy',
+            onPanComplete,
           },
         },
       },
@@ -70,16 +106,31 @@ function ChartWrapper({ id, data, options }) {
   };
   const handleToggleZoom = () => {
     if (chartRef.current) {
-      chartRef.current.config.options.plugins.zoom.zoom.wheel.enabled =
-        !chartRef.current.config.options.plugins.zoom.zoom.wheel.enabled;
+      // chartRef.current.config.options.plugins.zoom.zoom.drag.enabled = !zoomSelected;
+
+      if (!zoomSelected === true) {
+        console.log('turning off pan');
+        chartRef.current.options.plugins.zoom.pan.enabled = false;
+        setPanSelected(false);
+      }
       chartRef.current.update();
       setZoomSelected(!zoomSelected);
     }
   };
   const handleTogglePan = () => {
     if (chartRef.current) {
-      chartRef.current.options.plugins.zoom.pan.enabled = !chartRef.current.options.plugins.zoom.pan.enabled;
+      // console.log('pan', chartRef.current);
+      // chartRef.current.config.options.plugins.zoom.pan.enabled = !panSelected;
+      // console.log('pan', chartRef.current.config.options.plugins.zoom.pan.enabled);
+      // console.log('pan', chartRef.current);
+      if (!panSelected === true) {
+        console.log('turning off zoom');
+        chartRef.current.config.options.plugins.zoom.zoom.drag.enabled = false;
+        console.log('pan', chartRef.current);
+        setZoomSelected(false);
+      }
       chartRef.current.update();
+      // console.log('pan', chartRef.current);
       setPanSelected(!panSelected);
     }
   };
@@ -101,19 +152,67 @@ function ChartWrapper({ id, data, options }) {
    * Triggers on refresh to maintain different states of chart components. Fix for maintaining toggle for when chart refreshes
    */
   // eslint-disable-next-line react-hooks/exhaustive-deps
+
+  /** Maintain zoom and pan ref from previous render */
   useEffect(() => {
     if (chartRef.current) {
       // setZoomLvl(chartRef.current.getZoomLevel());
-      console.log(chartRef.current.options.plugins);
-      setZoomSelected(chartRef.current.config.options.plugins.zoom.zoom.wheel.enabled);
-      setPanSelected(chartRef.current.options.plugins.zoom.pan.enabled);
+      // console.log(chartRef.current.options.plugins);
+      if (prevScaleRef.xMin && prevScaleRef.xMax && prevScaleRef.yMin && prevScaleRef.yMax) {
+        console.log('preventing reset');
+        chartRef.current.scales.x.options.min = prevScaleRef.xMin;
+        chartRef.current.scales.x.options.max = prevScaleRef.xMax;
+        chartRef.current.scales.y.options.min = prevScaleRef.yMin;
+        chartRef.current.scales.y.options.max = prevScaleRef.yMax;
+        chartRef.current.update();
+      } else if (chartRef.current && scaleRef.xMin && scaleRef.xMax) {
+        chartRef.current.scales.x.options.min = scaleRef.xMin;
+        chartRef.current.scales.x.options.max = scaleRef.xMax;
+        chartRef.current.update();
+      }
+      return;
+      // if (prevZoomRef !== undefined) {
+
+      //   chartRef.current.zoom({ x: prevZoomRef.zoomLvl });
+      //   chartRef.current.scales.x.options.min = prevZoomRef.min;
+      //   chartRef.current.scales.x.options.max = prevZoomRef.max;
+
+      //   chartRef.current.update();
+      // }
+      // if (prevPanRef !== undefined) {
+      //   chartRef.current.scales.x.options.min = prevPanRef.xMin;
+      //   chartRef.current.scales.x.options.max = prevPanRef.xMax;
+      //   chartRef.current.scales.y.options.min = prevPanRef.yMin;
+      //   chartRef.current.scales.y.options.max = prevPanRef.yMax;
+      //   chartRef.current.update();
+      // }
       // console.log('test', zoomRef);
-      // chartRef.current.options.plugins.zoom.zoom.onZoomComplete = onZoomComplete(chartRef.current);
-      // chartRef.current.zoom(zoomLvl);
-      console.log(chartRef.current.options.plugins.zoom.zoom.onZoomComplete);
-      // chartRef.current.update('none');
+
+      // console.log(chartRef.current.options.plugins.zoom.zoom.onZoomComplete);
+      // chartRef.current.update();
     }
   }, [zoomSelected, panSelected]);
+
+  // useEffect(() => {
+  //   if (chartRef.current) {
+  //     // setZoomLvl(chartRef.current.getZoomLevel());
+  //     // console.log(chartRef.current.options.plugins);
+  //     if (prevZoomRef !== undefined) {
+  //       chartRef.current.zoom({ x: prevZoomRef.zoomLvl });
+  //       chartRef.current.scales.x.options.min = zoomRef.min;
+  //       chartRef.current.scales.x.options.max = zoomRef.max;
+
+  //       chartRef.current.update();
+  //     }
+  //     if (prevPanRef !== undefined) {
+  //       chartRef.current.scales.x.options.min = prevPanRef.xMin;
+  //       chartRef.current.scales.x.options.max = prevPanRef.xMax;
+  //       chartRef.current.scales.y.options.min = prevPanRef.yMin;
+  //       chartRef.current.scales.y.options.max = prevPanRef.yMax;
+  //       chartRef.current.update();
+  //     }
+  //   }
+  // }, [panSelected]);
   // setZoomLvl(usePrevious(zoomLvl));
 
   useEffect(() => {
@@ -127,31 +226,108 @@ function ChartWrapper({ id, data, options }) {
       // chartRef.current.zoom(zoomLvl)
 
       // maintain zoom after data changes, if exists
-      if (prevZoomRef !== undefined) {
-        // chartRef.current.zoom({ x: 1 });
-        chartRef.current.scales.x.options.min = prevZoomRef.min;
-        chartRef.current.scales.x.options.max = prevZoomRef.max;
+      // if (prevZoomRef !== undefined) {
+      //   // chartRef.current.zoom({ x: 1 });
+      //   chartRef.current.scales.x.options.min = prevZoomRef.min;
+      //   chartRef.current.scales.x.options.max = prevZoomRef.max;
 
+      //   chartRef.current.update();
+      // }
+      // if (chartRef.current && prevScaleRef !== undefined) {
+      //   console.log(chartRef.current);
+      //   chartRef.current.scales.x.options.min = prevScaleRef.xMin;
+      //   chartRef.current.scales.x.options.max = prevScaleRef.xMax;
+      //   chartRef.current.scales.y.options.min = prevScaleRef.yMin;
+      //   chartRef.current.scales.y.options.max = prevScaleRef.yMax;
+      //   chartRef.current.update();
+      // }
+      if (prevScaleRef.xMin && prevScaleRef.xMax && prevScaleRef.yMin && prevScaleRef.yMax) {
+        console.log('preventing reset');
+        chartRef.current.scales.x.options.min = prevScaleRef.xMin;
+        chartRef.current.scales.x.options.max = prevScaleRef.xMax;
+        chartRef.current.scales.y.options.min = prevScaleRef.yMin;
+        chartRef.current.scales.y.options.max = prevScaleRef.yMax;
+        chartRef.current.update();
+      } else if (chartRef.current && scaleRef.xMin && scaleRef.xMax) {
+        chartRef.current.scales.x.options.min = scaleRef.xMin;
+        chartRef.current.scales.x.options.max = scaleRef.xMax;
         chartRef.current.update();
       }
       chartRef.current.update('none');
+      return;
     }
   }, [data]);
 
+  //** maintain zoom state on rerender */
+  // useEffect(() => {
+  //   console.log('zoom', zoomRef);
+  //   // if (chartRef.current && zoomRef.min & zoomRef.max && zoomRef.lvl) {
+  //   //   console.log('zoom', zoomRef);
+  //   //   console.log('zoomlvl', zoomRef.lvl);
+  //   //   console.log(chartRef.current);
+  //   //   chartRef.current.zoom({ x: 1, mode: 'zoom' });
+  //   //   chartRef.current.scales.x.options.min = zoomRef.min;
+  //   //   chartRef.current.scales.x.options.max = zoomRef.max;
+
+  //   //   chartRef.current.update('zoom');
+  //   // }
+  //   if (chartRef.current && scaleRef.xMin && scaleRef.xMax && scaleRef.yMin && scaleRef.yMax) {
+  //     console.log('zoomScaleRef');
+  //     chartRef.current.scales.x.options.min = scaleRef.xMin;
+  //     chartRef.current.scales.x.options.max = scaleRef.xMax;
+  //     chartRef.current.scales.y.options.min = scaleRef.yMin;
+  //     chartRef.current.scales.y.options.max = scaleRef.yMax;
+  //     chartRef.current.update();
+  //   }
+  //   return;
+  // }, [zoomRef]);
+
   useEffect(() => {
     console.log('zoom', zoomRef);
-    if (chartRef.current && zoomRef.min & zoomRef.max && zoomRef.lvl) {
-      console.log('zoom', zoomRef);
-      console.log('zoomlvl', zoomRef.lvl);
-      console.log(chartRef.current);
-      chartRef.current.zoom({ x: 1, mode: 'zoom' });
-      chartRef.current.scales.x.options.min = zoomRef.min;
-      chartRef.current.scales.x.options.max = zoomRef.max;
+    // if (chartRef.current && zoomRef.min & zoomRef.max && zoomRef.lvl) {
+    //   console.log('zoom', zoomRef);
+    //   console.log('zoomlvl', zoomRef.lvl);
+    //   console.log(chartRef.current);
+    //   chartRef.current.zoom({ x: 1, mode: 'zoom' });
+    //   chartRef.current.scales.x.options.min = zoomRef.min;
+    //   chartRef.current.scales.x.options.max = zoomRef.max;
 
-      chartRef.current.update('zoom');
+    //   chartRef.current.update('zoom');
+    // }
+    console.log(scaleRef);
+    if (chartRef.current && scaleRef.xMin && scaleRef.xMax && scaleRef.yMin && scaleRef.yMax) {
+      console.log('zoomScaleRef');
+      chartRef.current.scales.x.options.min = scaleRef.xMin;
+      chartRef.current.scales.x.options.max = scaleRef.xMax;
+      chartRef.current.scales.y.options.min = scaleRef.yMin;
+      chartRef.current.scales.y.options.max = scaleRef.yMax;
+      chartRef.current.update();
+    } else if (chartRef.current && scaleRef.xMin && scaleRef.xMax) {
+      chartRef.current.scales.x.options.min = scaleRef.xMin;
+      chartRef.current.scales.x.options.max = scaleRef.xMax;
+      chartRef.current.update();
     }
     return;
-  }, [zoomRef]);
+  }, [scaleRef]);
+  //** maintain pan state on rerender */
+  // useEffect(() => {
+  //   // if (chartRef.current && panRef.xMin & panRef.xMax && panRef.yMin && panRef.yMax) {
+  //   //   chartRef.current.scales.x.options.min = panRef.xMin;
+  //   //   chartRef.current.scales.x.options.max = panRef.xMax;
+  //   //   chartRef.current.scales.y.options.min = panRef.yMin;
+  //   //   chartRef.current.scales.y.options.max = panRef.yMax;
+  //   //   chartRef.current.update();
+  //   // }
+  //   if (chartRef.current && scaleRef.xMin && scaleRef.xMax && scaleRef.yMin && scaleRef.yMax) {
+  //     console.log('panScaleRef');
+  //     chartRef.current.scales.x.options.min = scaleRef.xMin;
+  //     chartRef.current.scales.x.options.max = scaleRef.xMax;
+  //     chartRef.current.scales.y.options.min = scaleRef.yMin;
+  //     chartRef.current.scales.y.options.max = scaleRef.yMax;
+  //     chartRef.current.update();
+  //   }
+  //   return;
+  // }, [panRef]);
 
   return (
     <Box
