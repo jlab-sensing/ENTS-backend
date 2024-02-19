@@ -38,27 +38,6 @@ export default function PwrChart({ data }) {
         },
       },
     },
-    // plugins: {
-    //   zoom: {
-    //     zoom: {
-    //       wheel: {
-    //         enabled: false,
-    //       },
-    //       pinch: {
-    //         enabled: false,
-    //       },
-    //       drag: {
-    //         enabled: true,
-    //       },
-    //       mode: 'x',
-    //       scaleMode: 'x',
-    //       onZoomComplete({ chart }) {
-    //         console.log('done zoomin g');
-    //         chart.update('none');
-    //       },
-    //     },
-    //   },
-    // },
   };
 
   return <ChartWrapper id='pwr' data={data} options={chartOptions} />;

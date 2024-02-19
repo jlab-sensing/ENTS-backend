@@ -54,16 +54,8 @@ export default function VChart({ data }) {
         max: 160,
       },
     },
-    plugins: structuredClone(chartPlugins),
   };
-  useEffect(() => {
-    console.log('changed', data);
-  });
-  return (
-    <>
-      <ChartWrapper id='v' data={data} options={chartOptions} />;
-    </>
-  );
+  return <ChartWrapper id='v' data={data} options={chartOptions} />;
 }
 
 VChart.propTypes = {
