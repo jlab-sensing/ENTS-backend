@@ -2,7 +2,6 @@ import { React } from 'react';
 import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
 import ChartWrapper from '../ChartWrapper';
-import { chartPlugins } from '../plugins';
 
 export default function VwcChart({ data }) {
   const chartOptions = {

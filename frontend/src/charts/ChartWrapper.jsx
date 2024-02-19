@@ -20,14 +20,43 @@ ChartJS.register(LineController, LineElement, PointElement, LinearScale, Tooltip
 import { Line } from 'react-chartjs-2';
 import usePrevious from '../hooks/usePrevious';
 
-function ChartWrapper({ id, data, options }) {
+//** Wrapper for chart functionality and state */
+function ChartWrapper({ id, data, options, stream }) {
   const [resetSelected] = useState(false);
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
   const [scaleRef, setScaleRef] = useState({});
+  const [prevData, setPrevData] = useState(data);
   const prevScaleRef = usePrevious(scaleRef);
 
-  // defines axis for charts, charts may have different axis names
+  //** Defines options object */
+  function Options() {
+    return {
+      ...options,
+      plugins: {
+        zoom: {
+          zoom: {
+            drag: {
+              enabled: zoomSelected,
+            },
+            mode: 'x',
+            scaleMode: 'x',
+            onZoomComplete,
+          },
+          pan: {
+            enabled: panSelected,
+            mode: 'xy',
+            onPanComplete,
+          },
+        },
+      },
+    };
+  }
+
+  let optionsWithPlugins = new Options();
+  const chartRef = useRef({ id, data, optionsWithPlugins });
+
+  //** defines axis for charts, charts may have different axis names/
   const axes = Object.keys(options.scales);
   const axesWithScaleKeys = [];
   for (const a of axes) {
@@ -67,33 +96,6 @@ function ChartWrapper({ id, data, options }) {
   function onPanComplete({ chart }) {
     setScaleRef(getScaleRef(chart));
   }
-
-  //** Defines options object */
-  function Options() {
-    return {
-      ...options,
-      plugins: {
-        zoom: {
-          zoom: {
-            drag: {
-              enabled: zoomSelected,
-            },
-            mode: 'x',
-            scaleMode: 'x',
-            onZoomComplete,
-          },
-          pan: {
-            enabled: panSelected,
-            mode: 'xy',
-            onPanComplete,
-          },
-        },
-      },
-    };
-  }
-
-  let optionsWithPlugins = new Options();
-  const chartRef = useRef({ id, data, optionsWithPlugins });
 
   const globalChartOpts = {
     interaction: {
@@ -145,31 +147,52 @@ function ChartWrapper({ id, data, options }) {
       }
       return;
     }
-  }, [zoomSelected, panSelected]);
+  }, [zoomSelected, panSelected, prevScaleRef, scaleRef]);
 
   //** Maintain zoom and pan when streaming new data */
   useEffect(() => {
-    if (chartRef.current && chartRef.current.config.data != data) {
-      chartRef.current.config.data.label = data.label;
-      chartRef.current.config.data.datasets = data.datasets;
-      if (prevScaleRef != undefined) {
-        setScales(prevScaleRef);
-        chartRef.current.update();
-      } else if (scaleRef != undefined) {
-        setScales(scaleRef);
-        chartRef.current.update();
-      }
-      chartRef.current.update('none');
-      return;
+    if (id == 'pwr') {
+      console.log('Data changed at', id, data.labels, data.datasets);
     }
-  }, [data]);
+
+    if (JSON.stringify(prevData) != JSON.stringify(data)) {
+      if (stream) {
+        if (chartRef.current && chartRef.current.config.data != data) {
+          // console.log('Data changed at', id, data.labels, data.datasets);
+          chartRef.current.config.data.labels = data.labels;
+          chartRef.current.config.data.datasets = data.datasets;
+          // if (prevScaleRef != undefined) {
+          //   setScales(prevScaleRef);
+          //   chartRef.current.update();
+          // } else if (scaleRef != undefined) {
+          //   setScales(scaleRef);
+          //   chartRef.current.update();
+          // }
+          chartRef.current.update();
+          return;
+        }
+      } else {
+        if (chartRef.current && chartRef.current.config.data != data) {
+          // console.log('Data changed at', id, data.labels, data.datasets);
+          chartRef.current.config.data.labels = data.labels;
+          chartRef.current.config.data.datasets = data.datasets;
+          if (prevScaleRef != undefined) {
+            setScales(prevScaleRef);
+            chartRef.current.update();
+          } else if (scaleRef != undefined) {
+            setScales(scaleRef);
+            chartRef.current.update();
+          }
+          chartRef.current.update();
+          return;
+        }
+      }
+    }
+  }, [data, scaleRef, prevScaleRef, stream]);
 
   /** Sets zoom / pan when state is updated onZoomComplete or onPanComplete */
   useEffect(() => {
     if (scaleRef != undefined) {
-      setScales(scaleRef);
-      chartRef.current.update();
-    } else if (scaleRef != undefined) {
       setScales(scaleRef);
       chartRef.current.update();
     }

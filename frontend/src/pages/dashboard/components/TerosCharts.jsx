@@ -132,7 +132,6 @@ function TerosCharts({ cells, startDate, endDate, watch }) {
         ) {
           foundNewData = true;
 
-          const name = cellChartData[cellid].name;
           const terosData = cellChartData[cellid].terosData;
           const tTimestamp = terosData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
 
@@ -187,6 +186,14 @@ function TerosCharts({ cells, startDate, endDate, watch }) {
     }
   }, [cells, watch]);
 
+  // useCallback(() => {
+  //   if (Array.isArray(cells) && cells.length) {
+  //     updateCharts();
+  //   } else {
+  //     clearCharts();
+  //   }
+  // }, [cells]);
+
   return (
     <>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
@@ -203,6 +210,7 @@ TerosCharts.propTypes = {
   cells: PropTypes.array,
   startDate: PropTypes.any,
   endDate: PropTypes.any,
+  watch: PropTypes.boolean,
 };
 
 export default TerosCharts;

@@ -1,4 +1,4 @@
-import { React, useState, useEffect, useCallback } from 'react';
+import { React, useState, useEffect } from 'react';
 import { Grid } from '@mui/material';
 import PropTypes from 'prop-types';
 import PwrChart from '../../../charts/PwrChart/PwrChart';
@@ -7,6 +7,8 @@ import { DateTime } from 'luxon';
 import { getPowerData, streamPowerData } from '../../../services/power';
 import useInterval from '../../../hooks/useInterval';
 function PowerCharts({ cells, startDate, endDate, watch }) {
+  //** QUICK WAY to change stream time in seconds */
+  const interval = 1000;
   const chartSettings = {
     labels: [],
     datasets: [],
@@ -31,7 +33,7 @@ function PowerCharts({ cells, startDate, endDate, watch }) {
       data[id] = {
         name: name,
         powerData: await (watch
-          ? streamPowerData(id, startDate, DateTime.now(), true)
+          ? streamPowerData(id, DateTime.now().minus({ second: 10 }), DateTime.now(), true)
           : getPowerData(id, startDate, endDate)),
       };
     }
@@ -43,7 +45,7 @@ function PowerCharts({ cells, startDate, endDate, watch }) {
     for (const { id, name } of cells) {
       data[id] = {
         name: name,
-        powerData: await streamPowerData(id, DateTime.now().minus({ second: 10 }), DateTime.now(), true),
+        powerData: await streamPowerData(id, DateTime.now().minus({ millisecond: interval }), DateTime.now(), true),
       };
     }
     return data;
@@ -138,7 +140,6 @@ function PowerCharts({ cells, startDate, endDate, watch }) {
           console.log('reaching');
           console.log('data', cellChartData[cellid].powerData);
           console.log('current', newVChartData);
-          const name = cellChartData[cellid].name;
           const powerData = cellChartData[cellid].powerData;
           // const terosData = cellChartData[cellid].terosData;
           const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
@@ -170,37 +171,68 @@ function PowerCharts({ cells, startDate, endDate, watch }) {
   function clearCharts() {
     console.log('CLEARNIGN');
     const newVChartData = {
+      ...vChartData,
+      labels: [],
       datasets: [],
     };
     const newPwrChartData = {
+      ...pwrChartData,
+      labels: [],
       datasets: [],
     };
 
-    console.log(newVChartData, newPwrChartData);
-    setVChartData(newVChartData);
-    setPwrChartData(newPwrChartData);
+    // console.log(newVChartData, newPwrChartData);
+    setVChartData(Object.assign({}, newVChartData));
+    setPwrChartData(Object.assign({}, newPwrChartData));
+  }
+
+  function clearChartDatasets(chartData) {
+    for (const dataset of chartData.datasets) {
+      dataset.data = [];
+    }
+    chartData.labels = [];
+    console.log('CLEARNIGN data', chartData);
+    return chartData;
   }
 
   useInterval(
     () => {
       streamCharts();
       console.log('updating');
-      console.log(vChartData);
-      console.log(pwrChartData);
+      // console.log(vChartData);
+      // console.log(pwrChartData);
     },
-    watch ? 1000 * 10 : null,
+    watch ? interval : null,
   );
 
   useEffect(() => {
-    if (Array.isArray(cells) && cells.length) {
+    if (Array.isArray(cells) && cells.length && !watch) {
+      console.log('Updating charts');
       updateCharts();
+    } else if (Array.isArray(cells) && cells.length && watch) {
+      // updating react state for object requires new object
+      setVChartData(clearChartDatasets(Object.assign({}, vChartData)));
+      setPwrChartData(clearChartDatasets(Object.assign({}, pwrChartData)));
     } else {
       // no selected cells
       clearCharts();
     }
+
     // TODO: need to memoize updating charts
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cells, watch]);
+
+  // useEffect(() => {
+  //   if (Array.isArray(cells) && cells.length) {
+  //     if (watch) {
+  //       console.log('clearn', watch);
+  //       setVChartData(clearChartDatasets(vChartData));
+  //       setPwrChartData(clearChartDatasets(pwrChartData));
+  //     } else {
+  //       // updateCharts();
+  //     }
+  //   }
+  // }, [watch]);
 
   return (
     <>
@@ -208,7 +240,7 @@ function PowerCharts({ cells, startDate, endDate, watch }) {
         <VChart data={vChartData} />
       </Grid>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <PwrChart data={pwrChartData} />
+        <PwrChart data={pwrChartData} stream={watch} />
       </Grid>
     </>
   );
@@ -218,6 +250,7 @@ PowerCharts.propTypes = {
   cells: PropTypes.array,
   startDate: PropTypes.any,
   endDate: PropTypes.any,
+  watch: PropTypes.boolean,
 };
 
 export default PowerCharts;

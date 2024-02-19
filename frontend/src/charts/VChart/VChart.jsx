@@ -1,8 +1,8 @@
-import { React, useEffect } from 'react';
+import { React } from 'react';
 import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
 import ChartWrapper from '../ChartWrapper';
-import { chartPlugins } from '../plugins';
+
 export default function VChart({ data }) {
   const chartOptions = {
     maintainAspectRatio: false,

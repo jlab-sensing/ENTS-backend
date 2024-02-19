@@ -49,14 +49,14 @@ function Dashboard() {
           >
             Click me
           </Button> */}
-          <button
+          <Button
             onClick={() => {
               console.log('test');
               setWatch(!watch);
             }}
           >
             {watch ? 'streaming' : 'hourly'}
-          </button>
+          </Button>
           {/* <Button onClick={() => console.log('Tets')}>watch</Button> */}
         </Stack>
         <Grid
