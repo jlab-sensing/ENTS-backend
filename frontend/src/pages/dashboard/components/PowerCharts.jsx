@@ -33,7 +33,7 @@ function PowerCharts({ cells, startDate, endDate, watch }) {
       data[id] = {
         name: name,
         powerData: await (watch
-          ? streamPowerData(id, DateTime.now().minus({ second: 10 }), DateTime.now(), true)
+          ? streamPowerData(id, DateTime.now().minus({ second: 20 }), DateTime.now(), true)
           : getPowerData(id, startDate, endDate)),
       };
     }
@@ -237,7 +237,7 @@ function PowerCharts({ cells, startDate, endDate, watch }) {
   return (
     <>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <VChart data={vChartData} />
+        <VChart data={vChartData} stream={watch} />
       </Grid>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
         <PwrChart data={pwrChartData} stream={watch} />

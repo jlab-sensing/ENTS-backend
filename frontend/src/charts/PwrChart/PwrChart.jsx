@@ -55,7 +55,6 @@ export default function PwrChart({ data, stream }) {
           autoSkip: true,
           autoSkipPadding: 50,
           maxRotation: 0,
-          // callback: (val, index, ticks) => (index === 0 || index === ticks.length - 1 ? null : val),
           major: {
             enabled: true,
           },
