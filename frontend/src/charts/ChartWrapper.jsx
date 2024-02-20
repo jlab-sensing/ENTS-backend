@@ -151,14 +151,16 @@ function ChartWrapper({ id, data, options, stream }) {
 
   //** Maintain zoom and pan when streaming new data */
   useEffect(() => {
-    if (id == 'pwr') {
-      console.log('Data changed at', id, data.labels, data.datasets);
-    }
+    // if (id == 'pwr') {
+    //   console.log('Data changed at', id, data.labels, data.datasets);
+    // }
 
     if (JSON.stringify(prevData) != JSON.stringify(data)) {
       if (stream) {
         if (chartRef.current && chartRef.current.config.data != data) {
-          // console.log('Data changed at', id, data.labels, data.datasets);
+          // if (id == 'pwr') {
+          //   console.log('Data changed at', id, data.labels, data.datasets);
+          // }
           chartRef.current.config.data.labels = data.labels;
           chartRef.current.config.data.datasets = data.datasets;
           // if (prevScaleRef != undefined) {

@@ -52,15 +52,18 @@ export default function PwrChart({ data, stream }) {
         },
         type: 'time',
         ticks: {
-          autoSkip: false,
+          autoSkip: true,
           autoSkipPadding: 50,
           maxRotation: 0,
+          // callback: (val, index, ticks) => (index === 0 || index === ticks.length - 1 ? null : val),
           major: {
             enabled: true,
           },
         },
         time: {
           displayFormats: {
+            second: 'hh:mm:ss',
+            minute: 'hh:mm',
             hour: 'hh:mm a',
             day: 'D',
           },
