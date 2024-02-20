@@ -111,7 +111,7 @@ export default function VwcChart({ data, stream }) {
     },
   };
 
-  return <ChartWrapper id='vwc' data={data} options={chartOptions} />;
+  return <ChartWrapper id='vwc' data={data} options={stream ? streamChartOptions : chartOptions} stream={stream} />;
 }
 
 VwcChart.propTypes = {

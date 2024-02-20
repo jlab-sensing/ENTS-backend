@@ -43,9 +43,15 @@ function PowerCharts({ cells, startDate, endDate, watch }) {
   async function streamPowerChartData() {
     const data = {};
     for (const { id, name } of cells) {
+      // added fixed stream delay to account of aync api calls
       data[id] = {
         name: name,
-        powerData: await streamPowerData(id, DateTime.now().minus({ millisecond: interval }), DateTime.now(), true),
+        powerData: await streamPowerData(
+          id,
+          DateTime.now().minus({ millisecond: interval + 1000 }),
+          DateTime.now(),
+          true,
+        ),
       };
     }
     return data;

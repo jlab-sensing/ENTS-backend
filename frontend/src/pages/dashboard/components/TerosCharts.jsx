@@ -8,6 +8,8 @@ import { getTerosData, streamTerosData } from '../../../services/teros';
 import useInterval from '../../../hooks/useInterval';
 
 function TerosCharts({ cells, startDate, endDate, watch }) {
+  //** QUICK WAY to change stream time in seconds */
+  const interval = 1000;
   const chartSettings = {
     label: [],
     datasets: [],
@@ -31,7 +33,7 @@ function TerosCharts({ cells, startDate, endDate, watch }) {
       data[id] = {
         name: name,
         terosData: await (watch
-          ? streamTerosData(id, startDate, DateTime.now(), true)
+          ? streamTerosData(id, DateTime.now().minus({ second: 20 }), DateTime.now(), true)
           : getTerosData(id, startDate, endDate)),
       };
     }
@@ -41,9 +43,15 @@ function TerosCharts({ cells, startDate, endDate, watch }) {
   async function streamTerosChartData() {
     const data = {};
     for (const { id, name } of cells) {
+      // added fixed stream delay to account of aync api calls
       data[id] = {
         name: name,
-        terosData: await streamTerosData(id, DateTime.now().minus({ second: 10 }), DateTime.now(), true),
+        terosData: await streamTerosData(
+          id,
+          DateTime.now().minus({ millisecond: interval + 1000 }),
+          DateTime.now(),
+          true,
+        ),
       };
     }
     return data;
@@ -161,26 +169,43 @@ function TerosCharts({ cells, startDate, endDate, watch }) {
   function clearCharts() {
     console.log('CLEARNIGN');
     const newVwcChartData = {
+      ...vwcChartData,
+      labels: [],
       datasets: [],
     };
     const newTempChartData = {
+      ...tempChartData,
+      labels: [],
       datasets: [],
     };
 
-    setVwcChartData(newVwcChartData);
-    setTempChartData(newTempChartData);
+    setVwcChartData(Object.assign({}, newVwcChartData));
+    setTempChartData(Object.assign({}, newTempChartData));
+  }
+
+  function clearChartDatasets(chartData) {
+    for (const dataset of chartData.datasets) {
+      dataset.data = [];
+    }
+    chartData.labels = [];
+    console.log('CLEARNIGN data', chartData);
+    return chartData;
   }
 
   useInterval(
     () => {
       streamCharts();
     },
-    watch ? 1000 * 10 : null,
+    watch ? interval : null,
   );
 
   useEffect(() => {
-    if (Array.isArray(cells) && cells.length) {
+    if (Array.isArray(cells) && cells.length && !watch) {
       updateCharts();
+    } else if (Array.isArray(cells) && cells.length && watch) {
+      // updating react state for object requires new object
+      setVwcChartData(clearChartDatasets(Object.assign({}, vwcChartData)));
+      setTempChartData(clearChartDatasets(Object.assign({}, tempChartData)));
     } else {
       clearCharts();
     }
@@ -197,10 +222,10 @@ function TerosCharts({ cells, startDate, endDate, watch }) {
   return (
     <>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <VwcChart data={vwcChartData} />
+        <VwcChart data={vwcChartData} stream={watch} />
       </Grid>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <TempChart data={tempChartData} />
+        <TempChart data={tempChartData} stream={watch} />
       </Grid>
     </>
   );
