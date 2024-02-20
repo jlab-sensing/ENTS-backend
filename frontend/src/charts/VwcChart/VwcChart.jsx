@@ -27,7 +27,7 @@ export default function VwcChart({ data, stream }) {
         time: {
           displayFormats: {
             hour: 'hh:mm a',
-            day: 'D',
+            day: 'MM/dd',
           },
         },
       },
@@ -115,6 +115,6 @@ export default function VwcChart({ data, stream }) {
 }
 
 VwcChart.propTypes = {
-  id: PropTypes.string,
   data: PropTypes.object,
+  stream: PropTypes.bool,
 };

@@ -91,4 +91,5 @@ export default function TempChart({ data, stream }) {
 }
 TempChart.propTypes = {
   data: PropTypes.object,
+  stream: PropTypes.bool,
 };

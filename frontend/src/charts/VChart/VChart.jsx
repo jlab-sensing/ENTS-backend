@@ -25,8 +25,8 @@ export default function VChart({ data, stream }) {
         },
         time: {
           displayFormats: {
-            hour: 'hh:mm',
-            day: 'D',
+            hour: 'hh:mm a',
+            day: 'MM/dd',
           },
         },
       },
@@ -117,4 +117,5 @@ export default function VChart({ data, stream }) {
 
 VChart.propTypes = {
   data: PropTypes.object,
+  stream: PropTypes.bool,
 };

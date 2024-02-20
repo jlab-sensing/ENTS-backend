@@ -26,7 +26,8 @@ export default function PwrChart({ data, stream }) {
         },
         time: {
           displayFormats: {
-            day: 'D',
+            hour: 'hh:mm a',
+            day: 'MM/dd',
           },
         },
       },
@@ -88,4 +89,5 @@ export default function PwrChart({ data, stream }) {
 
 PwrChart.propTypes = {
   data: PropTypes.object,
+  stream: PropTypes.bool,
 };

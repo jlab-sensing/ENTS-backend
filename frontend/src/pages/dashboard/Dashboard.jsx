@@ -14,7 +14,7 @@ function Dashboard() {
   const [endDate, setEndDate] = useState(DateTime.now());
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [selectedCells, setSelectedCells] = useState([]);
-  const [watch, setWatch] = useState(false);
+  const [stream, setStream] = useState(false);
 
   return (
     <>
@@ -42,22 +42,15 @@ function Dashboard() {
             startDate={startDate}
             endDate={endDate}
           />
-          {/* <Button
-            onClick={() => {
-              alert('clicked');
-            }}
-          >
-            Click me
-          </Button> */}
           <Button
+            variant='outlined'
             onClick={() => {
               console.log('test');
-              setWatch(!watch);
+              setStream(!stream);
             }}
           >
-            {watch ? 'streaming' : 'hourly'}
+            {stream ? 'streaming' : 'hourly'}
           </Button>
-          {/* <Button onClick={() => console.log('Tets')}>watch</Button> */}
         </Stack>
         <Grid
           container
@@ -67,8 +60,8 @@ function Dashboard() {
           justifyContent='space-evenly'
           columns={{ xs: 4, sm: 8, md: 12 }}
         >
-          <PowerCharts cells={selectedCells} startDate={startDate} endDate={endDate} watch={watch} />
-          <TerosCharts cells={selectedCells} startDate={startDate} endDate={endDate} watch={watch} />
+          <PowerCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          <TerosCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
         </Grid>
       </Stack>
 

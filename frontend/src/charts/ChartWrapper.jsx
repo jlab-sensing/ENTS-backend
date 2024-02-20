@@ -29,6 +29,36 @@ function ChartWrapper({ id, data, options, stream }) {
   const [prevData, setPrevData] = useState(data);
   const prevScaleRef = usePrevious(scaleRef);
 
+  //** defines axis for charts, charts may have different axis names/
+  const axes = Object.keys(options.scales);
+  const axesWithScaleKeys = [];
+  for (const a of axes) {
+    axesWithScaleKeys.push({ axis: a, axisMin: `${a}Min`, axisMax: `${a}Max` });
+  }
+
+  //** Turns axes into scales object */
+  function getScaleRef(chart) {
+    const axesWithScale = axesWithScaleKeys.reduce(
+      (ac, { axis, axisMin, axisMax }) => ({
+        ...ac,
+        [axisMin]: chart.scales[axis].options.min,
+        [axisMax]: chart.scales[axis].options.max,
+      }),
+      {},
+    );
+    return axesWithScale;
+  }
+
+  //** Callback for when zoom action is completed */
+  function onZoomComplete({ chart }) {
+    setScaleRef(getScaleRef(chart));
+  }
+
+  //** Callback for when pan action is completed */
+  function onPanComplete({ chart }) {
+    setScaleRef(getScaleRef(chart));
+  }
+
   //** Defines options object */
   function Options() {
     return {
@@ -56,26 +86,6 @@ function ChartWrapper({ id, data, options, stream }) {
   let optionsWithPlugins = new Options();
   const chartRef = useRef({ id, data, optionsWithPlugins });
 
-  //** defines axis for charts, charts may have different axis names/
-  const axes = Object.keys(options.scales);
-  const axesWithScaleKeys = [];
-  for (const a of axes) {
-    axesWithScaleKeys.push({ axis: a, axisMin: `${a}Min`, axisMax: `${a}Max` });
-  }
-
-  //** Turns axes into scales object */
-  function getScaleRef(chart) {
-    const axesWithScale = axesWithScaleKeys.reduce(
-      (ac, { axis, axisMin, axisMax }) => ({
-        ...ac,
-        [axisMin]: chart.scales[axis].options.min,
-        [axisMax]: chart.scales[axis].options.max,
-      }),
-      {},
-    );
-    return axesWithScale;
-  }
-
   //** Modifies chart ref with new scales object */
   function setScales(scaleRef) {
     if (chartRef.current) {
@@ -85,16 +95,6 @@ function ChartWrapper({ id, data, options, stream }) {
       }
       chartRef.current.update();
     }
-  }
-
-  //** Callback for when zoom action is completed */
-  function onZoomComplete({ chart }) {
-    setScaleRef(getScaleRef(chart));
-  }
-
-  //** Callback for when pan action is completed */
-  function onPanComplete({ chart }) {
-    setScaleRef(getScaleRef(chart));
   }
 
   const globalChartOpts = {
@@ -147,35 +147,23 @@ function ChartWrapper({ id, data, options, stream }) {
       }
       return;
     }
+    // TODO: refactor for better state management, useCallback for setting scaleRef
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zoomSelected, panSelected, prevScaleRef, scaleRef]);
 
   //** Maintain zoom and pan when streaming new data */
   useEffect(() => {
-    // if (id == 'pwr') {
-    //   console.log('Data changed at', id, data.labels, data.datasets);
-    // }
-
     if (JSON.stringify(prevData) != JSON.stringify(data)) {
+      setPrevData(data);
       if (stream) {
         if (chartRef.current && chartRef.current.config.data != data) {
-          // if (id == 'pwr') {
-          //   console.log('Data changed at', id, data.labels, data.datasets);
-          // }
           chartRef.current.config.data.labels = data.labels;
           chartRef.current.config.data.datasets = data.datasets;
-          // if (prevScaleRef != undefined) {
-          //   setScales(prevScaleRef);
-          //   chartRef.current.update();
-          // } else if (scaleRef != undefined) {
-          //   setScales(scaleRef);
-          //   chartRef.current.update();
-          // }
           chartRef.current.update();
           return;
         }
       } else {
         if (chartRef.current && chartRef.current.config.data != data) {
-          // console.log('Data changed at', id, data.labels, data.datasets);
           chartRef.current.config.data.labels = data.labels;
           chartRef.current.config.data.datasets = data.datasets;
           if (prevScaleRef != undefined) {
@@ -190,6 +178,8 @@ function ChartWrapper({ id, data, options, stream }) {
         }
       }
     }
+    // TODO: refactor for better state management
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, scaleRef, prevScaleRef, stream]);
 
   /** Sets zoom / pan when state is updated onZoomComplete or onPanComplete */
@@ -199,6 +189,8 @@ function ChartWrapper({ id, data, options, stream }) {
       chartRef.current.update();
     }
     return;
+    // TODO: refactor for better state management, useCallback for setting scaleRef
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scaleRef]);
 
   return (
@@ -252,4 +244,5 @@ ChartWrapper.propTypes = {
   id: PropTypes.string,
   data: PropTypes.object,
   options: PropTypes.object,
+  stream: PropTypes.bool,
 };

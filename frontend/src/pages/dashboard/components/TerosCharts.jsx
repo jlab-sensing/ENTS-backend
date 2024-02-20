@@ -7,7 +7,7 @@ import TempChart from '../../../charts/TempChart/TempChart';
 import { getTerosData, streamTerosData } from '../../../services/teros';
 import useInterval from '../../../hooks/useInterval';
 
-function TerosCharts({ cells, startDate, endDate, watch }) {
+function TerosCharts({ cells, startDate, endDate, stream }) {
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
   const chartSettings = {
@@ -23,16 +23,17 @@ function TerosCharts({ cells, startDate, endDate, watch }) {
   const ecColors = ['purple', 'blue'];
   const vwcColors = ['orange', 'red'];
 
+  //** gets teros data from backend */
   async function getTerosChartData() {
     const data = {};
     let loadCells = cells;
-    if (!watch) {
+    if (!stream) {
       loadCells = cells.filter((c) => !(c.id in loadedCells));
     }
     for (const { id, name } of loadCells) {
       data[id] = {
         name: name,
-        terosData: await (watch
+        terosData: await (stream
           ? streamTerosData(id, DateTime.now().minus({ second: 20 }), DateTime.now(), true)
           : getTerosData(id, startDate, endDate)),
       };
@@ -40,6 +41,7 @@ function TerosCharts({ cells, startDate, endDate, watch }) {
     return data;
   }
 
+  //** streams teros data from backend */
   async function streamTerosChartData() {
     const data = {};
     for (const { id, name } of cells) {
@@ -57,6 +59,7 @@ function TerosCharts({ cells, startDate, endDate, watch }) {
     return data;
   }
 
+  //** updates chart based on query */
   function updateCharts() {
     const newVwcChartData = {
       ...vwcChartData,
@@ -69,7 +72,7 @@ function TerosCharts({ cells, startDate, endDate, watch }) {
     getTerosChartData().then((cellChartData) => {
       let selectCounter = 0;
       let loadCells = cells;
-      if (!watch) {
+      if (!stream) {
         loadCells = cells.filter((c) => !(c.id in loadedCells));
       }
       for (const { id } of loadCells) {
@@ -120,6 +123,7 @@ function TerosCharts({ cells, startDate, endDate, watch }) {
     });
   }
 
+  //** updates chart data points from stream */
   function streamCharts() {
     const newVwcChartData = {
       ...vwcChartData,
@@ -139,10 +143,8 @@ function TerosCharts({ cells, startDate, endDate, watch }) {
           cellChartData[cellid].terosData.ec.length
         ) {
           foundNewData = true;
-
           const terosData = cellChartData[cellid].terosData;
           const tTimestamp = terosData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
-
           // set vwc chart
           newVwcChartData.labels = newVwcChartData.labels.concat(tTimestamp);
           newVwcChartData.datasets[selectCounter].data = newVwcChartData.datasets[selectCounter].data.concat(
@@ -166,6 +168,7 @@ function TerosCharts({ cells, startDate, endDate, watch }) {
     });
   }
 
+  //** clearing all chart settings */
   function clearCharts() {
     console.log('CLEARNIGN');
     const newVwcChartData = {
@@ -178,17 +181,16 @@ function TerosCharts({ cells, startDate, endDate, watch }) {
       labels: [],
       datasets: [],
     };
-
     setVwcChartData(Object.assign({}, newVwcChartData));
     setTempChartData(Object.assign({}, newTempChartData));
   }
 
+  //** clearning chart data points and labels */
   function clearChartDatasets(chartData) {
     for (const dataset of chartData.datasets) {
       dataset.data = [];
     }
     chartData.labels = [];
-    console.log('CLEARNIGN data', chartData);
     return chartData;
   }
 
@@ -196,36 +198,31 @@ function TerosCharts({ cells, startDate, endDate, watch }) {
     () => {
       streamCharts();
     },
-    watch ? interval : null,
+    stream ? interval : null,
   );
 
   useEffect(() => {
-    if (Array.isArray(cells) && cells.length && !watch) {
+    if (Array.isArray(cells) && cells.length && !stream) {
       updateCharts();
-    } else if (Array.isArray(cells) && cells.length && watch) {
+    } else if (Array.isArray(cells) && cells.length && stream) {
       // updating react state for object requires new object
       setVwcChartData(clearChartDatasets(Object.assign({}, vwcChartData)));
       setTempChartData(clearChartDatasets(Object.assign({}, tempChartData)));
     } else {
+      //no selected cells
       clearCharts();
     }
-  }, [cells, watch]);
-
-  // useCallback(() => {
-  //   if (Array.isArray(cells) && cells.length) {
-  //     updateCharts();
-  //   } else {
-  //     clearCharts();
-  //   }
-  // }, [cells]);
+    // TODO: need to memoize updating charts
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cells, stream]);
 
   return (
     <>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <VwcChart data={vwcChartData} stream={watch} />
+        <VwcChart data={vwcChartData} stream={stream} />
       </Grid>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <TempChart data={tempChartData} stream={watch} />
+        <TempChart data={tempChartData} stream={stream} />
       </Grid>
     </>
   );
@@ -235,7 +232,7 @@ TerosCharts.propTypes = {
   cells: PropTypes.array,
   startDate: PropTypes.any,
   endDate: PropTypes.any,
-  watch: PropTypes.boolean,
+  stream: PropTypes.bool,
 };
 
 export default TerosCharts;
