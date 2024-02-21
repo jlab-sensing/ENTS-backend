@@ -32,6 +32,7 @@ export default function PwrChart({ data, stream }) {
         },
       },
       y: {
+        type: 'linear',
         beginAtZero: true,
         title: {
           display: true,
@@ -59,6 +60,10 @@ export default function PwrChart({ data, stream }) {
           major: {
             enabled: true,
           },
+          padding: 15,
+        },
+        grid: {
+          tickLength: 15,
         },
         time: {
           displayFormats: {
@@ -72,7 +77,9 @@ export default function PwrChart({ data, stream }) {
         suggestedMax: DateTime.now().toJSON(),
       },
       y: {
+        type: 'linear',
         beginAtZero: true,
+        grace: '10%',
         title: {
           display: true,
           text: 'Power (µW)',

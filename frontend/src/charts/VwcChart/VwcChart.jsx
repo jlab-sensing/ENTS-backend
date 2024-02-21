@@ -32,6 +32,7 @@ export default function VwcChart({ data, stream }) {
         },
       },
       ecAxis: {
+        type: 'linear',
         position: 'right',
         beginAtZero: true,
         suggestedMax: 650,
@@ -41,6 +42,7 @@ export default function VwcChart({ data, stream }) {
         },
       },
       vwcAxis: {
+        type: 'linear',
         position: 'left',
         beginAtZero: true,
         suggestedMax: 0.65,
@@ -74,6 +76,10 @@ export default function VwcChart({ data, stream }) {
           major: {
             enabled: true,
           },
+          padding: 15,
+        },
+        grid: {
+          tickLength: 15,
         },
         time: {
           displayFormats: {
@@ -87,6 +93,8 @@ export default function VwcChart({ data, stream }) {
         suggestedMax: DateTime.now().toJSON(),
       },
       ecAxis: {
+        type: 'linear',
+        grace: '10%',
         position: 'right',
         beginAtZero: true,
         suggestedMax: 650,
@@ -96,6 +104,8 @@ export default function VwcChart({ data, stream }) {
         },
       },
       vwcAxis: {
+        type: 'linear',
+        grace: '10%',
         position: 'left',
         beginAtZero: true,
         suggestedMax: 0.65,
@@ -103,7 +113,6 @@ export default function VwcChart({ data, stream }) {
           display: true,
           text: 'VWC (%)',
         },
-        min: 0,
         grid: {
           drawOnChartArea: false,
         },

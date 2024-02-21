@@ -74,6 +74,10 @@ export default function VChart({ data, stream }) {
           major: {
             enabled: true,
           },
+          padding: 15,
+        },
+        grid: {
+          tickLength: 15,
         },
         time: {
           displayFormats: {
@@ -87,6 +91,8 @@ export default function VChart({ data, stream }) {
         suggestedMax: DateTime.now().toJSON(),
       },
       vAxis: {
+        type: 'linear',
+        grace: '10%',
         position: 'left',
         beginAtZero: true,
         title: {
@@ -94,12 +100,14 @@ export default function VChart({ data, stream }) {
           text: 'Cell Voltage (mV)',
         },
         min: 0,
-        max: 400,
+        suggestedMax: 400,
         grid: {
           drawOnChartArea: false,
         },
       },
       cAxis: {
+        type: 'linear',
+        grace: '10%',
         position: 'right',
         beginAtZero: true,
         title: {
@@ -107,7 +115,7 @@ export default function VChart({ data, stream }) {
           text: 'Current (µA)',
         },
         min: 0,
-        max: 160,
+        suggestedMax: 160,
       },
     },
   };

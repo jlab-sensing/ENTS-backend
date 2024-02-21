@@ -62,6 +62,10 @@ export default function TempChart({ data, stream }) {
           major: {
             enabled: true,
           },
+          padding: 15,
+        },
+        grid: {
+          tickLength: 15,
         },
         time: {
           displayFormats: {
@@ -76,6 +80,7 @@ export default function TempChart({ data, stream }) {
       },
       y: {
         type: 'linear',
+        grace: '10%',
         position: 'left',
         beginAtZero: true,
         suggestedMax: 35,
