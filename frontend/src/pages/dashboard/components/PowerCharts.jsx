@@ -133,27 +133,71 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
     streamPowerChartData().then((cellChartData) => {
       let selectCounter = 0;
       let foundNewData = false;
-      for (const { id } of cells) {
-        const cellid = id;
-        if (
-          Array.isArray(cellChartData[cellid].powerData.i) &&
-          cellChartData[cellid].powerData.i.length &&
-          Array.isArray(cellChartData[cellid].powerData.v) &&
-          cellChartData[cellid].powerData.v.length
-        ) {
-          foundNewData = true;
+      if (newVChartData.datasets.length) {
+        for (const { id } of cells) {
+          const cellid = id;
+          if (
+            Array.isArray(cellChartData[cellid].powerData.i) &&
+            cellChartData[cellid].powerData.i.length &&
+            Array.isArray(cellChartData[cellid].powerData.v) &&
+            cellChartData[cellid].powerData.v.length
+          ) {
+            foundNewData = true;
+            const powerData = cellChartData[cellid].powerData;
+            const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
+            newVChartData.labels = newVChartData.labels.concat(pTimestamp);
+            newVChartData.datasets[selectCounter].data = newVChartData.datasets[selectCounter].data.concat(powerData.v);
+            newVChartData.datasets[selectCounter + 1].data = newVChartData.datasets[selectCounter + 1].data.concat(
+              powerData.i,
+            );
+            //power data
+            newPwrChartData.labels = newPwrChartData.labels.concat(pTimestamp);
+            newPwrChartData.datasets[selectCounter].data = newPwrChartData.datasets[selectCounter].data.concat(
+              powerData.p,
+            );
+            selectCounter += 1;
+          }
+        }
+      } else {
+        for (const { id } of cells) {
+          const cellid = id;
+          const name = cellChartData[cellid].name;
           const powerData = cellChartData[cellid].powerData;
           const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
-          newVChartData.labels = newVChartData.labels.concat(pTimestamp);
-          newVChartData.datasets[selectCounter].data = newVChartData.datasets[selectCounter].data.concat(powerData.v);
-          newVChartData.datasets[selectCounter + 1].data = newVChartData.datasets[selectCounter + 1].data.concat(
-            powerData.i,
+          newVChartData.labels = pTimestamp;
+          newVChartData.datasets.push(
+            {
+              label: name + ' Voltage (mV)',
+              data: powerData.v,
+              borderColor: vColors[selectCounter],
+              borderWidth: 2,
+              fill: false,
+              yAxisID: 'vAxis',
+              radius: 2,
+              pointRadius: 1,
+            },
+            {
+              label: name + ' Current (µA)',
+              data: powerData.i,
+              borderColor: iColors[selectCounter],
+              borderWidth: 2,
+              fill: false,
+              yAxisID: 'cAxis',
+              radius: 2,
+              pointRadius: 1,
+            },
           );
           //power data
-          newPwrChartData.labels = newPwrChartData.labels.concat(pTimestamp);
-          newPwrChartData.datasets[selectCounter].data = newPwrChartData.datasets[selectCounter].data.concat(
-            powerData.p,
-          );
+          newPwrChartData.labels = pTimestamp;
+          newPwrChartData.datasets.push({
+            label: name + ' Power (µW)',
+            data: powerData.p,
+            borderColor: pColors[selectCounter],
+            borderWidth: 2,
+            fill: false,
+            radius: 2,
+            pointRadius: 1,
+          });
           selectCounter += 1;
         }
       }

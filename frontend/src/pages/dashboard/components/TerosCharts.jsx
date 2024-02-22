@@ -134,30 +134,75 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
     streamTerosChartData().then((cellChartData) => {
       let selectCounter = 0;
       let foundNewData = false;
-      for (const { id } of cells) {
-        const cellid = id;
-        if (
-          Array.isArray(cellChartData[cellid].terosData.vwc) &&
-          cellChartData[cellid].terosData.vwc.length &&
-          Array.isArray(cellChartData[cellid].terosData.ec) &&
-          cellChartData[cellid].terosData.ec.length
-        ) {
-          foundNewData = true;
+      if (newVwcChartData.datasets.length) {
+        for (const { id } of cells) {
+          const cellid = id;
+          if (
+            Array.isArray(cellChartData[cellid].terosData.vwc) &&
+            cellChartData[cellid].terosData.vwc.length &&
+            Array.isArray(cellChartData[cellid].terosData.ec) &&
+            cellChartData[cellid].terosData.ec.length
+          ) {
+            foundNewData = true;
+            const terosData = cellChartData[cellid].terosData;
+            const tTimestamp = terosData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
+            // set vwc chart
+            newVwcChartData.labels = newVwcChartData.labels.concat(tTimestamp);
+            newVwcChartData.datasets[selectCounter].data = newVwcChartData.datasets[selectCounter].data.concat(
+              terosData.vwc,
+            );
+            newVwcChartData.datasets[selectCounter + 1].data = newVwcChartData.datasets[selectCounter + 1].data.concat(
+              terosData.ec,
+            );
+            // set temp chart
+            newTempChartData.labels = newTempChartData.labels.concat(tTimestamp);
+            newTempChartData.datasets[selectCounter].data = newTempChartData.datasets[selectCounter].data.concat(
+              terosData.temp,
+            );
+            selectCounter += 1;
+          }
+        }
+      } else {
+        for (const { id } of cells) {
+          const cellid = id;
+          const name = cellChartData[cellid].name;
           const terosData = cellChartData[cellid].terosData;
           const tTimestamp = terosData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
-          // set vwc chart
-          newVwcChartData.labels = newVwcChartData.labels.concat(tTimestamp);
-          newVwcChartData.datasets[selectCounter].data = newVwcChartData.datasets[selectCounter].data.concat(
-            terosData.vwc,
+          newVwcChartData.labels = tTimestamp;
+          newVwcChartData.datasets.push(
+            {
+              label: name + ' Volumetric Water Content (%)',
+              data: terosData.vwc,
+              borderColor: vwcColors[selectCounter],
+              borderWidth: 2,
+              fill: false,
+              yAxisID: 'vwcAxis',
+              radius: 2,
+              pointRadius: 1,
+            },
+            {
+              label: name + ' Electrical Conductivity (µS/cm)',
+              data: terosData.ec,
+              borderColor: ecColors[selectCounter],
+              borderWidth: 2,
+              fill: false,
+              yAxisID: 'ecAxis',
+              radius: 2,
+              pointRadius: 1,
+            },
           );
-          newVwcChartData.datasets[selectCounter + 1].data = newVwcChartData.datasets[selectCounter + 1].data.concat(
-            terosData.ec,
-          );
-          // set temp chart
-          newTempChartData.labels = newTempChartData.labels.concat(tTimestamp);
-          newTempChartData.datasets[selectCounter].data = newTempChartData.datasets[selectCounter].data.concat(
-            terosData.temp,
-          );
+
+          // Update the combined Temperature Chart data for the specific cell
+          newTempChartData.labels = tTimestamp;
+          newTempChartData.datasets.push({
+            label: name + ' Temperature (°C)',
+            data: terosData.temp,
+            borderColor: tempColors[selectCounter],
+            borderWidth: 2,
+            fill: false,
+            radius: 2,
+            pointRadius: 1,
+          });
           selectCounter += 1;
         }
       }
