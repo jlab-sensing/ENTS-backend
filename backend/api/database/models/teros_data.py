@@ -47,7 +47,7 @@ class TEROSData(db.Model):
         return teros_data
 
     @staticmethod
-    def add_protobuf_power_data(cell_id, ts, vwc, raw_vwc, temp, ec, water_pot):
+    def add_protobuf_teros_data(cell_id, ts, vwc, raw_vwc, temp, ec, water_pot):
         cur_cell = Cell.query.filter_by(id=cell_id).first()
         if cur_cell is None:
             return None
