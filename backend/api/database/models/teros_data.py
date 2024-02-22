@@ -96,22 +96,34 @@ class TEROSData(db.Model):
         resample="hour",
         start_time=datetime.now() - relativedelta(months=1),
         end_time=datetime.now(),
+        stream=False,
     ):
         """gets teros data as a list of objects"""
         data = {"timestamp": [], "vwc": [], "temp": [], "ec": []}
-
-        stmt = (
-            db.select(
-                func.date_trunc(resample, TEROSData.ts).label("ts"),
-                func.avg(TEROSData.vwc).label("vwc"),
-                func.avg(TEROSData.temp).label("temp"),
-                func.avg(TEROSData.ec).label("ec"),
+        if not stream:
+            stmt = (
+                db.select(
+                    func.date_trunc(resample, TEROSData.ts).label("ts"),
+                    func.avg(TEROSData.vwc).label("vwc"),
+                    func.avg(TEROSData.temp).label("temp"),
+                    func.avg(TEROSData.ec).label("ec"),
+                )
+                .where(TEROSData.cell_id == cell_id)
+                .filter((TEROSData.ts.between(start_time, end_time)))
+                .group_by(func.date_trunc(resample, TEROSData.ts))
+                .order_by(func.date_trunc(resample, TEROSData.ts))
             )
-            .where(TEROSData.cell_id == cell_id)
-            .filter((TEROSData.ts.between(start_time, end_time)))
-            .group_by(func.date_trunc(resample, TEROSData.ts))
-            .order_by(func.date_trunc(resample, TEROSData.ts))
-        )
+        else:
+            stmt = (
+                db.select(
+                    TEROSData.ts,
+                    TEROSData.vwc,
+                    TEROSData.temp,
+                    TEROSData.ec,
+                )
+                .where(TEROSData.cell_id == cell_id)
+                .filter((TEROSData.ts.between(start_time, end_time)))
+            )
 
         for row in db.session.execute(stmt):
             data["timestamp"].append(row.ts)

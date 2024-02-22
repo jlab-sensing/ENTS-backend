@@ -1,7 +1,7 @@
 import { React, useState } from 'react';
 import { DateTime } from 'luxon';
 import DownloadBtn from './components/DownloadBtn';
-import { Box, Grid, Stack, Divider } from '@mui/material';
+import { Box, Grid, Stack, Divider, Button } from '@mui/material';
 import DateRangeSel from './components/DateRangeSel';
 import CellSelect from './components/CellSelect';
 import PowerCharts from './components/PowerCharts';
@@ -14,6 +14,7 @@ function Dashboard() {
   const [endDate, setEndDate] = useState(DateTime.now());
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [selectedCells, setSelectedCells] = useState([]);
+  const [stream, setStream] = useState(false);
 
   return (
     <>
@@ -41,6 +42,15 @@ function Dashboard() {
             startDate={startDate}
             endDate={endDate}
           />
+          <Button
+            variant='outlined'
+            onClick={() => {
+              console.log('test');
+              setStream(!stream);
+            }}
+          >
+            {stream ? 'streaming' : 'hourly'}
+          </Button>
         </Stack>
         <Grid
           container
@@ -50,8 +60,8 @@ function Dashboard() {
           justifyContent='space-evenly'
           columns={{ xs: 4, sm: 8, md: 12 }}
         >
-          <PowerCharts cells={selectedCells} startDate={startDate} endDate={endDate} />
-          <TerosCharts cells={selectedCells} startDate={startDate} endDate={endDate} />
+          <PowerCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          <TerosCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
         </Grid>
       </Stack>
 

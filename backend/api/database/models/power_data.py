@@ -116,6 +116,7 @@ class PowerData(db.Model):
         resample="hour",
         start_time=datetime.now() - relativedelta(months=1),
         end_time=datetime.now(),
+        stream=False,
     ):
         """gets teros data as a list of objects"""
         data = {
@@ -124,19 +125,30 @@ class PowerData(db.Model):
             "i": [],
             "p": [],
         }
-
-        resampled = (
-            db.select(
-                db.func.date_trunc(resample, PowerData.ts).label("ts"),
-                db.func.avg(PowerData.voltage).label("voltage"),
-                db.func.avg(PowerData.current).label("current"),
+        if not stream:
+            resampled = (
+                db.select(
+                    db.func.date_trunc(resample, PowerData.ts).label("ts"),
+                    db.func.avg(PowerData.voltage).label("voltage"),
+                    db.func.avg(PowerData.current).label("current"),
+                )
+                .where((PowerData.cell_id == cell_id))
+                # .filter((PowerData.ts >= startTime, PowerData.ts <= endTime))
+                .filter((PowerData.ts.between(start_time, end_time)))
+                .group_by(db.func.date_trunc(resample, PowerData.ts))
+                .subquery()
             )
-            .where((PowerData.cell_id == cell_id))
-            # .filter((PowerData.ts >= startTime, PowerData.ts <= endTime))
-            .filter((PowerData.ts.between(start_time, end_time)))
-            .group_by(db.func.date_trunc(resample, PowerData.ts))
-            .subquery()
-        )
+        else:
+            resampled = (
+                db.select(
+                    PowerData.ts,
+                    PowerData.voltage,
+                    PowerData.current,
+                )
+                .where((PowerData.cell_id == cell_id))
+                .filter((PowerData.ts.between(start_time, end_time)))
+                .subquery()
+            )
 
         # adj_units = db.select(
         #     resampled.c.ts.label("ts"),
