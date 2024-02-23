@@ -68,6 +68,7 @@ class TEROSData(db.Model):
         cell_id,
         start_time=datetime.now() - relativedelta(months=1),
         end_time=datetime.now(),
+        stream=False,
     ):
         """gets teros data as a list of objects"""
         data = {

@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
       outDir: 'build',
     },
     esbuild: {
-      drop: ['console', 'debugger'],
+      pure: mode === 'production' ? ['console.log'] : [],
     },
     test: {
       environment: 'jsdom',
