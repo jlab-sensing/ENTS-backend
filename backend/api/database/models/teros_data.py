@@ -64,53 +64,29 @@ class TEROSData(db.Model):
         db.session.commit()
         return teros_data
 
-    def get_teros_data(cell_id, resample="hour"):
-        """gets teros data aggregated by attributes"""
-        data = []
-
-        stmt = (
-            db.select(
-                func.date_trunc(resample, TEROSData.ts).label("ts"),
-                func.avg(TEROSData.vwc).label("vwc"),
-                func.avg(TEROSData.temp).label("temp"),
-                func.avg(TEROSData.ec).label("ec"),
-            )
-            .where(TEROSData.cell_id == cell_id)
-            .group_by(func.date_trunc(resample, TEROSData.ts))
-            .order_by(func.date_trunc(resample, TEROSData.ts))
-        )
-
-        for row in db.session.execute(stmt):
-            data.append(
-                {
-                    "ts": row.ts,
-                    "vwc": row.vwc,
-                    "temp": row.temp,
-                    "ec": row.ec,
-                }
-            )
-        return data
-
     def get_teros_data_obj(
         cell_id,
-        resample="hour",
         start_time=datetime.now() - relativedelta(months=1),
         end_time=datetime.now(),
     ):
         """gets teros data as a list of objects"""
-        data = {"timestamp": [], "vwc": [], "temp": [], "ec": []}
+        data = {
+            "timestamp": [],
+            "vwc": [],
+            "temp": [],
+            "ec": []
+        }
 
         stmt = (
             db.select(
-                func.date_trunc(resample, TEROSData.ts).label("ts"),
-                func.avg(TEROSData.vwc).label("vwc"),
-                func.avg(TEROSData.temp).label("temp"),
-                func.avg(TEROSData.ec).label("ec"),
+                TEROSData.ts.label("ts"),
+                TEROSData.vwc.label("vwc"),
+                TEROSData.temp.label("temp"),
+                TEROSData.ec.label("ec"),
             )
             .where(TEROSData.cell_id == cell_id)
             .filter((TEROSData.ts.between(start_time, end_time)))
-            .group_by(func.date_trunc(resample, TEROSData.ts))
-            .order_by(func.date_trunc(resample, TEROSData.ts))
+            .order_by(TEROSData.ts)
         )
 
         for row in db.session.execute(stmt):
