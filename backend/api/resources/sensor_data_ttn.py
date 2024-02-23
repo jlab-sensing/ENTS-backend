@@ -14,6 +14,8 @@ https://www.thethingsindustries.com/docs/integrations/webhooks/scheduling-downli
 Author: John Madden <jmadden173@pm.me>
 """
 
+import base64
+
 from flask import request
 from flask_restful import Resource
 
@@ -24,10 +26,11 @@ class Measurement_Upink(Resource):
     def post(self):
         """Handlings uplink POST request from TTN
         
-        Raises:
-            ValueError if the header Content-Type is not application/json 
+        Returns:
+            Response indicating success or failure. See util.process_measurement
+            for full description.
         """
-        
+       
         content_type = request.headers.get("Content-Type")
         
         # get uplink json 
@@ -37,11 +40,12 @@ class Measurement_Upink(Resource):
             raise ValueError("POST request must be application/json")
        
         # get payload 
-        payload = uplink_json["uplink_message"]["frm_payload"]
+        payload_str = uplink_json["data"]["uplink_message"]["frm_payload"]
+        payload = base64.b64decode(payload_str)
         
-        data_json = process_measurement(payload)
+        resp = process_measurement(payload)
 
         # TODO: Add downlink messages to device 
         
         # return json of measurement
-        return data_json
+        return resp

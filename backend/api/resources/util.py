@@ -1,14 +1,13 @@
-"""Utility file for database operations
+"""Utility functions for interacting with the database
 
 author: John Madden <jmadden173@pm.me>
 """
 
 from datetime import datetime
 
-from soil_power_sensor_protobuf import decode_measurement
+from flask import Response
+from soil_power_sensor_protobuf import encode_response, decode_measurement
 
-from ..database.schemas.power_data_schema import PowerDataSchema
-from ..database.schemas.get_cell_data_schema import TEROSDataSchema
 from ..database.models.power_data import PowerData
 from ..database.models.teros_data import TEROSData
 
@@ -16,42 +15,31 @@ from ..database.models.teros_data import TEROSData
 def process_measurement(data : bytes):
     """Process protobuf encoded measurement
    
-    The byte string gets decoded through protobuf and inserted into the associated table.
+    The byte string gets decoded through protobuf and inserted into the associated table. Upon successful insertion, a 200 response is sent back. On failure when the server does not know how to handle a measurement type, a 501 response is sent. Both cases have serialized response messages sent back.
     
     Args
         data: Encoded measurement message
         
     Returns:
-        JSON representation of the object inserted into the database
-        
-    Raises:
-        NotImplementedError when the processing of the message type is not
-        implemented
+        Flask response with status code and protobuf encoded response.
     """
     
     # decode binary protobuf data 
     meas = decode_measurement(data)
-    
-    # stores the json formatted repsonse 
-    data_json = None
-    
+      
     # power measurement 
     if meas["type"] == "power":
-        power_data = PowerData.add_protobuf_power_data(
+        db_obj = PowerData.add_protobuf_power_data(
             meas["loggerId"],
             meas["cellId"],
             datetime.fromtimestamp(meas["ts"]),
             meas["data"]["voltage"],
             meas["data"]["current"],
-            ) 
+            )
         
-        if power_data is not None:
-            power_schema = PowerDataSchema()
-            data_json = power_schema.jsonify(power_data)
-    
     # teros12 measurement 
     elif meas["type"] == "teros12":
-        teros_data = TEROSData.add_protobuf_teros_data(
+        db_obj = TEROSData.add_protobuf_teros_data(
             meas["cellId"],
             datetime.fromtimestamp(meas["ts"]),
             meas["data"]["vwcAdj"],
@@ -59,14 +47,18 @@ def process_measurement(data : bytes):
             meas["data"]["temp"],
             meas["data"]["ec"],
             None,
-        )
-        
-        if teros_data is not None:
-            teros_schema = TEROSDataSchema()
-            data_json = teros_schema.jsonify(teros_data)
-    
-    # raise error if any other data types are not stored
+        )    
+ 
+    # format response
+    resp = Response()
+    resp.content_type = "application/octet-stream"
+    # indicate a success with 200
+    if db_obj is not None:
+        resp.status_code = 200
+        resp.data = encode_response(True)
+    # indicate an error with 501
     else:
-        raise NotImplementedError(f"Message type {meas["type"]} not implemented")
+        resp.status_code = 501
+        resp.data = encode_response(False)
     
-    return data_json
+    return resp

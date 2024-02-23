@@ -26,45 +26,20 @@ class Measurement_Direct(Resource):
         binary response are returned.
         
         Returns:
-            Response object with a binary response message indicating a success
-            or failure of processing with Content-Type of
-            application/octet-stream. An HTTP status code of 201 indicates a
-            successful processing and 500 indicates a failure.
-        
-        Raises:
-            ValueError if the header Content-Type is not
-            application/octet-stream 
+            Response indicating success or failure. See util.process_measurement
+            for full description.
         """
        
         content_type = request.headers.get("Content-Type") 
         
         # check for correct content type and get json
-        if content_type == "application/json":
+        if content_type == "application/octet-stream":
             # get uplink json 
             data = request.data
         else:
             raise ValueError("POST request must be application/json")
        
         # decode and insret into db 
-        data_json = process_measurement(data)
+        resp = process_measurement(data)
         
-       
-        # format HTTP response 
-        resp = Response() 
-
-        # encode response data
-        if data_json is not None:
-            resp.data = encode_response(True)
-            # created
-            resp.status_code = 201
-        else:
-            resp.data = encode_response(False)
-            # internal server error
-            resp.status_code = 500
-        
-        resp.content_type = "application/octet-stream"
-        # should be autopopulated with automatically_set_content_length
-        #resp.content_length = len(resp.data) 
-        
-        # return json of measurement
-        return data_json
+        return resp
