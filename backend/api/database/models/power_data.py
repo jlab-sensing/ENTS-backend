@@ -78,8 +78,7 @@ class PowerData(db.Model):
             "i": [],
             "p": [],
         }
-<<<<<<< HEAD
-        
+
         stmt = (
             db.select(
                 PowerData.ts.label("ts"),
@@ -90,32 +89,6 @@ class PowerData(db.Model):
             .filter((PowerData.ts.between(start_time, end_time)))
             .subquery()
         )
-=======
-        if not stream:
-            resampled = (
-                db.select(
-                    db.func.date_trunc(resample, PowerData.ts).label("ts"),
-                    db.func.avg(PowerData.voltage).label("voltage"),
-                    db.func.avg(PowerData.current).label("current"),
-                )
-                .where((PowerData.cell_id == cell_id))
-                # .filter((PowerData.ts >= startTime, PowerData.ts <= endTime))
-                .filter((PowerData.ts.between(start_time, end_time)))
-                .group_by(db.func.date_trunc(resample, PowerData.ts))
-                .subquery()
-            )
-        else:
-            resampled = (
-                db.select(
-                    PowerData.ts,
-                    PowerData.voltage,
-                    PowerData.current,
-                )
-                .where((PowerData.cell_id == cell_id))
-                .filter((PowerData.ts.between(start_time, end_time)))
-                .subquery()
-            )
->>>>>>> main
 
         adj_units = db.select(
             stmt.c.ts.label("ts"),

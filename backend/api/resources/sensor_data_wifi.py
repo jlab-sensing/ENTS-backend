@@ -9,10 +9,8 @@ of data.
 Author: John Madden <jmadden173@pm.me>
 """
 
-from flask import request, Response
+from flask import request
 from flask_restful import Resource
-
-from soil_power_sensor_protobuf import encode_response
 
 from .util import process_measurement
 

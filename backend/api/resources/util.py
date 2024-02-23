@@ -15,7 +15,11 @@ from ..database.models.teros_data import TEROSData
 def process_measurement(data : bytes):
     """Process protobuf encoded measurement
    
-    The byte string gets decoded through protobuf and inserted into the associated table. Upon successful insertion, a 200 response is sent back. On failure when the server does not know how to handle a measurement type, a 501 response is sent. Both cases have serialized response messages sent back.
+    The byte string gets decoded through protobuf and inserted into the
+    associated table. Upon successful insertion, a 200 response is sent back. On
+    failure when the server does not know how to handle a measurement type, a
+    501 response is sent. Both cases have serialized response messages sent
+    back.
     
     Args
         data: Encoded measurement message
