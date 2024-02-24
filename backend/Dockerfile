@@ -111,7 +111,6 @@ RUN pip install --no-cache /wheels/*
 
 # copy project
 COPY . $APP_HOME
-COPY migrate.sh $HOME
 
 # chown all the files to the app user
 RUN chown -R app:app $APP_HOME
