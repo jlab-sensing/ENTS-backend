@@ -65,55 +65,8 @@ class PowerData(db.Model):
         db.session.commit()
         return power_data
 
-    def get_power_data(
-        cell_id,
-        resample="hour",
-        startTime=datetime.now() - relativedelta(months=1),
-        endTime=datetime.now(),
-    ):
-        """gets power data aggregated by attributes"""
-        data = []
-
-        resampled = (
-            db.select(
-                db.func.date_trunc(resample, PowerData.ts).label("ts"),
-                db.func.avg(PowerData.voltage).label("voltage"),
-                db.func.avg(PowerData.current).label("current"),
-            )
-            .where(PowerData.cell_id == cell_id)
-            # .filter((PowerData.ts > startTime) & (PowerData.ts < endTime))
-            .group_by(db.func.date_trunc(resample, PowerData.ts))
-            .subquery()
-        )
-
-        # adj_units = db.select(
-        #     resampled.c.ts.label("ts"),
-        #     (resampled.c.voltage * 1e3).label("voltage"),
-        #     (resampled.c.current * 1e6).label("current"),
-        # ).subquery()
-
-        stmt = db.select(
-            resampled.c.ts.label("ts"),
-            (resampled.c.voltage * 1e3).label("voltage"),
-            (resampled.c.current * 1e6).label("current"),
-            (resampled.c.voltage * resampled.c.current * 1e6).label("power"),
-        ).order_by(resampled.c.ts)
-
-        for row in db.session.execute(stmt):
-            data.append(
-                {
-                    "ts": row.ts,
-                    "v": row.voltage,
-                    "i": row.current,
-                    "p": row.power,
-                }
-            )
-
-        return data
-
     def get_power_data_obj(
         cell_id,
-        resample="hour",
         start_time=datetime.now() - relativedelta(months=1),
         end_time=datetime.now(),
         stream=False,
@@ -125,45 +78,27 @@ class PowerData(db.Model):
             "i": [],
             "p": [],
         }
-        if not stream:
-            resampled = (
-                db.select(
-                    db.func.date_trunc(resample, PowerData.ts).label("ts"),
-                    db.func.avg(PowerData.voltage).label("voltage"),
-                    db.func.avg(PowerData.current).label("current"),
-                )
-                .where((PowerData.cell_id == cell_id))
-                # .filter((PowerData.ts >= startTime, PowerData.ts <= endTime))
-                .filter((PowerData.ts.between(start_time, end_time)))
-                .group_by(db.func.date_trunc(resample, PowerData.ts))
-                .subquery()
+
+        stmt = (
+            db.select(
+                PowerData.ts.label("ts"),
+                PowerData.voltage.label("voltage"),
+                PowerData.current.label("current"),
             )
-        else:
-            resampled = (
-                db.select(
-                    PowerData.ts,
-                    PowerData.voltage,
-                    PowerData.current,
-                )
-                .where((PowerData.cell_id == cell_id))
-                .filter((PowerData.ts.between(start_time, end_time)))
-                .subquery()
-            )
+            .where(PowerData.cell_id == cell_id) 
+            .filter((PowerData.ts.between(start_time, end_time)))
+            .subquery()
+        )
 
-        # adj_units = db.select(
-        #     resampled.c.ts.label("ts"),
-        #     resampled.c.voltage.label("voltage"),
-        #     resampled.c.current.label("current"),
-        # ).subquery()
+        # expected units are mV, uA, and uW
+        adj_units = db.select(
+            stmt.c.ts.label("ts"),
+            stmt.c.voltage.label("voltage") * 1e-3,
+            stmt.c.current.label("current") * 1e-6,
+            (stmt.c.voltage * stmt.c.current * 1e-6).label("power")
+        ).order_by(stmt.c.ts)
 
-        stmt = db.select(
-            resampled.c.ts.label("ts"),
-            (resampled.c.voltage * 1e3).label("voltage"),
-            (resampled.c.current * 1e6).label("current"),
-            (resampled.c.voltage * resampled.c.current * 1e6).label("power"),
-        ).order_by(resampled.c.ts)
-
-        for row in db.session.execute(stmt):
+        for row in db.session.execute(adj_units):
             data["timestamp"].append(row.ts)
             data["v"].append(row.voltage)
             data["i"].append(row.current)

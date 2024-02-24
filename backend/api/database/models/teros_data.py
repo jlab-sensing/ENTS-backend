@@ -47,7 +47,7 @@ class TEROSData(db.Model):
         return teros_data
 
     @staticmethod
-    def add_protobuf_power_data(cell_id, ts, vwc, raw_vwc, temp, ec, water_pot):
+    def add_protobuf_teros_data(cell_id, ts, vwc, raw_vwc, temp, ec, water_pot):
         cur_cell = Cell.query.filter_by(id=cell_id).first()
         if cur_cell is None:
             return None
@@ -64,66 +64,32 @@ class TEROSData(db.Model):
         db.session.commit()
         return teros_data
 
-    def get_teros_data(cell_id, resample="hour"):
-        """gets teros data aggregated by attributes"""
-        data = []
-
-        stmt = (
-            db.select(
-                func.date_trunc(resample, TEROSData.ts).label("ts"),
-                func.avg(TEROSData.vwc).label("vwc"),
-                func.avg(TEROSData.temp).label("temp"),
-                func.avg(TEROSData.ec).label("ec"),
-            )
-            .where(TEROSData.cell_id == cell_id)
-            .group_by(func.date_trunc(resample, TEROSData.ts))
-            .order_by(func.date_trunc(resample, TEROSData.ts))
-        )
-
-        for row in db.session.execute(stmt):
-            data.append(
-                {
-                    "ts": row.ts,
-                    "vwc": row.vwc,
-                    "temp": row.temp,
-                    "ec": row.ec,
-                }
-            )
-        return data
-
     def get_teros_data_obj(
         cell_id,
-        resample="hour",
         start_time=datetime.now() - relativedelta(months=1),
         end_time=datetime.now(),
         stream=False,
     ):
         """gets teros data as a list of objects"""
-        data = {"timestamp": [], "vwc": [], "temp": [], "ec": []}
-        if not stream:
-            stmt = (
-                db.select(
-                    func.date_trunc(resample, TEROSData.ts).label("ts"),
-                    func.avg(TEROSData.vwc).label("vwc"),
-                    func.avg(TEROSData.temp).label("temp"),
-                    func.avg(TEROSData.ec).label("ec"),
-                )
-                .where(TEROSData.cell_id == cell_id)
-                .filter((TEROSData.ts.between(start_time, end_time)))
-                .group_by(func.date_trunc(resample, TEROSData.ts))
-                .order_by(func.date_trunc(resample, TEROSData.ts))
+        data = {
+            "timestamp": [],
+            "vwc": [],
+            "temp": [],
+            "ec": []
+        }
+
+        # VWC stored in decimal, converted to percentage
+        stmt = (
+            db.select(
+                TEROSData.ts.label("ts"),
+                (TEROSData.vwc * 100).label("vwc"),
+                TEROSData.temp.label("temp"),
+                TEROSData.ec.label("ec"),
             )
-        else:
-            stmt = (
-                db.select(
-                    TEROSData.ts,
-                    TEROSData.vwc,
-                    TEROSData.temp,
-                    TEROSData.ec,
-                )
-                .where(TEROSData.cell_id == cell_id)
-                .filter((TEROSData.ts.between(start_time, end_time)))
-            )
+            .where(TEROSData.cell_id == cell_id)
+            .filter((TEROSData.ts.between(start_time, end_time)))
+            .order_by(TEROSData.ts)
+        )
 
         for row in db.session.execute(stmt):
             data["timestamp"].append(row.ts)
