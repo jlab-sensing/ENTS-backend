@@ -259,7 +259,7 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
     }
     // TODO: need to memoize updating charts
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cells, stream]);
+  }, [cells, stream, startDate, endDate]);
 
   return (
     <>
