@@ -78,10 +78,11 @@ class TEROSData(db.Model):
             "ec": []
         }
 
+        # VWC stored in decimal, converted to percentage
         stmt = (
             db.select(
                 TEROSData.ts.label("ts"),
-                TEROSData.vwc.label("vwc"),
+                (TEROSData.vwc * 100).label("vwc"),
                 TEROSData.temp.label("temp"),
                 TEROSData.ec.label("ec"),
             )
