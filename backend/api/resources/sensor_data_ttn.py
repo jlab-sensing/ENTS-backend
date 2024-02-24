@@ -30,6 +30,8 @@ class Measurement_Upink(Resource):
             Response indicating success or failure. See util.process_measurement
             for full description.
         """
+      
+        import pdb; pdb.set_trace()
        
         content_type = request.headers.get("Content-Type")
         
@@ -40,7 +42,7 @@ class Measurement_Upink(Resource):
             raise ValueError("POST request must be application/json")
        
         # get payload 
-        payload_str = uplink_json["data"]["uplink_message"]["frm_payload"]
+        payload_str = uplink_json["uplink_message"]["frm_payload"]
         payload = base64.b64decode(payload_str)
         
         resp = process_measurement(payload)
