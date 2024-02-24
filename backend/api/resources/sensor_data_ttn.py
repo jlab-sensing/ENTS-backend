@@ -31,8 +31,6 @@ class Measurement_Upink(Resource):
             for full description.
         """
       
-        import pdb; pdb.set_trace()
-       
         content_type = request.headers.get("Content-Type")
         
         # get uplink json 
