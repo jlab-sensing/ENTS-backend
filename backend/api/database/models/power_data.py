@@ -78,14 +78,14 @@ class PowerData(db.Model):
             "i": [],
             "p": [],
         }
-
+        print(f"start time: {start_time}, end time: {end_time}", flush=True)
         stmt = (
             db.select(
                 PowerData.ts_server.label("ts"),
                 PowerData.voltage.label("voltage"),
                 PowerData.current.label("current"),
             )
-            .where(PowerData.cell_id == cell_id) 
+            .where(PowerData.cell_id == cell_id)
             .filter((PowerData.ts.between(start_time, end_time)))
             .subquery()
         )
@@ -95,11 +95,13 @@ class PowerData(db.Model):
             stmt.c.ts.label("ts"),
             (stmt.c.voltage * 1e-3).label("voltage"),
             (stmt.c.current * 1e-6).label("current"),
-            (stmt.c.voltage * stmt.c.current * 1e-6).label("power")
+            (stmt.c.voltage * stmt.c.current * 1e-6).label("power"),
         ).order_by(stmt.c.ts)
-        
+
         utc_tz = timezone.utc
         la_tz = timezone(timedelta(hours=0))
+        res = db.session.execute(adj_units)
+        print(f"timestamps: {[r.ts for r in res]}", flush=True)
 
         for row in db.session.execute(adj_units):
             data["timestamp"].append(row.ts)
