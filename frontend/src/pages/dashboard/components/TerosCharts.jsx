@@ -50,7 +50,7 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
         name: name,
         terosData: await streamTerosData(
           id,
-          DateTime.now().minus({ millisecond: interval + 29000 }),
+          DateTime.now().minus({ millisecond: interval + 1000 }),
           DateTime.now(),
           true,
         ),
