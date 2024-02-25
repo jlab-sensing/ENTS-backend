@@ -1,7 +1,7 @@
 from ..models import db
 from .cell import Cell
 from .logger import Logger
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from dateutil.relativedelta import relativedelta
 
 
@@ -97,9 +97,12 @@ class PowerData(db.Model):
             (stmt.c.current * 1e-6).label("current"),
             (stmt.c.voltage * stmt.c.current * 1e-6).label("power")
         ).order_by(stmt.c.ts)
+        
+        utc_tz = timezone.utc
+        la_tz = timezone(timedelta(hours=-8))
 
         for row in db.session.execute(adj_units):
-            data["timestamp"].append(row.ts)
+            data["timestamp"].append(row.ts.replace(utc_tz).astimezone(la_tz))
             data["v"].append(row.voltage)
             data["i"].append(row.current)
             data["p"].append(row.power)
