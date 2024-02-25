@@ -95,7 +95,7 @@ class TEROSData(db.Model):
         la_tz = timezone(timedelta(hours=0))
 
         for row in db.session.execute(stmt):
-            data["timestamp"].append(row.ts.replace(tzinfo=utc_tz).astimezone(la_tz))
+            data["timestamp"].append(row.ts)
             data["vwc"].append(row.vwc)
             data["temp"].append(row.temp)
             data["ec"].append(row.ec)
