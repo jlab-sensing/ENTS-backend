@@ -92,11 +92,11 @@ class PowerData(db.Model):
 
         # expected units are mV, uA, and uW
         adj_units = db.select(
-            stmt.c.ts_server.label("ts"),
+            stmt.c.ts.label("ts"),
             (stmt.c.voltage * 1e-3).label("voltage"),
             (stmt.c.current * 1e-6).label("current"),
             (stmt.c.voltage * stmt.c.current * 1e-6).label("power"),
-        ).order_by(stmt.c.ts_server)
+        ).order_by(stmt.c.ts)
 
         utc_tz = timezone.utc
         la_tz = timezone(timedelta(hours=0))
