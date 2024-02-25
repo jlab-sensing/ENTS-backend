@@ -102,7 +102,7 @@ class PowerData(db.Model):
         la_tz = timezone(timedelta(hours=0))
 
         for row in db.session.execute(adj_units):
-            data["timestamp"].append(row.ts.replace(tzinfo=utc_tz).astimezone(la_tz))
+            data["timestamp"].append(row.ts)
             data["v"].append(row.voltage)
             data["i"].append(row.current)
             data["p"].append(row.power)
