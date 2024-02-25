@@ -71,12 +71,7 @@ class TEROSData(db.Model):
         stream=False,
     ):
         """gets teros data as a list of objects"""
-        data = {
-            "timestamp": [],
-            "vwc": [],
-            "temp": [],
-            "ec": []
-        }
+        data = {"timestamp": [], "vwc": [], "temp": [], "ec": []}
 
         # VWC stored in decimal, converted to percentage
         stmt = (
@@ -87,10 +82,10 @@ class TEROSData(db.Model):
                 TEROSData.ec.label("ec"),
             )
             .where(TEROSData.cell_id == cell_id)
-            .filter((TEROSData.ts.between(start_time, end_time)))
-            .order_by(TEROSData.ts)
+            .filter((TEROSData.ts_server.between(start_time, end_time)))
+            .order_by(TEROSData.ts_server)
         )
-        
+
         utc_tz = timezone.utc
         la_tz = timezone(timedelta(hours=0))
 
