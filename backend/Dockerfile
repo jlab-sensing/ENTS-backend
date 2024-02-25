@@ -118,4 +118,4 @@ RUN chown -R app:app $APP_HOME
 # change to the app user
 USER app
 WORKDIR /home/app/
-ENTRYPOINT ["./backend/entrypoint.sh", "-p"]
+ENTRYPOINT ["./backend/entrypoint.sh", "-d"]
