@@ -86,7 +86,7 @@ class PowerData(db.Model):
                 PowerData.current.label("current"),
             )
             .where(PowerData.cell_id == cell_id)
-            .filter((PowerData.ts.between(start_time, end_time)))
+            .filter((PowerData.ts_server.between(start_time, end_time)))
             .subquery()
         )
 
