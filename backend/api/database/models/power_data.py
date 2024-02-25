@@ -93,8 +93,8 @@ class PowerData(db.Model):
         # expected units are mV, uA, and uW
         adj_units = db.select(
             stmt.c.ts.label("ts"),
-            stmt.c.voltage.label("voltage") * 1e-3,
-            stmt.c.current.label("current") * 1e-6,
+            (stmt.c.voltage * 1e-3).label("voltage"),
+            (stmt.c.current * 1e-6).label("current"),
             (stmt.c.voltage * stmt.c.current * 1e-6).label("power")
         ).order_by(stmt.c.ts)
 
