@@ -92,7 +92,7 @@ class TEROSData(db.Model):
         )
         
         utc_tz = timezone.utc
-        la_tz = timezone(timedelta(hours=-8))
+        la_tz = timezone(timedelta(hours=0))
 
         for row in db.session.execute(stmt):
             data["timestamp"].append(row.ts.replace(tzinfo=utc_tz).astimezone(la_tz))
