@@ -143,7 +143,14 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
             cellChartData[cellid].powerData.v.length
           ) {
             foundNewData = true;
-            const powerData = cellChartData[cellid].powerData;
+            const powerDataRaw = cellChartData[cellid].powerData;
+            const pTimestampRaw = powerDataRaw.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
+            const dupIdx = pTimestampRaw.reduce((arr, ts, i) => {
+              return !newVChartData.labels.some((oldTs) => ts.equals(oldTs)) && arr.push(i), arr;
+            }, []);
+            const powerData = Object.fromEntries(
+              Object.entries(powerDataRaw).map(([key, value]) => [key, value.filter((_, idx) => dupIdx.includes(idx))]),
+            );
             const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
             newVChartData.labels = newVChartData.labels.concat(pTimestamp);
             newVChartData.datasets[selectCounter].data = newVChartData.datasets[selectCounter].data.concat(powerData.v);
