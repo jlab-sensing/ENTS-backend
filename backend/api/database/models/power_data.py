@@ -81,7 +81,7 @@ class PowerData(db.Model):
 
         stmt = (
             db.select(
-                PowerData.ts.label("ts"),
+                PowerData.ts_server.label("ts"),
                 PowerData.voltage.label("voltage"),
                 PowerData.current.label("current"),
             )
