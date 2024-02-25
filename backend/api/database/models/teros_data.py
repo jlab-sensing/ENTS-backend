@@ -1,7 +1,7 @@
 from ..models import db
 from sqlalchemy.sql import func
 from .cell import Cell
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 
@@ -85,9 +85,6 @@ class TEROSData(db.Model):
             .filter((TEROSData.ts_server.between(start_time, end_time)))
             .order_by(TEROSData.ts_server)
         )
-
-        utc_tz = timezone.utc
-        la_tz = timezone(timedelta(hours=0))
 
         for row in db.session.execute(stmt):
             data["timestamp"].append(row.ts)
