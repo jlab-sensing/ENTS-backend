@@ -144,7 +144,14 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
             cellChartData[cellid].terosData.ec.length
           ) {
             foundNewData = true;
-            const terosData = cellChartData[cellid].terosData;
+            const terosDataRaw = cellChartData[cellid].terosData;
+            const tTimestampRaw = terosDataRaw.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
+            const dupIdx = tTimestampRaw.reduce((arr, ts, i) => {
+              return !vwcChartData.labels.some((oldTs) => ts.equals(oldTs)) && arr.push(i), arr;
+            }, []);
+            const terosData = Object.fromEntries(
+              Object.entries(terosDataRaw).map(([key, value]) => [key, value.filter((_, idx) => dupIdx.includes(idx))]),
+            );
             const tTimestamp = terosData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
             // set vwc chart
             newVwcChartData.labels = newVwcChartData.labels.concat(tTimestamp);
