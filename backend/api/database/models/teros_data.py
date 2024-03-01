@@ -66,27 +66,57 @@ class TEROSData(db.Model):
 
     def get_teros_data_obj(
         cell_id,
+        resample="hour",
         start_time=datetime.now() - relativedelta(months=1),
         end_time=datetime.now(),
         stream=False,
     ):
-        """gets teros data as a list of objects"""
+        """gets teros data as a list of objects
+         
+        The stream parameter controls data aggregation and timestamp. When False
+        the data is aggregated according to the resample argument and the
+        timestamp is from the measurement itself. When True, no data aggregation
+        is preformed and the timestamp is when the measurement is inserted into
+        the server.
+        """
+        
         data = {"timestamp": [], "vwc": [], "temp": [], "ec": []}
 
-        # VWC stored in decimal, converted to percentage
-        stmt = (
-            db.select(
-                TEROSData.ts_server.label("ts"),
-                (TEROSData.vwc * 100).label("vwc"),
-                TEROSData.temp.label("temp"),
-                TEROSData.ec.label("ec"),
+        if not stream:
+            stmt = (
+                db.select(
+                    func.date_trunc(resample, TEROSData.ts).label("ts"),
+                    func.avg(TEROSData.vwc).label("vwc"),
+                    func.avg(TEROSData.temp).label("temp"),
+                    func.avg(TEROSData.ec).label("ec"),
+                )
+                .where(TEROSData.cell_id == cell_id)
+                .filter((TEROSData.ts.between(start_time, end_time)))
+                .group_by(func.date_trunc(resample, TEROSData.ts))
             )
-            .where(TEROSData.cell_id == cell_id)
-            .filter((TEROSData.ts_server.between(start_time, end_time)))
-            .order_by(TEROSData.ts_server)
-        )
+        else:
+            stmt = (
+                db.select(
+                    TEROSData.ts_server.label("ts"),
+                    TEROSData.vwc.label("vwc"),
+                    TEROSData.temp.label("temp"),
+                    TEROSData.ec.label("ec"),
+                )
+                .where(TEROSData.cell_id == cell_id)
+                .filter((TEROSData.ts_server.between(start_time, end_time)))
+                .subquery()
+            )
+       
+        # apply unit conversions     
+        # VWC stored in decimal, converted to percentage
+        adj_units = db.select(
+            stmt.c.ts.label("ts"),
+            (stmt.c.vwc * 100).label("vwc"),
+            stmt.c.temp.label("temp"),
+            stmt.c.ec.label("ec"),
+        ).order_by(stmt.c.ts)
 
-        for row in db.session.execute(stmt):
+        for row in db.session.execute(adj_units):
             data["timestamp"].append(row.ts)
             data["vwc"].append(row.vwc)
             data["temp"].append(row.temp)
