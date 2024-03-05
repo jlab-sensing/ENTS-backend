@@ -1,9 +1,10 @@
 import { React, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, ToggleButton } from '@mui/material';
+import { Box, ToggleButton, Modal } from '@mui/material';
 import zoom from '../assets/zoom.svg';
 import reset from '../assets/reset.svg';
 import pan from '../assets/pan.svg';
+import screen from '../assets/screen.svg';
 import {
   Chart as ChartJS,
   LineController,
@@ -28,6 +29,7 @@ function ChartWrapper({ id, data, options, stream }) {
   const [scaleRef, setScaleRef] = useState({});
   const [prevData, setPrevData] = useState(data);
   const prevScaleRef = usePrevious(scaleRef);
+  const [fullscreen, setFullscreen] = useState(false);
 
   //** defines axis for charts, charts may have different axis names/
   const axes = Object.keys(options.scales);
@@ -131,6 +133,9 @@ function ChartWrapper({ id, data, options, stream }) {
       setPanSelected(!panSelected);
     }
   };
+  function handleFullscreen() {
+    setFullscreen(!fullscreen);
+  }
 
   const lineChart = () => {
     return <Line key={id} ref={chartRef} data={data} options={{ ...optionsWithPlugins, ...globalChartOpts }}></Line>;
@@ -194,47 +199,74 @@ function ChartWrapper({ id, data, options, stream }) {
   }, [scaleRef]);
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        gap: '1%',
-        height: '100%',
-      }}
-    >
-      {lineChart()}
+    <>
       <Box
         sx={{
           display: 'flex',
-          flexDirection: 'column',
           gap: '1%',
+          height: '100%',
         }}
       >
-        <ToggleButton
-          value={resetSelected}
-          onClick={handleResetZoom}
-          variant='outlined'
-          sx={{ width: '32px', height: '32px' }}
+        {lineChart()}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1%',
+          }}
         >
-          <Box component='img' src={reset} sx={{ width: '16px', height: '16px' }}></Box>
-        </ToggleButton>
-        <ToggleButton
-          value={zoomSelected}
-          selected={zoomSelected}
-          onClick={handleToggleZoom}
-          sx={{ width: '32px', height: '32px' }}
-        >
-          <Box component='img' src={zoom} sx={{ width: '16px', height: '16px' }}></Box>
-        </ToggleButton>
-        <ToggleButton
-          value={panSelected}
-          selected={panSelected}
-          onClick={handleTogglePan}
-          sx={{ width: '32px', height: '32px' }}
-        >
-          <Box component='img' src={pan} sx={{ width: '16px', height: '16px' }}></Box>
-        </ToggleButton>
+          <ToggleButton
+            value={resetSelected}
+            onClick={handleResetZoom}
+            variant='outlined'
+            sx={{ width: '32px', height: '32px' }}
+          >
+            <Box component='img' src={reset} sx={{ width: '16px', height: '16px' }}></Box>
+          </ToggleButton>
+          <ToggleButton
+            value={zoomSelected}
+            selected={zoomSelected}
+            onClick={handleToggleZoom}
+            sx={{ width: '32px', height: '32px' }}
+          >
+            <Box component='img' src={zoom} sx={{ width: '16px', height: '16px' }}></Box>
+          </ToggleButton>
+          <ToggleButton
+            value={panSelected}
+            selected={panSelected}
+            onClick={handleTogglePan}
+            sx={{ width: '32px', height: '32px' }}
+          >
+            <Box component='img' src={pan} sx={{ width: '16px', height: '16px' }}></Box>
+          </ToggleButton>
+          <ToggleButton onClick={handleFullscreen} sx={{ width: '32px', height: '32px' }}>
+            <Box component='img' src={screen} sx={{ width: '16px', height: '16px' }}></Box>
+          </ToggleButton>
+        </Box>
       </Box>
-    </Box>
+      <Modal
+        open={fullscreen}
+        onClose={handleFullscreen}
+        aria-labelledby='chart-fullscreen-modal'
+        aria-describedby='chart-fullscreen-modal-description'
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '85%',
+            height: '85%',
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          {lineChart()}
+        </Box>
+      </Modal>
+    </>
   );
 }
 
