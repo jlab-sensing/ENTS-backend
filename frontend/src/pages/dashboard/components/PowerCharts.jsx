@@ -19,9 +19,9 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
   // Initialize the combined chart data with empty datasets
 
   // Access data for each cell and update the combined charts accordingly
-  const pColors = ['lightgreen', 'darkgreen'];
-  const vColors = ['purple', 'blue'];
-  const iColors = ['orange', 'red'];
+  const pColors = ['lightgreen', 'darkgreen', 'navy', 'brown', 'slategray'];
+  const vColors = ['purple', 'blue', 'lime', 'magenta', 'cyan'];
+  const iColors = ['orange', 'red', 'olive', 'turquoise', 'steelblue'];
 
   //** gets power data from backend */
   async function getPowerChartData() {

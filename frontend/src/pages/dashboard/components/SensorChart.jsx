@@ -14,9 +14,9 @@ function SensorChart({ cells, startDate, endDate }) {
   // of the data points as the user selects more cells to compare.
   // Add more measurements depending on how many different values on the charts
   const meas_colors = [
-    ['lightgreen', 'darkgreen'],
-    ['purple', 'blue'],
-    ['orange', 'red'],
+    ['lightgreen', 'darkgreen', 'navy', 'brown', 'slategray'], 
+    ['purple', 'blue', 'lime', 'magenta', 'cyan'], 
+    ['orange', 'red', 'olive', 'turquoise', 'steelblue'], 
   ];
   const axisIds = ['leafAxis'];
 
