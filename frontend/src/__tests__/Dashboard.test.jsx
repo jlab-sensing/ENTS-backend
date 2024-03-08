@@ -7,6 +7,7 @@ import CellSelect from '../pages/dashboard/components/CellSelect';
 
 const queryClient = new QueryClient();
 
+//** integration test: service calls on dashboard */
 describe('Loading dashboard', () => {
   test('Fetch and display cells to add', async () => {
     const user = userEvent.setup();
