@@ -3,10 +3,11 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import CellSelect from './components/CellSelect';
+import CellSelect from '../pages/dashboard/components/CellSelect';
 
 const queryClient = new QueryClient();
 
+//** integration test: service calls on dashboard */
 describe('Loading dashboard', () => {
   test('Fetch and display cells to add', async () => {
     const user = userEvent.setup();
