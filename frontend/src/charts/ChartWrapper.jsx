@@ -1,6 +1,6 @@
 import { React, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, ToggleButton } from '@mui/material';
+import { Box, ToggleButton, Tooltip } from '@mui/material';
 import zoom from '../assets/zoom.svg';
 import reset from '../assets/reset.svg';
 import pan from '../assets/pan.svg';
@@ -10,13 +10,13 @@ import {
   LineElement,
   PointElement,
   LinearScale,
-  Tooltip,
+  Tooltip as chartTooltip,
   Legend,
   TimeScale,
 } from 'chart.js';
 import 'chartjs-adapter-luxon';
 import zoomPlugin from 'chartjs-plugin-zoom';
-ChartJS.register(LineController, LineElement, PointElement, LinearScale, Tooltip, Legend, TimeScale, zoomPlugin);
+ChartJS.register(LineController, LineElement, PointElement, LinearScale, chartTooltip, Legend, TimeScale, zoomPlugin);
 import { Line } from 'react-chartjs-2';
 import usePrevious from '../hooks/usePrevious';
 
@@ -209,30 +209,36 @@ function ChartWrapper({ id, data, options, stream }) {
           gap: '1%',
         }}
       >
-        <ToggleButton
-          value={resetSelected}
-          onClick={handleResetZoom}
-          variant='outlined'
-          sx={{ width: '32px', height: '32px' }}
-        >
-          <Box component='img' src={reset} sx={{ width: '16px', height: '16px' }}></Box>
-        </ToggleButton>
-        <ToggleButton
-          value={zoomSelected}
-          selected={zoomSelected}
-          onClick={handleToggleZoom}
-          sx={{ width: '32px', height: '32px' }}
-        >
-          <Box component='img' src={zoom} sx={{ width: '16px', height: '16px' }}></Box>
-        </ToggleButton>
-        <ToggleButton
-          value={panSelected}
-          selected={panSelected}
-          onClick={handleTogglePan}
-          sx={{ width: '32px', height: '32px' }}
-        >
-          <Box component='img' src={pan} sx={{ width: '16px', height: '16px' }}></Box>
-        </ToggleButton>
+        <Tooltip title='Reset' placement='right'>
+          <ToggleButton
+            value={resetSelected}
+            onClick={handleResetZoom}
+            variant='outlined'
+            sx={{ width: '32px', height: '32px' }}
+          >
+            <Box component='img' src={reset} sx={{ width: '16px', height: '16px' }}></Box>
+          </ToggleButton>
+        </Tooltip>
+        <Tooltip title='Zoom' placement='right'>
+          <ToggleButton
+            value={zoomSelected}
+            selected={zoomSelected}
+            onClick={handleToggleZoom}
+            sx={{ width: '32px', height: '32px' }}
+          >
+            <Box component='img' src={zoom} sx={{ width: '16px', height: '16px' }}></Box>
+          </ToggleButton>
+        </Tooltip>
+        <Tooltip title='Pan' placement='right'>
+          <ToggleButton
+            value={panSelected}
+            selected={panSelected}
+            onClick={handleTogglePan}
+            sx={{ width: '32px', height: '32px' }}
+          >
+            <Box component='img' src={pan} sx={{ width: '16px', height: '16px' }}></Box>
+          </ToggleButton>
+        </Tooltip>
       </Box>
     </Box>
   );
