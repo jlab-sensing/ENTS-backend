@@ -13,12 +13,12 @@ class Cell_Data(Resource):
         v_args = get_cell_data.load(request.args)
         teros_data = pd.DataFrame(
             TEROSData.get_teros_data_obj(
-                cell_id, start_time=v_args["startTime"], end_time=v_args["endTime"]
+                cell_id, resample=v_args["resample"], start_time=v_args["startTime"], end_time=v_args["endTime"]
             )
         )
         power_data = pd.DataFrame(
             PowerData.get_power_data_obj(
-                cell_id, start_time=v_args["startTime"], end_time=v_args["endTime"]
+                cell_id, resample=v_args["resample"],start_time=v_args["startTime"], end_time=v_args["endTime"]
             )
         )
 

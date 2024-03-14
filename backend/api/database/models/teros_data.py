@@ -83,17 +83,32 @@ class TEROSData(db.Model):
         data = {"timestamp": [], "vwc": [], "temp": [], "ec": []}
 
         if not stream:
-            stmt = (
-                db.select(
-                    func.date_trunc(resample, TEROSData.ts).label("ts"),
-                    func.avg(TEROSData.vwc).label("vwc"),
-                    func.avg(TEROSData.temp).label("temp"),
-                    func.avg(TEROSData.ec).label("ec"),
+            if resample == "none":
+                # When no resampling is required, select data directly without grouping or aggregate functions
+                stmt = (
+                    db.select(
+                        TEROSData.ts.label("ts"),
+                        TEROSData.vwc.label("vwc"),
+                        TEROSData.temp.label("temp"),
+                        TEROSData.ec.label("ec"),
+                    )
+                    .where(TEROSData.cell_id == cell_id)
+                    .filter(TEROSData.ts.between(start_time, end_time))
+                    .subquery()
                 )
-                .where(TEROSData.cell_id == cell_id)
-                .filter((TEROSData.ts.between(start_time, end_time)))
-                .group_by(func.date_trunc(resample, TEROSData.ts))
-            )
+            else:
+                # Handle normal resampling case
+                stmt = (
+                    db.select(
+                        func.date_trunc(resample, TEROSData.ts).label("ts"),
+                        func.avg(TEROSData.vwc).label("vwc"),
+                        func.avg(TEROSData.temp).label("temp"),
+                        func.avg(TEROSData.ec).label("ec"),
+                    )
+                    .where(TEROSData.cell_id == cell_id)
+                    .filter(TEROSData.ts.between(start_time, end_time))
+                    .group_by(func.date_trunc(resample, TEROSData.ts))
+                )
         else:
             stmt = (
                 db.select(

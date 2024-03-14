@@ -5,6 +5,7 @@ class GetCellDataSchema(ma.SQLAlchemySchema):
     """validates get request for cell data"""
 
     cellId = ma.Int()
+    resample = ma.Str(required=False)
     startTime = ma.DateTime(required=False)
     endTime = ma.DateTime(required=False)
     stream = ma.Bool(required=False)
