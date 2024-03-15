@@ -3,6 +3,7 @@
 Deploys on gunicorn
 
 """
+
 from .api import create_app
 
 

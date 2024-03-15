@@ -73,14 +73,14 @@ class PowerData(db.Model):
         stream=False,
     ):
         """gets teros data as a list of objects
-        
+
         The stream parameter controls data aggregation and timestamp. When False
         the data is aggregated according to the resample argument and the
         timestamp is from the measurement itself. When True, no data aggregation
         is preformed and the timestamp is when the measurement is inserted into
         the server.
         """
-        
+
         data = {
             "timestamp": [],
             "v": [],
