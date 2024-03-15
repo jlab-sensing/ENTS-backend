@@ -21,7 +21,7 @@ function Dashboard() {
       <Stack
         direction='column'
         divider={<Divider orientation='horizontal' flexItem />}
-        justifyContent='spaced-evently'
+        justifyContent='space-evenly'
         sx={{ height: '100vh', boxSizing: 'border-box' }}
       >
         <Stack direction='row' alignItems='center' justifyContent='space-evenly' sx={{ p: 2 }} flex>
@@ -68,8 +68,8 @@ function Dashboard() {
       <Stack
         direction='column'
         divider={<Divider orientation='horizontal' flexItem />}
-        justifyContent='spaced-evently'
-        sx={{ height: '100vh', boxSizing: 'border-box' }}
+        justifyContent='space-evenly'
+        sx={{ height: '100vh', width:'85vw', mx:'auto', boxSizing: 'border-box' }}
       >
         <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} />
       </Stack>
