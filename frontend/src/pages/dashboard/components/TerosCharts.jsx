@@ -34,8 +34,8 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
       data[id] = {
         name: name,
         terosData: await (stream
-          ? streamTerosData(id, DateTime.now().minus({ second: 20 }), DateTime.now(), true)
-          : getTerosData(id, startDate, endDate)),
+          ? streamTerosData(id, DateTime.now().minus({ second: 20 }).toHTTP(), DateTime.now().toHTTP(), true)
+          : getTerosData(id, startDate.toHTTP(), endDate.toHTTP())),
       };
     }
     return data;
@@ -50,8 +50,8 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
         name: name,
         terosData: await streamTerosData(
           id,
-          DateTime.now().minus({ millisecond: interval + 29000 }),
-          DateTime.now(),
+          DateTime.now().minus({ millisecond: interval + 29000 }).toHTTP(),
+          DateTime.now().toHTTP(),
           true,
         ),
       };

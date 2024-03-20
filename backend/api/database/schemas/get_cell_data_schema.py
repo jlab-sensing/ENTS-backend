@@ -5,8 +5,8 @@ class GetCellDataSchema(ma.SQLAlchemySchema):
     """validates get request for cell data"""
 
     cellId = ma.Int()
-    startTime = ma.DateTime(required=False)
-    endTime = ma.DateTime(required=False)
+    startTime = ma.DateTime("rfc", required=False)
+    endTime = ma.DateTime("rfc", required=False)
     stream = ma.Bool(required=False)
     # @validates('time_created')
     # def is_not_in_future(value):
