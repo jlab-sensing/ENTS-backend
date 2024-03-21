@@ -13,6 +13,9 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
     labels: [],
     datasets: [],
   };
+  // let DateTime = dt.fromObject({
+  //   zone: "Asia/Mumbai"
+  // })
   const [vChartData, setVChartData] = useState(chartSettings);
   const [pwrChartData, setPwrChartData] = useState(chartSettings);
   const [loadedCells, setLoadedCells] = useState([]);
@@ -34,8 +37,8 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
       data[id] = {
         name: name,
         powerData: await (stream
-          ? streamPowerData(id, DateTime.now().minus({ second: 20 }), DateTime.now(), true)
-          : getPowerData(id, startDate, endDate)),
+          ? streamPowerData(id, DateTime.now().minus({ second: 20 }).toHTTP(), DateTime.now().toHTTP(), true)
+          : getPowerData(id, startDate.toHTTP(), endDate.toHTTP())),
       };
     }
     return data;
@@ -50,8 +53,8 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
         name: name,
         powerData: await streamPowerData(
           id,
-          DateTime.now().minus({ millisecond: interval + 29000 }),
-          DateTime.now(),
+          DateTime.now().minus({ millisecond: interval + 29000 }).toHTTP(),
+          DateTime.now().toHTTP(),
           true,
         ),
       };
