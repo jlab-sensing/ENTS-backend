@@ -4,7 +4,7 @@ import { DateTime } from 'luxon';
 
 export const getCellData = (cellId, resample, startTime, endTime) => {
   return axios
-    .get(`${process.env.PUBLIC_URL}/api/cell/data/${cellId}?resample=${resample}&startTime=${startTime}&endTime=${endTime}`)
+    .get(`${process.env.PUBLIC_URL}/api/cell/data/${cellId}?resample=${resample}&startTime=${startTime.toHTTP()}&endTime=${endTime.toHTTP()}`)
     .then((res) => res.data);
 };
 
