@@ -1,11 +1,11 @@
 from . import ma
-
+from marshmallow import validate
 
 class GetCellDataSchema(ma.SQLAlchemySchema):
     """validates get request for cell data"""
 
     cellId = ma.Int()
-    resample = ma.Str(required=False)
+    resample = ma.Str(required=False,validate=validate.OneOf(["none","second", "minute", "hour", "day", "week", "month", "quarter", "year"]), missing="hour")
     startTime = ma.DateTime(required=False)
     endTime = ma.DateTime(required=False)
     stream = ma.Bool(required=False)
