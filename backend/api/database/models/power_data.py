@@ -73,14 +73,14 @@ class PowerData(db.Model):
         stream=False,
     ):
         """gets teros data as a list of objects
-        
+
         The stream parameter controls data aggregation and timestamp. When False
         the data is aggregated according to the resample argument and the
         timestamp is from the measurement itself. When True, no data aggregation
         is preformed and the timestamp is when the measurement is inserted into
         the server.
         """
-        
+
         data = {
             "timestamp": [],
             "v": [],
@@ -90,17 +90,31 @@ class PowerData(db.Model):
 
         if not stream:
             # select from actual timestamp and aggregate data
-            stmt = (
-                db.select(
-                    db.func.date_trunc(resample, PowerData.ts).label("ts"),
-                    db.func.avg(PowerData.voltage).label("voltage"),
-                    db.func.avg(PowerData.current).label("current"),
+            if resample == "none":
+                #resampling is not required: select data without aggregate functions
+                stmt = (
+                    db.select(
+                        PowerData.ts.label("ts"),
+                        PowerData.voltage.label("voltage"),
+                        PowerData.current.label("current"),
+                    )
+                    .where(PowerData.cell_id == cell_id)
+                    .filter(PowerData.ts.between(start_time, end_time))
+                    .subquery()
                 )
-                .where((PowerData.cell_id == cell_id))
-                .filter((PowerData.ts.between(start_time, end_time)))
-                .group_by(db.func.date_trunc(resample, PowerData.ts))
-                .subquery()
-            )
+            else:
+                # Handle normal resampling case
+                stmt = (
+                    db.select(
+                        db.func.date_trunc(resample, PowerData.ts).label("ts"),
+                        db.func.avg(PowerData.voltage).label("voltage"),
+                        db.func.avg(PowerData.current).label("current"),
+                    )
+                    .where((PowerData.cell_id == cell_id))
+                    .filter((PowerData.ts.between(start_time, end_time)))
+                    .group_by(db.func.date_trunc(resample, PowerData.ts))
+                    .subquery()
+                )
         else:
             # select based off server timestamp for streaming data
             stmt = (
