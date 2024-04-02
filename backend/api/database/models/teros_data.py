@@ -72,19 +72,19 @@ class TEROSData(db.Model):
         stream=False,
     ):
         """gets teros data as a list of objects
-         
+
         The stream parameter controls data aggregation and timestamp. When False
         the data is aggregated according to the resample argument and the
         timestamp is from the measurement itself. When True, no data aggregation
         is preformed and the timestamp is when the measurement is inserted into
         the server.
         """
-        
+
         data = {"timestamp": [], "vwc": [], "temp": [], "ec": []}
 
         if not stream:
             if resample == "none":
-                # When no resampling is required, select data directly without grouping or aggregate functions
+                #resampling is not required: select data without aggregate functions
                 stmt = (
                     db.select(
                         TEROSData.ts.label("ts"),
@@ -121,8 +121,8 @@ class TEROSData(db.Model):
                 .filter((TEROSData.ts_server.between(start_time, end_time)))
                 .subquery()
             )
-       
-        # apply unit conversions     
+
+        # apply unit conversions
         # VWC stored in decimal, converted to percentage
         adj_units = db.select(
             stmt.c.ts.label("ts"),
