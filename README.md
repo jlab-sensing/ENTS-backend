@@ -7,6 +7,7 @@ DirtViz is a project to visualize data collected from sensors deployed in sensor
 | Dependency |
 | ---------- |
 | Python     |
+| Node       |
 | Docker     |
 
 ## Getting Started

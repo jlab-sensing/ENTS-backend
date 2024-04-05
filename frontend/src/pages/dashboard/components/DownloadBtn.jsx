@@ -26,8 +26,9 @@ function DownloadBtn({ cells, startDate, endDate }) {
   const exportToCsv = (e) => {
     e.preventDefault();
     // Note: timestamp string slices of "Wed," in "Wed, 29 Jun 2022 14:00:00 GMT"
+    const resample = "none"
     for (const { id, name } of cells) {
-      getCellData(id, startDate, endDate).then((data) => {
+      getCellData(id, resample, startDate, endDate).then((data) => {
         downloadFile({
           data: [
             ['timestamp', 'Voltage (mV)', 'Current (uA)', 'Power (uW)', 'EC (uS/cm)', 'VWC (%)', 'Temperature (C)'],
