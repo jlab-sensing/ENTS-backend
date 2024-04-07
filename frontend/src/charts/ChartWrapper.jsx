@@ -111,6 +111,7 @@ function ChartWrapper({ id, data, options, stream }) {
   const handleResetZoom = () => {
     if (chartRef.current) {
       chartRef.current.resetZoom();
+      chartRef.current.update();
     }
   };
   const handleToggleZoom = () => {
@@ -136,13 +137,13 @@ function ChartWrapper({ id, data, options, stream }) {
   const handleZoomIn = () => {
     if (chartRef.current) {
       chartRef.current.zoom(1.1);
-      chartRef.current.update();
+      setScaleRef(getScaleRef(chartRef.current));
     }
   };
   const handleZoomOut = () => {
     if (chartRef.current) {
       chartRef.current.zoom(0.9);
-      chartRef.current.update();
+      setScaleRef(getScaleRef(chartRef.current));
     }
   };
 
@@ -200,6 +201,7 @@ function ChartWrapper({ id, data, options, stream }) {
   useEffect(() => {
     if (scaleRef != undefined) {
       setScales(scaleRef);
+      console.log('zoom');
       chartRef.current.update();
     }
     return;
