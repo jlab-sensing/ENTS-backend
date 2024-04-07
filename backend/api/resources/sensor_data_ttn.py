@@ -25,27 +25,27 @@ from .util import process_measurement
 class Measurement_Upink(Resource):
     def post(self):
         """Handlings uplink POST request from TTN
-        
+
         Returns:
             Response indicating success or failure. See util.process_measurement
             for full description.
         """
-      
+
         content_type = request.headers.get("Content-Type")
-        
-        # get uplink json 
+
+        # get uplink json
         if content_type == "application/json":
             uplink_json = request.json
         else:
             raise ValueError("POST request must be application/json")
-       
-        # get payload 
+
+        # get payload
         payload_str = uplink_json["uplink_message"]["frm_payload"]
         payload = base64.b64decode(payload_str)
-        
+
         resp = process_measurement(payload)
 
-        # TODO: Add downlink messages to device 
-        
+        # TODO: Add downlink messages to device
+
         # return json of measurement
         return resp
