@@ -91,7 +91,7 @@ class PowerData(db.Model):
         if not stream:
             # select from actual timestamp and aggregate data
             if resample == "none":
-                #resampling is not required: select data without aggregate functions
+                # resampling is not required: select data without aggregate functions
                 stmt = (
                     db.select(
                         PowerData.ts.label("ts"),
