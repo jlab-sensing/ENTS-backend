@@ -225,36 +225,126 @@ function ChartWrapper({ id, data, options, stream }) {
           gap: '1%',
         }}
       >
-        <ToggleButton
-          value={resetSelected}
-          onClick={handleResetZoom}
-          variant='outlined'
-          sx={{ width: '32px', height: '32px' }}
+        <Tooltip
+          title='Reset'
+          placement='bottom'
+          disableInteractive
+          slotProps={{
+            popper: {
+              modifiers: [
+                {
+                  name: 'offset',
+                  options: {
+                    offset: [0, -11],
+                  },
+                },
+              ],
+            },
+          }}
         >
-          <Box component='img' src={reset} sx={{ width: '16px', height: '16px' }}></Box>
-        </ToggleButton>
-        <ToggleButton
-          value={zoomSelected}
-          selected={zoomSelected}
-          onClick={handleToggleZoom}
-          sx={{ width: '32px', height: '32px' }}
+          <ToggleButton
+            value={resetSelected}
+            onClick={handleResetZoom}
+            variant='outlined'
+            sx={{ width: '32px', height: '32px' }}
+          >
+            <Box component='img' src={reset} sx={{ width: '16px', height: '16px' }}></Box>
+          </ToggleButton>
+        </Tooltip>
+        <Tooltip
+          title='Zoom'
+          placement='bottom'
+          disableInteractive
+          slotProps={{
+            popper: {
+              modifiers: [
+                {
+                  name: 'offset',
+                  options: {
+                    offset: [0, -11],
+                  },
+                },
+              ],
+            },
+          }}
         >
-          <Box component='img' src={zoom} sx={{ width: '16px', height: '16px' }}></Box>
-        </ToggleButton>
-        <ToggleButton
-          value={panSelected}
-          selected={panSelected}
-          onClick={handleTogglePan}
-          sx={{ width: '32px', height: '32px' }}
+          <ToggleButton
+            value={zoomSelected}
+            selected={zoomSelected}
+            onClick={handleToggleZoom}
+            sx={{ width: '32px', height: '32px' }}
+          >
+            <Box component='img' src={zoom} sx={{ width: '16px', height: '16px' }}></Box>
+          </ToggleButton>
+        </Tooltip>
+        <Tooltip
+          title='Pan'
+          placement='bottom'
+          disableInteractive
+          slotProps={{
+            popper: {
+              modifiers: [
+                {
+                  name: 'offset',
+                  options: {
+                    offset: [0, -11],
+                  },
+                },
+              ],
+            },
+          }}
         >
-          <Box component='img' src={pan} sx={{ width: '16px', height: '16px' }}></Box>
-        </ToggleButton>
-        <ToggleButton onClick={handleZoomIn} sx={{ width: '32px', height: '32px' }}>
-          <Box component='img' src={zoomIn} sx={{ width: '16px', height: '16px' }}></Box>
-        </ToggleButton>
-        <ToggleButton variant='contained' onClick={handleZoomOut} sx={{ width: '32px', height: '32px' }}>
-          <Box component='img' src={zoomOut} sx={{ width: '16px', height: '16px' }}></Box>
-        </ToggleButton>
+          <ToggleButton
+            value={panSelected}
+            selected={panSelected}
+            onClick={handleTogglePan}
+            sx={{ width: '32px', height: '32px' }}
+          >
+            <Box component='img' src={pan} sx={{ width: '16px', height: '16px' }}></Box>
+          </ToggleButton>
+        </Tooltip>
+        <Tooltip
+          title='Zoom In'
+          placement='bottom'
+          disableInteractive
+          slotProps={{
+            popper: {
+              modifiers: [
+                {
+                  name: 'offset',
+                  options: {
+                    offset: [0, -11],
+                  },
+                },
+              ],
+            },
+          }}
+        >
+          <ToggleButton onClick={handleZoomIn} sx={{ width: '32px', height: '32px' }}>
+            <Box component='img' src={zoomIn} sx={{ width: '16px', height: '16px' }}></Box>
+          </ToggleButton>
+        </Tooltip>
+        <Tooltip
+          title='Zoom Out'
+          placement='bottom'
+          disableInteractive
+          slotProps={{
+            popper: {
+              modifiers: [
+                {
+                  name: 'offset',
+                  options: {
+                    offset: [0, -11],
+                  },
+                },
+              ],
+            },
+          }}
+        >
+          <ToggleButton variant='contained' onClick={handleZoomOut} sx={{ width: '32px', height: '32px' }}>
+            <Box component='img' src={zoomOut} sx={{ width: '16px', height: '16px' }}></Box>
+          </ToggleButton>
+        </Tooltip>
       </Box>
     </Box>
   );
