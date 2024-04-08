@@ -22,22 +22,22 @@ class Measurement_Direct(Resource):
         The HTTP request is checked for appropriate Content-Type then the
         measurement is decoded and inserted into the database. Both a HTTP and
         binary response are returned.
-        
+
         Returns:
             Response indicating success or failure. See util.process_measurement
             for full description.
         """
-       
-        content_type = request.headers.get("Content-Type") 
-        
+
+        content_type = request.headers.get("Content-Type")
+
         # check for correct content type and get json
         if content_type == "application/octet-stream":
-            # get uplink json 
+            # get uplink json
             data = request.data
         else:
             raise ValueError("POST request must be application/json")
-       
-        # decode and insret into db 
+
+        # decode and insret into db
         resp = process_measurement(data)
-        
+
         return resp

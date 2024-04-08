@@ -27,6 +27,13 @@ jobs:
       - name: Lint backend
         run: ruff check ./backend
 
+      - name: Black format check
+        uses: psf/black@stable
+        with:
+          options: '--check --verbose'
+          src: './backend'
+          version: '24.3.0'
+
       - name: Install frontend packages
         working-directory: ./frontend
         run: npm ci

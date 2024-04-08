@@ -72,28 +72,43 @@ class TEROSData(db.Model):
         stream=False,
     ):
         """gets teros data as a list of objects
-         
+
         The stream parameter controls data aggregation and timestamp. When False
         the data is aggregated according to the resample argument and the
         timestamp is from the measurement itself. When True, no data aggregation
         is preformed and the timestamp is when the measurement is inserted into
         the server.
         """
-        
+
         data = {"timestamp": [], "vwc": [], "temp": [], "ec": []}
 
         if not stream:
-            stmt = (
-                db.select(
-                    func.date_trunc(resample, TEROSData.ts).label("ts"),
-                    func.avg(TEROSData.vwc).label("vwc"),
-                    func.avg(TEROSData.temp).label("temp"),
-                    func.avg(TEROSData.ec).label("ec"),
+            if resample == "none":
+                # resampling is not required: select data without aggregate functions
+                stmt = (
+                    db.select(
+                        TEROSData.ts.label("ts"),
+                        TEROSData.vwc.label("vwc"),
+                        TEROSData.temp.label("temp"),
+                        TEROSData.ec.label("ec"),
+                    )
+                    .where(TEROSData.cell_id == cell_id)
+                    .filter(TEROSData.ts.between(start_time, end_time))
+                    .subquery()
                 )
-                .where(TEROSData.cell_id == cell_id)
-                .filter((TEROSData.ts.between(start_time, end_time)))
-                .group_by(func.date_trunc(resample, TEROSData.ts))
-            )
+            else:
+                # Handle normal resampling case
+                stmt = (
+                    db.select(
+                        func.date_trunc(resample, TEROSData.ts).label("ts"),
+                        func.avg(TEROSData.vwc).label("vwc"),
+                        func.avg(TEROSData.temp).label("temp"),
+                        func.avg(TEROSData.ec).label("ec"),
+                    )
+                    .where(TEROSData.cell_id == cell_id)
+                    .filter(TEROSData.ts.between(start_time, end_time))
+                    .group_by(func.date_trunc(resample, TEROSData.ts))
+                )
         else:
             stmt = (
                 db.select(
@@ -106,8 +121,8 @@ class TEROSData(db.Model):
                 .filter((TEROSData.ts_server.between(start_time, end_time)))
                 .subquery()
             )
-       
-        # apply unit conversions     
+
+        # apply unit conversions
         # VWC stored in decimal, converted to percentage
         adj_units = db.select(
             stmt.c.ts.label("ts"),

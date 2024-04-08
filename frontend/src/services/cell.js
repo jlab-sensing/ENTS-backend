@@ -2,9 +2,9 @@ import { useQuery, useQueries } from '@tanstack/react-query';
 import axios from 'axios';
 import { DateTime } from 'luxon';
 
-export const getCellData = (cellId, startTime, endTime) => {
+export const getCellData = (cellId, resample, startTime, endTime) => {
   return axios
-    .get(`${process.env.PUBLIC_URL}/api/cell/data/${cellId}?startTime=${startTime}&endTime=${endTime}`)
+    .get(`${process.env.PUBLIC_URL}/api/cell/data/${cellId}?resample=${resample}&startTime=${startTime.toHTTP()}&endTime=${endTime.toHTTP()}`)
     .then((res) => res.data);
 };
 
