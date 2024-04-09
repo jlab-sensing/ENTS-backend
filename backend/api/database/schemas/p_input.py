@@ -3,6 +3,7 @@ from . import ma
 
 class PInput(ma.SQLAlchemySchema):
     """validates power input"""
+
     type = ma.String()
     logger = ma.String()
     cell = ma.String()

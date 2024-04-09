@@ -8,6 +8,8 @@ import reset from '../assets/reset.svg';
 import pan from '../assets/pan.svg';
 import FullscreenExit from '../assets/minimize.svg';
 import Fullscreen from '../assets/maximize.svg';
+import zoomIn from '../assets/zoom-in.svg';
+import zoomOut from '../assets/zoom-out.svg';
 import {
   Chart as ChartJS,
   LineController,
@@ -118,6 +120,7 @@ function ChartWrapper({ id, data, options, stream }) {
   const handleResetZoom = () => {
     if (chartRef.current) {
       chartRef.current.resetZoom();
+      chartRef.current.update();
     }
   };
   const handleToggleZoom = () => {
@@ -138,6 +141,18 @@ function ChartWrapper({ id, data, options, stream }) {
       }
       chartRef.current.update();
       setPanSelected(!panSelected);
+    }
+  };
+  const handleZoomIn = () => {
+    if (chartRef.current) {
+      chartRef.current.zoom(1.1);
+      setScaleRef(getScaleRef(chartRef.current));
+    }
+  };
+  const handleZoomOut = () => {
+    if (chartRef.current) {
+      chartRef.current.zoom(0.9);
+      setScaleRef(getScaleRef(chartRef.current));
     }
   };
 
@@ -195,6 +210,7 @@ function ChartWrapper({ id, data, options, stream }) {
   useEffect(() => {
     if (scaleRef != undefined) {
       setScales(scaleRef);
+      console.log('zoom');
       chartRef.current.update();
     }
     return;
@@ -251,6 +267,12 @@ function ChartWrapper({ id, data, options, stream }) {
         >
           <Box component='img' src={Fullscreen} sx={{ width: '16px', height: '16px' }}></Box>
         </ToggleButton>
+        <ToggleButton onClick={handleZoomIn} sx={{ width: '32px', height: '32px' }}>
+          <Box component='img' src={zoomIn} sx={{ width: '16px', height: '16px' }}></Box>
+        </ToggleButton>
+        <ToggleButton variant='contained' onClick={handleZoomOut} sx={{ width: '32px', height: '32px' }}>
+          <Box component='img' src={zoomOut} sx={{ width: '16px', height: '16px' }}></Box>
+\        </ToggleButton>
       </Box>
     </Box>
         <Modal

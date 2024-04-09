@@ -84,7 +84,7 @@ class TEROSData(db.Model):
 
         if not stream:
             if resample == "none":
-                #resampling is not required: select data without aggregate functions
+                # resampling is not required: select data without aggregate functions
                 stmt = (
                     db.select(
                         TEROSData.ts.label("ts"),

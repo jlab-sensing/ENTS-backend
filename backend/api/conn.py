@@ -26,7 +26,7 @@ dburl = URL.create(
     password=os.environ["DB_PASS"],
     host=os.environ["DB_HOST"],
     port=os.environ["DB_PORT"],
-    database=os.environ["DB_DATABASE"]
+    database=os.environ["DB_DATABASE"],
 )
 
 # Connect
