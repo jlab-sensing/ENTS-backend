@@ -19,6 +19,14 @@ function Nav() {
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
   };
+
+  const [anchorElProfileMenu, setAnchorElProfileMenu] = useState(null);
+  const handleOpenProfileMenu = (event) => {
+    setAnchorElProfileMenu(event.currentTarget);
+  };
+  const handleCloseProfileMenu = () => {
+    setAnchorElProfileMenu(null);
+  };
   useEffect(() => {
     let isMounted = true;
     const controller = new AbortController();
@@ -29,6 +37,7 @@ function Nav() {
             signal: controller.signal,
           })
           .then((res) => res.data);
+        console.log('user data', user);
         if (isMounted && user) {
           setUser(user);
           setLoggedIn(true);
@@ -116,12 +125,28 @@ function Nav() {
               </Button>
             ) : (
               <>
-                <Button key='Sign-in' onClick={() => {}} sx={{ my: 2, color: 'black', display: 'block' }}>
+                <Button key='profile' onClick={handleOpenProfileMenu} sx={{ my: 2, color: 'black', display: 'block' }}>
                   Hi, {user?.first_name}
                 </Button>
-                <Button key='Logout' onClick={() => logout()} sx={{ my: 2, color: 'black', display: 'block' }}>
-                  Logout
-                </Button>
+
+                <Menu
+                  id='user-menu'
+                  anchorEl={anchorElProfileMenu}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                  keepMounted
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'left',
+                  }}
+                  open={Boolean(anchorElProfileMenu)}
+                  onClose={handleCloseProfileMenu}
+                  MenuListProps={{
+                    'aria-labelledby': 'basic-button',
+                  }}
+                >
+                  <MenuItem onClick={() => navigate('/profile')}>Profile</MenuItem>
+                  <MenuItem onClick={() => logout()}>Logout</MenuItem>
+                </Menu>
               </>
             )}
           </Box>
