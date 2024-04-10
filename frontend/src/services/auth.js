@@ -20,7 +20,7 @@ export const logout = async () => {
       data: { url },
     } = await axios.get(`${process.env.PUBLIC_URL}/auth/logout`);
     // Navigate to consent screen
-    window.location.assign(url);
+    window.location.assign('/');
   } catch (err) {
     console.error(err);
   }
