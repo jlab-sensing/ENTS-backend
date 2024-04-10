@@ -23,7 +23,7 @@ import { Line } from 'react-chartjs-2';
 import usePrevious from '../hooks/usePrevious';
 
 //** Wrapper for chart functionality and state */
-function ChartWrapper({ id, data, options, stream }) {
+function ChartWrapper({ id, data, options, stream, fetchData }) {
   const [resetSelected] = useState(false);
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
@@ -54,6 +54,7 @@ function ChartWrapper({ id, data, options, stream }) {
   //** Callback for when zoom action is completed */
   function onZoomComplete({ chart }) {
     setScaleRef(getScaleRef(chart));
+    fetchData(chart.scales[axis].options.max, chart.scales[axis].options.min);
   }
 
   //** Callback for when pan action is completed */
@@ -267,4 +268,5 @@ ChartWrapper.propTypes = {
   data: PropTypes.object,
   options: PropTypes.object,
   stream: PropTypes.bool,
+  fetchData: PropTypes.func,
 };
