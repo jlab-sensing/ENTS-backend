@@ -8,7 +8,13 @@ function Profile() {
   return (
     <>
       <Nav />
-      {loggedIn === true ? <AddCellModal /> : <h1>NOT LOGGED IN!</h1>}
+      {loggedIn === true ? (
+        <>
+          <p>Logged in as {user.first_name}</p> <AddCellModal />
+        </>
+      ) : (
+        <h1>NOT LOGGED IN!</h1>
+      )}
     </>
   );
 }
