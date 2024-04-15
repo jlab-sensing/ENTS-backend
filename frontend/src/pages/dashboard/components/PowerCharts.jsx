@@ -19,6 +19,7 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
   const [vChartData, setVChartData] = useState(chartSettings);
   const [pwrChartData, setPwrChartData] = useState(chartSettings);
   const [loadedCells, setLoadedCells] = useState([]);
+  const [resample, setResample] = useState([]);
   // Initialize the combined chart data with empty datasets
 
   // Access data for each cell and update the combined charts accordingly
@@ -53,7 +54,9 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
         name: name,
         powerData: await streamPowerData(
           id,
-          DateTime.now().minus({ millisecond: interval + 29000 }).toHTTP(),
+          DateTime.now()
+            .minus({ millisecond: interval + 29000 })
+            .toHTTP(),
           DateTime.now().toHTTP(),
           true,
         ),
@@ -269,12 +272,12 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
 
   return (
     <>
-      <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <VChart data={vChartData} stream={stream} />
+      {/* <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+        <VChart data={vChartData} stream={stream} resample={setResample} />
       </Grid>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <PwrChart data={pwrChartData} stream={stream} />
-      </Grid>
+        <PwrChart data={pwrChartData} stream={stream} resample={setResample} />
+      </Grid> */}
     </>
   );
 }

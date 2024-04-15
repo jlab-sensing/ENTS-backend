@@ -3,7 +3,7 @@ import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
 import ChartWrapper from '../ChartWrapper';
 import { DateTime } from 'luxon';
-export default function VChart({ data, stream }) {
+export default function VChart({ data, stream, resample }) {
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -120,7 +120,15 @@ export default function VChart({ data, stream }) {
     },
   };
 
-  return <ChartWrapper id='v' data={data} options={stream ? streamChartOptions : chartOptions} stream={stream} />;
+  return (
+    <ChartWrapper
+      id='v'
+      data={data}
+      options={stream ? streamChartOptions : chartOptions}
+      stream={stream}
+      resample={resample}
+    />
+  );
 }
 
 VChart.propTypes = {

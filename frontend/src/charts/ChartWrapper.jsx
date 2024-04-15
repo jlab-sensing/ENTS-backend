@@ -15,15 +15,27 @@ import {
   Tooltip,
   Legend,
   TimeScale,
+  Decimation,
 } from 'chart.js';
 import 'chartjs-adapter-luxon';
 import zoomPlugin from 'chartjs-plugin-zoom';
-ChartJS.register(LineController, LineElement, PointElement, LinearScale, Tooltip, Legend, TimeScale, zoomPlugin);
 import { Line } from 'react-chartjs-2';
 import usePrevious from '../hooks/usePrevious';
+import { Interval } from 'luxon';
+ChartJS.register(
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  Tooltip,
+  Legend,
+  TimeScale,
+  zoomPlugin,
+  Decimation,
+);
 
 //** Wrapper for chart functionality and state */
-function ChartWrapper({ id, data, options, stream, fetchData }) {
+function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
   const [resetSelected] = useState(false);
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
@@ -54,7 +66,13 @@ function ChartWrapper({ id, data, options, stream, fetchData }) {
   //** Callback for when zoom action is completed */
   function onZoomComplete({ chart }) {
     setScaleRef(getScaleRef(chart));
-    fetchData(chart.scales[axis].options.max, chart.scales[axis].options.min);
+    console.log('this is data', data);
+    console.log('chart', chart, chart.scales['x'].options.min, chart.scales['x'].options.max);
+    // chart.current.config.options.plugins.decimation.algorithm = 'lttb';
+    // chart.current.config.options.plugins.decimation.enabled = true;
+    // chart.current.config.options.plugins.decimation.samples = 10;
+    // chart.current.update();
+    // fetchData(chart.scales['x'].options.min, chart.scales['x'].options.max);
   }
 
   //** Callback for when pan action is completed */
@@ -81,6 +99,12 @@ function ChartWrapper({ id, data, options, stream, fetchData }) {
             mode: 'xy',
             onPanComplete,
           },
+        },
+        decimation: {
+          enabled: true,
+          algorithm: 'lttb',
+          samples: 50,
+          threshold: 50,
         },
       },
     };
@@ -149,7 +173,16 @@ function ChartWrapper({ id, data, options, stream, fetchData }) {
   };
 
   const lineChart = () => {
-    return <Line key={id} ref={chartRef} data={data} options={{ ...optionsWithPlugins, ...globalChartOpts }}></Line>;
+    return (
+      <Line
+        key={id}
+        ref={chartRef}
+        data={{
+          datasets: [...data.datasets],
+        }}
+        options={{ ...optionsWithPlugins, ...globalChartOpts }}
+      ></Line>
+    );
   };
 
   /** Maintain zoom and pan ref from previous render */
@@ -161,8 +194,10 @@ function ChartWrapper({ id, data, options, stream, fetchData }) {
       } else if (scaleRef != undefined) {
         setScales(scaleRef);
       }
+      console.log('Test', chartRef.current.config.options.plugins.decimation);
       return;
     }
+
     // TODO: refactor for better state management, useCallback for setting scaleRef
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zoomSelected, panSelected, prevScaleRef, scaleRef]);
