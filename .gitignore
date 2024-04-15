@@ -1,7 +1,8 @@
 ## Project
 *.csv
 .DS_Store
-
+./docker-compose.yml
+.gitignore
 ## Python
 
 # Byte-compiled / optimized / DLL files

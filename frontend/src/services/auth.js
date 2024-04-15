@@ -16,11 +16,9 @@ export const signIn = async () => {
 export const logout = async () => {
   try {
     // Gets authentication url from backend server
-    const {
-      data: { url },
-    } = await axios.get(`${process.env.PUBLIC_URL}/auth/logout`);
-    // Navigate to consent screen
-    window.location.assign(url);
+    await axios.get(`${process.env.PUBLIC_URL}/auth/logout`);
+    // Navigate to landing
+    window.location.assign('/');
   } catch (err) {
     console.error(err);
   }
