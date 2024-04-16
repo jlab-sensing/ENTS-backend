@@ -39,6 +39,7 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
   const [resetSelected] = useState(false);
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
+  const [decimationSelected, setDecimationSelected] = useState(true);
   const [scaleRef, setScaleRef] = useState({});
   const [prevData, setPrevData] = useState(data);
   const prevScaleRef = usePrevious(scaleRef);
@@ -111,7 +112,8 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
   }
 
   let optionsWithPlugins = new Options();
-  const chartRef = useRef({ id, data, optionsWithPlugins });
+  const chartRef = useRef(null);
+  // const chartRef = useRef({ id, data, optionsWithPlugins });
 
   //** Modifies chart ref with new scales object */
   function setScales(scaleRef) {
@@ -172,14 +174,31 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
     }
   };
 
+  const handleDecimation = () => {
+    if (chartRef.current) {
+      const decimation = {
+        enabled: !decimationSelected,
+        algorithm: 'lttb',
+        samples: 50,
+        threshold: 50,
+      };
+      chartRef.current.config.options.plugins.decimation = decimation;
+      setDecimationSelected(!decimationSelected);
+      chartRef.current.update();
+      console.log('decimation is', chartRef.current.config.options.plugins.decimation);
+      // setDecimationSelected(!decimationSelected);
+    }
+  };
+
   const lineChart = () => {
     return (
       <Line
         key={id}
         ref={chartRef}
-        data={{
-          datasets: [...data.datasets],
-        }}
+        // data={{
+        //   datasets: [...data.datasets],
+        // }}
+        data={data}
         options={{ ...optionsWithPlugins, ...globalChartOpts }}
       ></Line>
     );
@@ -194,13 +213,13 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
       } else if (scaleRef != undefined) {
         setScales(scaleRef);
       }
-      console.log('Test', chartRef.current.config.options.plugins.decimation);
+      // console.log('Test', chartRef.current.data.datasets);
       return;
     }
 
     // TODO: refactor for better state management, useCallback for setting scaleRef
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zoomSelected, panSelected, prevScaleRef, scaleRef]);
+  }, [zoomSelected, panSelected, prevScaleRef, scaleRef, decimationSelected]);
 
   //** Maintain zoom and pan when streaming new data */
   useEffect(() => {
@@ -238,7 +257,6 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
     if (scaleRef != undefined) {
       setScales(scaleRef);
       console.log('zoom');
-      chartRef.current.update();
     }
     return;
     // TODO: refactor for better state management, useCallback for setting scaleRef
@@ -253,7 +271,16 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
         height: '100%',
       }}
     >
-      {lineChart()}
+      <Line
+        key={id}
+        ref={chartRef}
+        // data={{
+        //   datasets: [...data.datasets],
+        // }}
+        data={data}
+        options={{ ...optionsWithPlugins, ...globalChartOpts }}
+      ></Line>
+      {/* {lineChart()} */}
       <Box
         sx={{
           display: 'flex',
@@ -289,6 +316,15 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
           <Box component='img' src={zoomIn} sx={{ width: '16px', height: '16px' }}></Box>
         </ToggleButton>
         <ToggleButton variant='contained' onClick={handleZoomOut} sx={{ width: '32px', height: '32px' }}>
+          <Box component='img' src={zoomOut} sx={{ width: '16px', height: '16px' }}></Box>
+        </ToggleButton>
+        <ToggleButton
+          variant='contained'
+          value={decimationSelected}
+          selected={decimationSelected}
+          onClick={handleDecimation}
+          sx={{ width: '32px', height: '32px' }}
+        >
           <Box component='img' src={zoomOut} sx={{ width: '16px', height: '16px' }}></Box>
         </ToggleButton>
       </Box>

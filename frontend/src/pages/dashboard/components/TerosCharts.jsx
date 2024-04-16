@@ -11,7 +11,6 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
   const chartSettings = {
-    label: [],
     datasets: [],
   };
   const [vwcChartData, setVwcChartData] = useState(chartSettings);
@@ -279,6 +278,7 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
   );
 
   useEffect(() => {
+    console.log('Test');
     if (Array.isArray(cells) && cells.length && !stream) {
       updateCharts();
     } else if (Array.isArray(cells) && cells.length && stream) {
