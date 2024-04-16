@@ -8,7 +8,6 @@ export default function VwcChart({ data, stream }) {
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
-    animation: false,
     parsing: false,
     scales: {
       x: {
