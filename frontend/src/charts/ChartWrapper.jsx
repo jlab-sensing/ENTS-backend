@@ -67,13 +67,6 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
   //** Callback for when zoom action is completed */
   function onZoomComplete({ chart }) {
     setScaleRef(getScaleRef(chart));
-    console.log('this is data', data);
-    console.log('chart', chart, chart.scales['x'].options.min, chart.scales['x'].options.max);
-    // chart.current.config.options.plugins.decimation.algorithm = 'lttb';
-    // chart.current.config.options.plugins.decimation.enabled = true;
-    // chart.current.config.options.plugins.decimation.samples = 10;
-    // chart.current.update();
-    // fetchData(chart.scales['x'].options.min, chart.scales['x'].options.max);
   }
 
   //** Callback for when pan action is completed */
@@ -184,19 +177,9 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
     }
   };
 
-  const lineChart = () => {
-    return (
-      <Line
-        key={id}
-        ref={chartRef}
-        // data={{
-        //   datasets: [...data.datasets],
-        // }}
-        data={data}
-        options={{ ...optionsWithPlugins, ...globalChartOpts }}
-      ></Line>
-    );
-  };
+  // const lineChart = () => {
+  //   return <Line key={id} ref={chartRef} data={data} options={{ ...optionsWithPlugins, ...globalChartOpts }}></Line>;
+  // };
 
   /** Maintain zoom and pan ref from previous render */
   useEffect(() => {
@@ -207,7 +190,6 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
       } else if (scaleRef != undefined) {
         setScales(scaleRef);
       }
-      // console.log('Test', chartRef.current.data.datasets);
       return;
     }
 
@@ -265,16 +247,7 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
         height: '100%',
       }}
     >
-      <Line
-        key={id}
-        ref={chartRef}
-        // data={{
-        //   datasets: [...data.datasets],
-        // }}
-        data={data}
-        options={{ ...optionsWithPlugins, ...globalChartOpts }}
-      ></Line>
-      {/* {lineChart()} */}
+      <Line key={id} ref={chartRef} data={data} options={{ ...optionsWithPlugins, ...globalChartOpts }}></Line>
       <Box
         sx={{
           display: 'flex',
