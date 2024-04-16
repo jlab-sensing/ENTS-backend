@@ -82,6 +82,7 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
   }
 
   //** Defines options object */
+  // NOTE: also defines the enable state of the plugins on rerenders
   function Options() {
     return {
       ...options,
@@ -102,7 +103,7 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
           },
         },
         decimation: {
-          enabled: true,
+          enabled: decimationSelected,
           algorithm: 'lttb',
           samples: 50,
           threshold: 50,
@@ -165,6 +166,7 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
     if (chartRef.current) {
       chartRef.current.zoom(1.1);
       setScaleRef(getScaleRef(chartRef.current));
+      console.log('decimation is', chartRef.current.config.options.plugins.decimation);
     }
   };
   const handleZoomOut = () => {
@@ -176,17 +178,9 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
 
   const handleDecimation = () => {
     if (chartRef.current) {
-      const decimation = {
-        enabled: !decimationSelected,
-        algorithm: 'lttb',
-        samples: 50,
-        threshold: 50,
-      };
-      chartRef.current.config.options.plugins.decimation = decimation;
-      setDecimationSelected(!decimationSelected);
+      chartRef.current.config.options.plugins.decimation = !decimationSelected;
       chartRef.current.update();
-      console.log('decimation is', chartRef.current.config.options.plugins.decimation);
-      // setDecimationSelected(!decimationSelected);
+      setDecimationSelected(!decimationSelected);
     }
   };
 
@@ -219,7 +213,7 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
 
     // TODO: refactor for better state management, useCallback for setting scaleRef
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zoomSelected, panSelected, prevScaleRef, scaleRef, decimationSelected]);
+  }, [zoomSelected, panSelected, prevScaleRef, scaleRef]);
 
   //** Maintain zoom and pan when streaming new data */
   useEffect(() => {
