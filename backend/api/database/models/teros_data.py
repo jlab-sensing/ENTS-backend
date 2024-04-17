@@ -135,6 +135,6 @@ class TEROSData(db.Model):
             data["timestamp"].append(row.ts)
             data["vwc"].append(row.vwc)
             data["temp"].append(row.temp)
-            data["ec"].append(row.ec)
-
+            # returns decimals as integers for chart parsing
+            data["ec"].append(int(row.ec))
         return data
