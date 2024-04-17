@@ -4,7 +4,7 @@ import { DateTime } from 'luxon';
 
 export const getPowerData = (cellId, startTime = DateTime.now().minus({ months: 1 }), endTime = DateTime.now()) => {
   return axios
-    .get(`${process.env.PUBLIC_URL}/api/power/${cellId}?startTime=${startTime}&endTime=${endTime}&resample=day`)
+    .get(`${process.env.PUBLIC_URL}/api/power/${cellId}?startTime=${startTime}&endTime=${endTime}`)
     .then((res) => res.data);
 };
 
