@@ -195,7 +195,7 @@ function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
 
     // TODO: refactor for better state management, useCallback for setting scaleRef
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zoomSelected, panSelected, prevScaleRef, scaleRef]);
+  }, [zoomSelected, panSelected, prevScaleRef, scaleRef, decimationSelected]);
 
   //** Maintain zoom and pan when streaming new data */
   useEffect(() => {
