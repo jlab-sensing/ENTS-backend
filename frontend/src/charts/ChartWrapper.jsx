@@ -6,6 +6,7 @@ import reset from '../assets/reset.svg';
 import pan from '../assets/pan.svg';
 import zoomIn from '../assets/zoom-in.svg';
 import zoomOut from '../assets/zoom-out.svg';
+import downsample from '../assets/downsample.svg';
 import {
   Chart as ChartJS,
   LineController,
@@ -374,15 +375,33 @@ function ChartWrapper({ id, data, options, stream }) {
             <Box component='img' src={zoomOut} sx={{ width: '16px', height: '16px' }}></Box>
           </ToggleButton>
         </Tooltip>
-        <ToggleButton
-          variant='contained'
-          value={decimationSelected}
-          selected={decimationSelected}
-          onClick={handleDecimation}
-          sx={{ width: '32px', height: '32px' }}
+        <Tooltip
+          title='Downsample'
+          placement='bottom'
+          disableInteractive
+          slotProps={{
+            popper: {
+              modifiers: [
+                {
+                  name: 'offset',
+                  options: {
+                    offset: [0, -11],
+                  },
+                },
+              ],
+            },
+          }}
         >
-          <Box component='img' src={zoomOut} sx={{ width: '16px', height: '16px' }}></Box>
-        </ToggleButton>
+          <ToggleButton
+            variant='contained'
+            value={decimationSelected}
+            selected={decimationSelected}
+            onClick={handleDecimation}
+            sx={{ width: '32px', height: '32px' }}
+          >
+            <Box component='img' src={downsample} sx={{ width: '16px', height: '16px' }}></Box>
+          </ToggleButton>
+        </Tooltip>
       </Box>
     </Box>
   );
