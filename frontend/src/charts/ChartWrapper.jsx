@@ -6,6 +6,7 @@ import reset from '../assets/reset.svg';
 import pan from '../assets/pan.svg';
 import zoomIn from '../assets/zoom-in.svg';
 import zoomOut from '../assets/zoom-out.svg';
+import downsample from '../assets/downsample.svg';
 import {
   Chart as ChartJS,
   LineController,
@@ -15,18 +16,30 @@ import {
   Tooltip as chartTooltip,
   Legend,
   TimeScale,
+  Decimation,
 } from 'chart.js';
 import 'chartjs-adapter-luxon';
 import zoomPlugin from 'chartjs-plugin-zoom';
-ChartJS.register(LineController, LineElement, PointElement, LinearScale, chartTooltip, Legend, TimeScale, zoomPlugin);
 import { Line } from 'react-chartjs-2';
 import usePrevious from '../hooks/usePrevious';
+ChartJS.register(
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  chartTooltip,
+  Legend,
+  TimeScale,
+  zoomPlugin,
+  Decimation,
+);
 
 //** Wrapper for chart functionality and state */
 function ChartWrapper({ id, data, options, stream }) {
   const [resetSelected] = useState(false);
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
+  const [decimationSelected, setDecimationSelected] = useState(true);
   const [scaleRef, setScaleRef] = useState({});
   const [prevData, setPrevData] = useState(data);
   const prevScaleRef = usePrevious(scaleRef);
@@ -62,6 +75,7 @@ function ChartWrapper({ id, data, options, stream }) {
   }
 
   //** Defines options object */
+  // NOTE: also defines the enable state of the plugins on rerenders
   function Options() {
     return {
       ...options,
@@ -81,12 +95,19 @@ function ChartWrapper({ id, data, options, stream }) {
             onPanComplete,
           },
         },
+        decimation: {
+          enabled: decimationSelected,
+          algorithm: 'lttb',
+          samples: 50,
+          threshold: 50,
+        },
       },
     };
   }
 
   let optionsWithPlugins = new Options();
-  const chartRef = useRef({ id, data, optionsWithPlugins });
+  const chartRef = useRef(null);
+  // const chartRef = useRef({ id, data, optionsWithPlugins });
 
   //** Modifies chart ref with new scales object */
   function setScales(scaleRef) {
@@ -138,6 +159,7 @@ function ChartWrapper({ id, data, options, stream }) {
     if (chartRef.current) {
       chartRef.current.zoom(1.1);
       setScaleRef(getScaleRef(chartRef.current));
+      console.log('decimation is', chartRef.current.config.options.plugins.decimation);
     }
   };
   const handleZoomOut = () => {
@@ -147,9 +169,17 @@ function ChartWrapper({ id, data, options, stream }) {
     }
   };
 
-  const lineChart = () => {
-    return <Line key={id} ref={chartRef} data={data} options={{ ...optionsWithPlugins, ...globalChartOpts }}></Line>;
+  const handleDecimation = () => {
+    if (chartRef.current) {
+      chartRef.current.config.options.plugins.decimation = !decimationSelected;
+      chartRef.current.update();
+      setDecimationSelected(!decimationSelected);
+    }
   };
+
+  // const lineChart = () => {
+  //   return <Line key={id} ref={chartRef} data={data} options={{ ...optionsWithPlugins, ...globalChartOpts }}></Line>;
+  // };
 
   /** Maintain zoom and pan ref from previous render */
   useEffect(() => {
@@ -162,9 +192,10 @@ function ChartWrapper({ id, data, options, stream }) {
       }
       return;
     }
+
     // TODO: refactor for better state management, useCallback for setting scaleRef
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zoomSelected, panSelected, prevScaleRef, scaleRef]);
+  }, [zoomSelected, panSelected, prevScaleRef, scaleRef, decimationSelected]);
 
   //** Maintain zoom and pan when streaming new data */
   useEffect(() => {
@@ -202,7 +233,6 @@ function ChartWrapper({ id, data, options, stream }) {
     if (scaleRef != undefined) {
       setScales(scaleRef);
       console.log('zoom');
-      chartRef.current.update();
     }
     return;
     // TODO: refactor for better state management, useCallback for setting scaleRef
@@ -217,7 +247,7 @@ function ChartWrapper({ id, data, options, stream }) {
         height: '100%',
       }}
     >
-      {lineChart()}
+      <Line key={id} ref={chartRef} data={data} options={{ ...optionsWithPlugins, ...globalChartOpts }}></Line>
       <Box
         sx={{
           display: 'flex',
@@ -343,6 +373,33 @@ function ChartWrapper({ id, data, options, stream }) {
         >
           <ToggleButton variant='contained' onClick={handleZoomOut} sx={{ width: '32px', height: '32px' }}>
             <Box component='img' src={zoomOut} sx={{ width: '16px', height: '16px' }}></Box>
+          </ToggleButton>
+        </Tooltip>
+        <Tooltip
+          title='Downsample'
+          placement='bottom'
+          disableInteractive
+          slotProps={{
+            popper: {
+              modifiers: [
+                {
+                  name: 'offset',
+                  options: {
+                    offset: [0, -11],
+                  },
+                },
+              ],
+            },
+          }}
+        >
+          <ToggleButton
+            variant='contained'
+            value={decimationSelected}
+            selected={decimationSelected}
+            onClick={handleDecimation}
+            sx={{ width: '32px', height: '32px' }}
+          >
+            <Box component='img' src={downsample} sx={{ width: '16px', height: '16px' }}></Box>
           </ToggleButton>
         </Tooltip>
       </Box>

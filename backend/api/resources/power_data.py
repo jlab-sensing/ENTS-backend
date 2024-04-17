@@ -32,6 +32,7 @@ class Power_Data(Resource):
         return jsonify(
             PowerData.get_power_data_obj(
                 cell_id,
+                resample=v_args["resample"],
                 start_time=v_args["startTime"],
                 end_time=v_args["endTime"],
                 stream=stream,
