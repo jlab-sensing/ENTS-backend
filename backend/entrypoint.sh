@@ -4,7 +4,7 @@
 while getopts 'dp' FLAG
 do
     case "$FLAG" in
-        d) flask --app backend.api --debug run -p 8000;;
+        d) flask --app backend.wsgi --debug run -h 0.0.0.0 -p 8000;;
         p) gunicorn -b :8000 backend.wsgi:handler;;
     esac
 done

@@ -1,6 +1,6 @@
 ## Project
 *.csv
-
+.DS_Store
 
 ## Python
 

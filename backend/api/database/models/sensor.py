@@ -1,4 +1,6 @@
-from ..models import db, Data, Cell
+from ..models import db
+from .cell import Cell
+from .data import Data
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 

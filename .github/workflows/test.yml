@@ -27,9 +27,20 @@ jobs:
       - name: Lint backend
         run: ruff check ./backend
 
+      - name: Black format check
+        uses: psf/black@stable
+        with:
+          options: '--check --verbose'
+          src: './backend'
+          version: '24.3.0'
+
       - name: Install frontend packages
         working-directory: ./frontend
         run: npm ci
+
+      - name: Run tests on frontend
+        working-directory: ./frontend
+        run: npm run test
 
       - name: Lint frontend
         working-directory: ./frontend
@@ -54,8 +65,12 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install dependencies
+      - name: Install backend dependencies
         run: pip install -r ./backend/requirements.txt
+
+      - name: Install frontend packages
+        working-directory: ./frontend
+        run: npm ci
 
       - name: Install k6
         run: |
@@ -79,6 +94,10 @@ jobs:
 
       - name: Run smoke test
         run: ./k6 run tests/basic.js
+
+      - name: Run frontend tests
+        working-directory: ./frontend
+        run: npm run test
 
       - name: Save all logs
         if: always()
