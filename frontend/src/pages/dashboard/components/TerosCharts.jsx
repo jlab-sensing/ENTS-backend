@@ -62,7 +62,6 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
 
   /** takes array x and array y  */
   function createDataset(x, y) {
-    console.log('creating', x, y);
     return x.map((x, i) => {
       return {
         x: x,
@@ -93,16 +92,11 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
         const terosData = cellChartData[cellid].terosData;
         const tTimestamp = terosData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
         // newVwcChartData.labels = tTimestamp;
-        console.log('timestamps', tTimestamp);
 
         /** creating dataset so chartjs doesn't have to parse data itself for decimation*/
         const tempData = createDataset(tTimestamp, terosData.temp);
         const vwcData = createDataset(tTimestamp, terosData.vwc);
         const ecData = createDataset(tTimestamp, terosData.ec);
-        console.log('terosdata', terosData);
-        console.log('tempdata', tempData);
-        console.log('vwcdata', vwcData);
-        console.log('ecdata', ecData);
         newVwcChartData.datasets.push(
           {
             label: name + ' Volumetric Water Content (%)',
@@ -139,8 +133,6 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
         });
         selectCounter += 1;
       }
-      console.log(newTempChartData);
-      console.log(newVwcChartData);
       setVwcChartData(newVwcChartData);
       setTempChartData(newTempChartData);
       setLoadedCells(loadCells);
@@ -246,7 +238,6 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
 
   //** clearing all chart settings */
   function clearCharts() {
-    console.log('CLEARNIGN');
     const newVwcChartData = {
       ...vwcChartData,
       labels: [],
@@ -278,7 +269,6 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
   );
 
   useEffect(() => {
-    console.log('Test');
     if (Array.isArray(cells) && cells.length && !stream) {
       updateCharts();
     } else if (Array.isArray(cells) && cells.length && stream) {

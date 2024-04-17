@@ -66,7 +66,6 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
 
   /** takes array x and array y  */
   function createDataset(x, y) {
-    console.log('creating', x, y);
     return x.map((x, i) => {
       return {
         x: x,
@@ -236,7 +235,6 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
 
   //** clearing all chart settings */
   function clearCharts() {
-    console.log('CLEARNIGN');
     const newVChartData = {
       ...vChartData,
       labels: [],
