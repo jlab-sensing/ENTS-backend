@@ -7,6 +7,7 @@ export default function VChart({ data, stream, resample }) {
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
+    parsing: false,
     scales: {
       x: {
         position: 'bottom',

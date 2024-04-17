@@ -65,6 +65,17 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
     return data;
   }
 
+  /** takes array x and array y  */
+  function createDataset(x, y) {
+    console.log('creating', x, y);
+    return x.map((x, i) => {
+      return {
+        x: x,
+        y: y[i],
+      };
+    });
+  }
+
   //** updates chart based on query */
   function updateCharts() {
     const newVChartData = {
@@ -85,12 +96,15 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
         const cellid = id;
         const name = cellChartData[cellid].name;
         const powerData = cellChartData[cellid].powerData;
-        const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
+        const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
         newVChartData.labels = pTimestamp;
+        const vData = createDataset(pTimestamp, powerData.v);
+        const iData = createDataset(pTimestamp, powerData.i);
+        const pData = createDataset(pTimestamp, powerData.p);
         newVChartData.datasets.push(
           {
             label: name + ' Voltage (mV)',
-            data: powerData.v,
+            data: vData,
             borderColor: vColors[selectCounter],
             borderWidth: 2,
             fill: false,
@@ -100,7 +114,7 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
           },
           {
             label: name + ' Current (µA)',
-            data: powerData.i,
+            data: iData,
             borderColor: iColors[selectCounter],
             borderWidth: 2,
             fill: false,
@@ -113,7 +127,7 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
         newPwrChartData.labels = pTimestamp;
         newPwrChartData.datasets.push({
           label: name + ' Power (µW)',
-          data: powerData.p,
+          data: pData,
           borderColor: pColors[selectCounter],
           borderWidth: 2,
           fill: false,
@@ -272,12 +286,12 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
 
   return (
     <>
-      {/* <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+      <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
         <VChart data={vChartData} stream={stream} resample={setResample} />
       </Grid>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
         <PwrChart data={pwrChartData} stream={stream} resample={setResample} />
-      </Grid> */}
+      </Grid>
     </>
   );
 }

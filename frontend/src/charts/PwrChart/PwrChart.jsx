@@ -8,6 +8,7 @@ export default function PwrChart({ data, stream }) {
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
+    parsing: false,
     scales: {
       x: {
         position: 'bottom',
