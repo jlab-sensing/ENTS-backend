@@ -21,7 +21,6 @@ import 'chartjs-adapter-luxon';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import { Line } from 'react-chartjs-2';
 import usePrevious from '../hooks/usePrevious';
-import { Interval } from 'luxon';
 ChartJS.register(
   LineController,
   LineElement,
@@ -35,7 +34,7 @@ ChartJS.register(
 );
 
 //** Wrapper for chart functionality and state */
-function ChartWrapper({ id, data, options, stream, fetchData, resample }) {
+function ChartWrapper({ id, data, options, stream }) {
   const [resetSelected] = useState(false);
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
@@ -306,5 +305,4 @@ ChartWrapper.propTypes = {
   data: PropTypes.object,
   options: PropTypes.object,
   stream: PropTypes.bool,
-  fetchData: PropTypes.func,
 };
