@@ -116,7 +116,8 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
             fill: false,
             yAxisID: 'ecAxis',
             radius: 2,
-            pointRadius: 1,
+            pointRadius: 0,
+            borderDash: [5, 5],
           },
         );
 
