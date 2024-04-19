@@ -28,7 +28,7 @@ do
 			# upgrades to lastest alembic version
 			flask --app backend.api db upgrade head -d ./backend/api/migrations
 			;;
-        m)  
+    m)  
 			# Migrate database
 			msg="$OPTARG"
 			# read -p "Enter migrate message: " msg;
