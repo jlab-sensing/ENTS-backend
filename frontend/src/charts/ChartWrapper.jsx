@@ -399,7 +399,8 @@ function ChartWrapper({ id, data, options, stream }) {
           sx={{
             width: '90%',
             heigh: '100%',
-            padding: '2%'
+            py: '2.5%',
+            paddingLeft: '2.5%'
           }}>
           
         {lineChart()}  
