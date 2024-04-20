@@ -28,7 +28,7 @@ Author: John Madden <jmadden173@pm.me>
 
 import base64
 
-from flask import request, jsonify
+from flask import request, jsonify, Response
 from flask_restful import Resource
 
 from .util import process_measurement
