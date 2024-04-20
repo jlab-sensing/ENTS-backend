@@ -28,7 +28,7 @@ do
 			# upgrades to lastest alembic version
 			flask --app backend.api db upgrade head -d ./backend/api/migrations
 			;;
-    m)  
+        m)  
 			# Migrate database
 			msg="$OPTARG"
 			# read -p "Enter migrate message: " msg;
@@ -43,7 +43,7 @@ do
 			;;
 		c)
 			# Checks if database needs migration
-			flask --app api db check -d ./backend/api/migrations
+			flask --app backend.api db check -d ./backend/api/migrations
 			;;
 		h)
 			# Usage help
@@ -57,6 +57,5 @@ do
 			;;
     esac
 done
-
 
 
