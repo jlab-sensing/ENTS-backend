@@ -44,7 +44,7 @@ class Sensor(db.Model):
         end_time=datetime.now(),
     ):
         """gets sensor data as a list of objects"""
-        print("running", flush=True)
+        
         cur_sensor = Sensor.query.filter_by(
             name=name,
             measurement=measurement,
@@ -62,8 +62,6 @@ class Sensor(db.Model):
             case "text":
                 t_data = Data.text_val
                 
-        print(f"tdata: {t_data}")
-                
         resampled = (
             db.select(
                 db.func.date_trunc(resample, Data.ts).label("ts"),
@@ -80,8 +78,6 @@ class Sensor(db.Model):
             (resampled.c.data).label("data"),
         ).order_by(resampled.c.ts)
         
-        print(f"stmt: {stmt}") 
-        
         data = {
             "timestamp": [],
             "data": [],
@@ -96,8 +92,6 @@ class Sensor(db.Model):
         data["measurement"] = cur_sensor.measurement
         data["unit"] = cur_sensor.unit
         data["type"] = cur_sensor.data_type
-        
-        print(f"data: {data}") 
         
         return data
 

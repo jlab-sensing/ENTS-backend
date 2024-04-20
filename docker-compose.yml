@@ -5,7 +5,7 @@ services:
     build:
       context: ./backend
       dockerfile: ./Dockerfile
-      target: development
+      target: production
     image: dirtviz-backend
     environment:
       DB_USER: dirtviz
