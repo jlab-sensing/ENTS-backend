@@ -8,7 +8,7 @@ class Data(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     sensor_id = db.Column(
-        db.Integer, db.ForeignKey("cell.id", ondelete="CASCADE"), nullable=False
+        db.Integer, db.ForeignKey("sensor.id", ondelete="CASCADE"), nullable=False
     )
     ts = db.Column(db.DateTime, nullable=False)
     ts_server = db.Column(db.DateTime, server_default=db.func.now())

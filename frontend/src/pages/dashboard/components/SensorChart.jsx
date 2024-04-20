@@ -8,7 +8,8 @@ import { getSensorData } from '../../../services/sensor';
 function SensorChart({ cells, startDate, endDate }) {
   // CONFIGURATION
   // List out measurements that your chart is going to display
-  const measurements = ['leaf_wetness'];
+  const sensor_name = 'phytos31'
+  const measurements = ['voltage'];
   const units = ['em'];
   // Colors of data points. Each color represents the next color
   // of the data points as the user selects more cells to compare.
@@ -46,7 +47,7 @@ function SensorChart({ cells, startDate, endDate }) {
       for (const meas of measurements) {
         data[id] = {
           ...data[id],
-          [meas]: await getSensorData(id, meas, startDate, endDate),
+          [meas]: await getSensorData(sensor_name, id, meas, startDate, endDate),
         };
       }
     }
