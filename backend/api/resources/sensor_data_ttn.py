@@ -16,7 +16,7 @@ Author: John Madden <jmadden173@pm.me>
 
 import base64
 
-from flask import request
+from flask import request, Response
 from flask_restful import Resource
 
 from .util import process_measurement
@@ -32,12 +32,19 @@ class Measurement_Upink(Resource):
         """
 
         content_type = request.headers.get("Content-Type")
-
+        
         # get uplink json
         if content_type == "application/json":
             uplink_json = request.json
         else:
-            raise ValueError("POST request must be application/json")
+            raise ValueError(f"POST request must be application/json")
+
+        # check if uplink is on correctly LoRaWAN application port 
+        if uplink_json["uplink_message"]["f_port"] != 1:
+            # don't process and return success
+            resp = Response()
+            resp.status_code = 200 
+            return resp
 
         # get payload
         payload_str = uplink_json["uplink_message"]["frm_payload"]
