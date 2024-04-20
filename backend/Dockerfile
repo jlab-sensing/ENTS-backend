@@ -8,7 +8,6 @@ ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_APP=api
 COPY . ./
 WORKDIR /app/
-COPY migrate.sh ./
 EXPOSE 8000
 ENTRYPOINT ["/app/backend/entrypoint.sh", "-d"]
 
