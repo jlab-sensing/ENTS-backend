@@ -17,7 +17,7 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = dburl
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
-    #SQLALCHEMY_ECHO = True
+    # SQLALCHEMY_ECHO = True
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
     REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI")

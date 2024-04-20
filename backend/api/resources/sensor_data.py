@@ -36,44 +36,45 @@ from .util import process_measurement
 from ..database.models.sensor import Sensor
 from ..database.schemas.get_sensor_data_schema import GetSensorDataSchema
 
+
 class SensorData(Resource):
-    
+
     get_sensor_data_schema = GetSensorDataSchema()
-    
+
     def get(self):
-        """Gets specified sensor data""" 
-        
-        # get args 
+        """Gets specified sensor data"""
+
+        # get args
         v_args = self.get_sensor_data_schema.load(request.args)
-        
-        # get data 
-        sensor_data_obj = Sensor.get_sensor_data_obj( 
+
+        # get data
+        sensor_data_obj = Sensor.get_sensor_data_obj(
             name=v_args["name"],
             cell_id=v_args["cellId"],
             start_time=v_args["startTime"],
             measurement=v_args["measurement"],
-            end_time=v_args["endTime"]
+            end_time=v_args["endTime"],
         )
-        
+
         return jsonify(sensor_data_obj)
-    
+
     def post(self):
-        """Handle upload post request 
-        
+        """Handle upload post request
+
         The HTTP request is checked for appropriate Content-Type then the
         measurement is decoded and inserted into the database. Both a HTTP code  and
         binary response are returned.
-        
+
         Returns:
             Response indicating success or failure. See util.process_measurement
             for full description.
         """
-        
+
         content_type = request.headers.get("Content-Type")
-      
-        # response to request 
+
+        # response to request
         resp = None
-        
+
         if content_type == "application/json":
             # get uplink json
             uplink_json = request.json
@@ -85,16 +86,16 @@ class SensorData(Resource):
         else:
             err_str = f"Content-Type header of '{content_type}' incorrect"
             raise ValueError(err_str)
-        
+
         return resp
-        
+
     @staticmethod
     def handle_ttn(uplink_json):
         """Handlings uplink POST request from TTN
-        
+
         Sample uplink message:
         https://www.thethingsindustries.com/docs/the-things-stack/concepts/data-formats/#uplink-messages
-        
+
         Args:
             uplink_json: Uplink json for TTN
 
@@ -103,11 +104,11 @@ class SensorData(Resource):
             for full description.
         """
 
-        # check if uplink is on correctly LoRaWAN application port 
+        # check if uplink is on correctly LoRaWAN application port
         if uplink_json["uplink_message"]["f_port"] != 1:
             # don't process and return success
             resp = Response()
-            resp.status_code = 200 
+            resp.status_code = 200
             return resp
 
         # get payload

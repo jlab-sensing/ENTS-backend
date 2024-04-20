@@ -31,7 +31,7 @@ def process_measurement(data: bytes):
 
     # decode binary protobuf data
     meas = decode_measurement(data)
-    
+
     obj_list = []
 
     # power measurement
@@ -43,7 +43,7 @@ def process_measurement(data: bytes):
             meas["data"]["voltage"],
             meas["data"]["current"],
         )
-        
+
         obj_list.append(obj)
 
     # teros12 measurement
@@ -59,21 +59,13 @@ def process_measurement(data: bytes):
         )
 
         obj_list.append(obj)
-        
+
     elif meas["type"] == "phytos31":
-        obj1 = Sensor.add_data(
-            meas_name="voltage",
-            meas_unit="V",
-            meas_dict=meas
-        )
-        
+        obj1 = Sensor.add_data(meas_name="voltage", meas_unit="V", meas_dict=meas)
+
         obj_list.append(obj1)
-        
-        obj2 = Sensor.add_data(
-            meas_name="leafWetness",
-            meas_unit="?",
-            meas_dict=meas
-        )
+
+        obj2 = Sensor.add_data(meas_name="leafWetness", meas_unit="?", meas_dict=meas)
 
         obj_list.append(obj2)
 
