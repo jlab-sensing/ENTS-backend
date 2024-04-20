@@ -43,7 +43,7 @@ do
 			;;
 		c)
 			# Checks if database needs migration
-			flask --app backend.api db check -d ./backend/api/migrations
+			flask --app api db check -d ./backend/api/migrations
 			;;
 		h)
 			# Usage help
