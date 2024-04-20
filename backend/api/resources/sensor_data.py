@@ -1,4 +1,4 @@
-"""Sensor endpoint for uploading data
+"""Sensor endpoint for uploading and getting data
 
 Data can be upload through (1) The Things Network (TTN) in a json format or
 (2) directly POSTed to this endpoint as binary data. The method are
@@ -28,18 +28,45 @@ Author: John Madden <jmadden173@pm.me>
 
 import base64
 
-from flask import request, Response
+from flask import request, jsonify
 from flask_restful import Resource
 
 from .util import process_measurement
 
-class SensorUploadEndpoint(Resource):
+from ..database.models.sensor import Sensor
+from ..database.schemas.get_sensor_data_schema import GetSensorDataSchema
+
+class SensorData(Resource):
+    
+    get_sensor_data_schema = GetSensorDataSchema()
+    
+    def get(self):
+        """Gets specified sensor data""" 
+        
+        # get args 
+        v_args = self.get_sensor_data_schema.load(request.args)
+        
+        # get data 
+        sensor_data_obj = Sensor.get_sensor_data_obj( 
+            name=v_args["name"],
+            cell_id=v_args["cellId"],
+            start_time=v_args["startTime"],
+            measurement=v_args["measurement"],
+            end_time=v_args["endTime"]
+        )
+        
+        return jsonify(sensor_data_obj)
+    
     def post(self):
         """Handle upload post request 
         
         The HTTP request is checked for appropriate Content-Type then the
         measurement is decoded and inserted into the database. Both a HTTP code  and
         binary response are returned.
+        
+        Returns:
+            Response indicating success or failure. See util.process_measurement
+            for full description.
         """
         
         content_type = request.headers.get("Content-Type")

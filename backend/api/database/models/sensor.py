@@ -36,6 +36,7 @@ class Sensor(db.Model):
 
     @staticmethod
     def get_sensor_data_obj(
+        name,
         cell_id,
         measurement,
         resample="hour",
@@ -45,10 +46,14 @@ class Sensor(db.Model):
         """gets sensor data as a list of objects"""
         print("running", flush=True)
         cur_sensor = Sensor.query.filter_by(
-            measurement=measurement, cell_id=cell_id
+            name=name,
+            measurement=measurement,
+            cell_id=cell_id
         ).first()
+        
         if cur_sensor is None:
             return None
+        
         match cur_sensor.data_type:
             case "float":
                 t_data = Data.float_val
@@ -56,6 +61,9 @@ class Sensor(db.Model):
                 t_data = Data.int_val
             case "text":
                 t_data = Data.text_val
+                
+        print(f"tdata: {t_data}")
+                
         resampled = (
             db.select(
                 db.func.date_trunc(resample, Data.ts).label("ts"),
@@ -66,12 +74,14 @@ class Sensor(db.Model):
             .group_by(db.func.date_trunc(resample, Data.ts))
             .subquery()
         )
-
+        
         stmt = db.select(
             resampled.c.ts.label("ts"),
             (resampled.c.data).label("data"),
         ).order_by(resampled.c.ts)
-
+        
+        print(f"stmt: {stmt}") 
+        
         data = {
             "timestamp": [],
             "data": [],
@@ -86,6 +96,9 @@ class Sensor(db.Model):
         data["measurement"] = cur_sensor.measurement
         data["unit"] = cur_sensor.unit
         data["type"] = cur_sensor.data_type
+        
+        print(f"data: {data}") 
+        
         return data
 
     @staticmethod
