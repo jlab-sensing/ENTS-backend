@@ -3,8 +3,10 @@ import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
 import ChartWrapper from '../ChartWrapper';
 import { DateTime } from 'luxon';
+import { getMaxAxisAndStepValues } from '../alignAxis';
 
 export default function TempChart({ data, stream }) {
+  const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets[0], {}, 10, 5);
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -36,7 +38,12 @@ export default function TempChart({ data, stream }) {
         type: 'linear',
         position: 'left',
         beginAtZero: true,
-        suggestedMax: 35,
+        ticks: {
+          beginAtZero: true,
+          stepSize: leftYStep,
+        },
+        min: 0,
+        max: leftYMax,
         title: {
           display: true,
           text: 'Temperature (°C)',
