@@ -6,7 +6,7 @@ import { DateTime } from 'luxon';
 import { getMaxAxisAndStepValues } from '../alignAxis';
 
 export default function TempChart({ data, stream }) {
-  const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets[0], {}, 10, 5);
+  const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 10, 5);
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,

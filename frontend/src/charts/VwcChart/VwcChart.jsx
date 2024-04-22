@@ -3,8 +3,15 @@ import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
 import ChartWrapper from '../ChartWrapper';
 import { DateTime } from 'luxon';
+import { getMaxAxisAndStepValues } from '../alignAxis';
 
 export default function VwcChart({ data, stream }) {
+  const { leftYMax, rightYMax, leftYStep, rightYStep } = getMaxAxisAndStepValues(
+    data.datasets.filter((_, i) => i % 2 == 0),
+    data.datasets.filter((_, i) => i % 2 == 1),
+    10,
+    10,
+  );
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -41,7 +48,12 @@ export default function VwcChart({ data, stream }) {
           display: true,
           text: 'EC (µS/cm)',
         },
+        ticks: {
+          beginAtZero: true,
+          stepSize: rightYStep,
+        },
         min: 0,
+        max: rightYMax,
       },
       vwcAxis: {
         type: 'linear',
@@ -52,7 +64,12 @@ export default function VwcChart({ data, stream }) {
           display: true,
           text: 'VWC (%)',
         },
+        ticks: {
+          beginAtZero: true,
+          stepSize: leftYStep,
+        },
         min: 0,
+        max: leftYMax,
         grid: {
           drawOnChartArea: false,
         },

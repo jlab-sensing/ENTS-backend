@@ -7,8 +7,8 @@ import { getMaxAxisAndStepValues } from '../alignAxis';
 
 export default function VChart({ data, stream }) {
   const { leftYMax, rightYMax, leftYStep, rightYStep } = getMaxAxisAndStepValues(
-    data.datasets[0],
-    data.datasets[1],
+    data.datasets.filter((_, i) => i % 2 == 0),
+    data.datasets.filter((_, i) => i % 2 == 1),
     10,
     10,
   );
@@ -51,16 +51,8 @@ export default function VChart({ data, stream }) {
           beginAtZero: true,
           stepSize: leftYStep,
         },
-        // ticks: {
-        //   count: 10,
-        //   beginAtZero: true,
-        //   autoSkip: false,
-        //   stepSize: 100,
-        //   grace: '5%',
-        // },
         min: 0,
         max: leftYMax,
-        // max: 400,
         grid: {
           drawOnChartArea: false,
         },
@@ -76,16 +68,8 @@ export default function VChart({ data, stream }) {
           beginAtZero: true,
           stepSize: rightYStep,
         },
-        // ticks: {
-        //   count: 10,
-        //   beginAtZero: true,
-        //   autoSkip: false,
-        //   stepSize: 100,
-        //   grace: '5%',
-        // },
         min: 0,
         max: rightYMax,
-        // max: 400,
       },
     },
   };
