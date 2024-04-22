@@ -3,7 +3,15 @@ import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
 import ChartWrapper from '../ChartWrapper';
 import { DateTime } from 'luxon';
+import { getMaxAxisAndStepValues } from '../alignAxis';
+
 export default function VChart({ data, stream }) {
+  const { leftYMax, rightYMax, leftYStep, rightYStep } = getMaxAxisAndStepValues(
+    data.datasets.filter((_, i) => i % 2 == 0),
+    data.datasets.filter((_, i) => i % 2 == 1),
+    10,
+    10,
+  );
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -38,8 +46,12 @@ export default function VChart({ data, stream }) {
           display: true,
           text: 'Cell Voltage (mV)',
         },
+        ticks: {
+          beginAtZero: true,
+          stepSize: leftYStep,
+        },
         min: 0,
-        max: 400,
+        max: leftYMax,
         grid: {
           drawOnChartArea: false,
         },
@@ -51,8 +63,12 @@ export default function VChart({ data, stream }) {
           display: true,
           text: 'Current (µA)',
         },
+        ticks: {
+          beginAtZero: true,
+          stepSize: rightYStep,
+        },
         min: 0,
-        max: 160,
+        max: rightYMax,
       },
     },
   };
