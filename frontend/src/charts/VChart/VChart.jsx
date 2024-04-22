@@ -12,7 +12,6 @@ export default function VChart({ data, stream }) {
     10,
     10,
   );
-  console.log('axis', leftYMax, rightYMax, leftYStep, rightYStep);
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
