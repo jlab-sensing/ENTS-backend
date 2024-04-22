@@ -3,8 +3,10 @@ import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
 import ChartWrapper from './ChartWrapper';
 import { chartPlugins } from './plugins';
+import { getMaxAxisAndStepValues } from './alignAxis';
 
 export default function SensorChartTemplate({ data }) {
+  const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 10, 5);
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -38,6 +40,12 @@ export default function SensorChartTemplate({ data }) {
           display: true,
           text: 'Leaf Wetness (h2o/cm)',
         },
+        ticks: {
+          beginAtZero: true,
+          stepSize: leftYStep,
+        },
+        min: 0,
+        max: leftYMax,
       },
     },
     plugins: structuredClone(chartPlugins),
