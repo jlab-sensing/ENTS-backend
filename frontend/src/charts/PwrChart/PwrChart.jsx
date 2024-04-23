@@ -3,11 +3,14 @@ import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
 import ChartWrapper from '../ChartWrapper';
 import { DateTime } from 'luxon';
+import { getMaxAxisAndStepValues } from '../alignAxis';
 
 export default function PwrChart({ data, stream }) {
+  const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 10, 5);
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
+    parsing: false,
     scales: {
       x: {
         position: 'bottom',
@@ -38,6 +41,12 @@ export default function PwrChart({ data, stream }) {
           display: true,
           text: 'Power (µW)',
         },
+        ticks: {
+          beginAtZero: true,
+          stepSize: leftYStep,
+        },
+        min: 0,
+        max: leftYMax,
       },
     },
   };

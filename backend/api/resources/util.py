@@ -10,6 +10,7 @@ from soil_power_sensor_protobuf import encode_response, decode_measurement
 
 from ..database.models.power_data import PowerData
 from ..database.models.teros_data import TEROSData
+from ..database.models.sensor import Sensor
 
 
 def process_measurement(data: bytes):
@@ -31,9 +32,11 @@ def process_measurement(data: bytes):
     # decode binary protobuf data
     meas = decode_measurement(data)
 
+    obj_list = []
+
     # power measurement
     if meas["type"] == "power":
-        db_obj = PowerData.add_protobuf_power_data(
+        obj = PowerData.add_protobuf_power_data(
             meas["loggerId"],
             meas["cellId"],
             datetime.fromtimestamp(meas["ts"]),
@@ -41,9 +44,11 @@ def process_measurement(data: bytes):
             meas["data"]["current"],
         )
 
+        obj_list.append(obj)
+
     # teros12 measurement
     elif meas["type"] == "teros12":
-        db_obj = TEROSData.add_protobuf_teros_data(
+        obj = TEROSData.add_protobuf_teros_data(
             meas["cellId"],
             datetime.fromtimestamp(meas["ts"]),
             meas["data"]["vwcAdj"],
@@ -53,16 +58,27 @@ def process_measurement(data: bytes):
             None,
         )
 
+        obj_list.append(obj)
+
+    elif meas["type"] == "phytos31":
+        obj1 = Sensor.add_data(meas_name="voltage", meas_unit="V", meas_dict=meas)
+
+        obj_list.append(obj1)
+
+        obj2 = Sensor.add_data(meas_name="leafWetness", meas_unit="?", meas_dict=meas)
+
+        obj_list.append(obj2)
+
     # format response
     resp = Response()
     resp.content_type = "application/octet-stream"
-    # indicate a success with 200
-    if db_obj is not None:
-        resp.status_code = 200
-        resp.data = encode_response(True)
     # indicate an error with 501
-    else:
+    if None in obj_list:
         resp.status_code = 501
         resp.data = encode_response(False)
+    # indicate a success with 200
+    else:
+        resp.status_code = 200
+        resp.data = encode_response(True)
 
     return resp

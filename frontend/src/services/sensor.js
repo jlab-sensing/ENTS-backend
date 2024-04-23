@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { DateTime } from 'luxon';
 export const getSensorData = (
+  name,
   cellId,
   meas,
   startTime = DateTime.now().minus({ months: 1 }),
@@ -8,6 +9,7 @@ export const getSensorData = (
 ) => {
   console.log('celllll', cellId);
   const params = {
+    name: name,
     cellId: cellId,
     measurement: meas,
     startTime: startTime,
