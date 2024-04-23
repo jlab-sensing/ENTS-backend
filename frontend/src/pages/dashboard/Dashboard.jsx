@@ -71,7 +71,7 @@ function Dashboard() {
         justifyContent='spaced-evently'
         sx={{ height: '100vh', boxSizing: 'border-box' }}
       >
-        <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} />
+        <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
       </Stack>
     </>
   );
