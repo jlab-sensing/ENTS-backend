@@ -76,17 +76,42 @@ class SensorData(Resource):
         # response to request
         resp = None
 
-        if content_type == "application/json":
-            # get uplink json
-            uplink_json = request.json
-            resp = self.handle_ttn(uplink_json)
-        elif content_type == "application/octet-stream":
-            # get uplink binary data
-            data = request.data
-            resp = self.handle_binary(data)
+        v_args = request.json
+
+        #  name = meas_dict["type"]
+        # cell_id = meas_dict["cellId"]
+        # meas_data = meas_dict["data"][meas_name]
+        # REMOVE LATER
+        # meas_type = "float"
+        # # meas_type = meas_dict["data_type"][meas_name].__name__
+        # ts = datetime.fromtimestamp(meas_dict["ts"])
+
+        if "debug" in v_args.keys():
+            meas = {
+                "cellId": 200,
+                "type": "phytos31",
+                "data": {
+                    "voltage": v_args["voltage"],
+                    "leafWetness": v_args["leafWetness"],
+                },
+                "data_type": {"voltage": "float", "leafWetness": "float"},
+                "ts": v_args["timestamp"],
+            }
+            Sensor.add_data(meas_name="voltage", meas_unit="V", meas_dict=meas)
+            Sensor.add_data(meas_name="leafWetness", meas_unit="lW", meas_dict=meas)
         else:
-            err_str = f"Content-Type header of '{content_type}' incorrect"
-            raise ValueError(err_str)
+
+            if content_type == "application/json":
+                # get uplink json
+                uplink_json = request.json
+                resp = self.handle_ttn(uplink_json)
+            elif content_type == "application/octet-stream":
+                # get uplink binary data
+                data = request.data
+                resp = self.handle_binary(data)
+            else:
+                err_str = f"Content-Type header of '{content_type}' incorrect"
+                raise ValueError(err_str)
 
         return resp
 

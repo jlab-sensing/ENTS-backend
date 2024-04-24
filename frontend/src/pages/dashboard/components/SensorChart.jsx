@@ -109,7 +109,6 @@ function SensorChart({ cells, startDate, endDate, stream }) {
   /** updates chart data state */
   function updateCharts() {
     getCellChartData().then((cellChartData) => {
-      console.log('test', cellChartData);
       let selectCounter = 0;
       let loadCells = cells;
       if (!stream) {
@@ -155,7 +154,6 @@ function SensorChart({ cells, startDate, endDate, stream }) {
           const measurements = Object.keys(cellChartData[cellid]).filter((k) => k != 'name');
           for (const [idx, meas] of measurements.entries()) {
             if (Array.isArray(cellChartData[cellid][meas]['data']) && cellChartData[cellid][meas]['data'].length) {
-              console.log('data', cellChartData[cellid][meas]);
               foundNewData = true;
               const sTimestampRaw = cellChartData[cellid][meas]['timestamp'].map((dateTime) =>
                 DateTime.fromHTTP(dateTime),
@@ -164,14 +162,13 @@ function SensorChart({ cells, startDate, endDate, stream }) {
               const dupIdx = sTimestampRaw.reduce((arr, ts, i) => {
                 return !newSensorChartData.labels.some((oldTs) => ts.equals(oldTs)) && arr.push(i), arr;
               }, []);
-              console.log('sdr', sensorDataRaw);
               const sensorData = sensorDataRaw.filter((_, i) => dupIdx.includes(i));
               const sTimestamp = sTimestampRaw.filter((_, i) => dupIdx.includes(i));
               const measData = createDataset(sTimestamp, sensorData);
-              console.log('meas data', measData);
               newSensorChartData.labels = newSensorChartData.labels.concat(sTimestamp);
-              newSensorChartData.datasets[selectCounter].data =
-                newSensorChartData.datasets[selectCounter].data.concat(measData);
+              const step = selectCounter === 0 ? 0 : 1;
+              newSensorChartData.datasets[selectCounter + idx + step].data =
+                newSensorChartData.datasets[selectCounter + idx + step].data.concat(measData);
             }
           }
           selectCounter += 1;
@@ -179,7 +176,6 @@ function SensorChart({ cells, startDate, endDate, stream }) {
       } else {
         for (const { id } of cells) {
           const cellid = id;
-          console.log('test', cellid, sensorChartData[cellid]);
           const name = sensorChartData[cellid].name;
           const measurements = Object.keys(sensorChartData[cellid]).filter((k) => k != 'name');
           for (const [idx, meas] of measurements.entries()) {
