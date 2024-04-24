@@ -46,6 +46,7 @@ class SensorData(Resource):
 
         # get args
         v_args = self.get_sensor_data_schema.load(request.args)
+        stream = v_args["stream"] if "stream" in v_args else False
 
         # get data
         sensor_data_obj = Sensor.get_sensor_data_obj(
@@ -54,6 +55,7 @@ class SensorData(Resource):
             start_time=v_args["startTime"],
             measurement=v_args["measurement"],
             end_time=v_args["endTime"],
+            stream=stream,
         )
 
         return jsonify(sensor_data_obj)
@@ -69,7 +71,6 @@ class SensorData(Resource):
             Response indicating success or failure. See util.process_measurement
             for full description.
         """
-
         content_type = request.headers.get("Content-Type")
 
         # response to request
@@ -86,7 +87,6 @@ class SensorData(Resource):
         else:
             err_str = f"Content-Type header of '{content_type}' incorrect"
             raise ValueError(err_str)
-
         return resp
 
     @staticmethod

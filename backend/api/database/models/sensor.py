@@ -42,6 +42,7 @@ class Sensor(db.Model):
         resample="hour",
         start_time=datetime.now() - relativedelta(months=1),
         end_time=datetime.now(),
+        stream=False,
     ):
         """gets sensor data as a list of objects"""
 
@@ -60,21 +61,46 @@ class Sensor(db.Model):
             case "text":
                 t_data = Data.text_val
 
-        resampled = (
-            db.select(
-                db.func.date_trunc(resample, Data.ts).label("ts"),
-                db.func.avg(t_data).label("data"),
-            )
-            .where(Data.sensor_id == cur_sensor.id)
-            .filter(Data.ts.between(start_time, end_time))
-            .group_by(db.func.date_trunc(resample, Data.ts))
-            .subquery()
-        )
+        if not stream:
+            # select from actual timestamp and aggregate data
+            if resample == "none":
+                # resampling is not required: select data without aggregate functions
+                stmt = (
+                    db.select(
+                        db.func.date_trunc(resample, Data.ts).label("ts"),
+                        db.func.avg(t_data).label("data"),
+                    )
+                    .where(Data.sensor_id == cur_sensor.id)
+                    .filter(Data.ts.between(start_time, end_time))
+                )
+            else:
+                # handle normal resampling case
+                resampled = (
+                    db.select(
+                        db.func.date_trunc(resample, Data.ts).label("ts"),
+                        db.func.avg(t_data).label("data"),
+                    )
+                    .where(Data.sensor_id == cur_sensor.id)
+                    .filter(Data.ts.between(start_time, end_time))
+                    .group_by(db.func.date_trunc(resample, Data.ts))
+                    .subquery()
+                )
 
-        stmt = db.select(
-            resampled.c.ts.label("ts"),
-            (resampled.c.data).label("data"),
-        ).order_by(resampled.c.ts)
+                stmt = db.select(
+                    resampled.c.ts.label("ts"),
+                    (resampled.c.data).label("data"),
+                ).order_by(resampled.c.ts)
+        else:
+            # select based off server timestamp for streaming data
+            # need due to no central clock on sensors
+            stmt = (
+                db.select(
+                    Data.ts.label("ts"),
+                    t_data.label("data"),
+                )
+                .where(Data.sensor_id == cur_sensor.id)
+                .filter(Data.ts.between(start_time, end_time))
+            )
 
         data = {
             "timestamp": [],
@@ -84,7 +110,6 @@ class Sensor(db.Model):
             "type": "",
         }
         for row in db.session.execute(stmt):
-            print("row", row, flush=True)
             data["timestamp"].append(row.ts)
             data["data"].append(row.data)
         data["measurement"] = cur_sensor.measurement
