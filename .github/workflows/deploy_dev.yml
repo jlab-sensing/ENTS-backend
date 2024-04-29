@@ -1,6 +1,9 @@
 name: Build and Deploy
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 env:
@@ -76,9 +79,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_DEFAULT_REGION: us-west-2
-      AWS_ECR_REPOSITORY_NAME: dirtviz-ecr
-      AWS_ECS_SERVICE_NAME: dirtviz-service
-      AWS_ECS_CLUSTER_NAME: dirtviz-cluster
+      AWS_ECR_REPOSITORY_NAME: dev-dirtviz-ecr
+      AWS_ECS_SERVICE_NAME: dev-dirtviz-service
+      AWS_ECS_CLUSTER_NAME: dev-dirtviz-cluster
 
     steps:
       - name: Checkout
@@ -97,7 +100,7 @@ jobs:
 
       - name: Download task definition
         run: |
-          aws ecs describe-task-definition --task-definition dirtviz-task-definition --query taskDefinition > aws-task-definition.json
+          aws ecs describe-task-definition --task-definition dev-dirtviz-task-definition --query taskDefinition > aws-task-definition.json
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
