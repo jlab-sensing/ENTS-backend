@@ -60,7 +60,7 @@ jobs:
           psql -U ${{ secrets.DB_USER }} -d ${{ github.event.ref }}
 
       - name: Delete Deployment Environment
-        uses: strumwolf/delete-deployment-environment@v2.3.0
+        uses: strumwolf/delete-deployment-environment@v3.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           environment: ${{ github.event.ref }}
