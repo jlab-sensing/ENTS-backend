@@ -91,6 +91,7 @@ class TEROSData(db.Model):
                         TEROSData.vwc.label("vwc"),
                         TEROSData.temp.label("temp"),
                         TEROSData.ec.label("ec"),
+                        TEROSData.raw_vwc.label("raw_vwc"),
                     )
                     .where(TEROSData.cell_id == cell_id)
                     .filter(TEROSData.ts.between(start_time, end_time))
@@ -104,6 +105,7 @@ class TEROSData(db.Model):
                         func.avg(TEROSData.vwc).label("vwc"),
                         func.avg(TEROSData.temp).label("temp"),
                         func.avg(TEROSData.ec).label("ec"),
+                        func.avg(TEROSData.raw_vwc).label("raw_vwc"),
                     )
                     .where(TEROSData.cell_id == cell_id)
                     .filter(TEROSData.ts.between(start_time, end_time))
@@ -116,6 +118,7 @@ class TEROSData(db.Model):
                     TEROSData.vwc.label("vwc"),
                     TEROSData.temp.label("temp"),
                     TEROSData.ec.label("ec"),
+                    TEROSData.raw_vwc.label("raw_vwc"),
                 )
                 .where(TEROSData.cell_id == cell_id)
                 .filter((TEROSData.ts_server.between(start_time, end_time)))
@@ -129,6 +132,7 @@ class TEROSData(db.Model):
             (stmt.c.vwc * 100).label("vwc"),
             stmt.c.temp.label("temp"),
             stmt.c.ec.label("ec"),
+            stmt.c.ec.label("raw_vwc"),
         ).order_by(stmt.c.ts)
 
         for row in db.session.execute(adj_units):
@@ -137,4 +141,5 @@ class TEROSData(db.Model):
             data["temp"].append(row.temp)
             # returns decimals as integers for chart parsing
             data["ec"].append(int(row.ec))
+            data["raw_vwc"].append(row.raw_vwc)
         return data
