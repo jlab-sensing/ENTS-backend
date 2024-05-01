@@ -26,12 +26,21 @@ function DownloadBtn({ cells, startDate, endDate }) {
   const exportToCsv = (e) => {
     e.preventDefault();
     // Note: timestamp string slices of "Wed," in "Wed, 29 Jun 2022 14:00:00 GMT"
-    const resample = "none"
+    const resample = 'none';
     for (const { id, name } of cells) {
       getCellData(id, resample, startDate, endDate).then((data) => {
         downloadFile({
           data: [
-            ['timestamp', 'Voltage (mV)', 'Current (uA)', 'Power (uW)', 'EC (uS/cm)', 'VWC (%)', 'Temperature (C)'],
+            [
+              'timestamp',
+              'Voltage (mV)',
+              'Current (uA)',
+              'Power (uW)',
+              'EC (uS/cm)',
+              'VWC (%)',
+              'Raw VWC',
+              'Temperature (C)',
+            ],
             ...data.map((point) => [
               DateTime.fromHTTP(point.timestamp.slice()), // to get rid of str day format
               point.v,
@@ -39,6 +48,7 @@ function DownloadBtn({ cells, startDate, endDate }) {
               point.p,
               point.ec,
               point.vwc,
+              point.raw_vwc,
               point.temp,
             ]),
           ]
