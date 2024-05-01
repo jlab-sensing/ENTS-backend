@@ -80,7 +80,7 @@ class TEROSData(db.Model):
         the server.
         """
 
-        data = {"timestamp": [], "vwc": [], "temp": [], "ec": []}
+        data = {"timestamp": [], "vwc": [], "temp": [], "ec": [], "raw_vwc": []}
 
         if not stream:
             if resample == "none":
