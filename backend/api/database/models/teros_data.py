@@ -132,7 +132,7 @@ class TEROSData(db.Model):
             (stmt.c.vwc * 100).label("vwc"),
             stmt.c.temp.label("temp"),
             stmt.c.ec.label("ec"),
-            stmt.c.ec.label("raw_vwc"),
+            stmt.c.raw_vwc.label("raw_vwc"),
         ).order_by(stmt.c.ts)
 
         for row in db.session.execute(adj_units):
@@ -142,4 +142,5 @@ class TEROSData(db.Model):
             # returns decimals as integers for chart parsing
             data["ec"].append(int(row.ec))
             data["raw_vwc"].append(row.raw_vwc)
+            print("row_vwc", flush=True)
         return data
