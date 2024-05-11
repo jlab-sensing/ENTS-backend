@@ -3,7 +3,7 @@ name: Build and Deploy Development
 on:
   push:
     branches:
-      - main
+      - dev
   workflow_dispatch:
 
 env:
@@ -117,10 +117,10 @@ jobs:
               --build-arg AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
               --build-arg AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
               --build-arg AWS_DEFAULT_REGION="${{ env.AWS_DEFAULT_REGION }}" \
-              --build-arg DB_HOST="${{ secrets.AWS_DB_HOST }}" \
-              --build-arg DB_PASS="${{ secrets.DB_PASS }}" \
-              --build-arg DB_PORT="${{ secrets.DB_PORT }}" \
-              --build-arg DB_USER="${{ secrets.DB_USER }}" \
+              --build-arg DB_HOST="${{ secrets.DEV_AWS_DB_HOST }}" \
+              --build-arg DB_PASS="${{ secrets.DEV_DB_PASS }}" \
+              --build-arg DB_PORT="${{ secrets.DEV_DB_PORT }}" \
+              --build-arg DB_USER="${{ secrets.DEV_DB_USER }}" \
               --build-arg DB_DATABASE="${{ github.ref_name }}" \
               --build-arg SECRET_KEY="${{ secrets.SECRET_KEY }}" \
               --build-arg ACCESS_TOKEN_SECRET="${{ secrets.ACCESS_TOKEN_SECRET }}" \
@@ -155,10 +155,10 @@ jobs:
     environment: ${{ github.ref_name }}
 
     env:
-      DB_HOST: ${{ secrets.AWS_DB_HOST }}
-      DB_PASS: ${{ secrets.DB_PASS }}
-      DB_PORT: ${{ secrets.DB_PORT }}
-      DB_USER: ${{ secrets.DB_USER }}
+      DB_HOST: ${{ secrets.DEV_AWS_DB_HOST }}
+      DB_PASS: ${{ secrets.DEV_DB_PASS }}
+      DB_PORT: ${{ secrets.DEV_DB_PORT }}
+      DB_USER: ${{ secrets.DEV_DB_USER }}
       DB_DATABASE: ${{ github.ref_name }}
 
     steps:
