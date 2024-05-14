@@ -38,6 +38,9 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requir
 # entrypoint script
 COPY entrypoint.sh ./
 
+# gunicorn configuration
+COPY gunicorn.conf.py ./
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 FROM python:3.11.0-slim-buster as production
