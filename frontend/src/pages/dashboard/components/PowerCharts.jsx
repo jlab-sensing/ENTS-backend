@@ -260,7 +260,7 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
 
   useInterval(
     () => {
-      streamCharts();
+      //streamCharts();
     },
     stream ? interval : null,
   );
