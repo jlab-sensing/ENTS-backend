@@ -23,7 +23,7 @@ function SensorChart({ cells, startDate, endDate, stream }) {
   const axisIds = ['leafAxis'];
 
   //** QUICK WAY to change stream time in seconds */
-  const interval = 1000;
+  const interval = 2000;
 
   // END CONFIGURATION
 
