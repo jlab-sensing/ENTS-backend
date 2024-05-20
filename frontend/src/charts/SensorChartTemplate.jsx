@@ -45,7 +45,7 @@ export default function SensorChartTemplate({ data }) {
         //   stepSize: leftYStep,
         // },
         min: 0,
-        max: 1.5,
+        max: 1.6,
       },
     },
     plugins: structuredClone(chartPlugins),
