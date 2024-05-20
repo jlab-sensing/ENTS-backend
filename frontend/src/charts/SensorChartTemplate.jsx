@@ -38,14 +38,14 @@ export default function SensorChartTemplate({ data }) {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Leaf Wetness (h2o/cm)',
+          text: 'Leaf Wetness (mV)',
         },
-        ticks: {
-          beginAtZero: true,
-          stepSize: leftYStep,
-        },
+        // ticks: {
+        //   beginAtZero: true,
+        //   stepSize: leftYStep,
+        // },
         min: 0,
-        max: leftYMax,
+        max: 1500,
       },
     },
     plugins: structuredClone(chartPlugins),
