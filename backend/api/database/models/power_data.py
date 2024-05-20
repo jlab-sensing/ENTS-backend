@@ -16,7 +16,7 @@ class PowerData(db.Model):
         db.Integer, db.ForeignKey("cell.id", ondelete="CASCADE"), nullable=False
     )
     ts = db.Column(db.DateTime, nullable=False, index=True)
-    ts_server = db.Column(db.DateTime, server_default=db.func.now(),  index=True)
+    ts_server = db.Column(db.DateTime, server_default=db.func.now(), index=True)
     current = db.Column(db.Float)
     voltage = db.Column(db.Float)
 
