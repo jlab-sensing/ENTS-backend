@@ -10,8 +10,8 @@ class Data(db.Model):
     sensor_id = db.Column(
         db.Integer, db.ForeignKey("sensor.id", ondelete="CASCADE"), nullable=False
     )
-    ts = db.Column(db.DateTime, nullable=False)
-    ts_server = db.Column(db.DateTime, server_default=db.func.now())
+    ts = db.Column(db.DateTime, nullable=False, index=True)
+    ts_server = db.Column(db.DateTime, server_default=db.func.now(), index=True)
     float_val = db.Column(db.Float, nullable=True)
     int_val = db.Column(db.Integer, nullable=True)
     text_val = db.Column(db.Text(), nullable=True)
