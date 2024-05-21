@@ -123,7 +123,7 @@ function SensorChart({ cells, startDate, endDate, stream }) {
           const measData = createDataset(timestamp, cellChartData[cellid][meas]['data']);
           newSensorChartData.labels = timestamp;
           newSensorChartData.datasets.push({
-            label: name + ` ${meas} (${units[idx]})`,
+            label: name + ` ${meas} (V)`,
             data: measData,
             borderColor: meas_colors[idx][selectCounter],
             borderWidth: 2,
@@ -182,7 +182,7 @@ function SensorChart({ cells, startDate, endDate, stream }) {
             const timestamp = sensorChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime));
             newSensorChartData.labels = timestamp;
             newSensorChartData.datasets.push({
-              label: name + ` ${meas} (${units[idx]})`,
+              label: name + ` ${meas} (V)`,
               data: sensorChartData[cellid][meas]['data'],
               borderColor: meas_colors[idx][selectCounter],
               borderWidth: 2,
