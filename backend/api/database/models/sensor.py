@@ -46,12 +46,20 @@ class Sensor(db.Model):
     ):
         """gets sensor data as a list of objects"""
 
+        data = {
+            "timestamp": [],
+            "data": [],
+            "measurement": "",
+            "unit": "",
+            "type": "",
+        }
+
         cur_sensor = Sensor.query.filter_by(
             name=name, measurement=measurement, cell_id=cell_id
         ).first()
 
         if cur_sensor is None:
-            return None
+            return data
 
         match cur_sensor.data_type:
             case "float":
@@ -60,15 +68,14 @@ class Sensor(db.Model):
                 t_data = Data.int_val
             case "text":
                 t_data = Data.text_val
-
         if not stream:
             # select from actual timestamp and aggregate data
             if resample == "none":
                 # resampling is not required: select data without aggregate functions
                 stmt = (
                     db.select(
-                        db.func.date_trunc(resample, Data.ts).label("ts"),
-                        db.func.avg(t_data).label("data"),
+                        Data.ts.label("ts"),
+                        t_data.label("data"),
                     )
                     .where(Data.sensor_id == cur_sensor.id)
                     .filter(Data.ts.between(start_time, end_time))
@@ -101,21 +108,12 @@ class Sensor(db.Model):
                 .where(Data.sensor_id == cur_sensor.id)
                 .filter(Data.ts.between(start_time, end_time))
             )
-
-        data = {
-            "timestamp": [],
-            "data": [],
-            "measurement": "",
-            "unit": "",
-            "type": "",
-        }
         for row in db.session.execute(stmt):
             data["timestamp"].append(row.ts)
             data["data"].append(row.data)
         data["measurement"] = cur_sensor.measurement
         data["unit"] = cur_sensor.unit
         data["type"] = cur_sensor.data_type
-
         return data
 
     @staticmethod
