@@ -1,4 +1,4 @@
-import { React, useEffect } from 'react';
+import { React } from 'react';
 import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
 import ChartWrapper from '../ChartWrapper';
@@ -96,9 +96,6 @@ export default function PwrChart({ data, stream }) {
       },
     },
   };
-  useEffect(() => {
-    console.log('changed', data);
-  });
 
   return <ChartWrapper id='pwr' data={data} options={stream ? streamChartOptions : chartOptions} stream={stream} />;
 }

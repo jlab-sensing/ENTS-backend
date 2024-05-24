@@ -142,5 +142,4 @@ class TEROSData(db.Model):
             # returns decimals as integers for chart parsing
             data["ec"].append(int(row.ec))
             data["raw_vwc"].append(row.raw_vwc)
-            print("row_vwc", flush=True)
         return data
