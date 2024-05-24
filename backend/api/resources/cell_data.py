@@ -13,7 +13,7 @@ get_cell_data = GetCellDataSchema()
 class Cell_Data(Resource):
     def get(self):
         v_args = get_cell_data.load(request.args)
-        cell_ids = v_args["cellIds"].split(',')
+        cell_ids = v_args["cellIds"].split(",")
         for cell_id in cell_ids:
             teros_data = pd.DataFrame(
                 TEROSData.get_teros_data_obj(
@@ -33,9 +33,9 @@ class Cell_Data(Resource):
             )
             sensor_data = pd.DataFrame(
                 Sensor.get_sensor_data_obj(
-                    name='phytos31',
+                    name="phytos31",
                     cell_id=cell_id,
-                    measurement='voltage',
+                    measurement="voltage",
                     resample=v_args["resample"],
                     start_time=v_args["startTime"],
                     end_time=v_args["endTime"],
@@ -43,10 +43,11 @@ class Cell_Data(Resource):
             )
 
         data_frames = [teros_data, power_data, sensor_data]
-        df_merged = reduce(lambda  left,right: pd.merge(left,right,on=['timestamp'],
-                                            how='outer'), data_frames).fillna('void')
+        df_merged = reduce(
+            lambda left, right: pd.merge(left, right, on=["timestamp"], how="outer"),
+            data_frames,
+        ).fillna("void")
         return jsonify(df_merged.to_dict(orient="records"))
-        
 
     def post(self):
         pass
