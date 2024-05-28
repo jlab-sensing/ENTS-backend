@@ -14,8 +14,8 @@ class TEROSData(db.Model):
     cell_id = db.Column(
         db.Integer, db.ForeignKey("cell.id", ondelete="CASCADE"), nullable=False
     )
-    ts = db.Column(db.DateTime, nullable=False)
-    ts_server = db.Column(db.DateTime, server_default=func.now())
+    ts = db.Column(db.DateTime, nullable=False, index=True)
+    ts_server = db.Column(db.DateTime, server_default=func.now(), index=True)
     vwc = db.Column(db.Float)
     raw_vwc = db.Column(db.Float)
     temp = db.Column(db.Float)
@@ -142,5 +142,4 @@ class TEROSData(db.Model):
             # returns decimals as integers for chart parsing
             data["ec"].append(int(row.ec))
             data["raw_vwc"].append(row.raw_vwc)
-            print("row_vwc", flush=True)
         return data
