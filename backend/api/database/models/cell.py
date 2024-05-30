@@ -1,5 +1,5 @@
 from ..models import db
-from user import User
+from .user import User
 
 
 class Cell(db.Model):
@@ -12,9 +12,9 @@ class Cell(db.Model):
     location = db.Column(db.Text())
     latitude = db.Column(db.Float())
     longitude = db.Column(db.Float())
-    #was thinking about using user.get_user(email) to get the user, then use user.id to get the user id but idk how to do that/if that would work in this case
-    user_id = db.Column(db.Integer(), db.ForeignKey("user.id"))
+    user_id = db.Column(db.Uuid(), db.ForeignKey("user.id"))
 
+    user = db.relationship("User", backref="cell")
     def __repr__(self):
         return repr(self.name)
     
@@ -31,6 +31,3 @@ class Cell(db.Model):
     def save(self):
         db.session.add(self)
         db.session.commit()
-
-## how to set relationship down here
-User.db.relationship("User", backref="cell")
