@@ -6,7 +6,7 @@ import { chartPlugins } from './plugins';
 import { getMaxAxisAndStepValues } from './alignAxis';
 
 export default function SensorChartTemplate({ data }) {
-  const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 10, 5);
+  const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 8, .2);
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -45,7 +45,7 @@ export default function SensorChartTemplate({ data }) {
           stepSize: leftYStep,
         },
         min: 0,
-        max: 1.6,
+        max: leftYMax,
       },
     },
     plugins: structuredClone(chartPlugins),
