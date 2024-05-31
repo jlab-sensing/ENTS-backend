@@ -67,6 +67,10 @@ export function getMaxAxisAndStepValues(datasetsLeft, datasetsRight, tickCount, 
       }
     });
   }
+  
+  // steps should be positive
+  leftYStep = Math.abs(leftYStep)
+  rightYStep = Math.abs(rightYStep)
   console.log("axis", leftYMax, leftYStep)
   return { leftYMax, rightYMax, leftYStep, rightYStep };
 }
