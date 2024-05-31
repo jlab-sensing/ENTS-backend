@@ -3,7 +3,12 @@ import axios from 'axios';
 
 export const getCellData = (cellIds, resample, startTime, endTime) => {
   return axios
-    .get(`${process.env.PUBLIC_URL}/api/cell/datas?cellIds=${cellIds.toString()}&resample=${resample}&startTime=${startTime.toHTTP()}&endTime=${endTime.toHTTP()}`)
+    .get(
+      `${
+        process.env.PUBLIC_URL
+      }/api/cell/datas?cellIds=${cellIds.toString()}&resample=${resample}&startTime=${startTime.toHTTP()}&endTime=${endTime.toHTTP()}`,
+      { responseType: 'blob' },
+    )
     .then((res) => res.data);
 };
 
