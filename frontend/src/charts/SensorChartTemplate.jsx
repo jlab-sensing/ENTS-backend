@@ -40,10 +40,6 @@ export default function SensorChartTemplate({ data }) {
           display: true,
           text: 'Leaf Wetness (V)',
         },
-        // ticks: {
-        //   beginAtZero: true,
-        //   stepSize: leftYStep,
-        // },
         min: 0,
         max: 1.6,
       },
