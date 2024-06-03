@@ -5,7 +5,7 @@ from marshmallow import validate
 class GetCellDataSchema(ma.SQLAlchemySchema):
     """validates get request for cell data"""
 
-    cellId = ma.Int()
+    cellIds = ma.Str()
     resample = ma.Str(
         required=False,
         validate=validate.OneOf(

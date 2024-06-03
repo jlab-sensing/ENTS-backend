@@ -11,7 +11,7 @@ function SensorChart({ cells, startDate, endDate, stream }) {
   // List out measurements that your chart is going to display
   const sensor_name = 'phytos31';
   const measurements = ['voltage'];
-  const units = ['em'];
+  const units = ['V'];
   // Colors of data points. Each color represents the next color
   // of the data points as the user selects more cells to compare.
   // Add more measurements depending on how many different values on the charts
