@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, Response, stream_with_context
 from flask_restful import Resource
 import pandas as pd
 from ..database.schemas.get_cell_data_schema import GetCellDataSchema
@@ -6,6 +6,7 @@ from ..database.models.power_data import PowerData
 from ..database.models.teros_data import TEROSData
 from ..database.models.sensor import Sensor
 from functools import reduce
+import io
 
 get_cell_data = GetCellDataSchema()
 
@@ -47,7 +48,22 @@ class Cell_Data(Resource):
             lambda left, right: pd.merge(left, right, on=["timestamp"], how="outer"),
             data_frames,
         ).fillna("void")
-        return jsonify(df_merged.to_dict(orient="records"))
+
+        def generate_csv():
+            csv_buffer = io.StringIO()
+            for chunk in df_merged.to_csv(index=False, chunksize=10000):
+                csv_buffer.write(chunk)
+                yield csv_buffer.getvalue()
+                csv_buffer.seek(0)
+                csv_buffer.truncate(0)
+
+        # Create a streaming response
+        response = Response(stream_with_context(generate_csv()), mimetype="text/csv")
+        response.headers.set(
+            "Content-Disposition", "attachment", filename="large_data.csv"
+        )
+
+        return response
 
     def post(self):
         pass
