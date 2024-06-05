@@ -20,5 +20,5 @@ redis
 PyJWT
 Requests
 google-auth
-soil-power-sensor-protobuf @ https://test-files.pythonhosted.org/packages/9b/6c/6e7f48d0b0f2230ee43fefe9d60c3224cc6b40b69d793f94701039fef81d/soil_power_sensor_protobuf-2.2.1.tar.gz
+soil-power-sensor-protobuf @ https://test-files.pythonhosted.org/packages/21/de/bf78ad8c715eac3b1c54b558e05fc468e0db199832af5e4b663f771c91e8/soil_power_sensor_protobuf-2.2.2.tar.gz
 gevent
