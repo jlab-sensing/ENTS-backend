@@ -3,13 +3,18 @@ WORKDIR /app/backend/
 COPY requirements.txt ./
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
-ENV FLASK_DEBUG=1
-ENV FLASK_RUN_HOST=0.0.0.0
-ENV FLASK_APP=api
+
+ENV DB_USER=dirtviz
+ENV DB_PASS=password
+ENV DB_HOST=postgresql
+ENV DB_PORT=5432
+ENV DB_DATABASE=dirtviz
+ENV CELERY_BROKER_URL=redis://redis:6379/0
+ENV CELERY_RESULT_BACKEND=redis://redis:6379/0
+
 COPY . ./
 WORKDIR /app/
-EXPOSE 8000
-ENTRYPOINT ["/app/backend/entrypoint.sh", "-d"]
+RUN celery -A backend.make_celery worker --loglevel INFO
 
 FROM python:3.11.0-slim-buster as builder
 
@@ -121,17 +126,4 @@ RUN chown -R app:app $APP_HOME
 # change to the app user
 USER app
 WORKDIR /home/app/
-ENTRYPOINT ["./backend/entrypoint.sh", "-p"]
-
-FROM python:3.11.0-slim-buster as worker
-WORKDIR /app/backend/
-COPY requirements.txt ./
-RUN pip3 install --upgrade pip
-RUN pip3 install -r requirements.txt
-ENV FLASK_DEBUG=1
-ENV FLASK_RUN_HOST=0.0.0.0
-ENV FLASK_APP=api
-COPY . ./
-WORKDIR /app/
-EXPOSE 8000
-ENTRYPOINT ["/app/backend/entrypoint.sh", "-w"]
+RUN celery -A backend.make_celery worker --loglevel INFO
