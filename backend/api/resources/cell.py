@@ -21,6 +21,12 @@ class Cell(Resource):
         location = cell_data["location"]
         lat = cell_data["latitude"]
         long = cell_data["longitude"]
-        userEmail = cell_data["userEmail"]
-        new_cell = CellModel.add_cell_by_user_emailcell(cell_name, location, lat, long, userEmail)
-        return jsonify(new_cell)
+        if cell_data["archive"] is None:
+            archive = False
+        else :
+            archive = cell_data["archive"]
+        new_cell = CellModel(
+            name=cell_name, location=location, latitude=lat, longitude=long, archive=archive
+        )
+        new_cell.save()
+        return cell_schema.jsonify(new_cell)

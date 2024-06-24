@@ -12,15 +12,15 @@ class Cell(db.Model):
     location = db.Column(db.Text())
     latitude = db.Column(db.Float())
     longitude = db.Column(db.Float())
-    #was thinking about using user.get_user(email) to get the user, then use user.id to get the user id but idk how to do that/if that would work in this case
-    user_id = db.Column(db.Integer(), db.ForeignKey("user.id"))
-
+    #for some reason, adding these two lines breaks backend
+    archive = db.Column(db.Boolean(), default=False)
+    #user_id = db.Column(db.Integer(), db.ForeignKey("user.id"))
     def __repr__(self):
         return repr(self.name)
     
     def add_cell_by_user_email(self, name, location, latitude, longitude, userEmail):
         user_id = User.get_user(userEmail).id
-        new_cell = Cell(name=name, location=location, latitude=latitude, longitude=longitude, user_id=user_id)
+        new_cell = Cell(name=name, location=location, latitude=latitude, longitude=longitude,)
         new_cell.save()
         return new_cell
     

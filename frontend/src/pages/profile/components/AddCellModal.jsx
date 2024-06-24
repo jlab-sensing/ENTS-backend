@@ -10,6 +10,7 @@ function AddCellModal() {
   const [location, setLocation] = useState('');
   const [long, setLong] = useState('');
   const [lat, setLat] = useState('');
+  const archive = false;
   const [response, setResponse] = useState(null);
   const handleOpen = () => {
     setOpen(true);
@@ -108,7 +109,7 @@ function AddCellModal() {
               </Typography>
               <Button
                 onClick={() => {
-                  addCell(name, location, lat, long).then((res) => setResponse(res));
+                  addCell(name, location, lat, long, archive).then((res) => setResponse(res));
                 }}
               >
                 Add Cell

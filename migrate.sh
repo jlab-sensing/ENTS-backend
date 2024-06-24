@@ -13,7 +13,7 @@
 # flask --app backend.api db downgrade <version> -d ./backend/api/migrations
 # flask --app backend.api db check -d ./backend/api/migrations
 
-USAGE="script usage: $(basename $0) [-u] [-m <msg>] [-d <ver>] [-c]"
+USAGE="script usage: $(basename $0) [-u] [-m <msg>] [-d <ver>] [-c] [-v] [-h]"
 
 if (( $# == 0 )); then
 	echo $USAGE
@@ -21,7 +21,7 @@ if (( $# == 0 )); then
 fi
 
 
-while getopts 'um:d:ch' FLAG
+while getopts 'um:d:chv' FLAG
 do
     case "$FLAG" in
 		u)
@@ -49,6 +49,10 @@ do
 			# Usage help
 			echo $USAGE >&2
 			exit 1
+			;;
+		v) 
+			# Version
+			flask --app backend.api db current -d ./backend/api/migrations 
 			;;
 		?)
 			# Invalid flag
