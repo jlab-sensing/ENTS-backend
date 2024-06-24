@@ -1,5 +1,5 @@
 from ..models import db
-from user import User
+from .user import User
 
 
 class Cell(db.Model):
@@ -14,7 +14,9 @@ class Cell(db.Model):
     longitude = db.Column(db.Float())
     #for some reason, adding these two lines breaks backend
     archive = db.Column(db.Boolean(), default=False)
-    #user_id = db.Column(db.Integer(), db.ForeignKey("user.id"))
+    user_id = db.Column(db.Uuid(), db.ForeignKey("user.id"))
+
+    user = db.relationship("User", backref="cell")
     def __repr__(self):
         return repr(self.name)
     
@@ -31,6 +33,3 @@ class Cell(db.Model):
     def save(self):
         db.session.add(self)
         db.session.commit()
-
-## how to set relationship down here
-User.db.relationship("User", backref="cell")
