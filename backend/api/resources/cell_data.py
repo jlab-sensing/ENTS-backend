@@ -12,8 +12,8 @@ from celery import shared_task
 
 get_cell_data = GetCellDataSchema()
 
-@shared_task(ignore_result=False)
-def stream_csv(request_args):
+@shared_task(bind=True, ignore_result=False)
+def stream_csv(self, request_args):
     v_args = get_cell_data.load(request_args)
     cell_ids = v_args["cellIds"].split(",")
     for cell_id in cell_ids:
@@ -45,7 +45,6 @@ def stream_csv(request_args):
         )
 
         data_frames = [teros_data.to_json(), power_data.to_json(), sensor_data.to_json()]
-        print("found data", power_data);
 
         def generate_csv():
             csv_buffer = io.StringIO()
@@ -72,8 +71,9 @@ def stream_csv(request_args):
         
         # zip_buffer.seek(0)
         # return zip_buffer.getvalue()
+        # print("found data", csv_buffer.getvalue());
 
-        return csv_buffer.getvalue()
+        return {'status': 'Task completed!', 'result': csv_buffer.getvalue()}
 
     # Create a streaming response
     # response = Response(stream_with_context(generate_csv()), mimetype="text/csv")

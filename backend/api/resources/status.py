@@ -12,7 +12,11 @@ class Status(Resource):
 
     if result.ready and result.successful:
         response = Response(result.result, mimetype="text/csv")
-        # print(result.result);
+        print("done", result.result, flush=True)
+        # if 'result' in result.info:
+        #     print("done", result.info['result'], flush=True);
+            # response['result'] = task.info['result']
+      
         response.headers.set(
             "Content-Disposition", "attachment", filename="large_data.csv"
         )
