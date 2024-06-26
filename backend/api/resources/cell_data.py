@@ -72,7 +72,7 @@ def stream_csv(self, request_args):
         # zip_buffer.seek(0)
         # return zip_buffer.getvalue()
         # print("found data", csv_buffer.getvalue());
-
+        print("done", flush=True);
         return {'status': 'Task completed!', 'result': csv_buffer.getvalue()}
 
     # Create a streaming response

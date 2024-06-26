@@ -1,12 +1,30 @@
 #!/bin/sh
 
 # run in dev or prod
-while getopts 'dpw' FLAG
+while getopts 'dpw:' FLAG
 do
     case "$FLAG" in
-        d) flask --app backend.wsgi --debug run -h 0.0.0.0 -p 8000;;
-        p) gunicorn --worker-class gevent -c ./backend/gunicorn.conf.py -b :8000 backend.wsgi:handler;;
-        w) celery -A backend.make_celery worker --loglevel INFO;;
+        d)
+            echo "Running Flask in debug mode" 
+            flask --app backend.wsgi --debug run -h 0.0.0.0 -p 8000;;
+        p) 
+            echo "Running Gunicorn"
+            gunicorn --worker-class gevent -c ./backend/gunicorn.conf.py -b :8000 backend.wsgi:handler;;
+        w) 
+            case "$OPTARG" in
+                dev)
+                    echo "Running Celery in development mode with auto-restart" 
+                    watchmedo auto-restart --directory=./ --pattern=*.py --recursive -- celery -A backend.make_celery worker --concurrency=1 --loglevel INFO;;
+                prod) 
+                    echo "Running Celery in production mode"
+                    celery -A backend.make_celery worker --loglevel INFO;;
+                *)
+                    echo "Invalid deployment stage specified: $OPTARG"
+            esac
+            ;;
+        *)
+           echo "Invalid flag specified" 
+        ;;
     esac
 done
 

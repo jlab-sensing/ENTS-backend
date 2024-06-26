@@ -123,7 +123,7 @@ USER app
 WORKDIR /home/app/
 ENTRYPOINT ["./backend/entrypoint.sh", "-p"]
 
-FROM python:3.11.0-slim-buster as worker
+FROM python:3.11.0-slim-buster as prodworker
 WORKDIR /app/backend/
 COPY requirements.txt ./
 RUN pip3 install --upgrade pip
@@ -134,4 +134,21 @@ ENV FLASK_APP=api
 COPY . ./
 WORKDIR /app/
 EXPOSE 8000
-ENTRYPOINT ["/app/backend/entrypoint.sh", "-w"]
+ENTRYPOINT ["/app/backend/entrypoint.sh", "-w", "prod"]
+
+FROM python:3.11.0-slim-buster as devworker
+WORKDIR /app/backend/
+COPY requirements.txt ./
+COPY requirements-dev.txt ./
+RUN pip3 install --upgrade pip
+RUN pip3 install -r requirements.txt
+RUN pip3 install -r requirements-dev.txt
+ENV FLASK_DEBUG=1
+ENV FLASK_RUN_HOST=0.0.0.0
+ENV FLASK_APP=api
+COPY . ./
+WORKDIR /app/
+EXPOSE 8000
+ENTRYPOINT ["/app/backend/entrypoint.sh", "-w", "dev"]
+
+
