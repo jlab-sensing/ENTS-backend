@@ -39,12 +39,13 @@ function DownloadBtn({ cells, startDate, endDate }) {
   const pollTaskStatus = async (taskId, fileName) => {
     const interval = setInterval(async () => {
       try {
-        const {success, data} = await pollCellDataResult(taskId);
-        console.log("polling task, success: ",  success);
-        if (success === true) {
+        const {state, status} = await pollCellDataResult(taskId);
+        console.log("polling task, state: ",  state, " status: ", status);
+        if (state === "SUCCESS") {
           clearInterval(interval);
-          console.log("starting download!, data: ", data);
-          const blob = new Blob([data], { type: 'text/csv' });
+          console.log("starting download!, data: ", status
+          );
+          const blob = new Blob([status], { type: 'text/csv' });
           const a = document.createElement('a');
           a.download = fileName;
           a.href = window.URL.createObjectURL(blob);
@@ -110,7 +111,7 @@ function DownloadBtn({ cells, startDate, endDate }) {
       )} */}
       {downloadStatus ? (
         <Button disabled={true} variant='outlined' onClick={exportToCsv}>
-        LOADING...
+        DOWNLOADING...
     </Button>
       ) : (
         <Button disabled={false} variant='outlined' onClick={exportToCsv}>

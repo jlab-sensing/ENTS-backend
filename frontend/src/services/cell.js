@@ -44,10 +44,6 @@ export const pollCellDataResult = (taskId) =>{
     }/api/status/${taskId}`
   )
   .then((res) => {
-    if (res.status == 102){
-      return {"success": false, "data": res.data} 
-    } else{
-      return {"success": true, "data": res.data}
-    }
+      return res.data; 
   });
 }

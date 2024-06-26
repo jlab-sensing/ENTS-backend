@@ -6,7 +6,7 @@ from ..database.models.power_data import PowerData
 from ..database.models.teros_data import TEROSData
 from ..database.models.sensor import Sensor
 from functools import reduce
-import io
+from io import StringIO
 from celery import shared_task
 # import zipfile
 
@@ -46,14 +46,14 @@ def stream_csv(self, request_args):
 
         data_frames = [teros_data.to_json(), power_data.to_json(), sensor_data.to_json()]
 
-        def generate_csv():
-            csv_buffer = io.StringIO()
-            for chunk in df.to_csv(index=False, chunksize=10000):
-                csv_buffer.write(chunk)
-                yield csv_buffer.getvalue()
-                csv_buffer.seek(0)
-                csv_buffer.truncate(0)
-        data_frames = map(lambda df_json: pd.read_json(df_json), data_frames)
+        # def generate_csv():
+        #     csv_buffer = StringIO()
+        #     for chunk in df.to_csv(index=False, chunksize=10000):
+        #         csv_buffer.write(chunk)
+        #         yield csv_buffer.getvalue()
+        #         csv_buffer.seek(0)
+        #         csv_buffer.truncate(0)
+        data_frames = map(lambda df_json: pd.read_json(StringIO(df_json)), data_frames)
 
         df_merged = reduce(
             lambda left, right: pd.merge(left, right, on=["timestamp"], how="outer"),
@@ -61,7 +61,7 @@ def stream_csv(self, request_args):
         ).fillna("void")
         
         # df = pd.read_json(df_json, orient='split')
-        csv_buffer = io.StringIO()
+        csv_buffer = StringIO()
         df_merged.to_csv(csv_buffer, index=False)
         
 
@@ -72,8 +72,8 @@ def stream_csv(self, request_args):
         # zip_buffer.seek(0)
         # return zip_buffer.getvalue()
         # print("found data", csv_buffer.getvalue());
-        print("done", flush=True);
-        return {'status': 'Task completed!', 'result': csv_buffer.getvalue()}
+        
+        return csv_buffer.getvalue()
 
     # Create a streaming response
     # response = Response(stream_with_context(generate_csv()), mimetype="text/csv")
