@@ -28,8 +28,13 @@ services:
   worker:
     build: 
       context: ./backend
-      target: prodworker 
+      target: prodworker
     environment:
+      # default tries to process task before quiting (warm shutdown)
+      # instead terminate instantly so when AWS kills the worker
+      # the task is put back into queue
+      # https://github.com/sayanarijit/remap-sigterm
+      - REMAP_SIGTERM=SIGQUIT
       - DB_USER=dirtviz
       - DB_PASS=password
       - DB_HOST=postgresql
