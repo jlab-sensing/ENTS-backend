@@ -3,48 +3,16 @@ import { Button } from '@mui/material';
 import PropTypes from 'prop-types';
 import { getCellData, pollCellDataResult } from '../../../services/cell';
 import { useState } from 'react';
-// import { DateTime } from 'luxon';
-// import { useQuery, useQueryClient } from '@tanstack/react-query';
-
-// const directions = Object.freeze({ 
-//   IN_PROGRESS: 0,
-//   IDLE: 1,
-//   ERROR: 2,
-
-// });
-
 function DownloadBtn({ cells, startDate, endDate }) {
-  // Get QueryClient from the context
-  // const queryClient = useQueryClient();
 
   const [downloadStatus, setDownloadStatus] = useState(false);
-
-  // useEffect(() => {
-  //   queryClient.invalidateQueries({ queryKey: ['cells'] });
-  // }, [cells, startDate, endDate, queryClient]);
-
-  // const { isLoading, isError, data, error } = useQuery({
-  //   queryKey: ['cells'],
-  //   queryFn: () =>
-  //     getCellData(
-  //       cells.map((c) => c.id),
-  //       'none',
-  //       startDate,
-  //       endDate,
-  //     ),
-  //   enabled: !!(Array.isArray(cells) && cells.length),
-  //   refetchOnWindowFocus: false,
-  // });
 
   const pollTaskStatus = async (taskId, fileName) => {
     const interval = setInterval(async () => {
       try {
         const {state, status} = await pollCellDataResult(taskId);
-        console.log("polling task, state: ",  state, " status: ", status);
         if (state === "SUCCESS") {
           clearInterval(interval);
-          console.log("starting download!, data: ", status
-          );
           const blob = new Blob([status], { type: 'text/csv' });
           const a = document.createElement('a');
           a.download = fileName;
@@ -69,6 +37,7 @@ function DownloadBtn({ cells, startDate, endDate }) {
 
   const downloadFile = () => {
     for (const { id, name } of cells) {
+      setDownloadStatus(true)
       const fileName = name + '.csv';
       const resample = 'none';
       getCellData(id, resample, startDate, endDate).then((data) => {
@@ -88,27 +57,6 @@ function DownloadBtn({ cells, startDate, endDate }) {
   };
   return (
     <div className='DownloadBtn'>
-      {/* {data ? (
-        <Button disabled={false} variant='outlined' onClick={exportToCsv}>
-          Export to CSV
-        </Button>
-      ) : isError ? (
-        <Button disabled={true} variant='outlined' onClick={exportToCsv}>
-          ERROR: ${error}
-        </Button>
-      ) : isLoading ? (
-        <Button disabled={true} variant='outlined' onClick={exportToCsv}>
-          LOADING...
-        </Button>
-      ) : !Array.isArray(cells) && cells.length ? (
-        <Button disabled={true} variant='outlined' onClick={exportToCsv}>
-          Select a cell
-        </Button>
-      ) : (
-        <Button disabled={true} variant='outlined' onClick={exportToCsv}>
-          No data
-        </Button>
-      )} */}
       {downloadStatus ? (
         <Button disabled={true} variant='outlined' onClick={exportToCsv}>
         DOWNLOADING...
