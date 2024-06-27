@@ -26,6 +26,7 @@ bcrypt = Bcrypt()
 server_session = Session()
 oauth = OAuth()
 
+
 def celery_init_app(app: Flask) -> Celery:
     class FlaskTask(Task):
         def __call__(self, *args: object, **kwargs: object) -> object:
@@ -37,6 +38,7 @@ def celery_init_app(app: Flask) -> Celery:
     celery_app.set_default()
     app.extensions["celery"] = celery_app
     return celery_app
+
 
 def create_app(debug: bool = False) -> Flask:
     """init flask app"""
@@ -53,10 +55,14 @@ def create_app(debug: bool = False) -> Flask:
     server_session.init_app(app)
 
     # configuration for celery
-    # broker_transport_options: tasks should not take longer than 15 minutes to run
-    # task_acks_late: tasks should be acknowledged after completetion
-    # task_reject_on_worker_lost: reject tasks when worker dies (eg sigkill) prevents loops
-    # worker_prefetch_multipler: set to 1 from default 4 to prevent tasks from stalling prefetch tasks
+    # broker_transport_options:
+    #   tasks should not take longer than 15 minutes to run
+    # task_acks_late:
+    #   tasks should be acknowledged after completetion
+    # task_reject_on_worker_lost:
+    #   reject tasks when worker dies (eg sigkill) prevents loops
+    # worker_prefetch_multipler:
+    #   set to 1 from default 4 to prevent tasks from stalling prefetch tasks
     # https://rusty-celery.github.io/best-practices/index.html
     # Celery Setup
     # https://github.com/jangia/celery_ecs_example
@@ -66,7 +72,9 @@ def create_app(debug: bool = False) -> Flask:
             broker_url=os.getenv("CELERY_BROKER_URL"),
             result_backend=os.getenv("CELERY_RESULT_BACKEND"),
             task_ignore_result=True,
-            broker_transport_options={"visibility_timeout": timedelta(minutes=15).total_seconds()},
+            broker_transport_options={
+                "visibility_timeout": timedelta(minutes=15).total_seconds()
+            },
             task_ack_late=True,
             task_reject_on_worker_lost=True,
             worker_prefetch_multipler=1,
