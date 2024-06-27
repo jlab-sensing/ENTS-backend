@@ -17,13 +17,9 @@ function DownloadBtn({ cells, startDate, endDate }) {
           const a = document.createElement('a');
           a.download = fileName;
           a.href = window.URL.createObjectURL(blob);
-          const clickEvt = new MouseEvent('click', {
-            view: window,
-            bubbles: true,
-            cancelable: true,
-          });
-          a.dispatchEvent(clickEvt);
-          a.remove();
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
           setDownloadStatus(false)
         }else{
           setDownloadStatus(true)
@@ -41,7 +37,6 @@ function DownloadBtn({ cells, startDate, endDate }) {
       const fileName = name + '.csv';
       const resample = 'none';
       getCellData(id, resample, startDate, endDate).then((data) => {
-        console.log(data)
         const { result_id } = data;
         pollTaskStatus(result_id, fileName);
       });
