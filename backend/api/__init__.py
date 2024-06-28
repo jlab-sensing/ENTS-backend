@@ -73,6 +73,7 @@ def create_app(debug: bool = False) -> Flask:
             result_backend=os.getenv("CELERY_RESULT_BACKEND"),
             task_ignore_result=True,
             broker_transport_options={
+                'region': os.getenv("AWS_DEFAULT_REGION"),
                 "visibility_timeout": timedelta(minutes=15).total_seconds()
             },
             task_ack_late=True,
