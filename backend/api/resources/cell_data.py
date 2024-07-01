@@ -15,7 +15,7 @@ get_cell_data = GetCellDataSchema()
 @shared_task(bind=True, ignore_result=False)
 def stream_csv(self, request_args):
     """Creates a task that queries cell data and writes into buffer
-    
+
     Arguments:
     request_args -- arguments of the request being made
     """
