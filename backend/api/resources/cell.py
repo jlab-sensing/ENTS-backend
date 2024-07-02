@@ -28,3 +28,14 @@ class Cell(Resource):
             archive = cell_data["archive"]
         new_cell = CellModel.add_cell_by_user_emailcell(cell_name, location, lat, long, archive, userEmail)
         return jsonify(new_cell)
+    
+    def put(self, cellId):
+        json_data = request.json
+        archive = json_data.get("archive")
+        cell = CellModel.query.get(cellId)
+        if cell:
+            cell.archive = archive
+            cell.save()
+            return jsonify(cell)
+        return jsonify({"message": "Cell not found"}), 404
+

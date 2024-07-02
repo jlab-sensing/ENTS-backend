@@ -37,3 +37,21 @@ export const useCells = () =>
     queryFn: () => getCells(),
     refetchOnWindowFocus: false,
   });
+
+  export const setCellArchive = async (cellId, archive) => {
+    const url = `${process.env.PUBLIC_URL}/api/cell/${cellId}`;
+    console.log('Setting cell archive URL:', url);
+    try {
+      const response = await axios.put(
+        url,
+        { archive },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error setting cell archive:', error.response ? error.response.data : error.message);
+      throw error;
+    }
+  };
+  
+  
