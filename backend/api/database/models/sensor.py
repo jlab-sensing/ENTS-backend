@@ -36,41 +36,15 @@ class Sensor(db.Model):
 
     @staticmethod
     def get_sensor_data_obj(
+        name,
         cell_id,
         measurement,
         resample="hour",
         start_time=datetime.now() - relativedelta(months=1),
         end_time=datetime.now(),
+        stream=False,
     ):
         """gets sensor data as a list of objects"""
-        print("running", flush=True)
-        cur_sensor = Sensor.query.filter_by(
-            measurement=measurement, cell_id=cell_id
-        ).first()
-        if cur_sensor is None:
-            return None
-        match cur_sensor.data_type:
-            case "float":
-                t_data = Data.float_val
-            case "int":
-                t_data = Data.int_val
-            case "text":
-                t_data = Data.text_val
-        resampled = (
-            db.select(
-                db.func.date_trunc(resample, Data.ts).label("ts"),
-                db.func.avg(t_data).label("data"),
-            )
-            .where(Data.sensor_id == cur_sensor.id)
-            .filter(Data.ts.between(start_time, end_time))
-            .group_by(db.func.date_trunc(resample, Data.ts))
-            .subquery()
-        )
-
-        stmt = db.select(
-            resampled.c.ts.label("ts"),
-            (resampled.c.data).label("data"),
-        ).order_by(resampled.c.ts)
 
         data = {
             "timestamp": [],
@@ -79,8 +53,62 @@ class Sensor(db.Model):
             "unit": "",
             "type": "",
         }
+
+        cur_sensor = Sensor.query.filter_by(
+            name=name, measurement=measurement, cell_id=cell_id
+        ).first()
+
+        if cur_sensor is None:
+            return data
+
+        match cur_sensor.data_type:
+            case "float":
+                t_data = Data.float_val
+            case "int":
+                t_data = Data.int_val
+            case "text":
+                t_data = Data.text_val
+        if not stream:
+            # select from actual timestamp and aggregate data
+            if resample == "none":
+                # resampling is not required: select data without aggregate functions
+                stmt = (
+                    db.select(
+                        Data.ts.label("ts"),
+                        t_data.label("data"),
+                    )
+                    .where(Data.sensor_id == cur_sensor.id)
+                    .filter(Data.ts.between(start_time, end_time))
+                )
+            else:
+                # handle normal resampling case
+                resampled = (
+                    db.select(
+                        db.func.date_trunc(resample, Data.ts).label("ts"),
+                        db.func.avg(t_data).label("data"),
+                    )
+                    .where(Data.sensor_id == cur_sensor.id)
+                    .filter(Data.ts.between(start_time, end_time))
+                    .group_by(db.func.date_trunc(resample, Data.ts))
+                    .subquery()
+                )
+
+                stmt = db.select(
+                    resampled.c.ts.label("ts"),
+                    (resampled.c.data).label("data"),
+                ).order_by(resampled.c.ts)
+        else:
+            # select based off server timestamp for streaming data
+            # need due to no central clock on sensors
+            stmt = (
+                db.select(
+                    Data.ts.label("ts"),
+                    t_data.label("data"),
+                )
+                .where(Data.sensor_id == cur_sensor.id)
+                .filter(Data.ts.between(start_time, end_time))
+            )
         for row in db.session.execute(stmt):
-            print("row", row, flush=True)
             data["timestamp"].append(row.ts)
             data["data"].append(row.data)
         data["measurement"] = cur_sensor.measurement
@@ -90,70 +118,83 @@ class Sensor(db.Model):
 
     @staticmethod
     def add_data(
-        cell_id,
-        sensor_name,
-        measurement,
-        data,
-        data_types,
-        ts,
+        meas_name: str,
+        meas_unit: str,
+        meas_dict: dict,
     ):
-        """add new data point for sensor"""
-        type = data_types[measurement]
+        """Adds new data point for sensor
+
+        If sensor does not exit then one is created based on data in meas. The
+        name of the sensor is determined from the type of messages received.
+
+        A new sensor will be create if one does not exist.
+
+        Params:
+
+            meas: Dictionary of measurement
+            meas_type: Type of measurement to add to database
+
+        Returns:
+            The created Sensor object
+        """
+
+        name = meas_dict["type"]
+        cell_id = meas_dict["cellId"]
+        meas_data = meas_dict["data"][meas_name]
+        meas_type = meas_dict["data_type"][meas_name].__name__
+        ts = datetime.fromtimestamp(meas_dict["ts"])
+
+        # check if cell exists
         cur_cell = Cell.query.filter_by(id=cell_id).first()
         if cur_cell is None:
             return None
-            # new_cell = Cell(name=cell_name)
-            # new_cell.save()
-            # cur_cell = Cell.query.filter_by(id=cell_id).first()
-            # new_sensor = Sensor(
-            #     name=sensor_name,
-            #     cell_id=cur_cell.id,
-            #     measurement=measurement,
-            #     data_type=type,
-            # )
-            # new_sensor.save()
-            # cur_sensor = Sensor.query.filter_by(id=new_sensor.id).first()
-        else:
-            cur_sensor = Sensor.query.filter_by(
-                measurement=measurement,
+
+        # check if sensor exists that has the same name, measurement, and
+        # cell_id
+        cur_sensor = Sensor.query.filter_by(
+            name=name,
+            measurement=meas_name,
+            cell_id=cur_cell.id,
+        ).first()
+
+        # create if doesn't exist
+        if cur_sensor is None:
+            new_sensor = Sensor(
+                name=name,
                 cell_id=cur_cell.id,
-                data_type=type,
+                measurement=meas_name,
+                unit=meas_unit,
+                data_type=meas_type,
+            )
+            new_sensor.save()
+            cur_sensor = Sensor.query.filter_by(
+                name=name,
+                measurement=meas_name,
+                cell_id=cur_cell.id,
             ).first()
-            if cur_sensor is None:
-                new_sensor = Sensor(
-                    name=sensor_name,
-                    cell_id=cur_cell.id,
-                    measurement=measurement,
-                    unit="em",
-                    data_type=type,
-                )
-                new_sensor.save()
-                cur_sensor = Sensor.query.filter_by(
-                    measurement=measurement,
-                    cell_id=cur_cell.id,
-                    data_type=type,
-                ).first()
-        match type:
+
+        # add data based on measurement type
+        match meas_type:
             case "float":
                 sensor_data = Data(
                     sensor_id=cur_sensor.id,
                     # measurement=measurement,
                     ts=ts,
-                    float_val=data,
+                    float_val=meas_data,
                 )
             case "int":
                 sensor_data = Data(
                     sensor_id=cur_sensor.id,
                     # measurement=measurement,
                     ts=ts,
-                    int_val=data,
+                    int_val=meas_data,
                 )
             case "text":
                 sensor_data = Data(
                     sensor_id=cur_sensor.id,
                     # measurement=measurement,
                     ts=ts,
-                    text_val=data,
+                    text_val=meas_data,
                 )
         sensor_data.save()
         return sensor_data

@@ -71,7 +71,7 @@ function DateRangeSel({ startDate, endDate, setStartDate, setEndDate }) {
       </LocalizationProvider>
       <HorizontalRuleRoundedIcon sx={{ mr: 1, ml: 1 }} />
       <LocalizationProvider dateAdapter={AdapterLuxon}>
-        <DateTimePicker
+        <DateTimePickerWithAccept
           label='End Date'
           value={endDate}
           onAccept={useCallback(

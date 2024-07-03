@@ -46,8 +46,7 @@ def create_app(debug: bool = False) -> Flask:
     from .resources.cell_id import Cell_Id
     from .resources.power_data import Power_Data
     from .resources.teros_data import Teros_Data
-    from .resources.sensor_data_ttn import Measurement_Upink
-    from .resources.sensor_data_wifi import Measurement_Direct
+    from .resources.sensor_data import SensorData
     from .resources.cell import Cell
     from .resources.session import Session_r
     from .resources.users_data import User_Data
@@ -56,12 +55,11 @@ def create_app(debug: bool = False) -> Flask:
 
     api.add_resource(Health_Check, "/")
     api.add_resource(Cell, "/cell/")
-    api.add_resource(Cell_Data, "/cell/data/<int:cell_id>", endpoint="cell_data_ep")
+    api.add_resource(Cell_Data, "/cell/datas", endpoint="cell_data_ep")
     api.add_resource(Cell_Id, "/cell/id")
     api.add_resource(Power_Data, "/power/", "/power/<int:cell_id>")
     api.add_resource(Teros_Data, "/teros/", "/teros/<int:cell_id>")
-    api.add_resource(Measurement_Direct, "/sensor/")
-    api.add_resource(Measurement_Upink, "/ttn/")
+    api.add_resource(SensorData, "/sensor/")
     api.add_resource(Session_r, "/session")
     api.add_resource(User_Data, "/user")
     app.register_blueprint(auth, url_prefix="/api")

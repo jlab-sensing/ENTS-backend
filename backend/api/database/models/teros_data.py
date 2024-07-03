@@ -14,8 +14,8 @@ class TEROSData(db.Model):
     cell_id = db.Column(
         db.Integer, db.ForeignKey("cell.id", ondelete="CASCADE"), nullable=False
     )
-    ts = db.Column(db.DateTime, nullable=False)
-    ts_server = db.Column(db.DateTime, server_default=func.now())
+    ts = db.Column(db.DateTime, nullable=False, index=True)
+    ts_server = db.Column(db.DateTime, server_default=func.now(), index=True)
     vwc = db.Column(db.Float)
     raw_vwc = db.Column(db.Float)
     temp = db.Column(db.Float)
@@ -80,7 +80,7 @@ class TEROSData(db.Model):
         the server.
         """
 
-        data = {"timestamp": [], "vwc": [], "temp": [], "ec": []}
+        data = {"timestamp": [], "vwc": [], "temp": [], "ec": [], "raw_vwc": []}
 
         if not stream:
             if resample == "none":
@@ -91,6 +91,7 @@ class TEROSData(db.Model):
                         TEROSData.vwc.label("vwc"),
                         TEROSData.temp.label("temp"),
                         TEROSData.ec.label("ec"),
+                        TEROSData.raw_vwc.label("raw_vwc"),
                     )
                     .where(TEROSData.cell_id == cell_id)
                     .filter(TEROSData.ts.between(start_time, end_time))
@@ -104,6 +105,7 @@ class TEROSData(db.Model):
                         func.avg(TEROSData.vwc).label("vwc"),
                         func.avg(TEROSData.temp).label("temp"),
                         func.avg(TEROSData.ec).label("ec"),
+                        func.avg(TEROSData.raw_vwc).label("raw_vwc"),
                     )
                     .where(TEROSData.cell_id == cell_id)
                     .filter(TEROSData.ts.between(start_time, end_time))
@@ -116,6 +118,7 @@ class TEROSData(db.Model):
                     TEROSData.vwc.label("vwc"),
                     TEROSData.temp.label("temp"),
                     TEROSData.ec.label("ec"),
+                    TEROSData.raw_vwc.label("raw_vwc"),
                 )
                 .where(TEROSData.cell_id == cell_id)
                 .filter((TEROSData.ts_server.between(start_time, end_time)))
@@ -129,12 +132,14 @@ class TEROSData(db.Model):
             (stmt.c.vwc * 100).label("vwc"),
             stmt.c.temp.label("temp"),
             stmt.c.ec.label("ec"),
+            stmt.c.raw_vwc.label("raw_vwc"),
         ).order_by(stmt.c.ts)
 
         for row in db.session.execute(adj_units):
             data["timestamp"].append(row.ts)
             data["vwc"].append(row.vwc)
             data["temp"].append(row.temp)
-            data["ec"].append(row.ec)
-
+            # returns decimals as integers for chart parsing
+            data["ec"].append(int(row.ec))
+            data["raw_vwc"].append(row.raw_vwc)
         return data

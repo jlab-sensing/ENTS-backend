@@ -53,13 +53,25 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
         name: name,
         powerData: await streamPowerData(
           id,
-          DateTime.now().minus({ millisecond: interval + 29000 }).toHTTP(),
+          DateTime.now()
+            .minus({ millisecond: interval + 29000 })
+            .toHTTP(),
           DateTime.now().toHTTP(),
           true,
         ),
       };
     }
     return data;
+  }
+
+  /** takes array x and array y  */
+  function createDataset(x, y) {
+    return x.map((x, i) => {
+      return {
+        x: x,
+        y: y[i],
+      };
+    });
   }
 
   //** updates chart based on query */
@@ -82,12 +94,15 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
         const cellid = id;
         const name = cellChartData[cellid].name;
         const powerData = cellChartData[cellid].powerData;
-        const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
+        const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
         newVChartData.labels = pTimestamp;
+        const vData = createDataset(pTimestamp, powerData.v);
+        const iData = createDataset(pTimestamp, powerData.i);
+        const pData = createDataset(pTimestamp, powerData.p);
         newVChartData.datasets.push(
           {
             label: name + ' Voltage (mV)',
-            data: powerData.v,
+            data: vData,
             borderColor: vColors[selectCounter],
             borderWidth: 2,
             fill: false,
@@ -97,7 +112,7 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
           },
           {
             label: name + ' Current (µA)',
-            data: powerData.i,
+            data: iData,
             borderColor: iColors[selectCounter],
             borderWidth: 2,
             fill: false,
@@ -110,7 +125,7 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
         newPwrChartData.labels = pTimestamp;
         newPwrChartData.datasets.push({
           label: name + ' Power (µW)',
-          data: powerData.p,
+          data: pData,
           borderColor: pColors[selectCounter],
           borderWidth: 2,
           fill: false,
@@ -220,7 +235,6 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
 
   //** clearing all chart settings */
   function clearCharts() {
-    console.log('CLEARNIGN');
     const newVChartData = {
       ...vChartData,
       labels: [],

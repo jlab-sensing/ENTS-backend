@@ -38,14 +38,15 @@ services:
       - './frontend/src:/app/src'
 
   postgresql:
-    image: postgres:13
+    image: postgres:16
     environment:
       POSTGRES_USER: dirtviz
       POSTGRES_PASSWORD: password
+      POSTGRES_DB: dirtviz
     ports:
       - '5432:5432'
     volumes:
-      - postgresqldata:/var/lib/postgresql/data
+      - postgresql-16-data:/var/lib/postgresql/data
     networks:
       default:
     deploy:
@@ -59,11 +60,18 @@ services:
     image: redis:latest
     ports:
       - '6379:6379'
-
-  adminer:
-    image: adminer
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    restart: always
     ports:
-      - '8060:8080'
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: user-name@domain-name.com
+      PGADMIN_DEFAULT_PASSWORD: strong-password
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
 
   phpredisadmin:
     image: erikdubbelboer/phpredisadmin
@@ -78,4 +86,5 @@ services:
       - '80:80'
 
 volumes:
-  postgresqldata:
+  postgresql-16-data:
+  pgadmin-data:

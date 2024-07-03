@@ -1,17 +1,24 @@
 import axios from 'axios';
 import { DateTime } from 'luxon';
-export const getSensorData = (
+export const getSensorData = (name, cellId, meas, startTime, endTime) => {
+  return axios
+    .get(
+      `${process.env.PUBLIC_URL}/api/sensor/?name=${name}&cellId=${cellId}&measurement=${meas}&startTime=${startTime}&endTime=${endTime}`,
+    )
+    .then((res) => res.data);
+};
+
+export const streamSensorData = (
+  name,
   cellId,
   meas,
   startTime = DateTime.now().minus({ months: 1 }),
   endTime = DateTime.now(),
+  stream,
 ) => {
-  console.log('celllll', cellId);
-  const params = {
-    cellId: cellId,
-    measurement: meas,
-    startTime: startTime,
-    endTime: endTime,
-  };
-  return axios.get(`${process.env.PUBLIC_URL}/api/sensor/`, { params }).then((res) => res.data);
+  return axios
+    .get(
+      `${process.env.PUBLIC_URL}/api/sensor/?name=${name}&cellId=${cellId}&measurement=${meas}&startTime=${startTime}&endTime=${endTime}&stream=${stream}`,
+    )
+    .then((res) => res.data);
 };
