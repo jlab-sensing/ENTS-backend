@@ -1,8 +1,8 @@
-import './CellDrag.css'
+import './DragItem.css'
 import {useSortable} from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
 
-export const CellDrag = ({id, title}) => {
+export const DragItem = ({key, id, title, columnID}) => {
 
   const {attributes, listeners, setNodeRef, 
   transform, transition}= useSortable({id})
@@ -17,7 +17,7 @@ export const CellDrag = ({id, title}) => {
     {...attributes}
     {...listeners}
     style={style}
-    className = 'CellDrag'
+    className = 'DragItem'
     > 
      {title}
     </div>
