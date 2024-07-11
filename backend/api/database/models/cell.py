@@ -16,14 +16,18 @@ class Cell(db.Model):
     user_id = db.Column(db.Uuid(), db.ForeignKey("user.id"))
 
     user = db.relationship("User", backref="cell")
-    def __repr__(self):
-        return repr(self.name)
+    # def __repr__(self):
+    #     return repr(self.name)
     
     def add_cell_by_user_email(self, name, location, latitude, longitude,archive, userEmail):
         user_id = User.get_user(userEmail).id
         new_cell = Cell(name=name, location=location, latitude=latitude, longitude=longitude, user_id=user_id, archive=archive)
         new_cell.save()
         return new_cell
+    
+    @staticmethod
+    def get(id):
+        return Cell.query.filter_by(id=id).first()
     
     @classmethod
     def get_all(cell):

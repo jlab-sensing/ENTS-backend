@@ -32,10 +32,12 @@ class Cell(Resource):
     def put(self, cellId):
         json_data = request.json
         archive = json_data.get("archive")
-        cell = CellModel.query.get(cellId)
+        cell = CellModel.get(cellId)
         if cell:
             cell.archive = archive
             cell.save()
-            return jsonify(cell)
+            # check docker logs 
+            print("put: ", cell, flush=True)
+            return ({"message": "Successfully updated cell"})
         return jsonify({"message": "Cell not found"}), 404
 
