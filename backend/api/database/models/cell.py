@@ -19,9 +19,12 @@ class Cell(db.Model):
     # def __repr__(self):
     #     return repr(self.name)
     
-    def add_cell_by_user_email(self, name, location, latitude, longitude,archive, userEmail):
+    def add_cell_by_user_email(
+        self, name, location, latitude, longitude, archive, userEmail
+    ):
         user_id = User.get_user(userEmail).id
-        new_cell = Cell(name=name, location=location, latitude=latitude, longitude=longitude, user_id=user_id, archive=archive)
+        new_cell = Cell(name=name, location=location, latitude=latitude,
+                         longitude=longitude, user_id=user_id, archive=archive)
         new_cell.save()
         return new_cell
     

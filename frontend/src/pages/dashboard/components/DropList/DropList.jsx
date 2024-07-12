@@ -3,6 +3,7 @@ import "./DropList.css";
 import {DragItem} from "../DragItem/DragItem";
 import {SortableContext, verticalListSortingStrategy} from '@dnd-kit/sortable';
 import {useDroppable} from '@dnd-kit/core';
+import PropTypes from 'prop-types'
 
 export const DropList = ({ id,dragItems, columnID}) => {
   const {setNodeRef} = useDroppable({id});
@@ -21,4 +22,10 @@ export const DropList = ({ id,dragItems, columnID}) => {
     </div>
     </div>
   );
+};
+
+DropList.propTypes = {
+  id: PropTypes.string.isRequired,
+  dragItems: PropTypes.arrayOf(PropTypes.object).isRequired,
+  columnID: PropTypes.string.isRequired,
 };
