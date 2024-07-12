@@ -1,0 +1,10 @@
+.DropList {
+  background-color: #f2f2f3;
+  border-radius: 5px;
+  padding: 20px;
+  width: 80%;
+  max-width: 1500px;
+  margin: auto;
+  flex-direction: column;
+  gap: 70px;
+}
