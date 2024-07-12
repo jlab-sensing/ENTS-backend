@@ -32,6 +32,7 @@ class User(db.Model):
     @staticmethod
     def get_user(id):
         return User.query.filter_by(id=id).first()
+
     @staticmethod
     def get_user_by_email(email):
         return User.query.filter_by(email=email).first()

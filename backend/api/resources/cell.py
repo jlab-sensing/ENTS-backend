@@ -24,12 +24,13 @@ class Cell(Resource):
         userEmail = cell_data["userEmail"]
         if cell_data["archive"] is None:
             archive = False
-        else :
+        else:
             archive = cell_data["archive"]
         new_cell = CellModel.add_cell_by_user_emailcell(
-            cell_name, location, lat, long, archive, userEmail)
+            cell_name, location, lat, long, archive, userEmail
+        )
         return jsonify(new_cell)
-    
+
     def put(self, cellId):
         json_data = request.json
         archive = json_data.get("archive")
@@ -37,8 +38,7 @@ class Cell(Resource):
         if cell:
             cell.archive = archive
             cell.save()
-            # check docker logs 
+            # check docker logs
             print("put: ", cell, flush=True)
-            return ({"message": "Successfully updated cell"})
+            return {"message": "Successfully updated cell"}
         return jsonify({"message": "Cell not found"}), 404
-
