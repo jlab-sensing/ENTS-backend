@@ -5,6 +5,7 @@ import { DropList } from './DropList/DropList';
 import archive from '../../../assets/archive.svg';
 import { arrayMove } from '@dnd-kit/sortable';
 import { setCellArchive } from '../../../services/cell';
+import { PropTypes } from 'prop-types';
 
 export default function ArchiveModal ({cells}){
     const [cellsList, setCellsList] = useState(cells.data.map((cell) => ({
@@ -91,11 +92,14 @@ export default function ArchiveModal ({cells}){
     <Button variant = 'outlined' onClick={handleClose} sx = {{height: '75%',}} >Close</Button>
     </Stack>
     <DndContext collisionDetection={closestCorners}  onDragOver ={onDragOver} >
-      <Stack direction="row"  sx = {{width: '100%', height: '80%', paddingTop: '20px'}} divider={<Divider orientation="vertical" flexItem sx={{ borderWidth: '.5px', borderColor: 'lightgray' }}/>} spacing = {2}>
-        <div style={{flex: 1, Width:'50%', minHeight: '200px', maxHeight: '80vh', border: '2px solid #ccc', overflowY: 'auto', paddingBottom: '50px'}}>
+      <Stack direction="row"  sx = {{width: '100%', height: '80%', paddingTop: '20px'}} 
+      divider={<Divider orientation="vertical" flexItem sx={{ borderWidth: '.5px', borderColor: 'lightgray' }}/>} spacing = {2}>
+        <div style={{flex: 1, Width:'50%', minHeight: '200px', maxHeight: '80vh', border: '2px solid #ccc', overflowY: 'auto',
+         paddingBottom: '50px'}}>
           <DropList id="unarchive" dragItems={cellsList.filter((item) => item.columnID === false)} columnID='unarchive'/>
         </div>
-        <div style={{flex:1, Width: '50%', minHeight: '200px', maxHeight: '80vh' ,border: '2px solid #ccc', overflowY: 'auto', paddingBottom: '50px'}}>
+        <div style={{flex:1, Width: '50%', minHeight: '200px', maxHeight: '80vh' ,border: '2px solid #ccc',
+         overflowY: 'auto', paddingBottom: '50px'}}>
           <DropList id="archive" dragItems={cellsList.filter((item) => item.columnID === true)} columnID='archive'/>
         </div>
       </Stack>
@@ -107,3 +111,8 @@ export default function ArchiveModal ({cells}){
   )
 }
 
+ArchiveModal.propTypes = {
+  cells: PropTypes.shape({
+    data: PropTypes.arrayOf(PropTypes.object)
+  }).isRequired,
+};

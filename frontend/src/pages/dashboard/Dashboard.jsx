@@ -1,4 +1,4 @@
-import { React, useEffect, useState } from 'react';
+import { React, useState } from 'react';
 import { DateTime } from 'luxon';
 import DownloadBtn from './components/DownloadBtn';
 import { Box, Grid, Stack, Divider, Button } from '@mui/material';
