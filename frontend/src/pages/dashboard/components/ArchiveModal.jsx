@@ -1,12 +1,11 @@
-import { React, useState, useEffect} from 'react';
-import { Button, Box, Stack, Divider, Modal, Fade} from '@mui/material';
+import { React, useState} from 'react';
+import { Button, Box, Stack, Modal, Fade} from '@mui/material';
 import { DndContext, closestCorners} from '@dnd-kit/core';
 import { DropList } from './DropList/DropList';
 import archive from '../../../assets/archive.svg';
 import { arrayMove } from '@dnd-kit/sortable';
 import { setCellArchive } from '../../../services/cell';
 import { PropTypes } from 'prop-types';
-import { SortableContext } from '@dnd-kit/sortable';
 
 export default function ArchiveModal ({cells}){
     const [cellsList, setCellsList] = useState(cells.data.map((cell) => ({
@@ -19,8 +18,6 @@ export default function ArchiveModal ({cells}){
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     const [activeCell, setActiveCell] = useState(null);
-
-    let activeArchive; 
     
     const handleDragOver = (event) => {
         // activeID - selected dragItem id

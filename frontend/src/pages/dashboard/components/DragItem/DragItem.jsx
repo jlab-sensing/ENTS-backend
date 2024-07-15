@@ -31,4 +31,5 @@ export const DragItem = ({id, title, columnID}) => {
 DragItem.propTypes = {
   id: PropTypes.number.isRequired,
   title: PropTypes.string.isRequired,
+  columnID: PropTypes.string.isRequired,
 };
