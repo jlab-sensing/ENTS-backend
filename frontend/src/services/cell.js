@@ -6,8 +6,7 @@ export const getCellData = (cellIds, resample, startTime, endTime) => {
     .get(
       `${
         process.env.PUBLIC_URL
-      }/api/cell/datas?cellIds=${cellIds.toString()}&resample=${resample}&startTime=${startTime.toHTTP()}&endTime=${endTime.toHTTP()}`,
-      { responseType: 'blob' },
+      }/api/cell/datas?cellIds=${cellIds.toString()}&resample=${resample}&startTime=${startTime.toHTTP()}&endTime=${endTime.toHTTP()}`, 
     )
     .then((res) => res.data);
 };
@@ -36,3 +35,15 @@ export const useCells = () =>
     queryFn: () => getCells(),
     refetchOnWindowFocus: false,
   });
+
+export const pollCellDataResult = (taskId) =>{
+  return axios
+  .get(
+    `${
+      process.env.PUBLIC_URL
+    }/api/status/${taskId}`
+  )
+  .then((res) => {
+      return res.data; 
+  });
+}

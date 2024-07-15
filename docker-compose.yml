@@ -8,11 +8,13 @@ services:
       target: production
     image: dirtviz-backend
     environment:
-      DB_USER: dirtviz
-      DB_PASS: password
-      DB_HOST: postgresql
-      DB_PORT: 5432
-      DB_DATABASE: dirtviz
+      - DB_USER=dirtviz
+      - DB_PASS=password
+      - DB_HOST=postgresql
+      - DB_PORT=5432
+      - DB_DATABASE=dirtviz
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     # uncomment to run local .env, comment for testing
     # env_file:
     #   - ./.env
@@ -22,6 +24,28 @@ services:
       - postgresql
     volumes:
       - './backend:/app/backend'
+
+  worker:
+    build: 
+      context: ./backend
+      target: prodworker
+    environment:
+      - DB_USER=dirtviz
+      - DB_PASS=password
+      - DB_HOST=postgresql
+      - DB_PORT=5432
+      - DB_DATABASE=dirtviz
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    # uncomment to run local .env, comment for testing
+    # env_file:
+    #   - ./.env
+    depends_on:
+      - backend
+      - redis
+    volumes:
+      - './backend:/app/backend'
+
 
   frontend:
     build:
@@ -36,6 +60,11 @@ services:
     tty: true
     volumes:
       - './frontend/src:/app/src'
+  
+  redis:
+    image: redis:latest
+    ports:
+      - '6379:6379'
 
   postgresql:
     image: postgres:16
@@ -55,11 +84,6 @@ services:
           memory: 4g
         reservations:
           memory: 3g
-
-  redis:
-    image: redis:latest
-    ports:
-      - '6379:6379'
   
   pgadmin:
     image: dpage/pgadmin4
