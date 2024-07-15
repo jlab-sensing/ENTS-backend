@@ -22,3 +22,4 @@ Requests
 google-auth
 soil-power-sensor-protobuf @ https://test-files.pythonhosted.org/packages/31/35/d7ec5b32a04e9bf0cea5b5909459268d66867f4a81f528addfec79571d07/soil_power_sensor_protobuf-2.2.0.tar.gz
 gevent
+celery[redis,gevent]
