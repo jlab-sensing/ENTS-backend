@@ -6,22 +6,25 @@ import archive from '../../../assets/archive.svg';
 import { arrayMove } from '@dnd-kit/sortable';
 import { setCellArchive } from '../../../services/cell';
 import { PropTypes } from 'prop-types';
+import { SortableContext } from '@dnd-kit/sortable';
 
 export default function ArchiveModal ({cells}){
     const [cellsList, setCellsList] = useState(cells.data.map((cell) => ({
             key: cell.id,
             id: cell.id,
             title: cell.name,
-            columnID: cell.archive
+            isArchived: cell.archive
           })));
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+    const [activeCell, setActiveCell] = useState(null);
 
-    useEffect(()=>{
-    }, ([cellsList]))
-
-    const onDragOver = (event) => {
+    let activeArchive; 
+    
+    const handleDragOver = (event) => {
+        // activeID - selected dragItem id
+        // overID - id of column or dragItem that selected dragItem is over
         const{active, over} = event;
         if(!over) return;
     
@@ -41,9 +44,9 @@ export default function ArchiveModal ({cells}){
         if(isOverATask){
           setCellsList((cellsList) => {
             ///If the tasks are in different columns
-            if(cellsList[activeIndex].columnID !== cellsList[overIndex].columnID){
-              cellsList[activeIndex].columnID = cellsList[overIndex].columnID;
-              setCellArchive(activeID, cellsList[overIndex].columnID);
+            if(cellsList[activeIndex].isArchived !== cellsList[overIndex].isArchived){
+              cellsList[activeIndex].isArchived = cellsList[overIndex].isArchived;
+              ///              setCellArchive(activeID, cellsList[overIndex].columnID);
               return arrayMove(cellsList, activeIndex, overIndex);
             } else {
             ///If the tasks are in the same column
@@ -52,15 +55,39 @@ export default function ArchiveModal ({cells}){
           })
         }
         /// If the active is a task and the over is a column
-        else if(cellsList[activeIndex].columnID != (overID=== 'archive') ? true : false){
+        else if(cellsList[activeIndex].isArchived != (overID === 'archive')){
           setCellsList((cellsList) => {
-            cellsList[activeIndex].columnID = !cellsList[activeIndex].columnID;
-            setCellArchive(activeID, cellsList[activeIndex].columnID);
-            return cellsList 
+            cellsList[activeIndex].isArchived = !cellsList[activeIndex].isArchived;
+            ///              setCellArchive(activeID, cellsList[overIndex].columnID);
+            return arrayMove(cellsList, activeIndex, activeIndex) 
           })
         }  
     }    
   
+    const handleDragEnd = (event) => {
+      const {over} = event;
+      /// Over a column
+      if(over.id==='unarchive' || over.id==='archive'){
+          setCellArchive(activeCell.id, over.id === 'archive');
+          return;
+      }
+      /// Over a cell
+      else if (activeCell.data.current.columnID !== over.data.current.columnID){
+        setCellArchive(activeCell.id, !(activeCell.data.current.columnID === ('archive')) );
+        return
+       }
+      /// Not changed
+      console.log('archive not changed');
+      return ;
+    }    
+
+    const handleDragStart = (event) => {
+        const {active} = event;
+        console.log("Dragging this cell", active)
+        setActiveCell(active)
+        return;
+    }
+    
   return (
     <>
     <Button
@@ -79,8 +106,8 @@ export default function ArchiveModal ({cells}){
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      width: '70%',
-      height: '70%',
+      width: '70vw',
+      height: '70vh',
       bgcolor: 'background.paper',
       border: '1px solid #000',
       boxShadow: 24,
@@ -91,17 +118,11 @@ export default function ArchiveModal ({cells}){
     <h1>Archive</h1>
     <Button variant = 'outlined' onClick={handleClose} sx = {{height: '75%',}} >Close</Button>
     </Stack>
-    <DndContext collisionDetection={closestCorners}  onDragOver ={onDragOver} >
+    <DndContext collisionDetection={closestCorners} onDragStart = {handleDragStart} onDragEnd ={handleDragEnd} onDragOver = {handleDragOver} >
       <Stack direction="row"  sx = {{width: '100%', height: '80%', paddingTop: '20px'}} 
-      divider={<Divider orientation="vertical" flexItem sx={{ borderWidth: '.5px', borderColor: 'lightgray' }}/>} spacing = {2}>
-        <div style={{flex: 1, Width:'50%', minHeight: '200px', maxHeight: '80vh', border: '2px solid #ccc', overflowY: 'auto',
-         paddingBottom: '50px'}}>
-          <DropList id="unarchive" dragItems={cellsList.filter((item) => item.columnID === false)} columnID='unarchive'/>
-        </div>
-        <div style={{flex:1, Width: '50%', minHeight: '200px', maxHeight: '80vh' ,border: '2px solid #ccc',
-         overflowY: 'auto', paddingBottom: '50px'}}>
-          <DropList id="archive" dragItems={cellsList.filter((item) => item.columnID === true)} columnID='archive'/>
-        </div>
+       spacing = {2}>
+            <DropList id="unarchive" dragItems={cellsList.filter((item) => item.isArchived === false)} columnID='unarchive'/>
+            <DropList id="archive" dragItems={cellsList.filter((item) => item.isArchived === true)} columnID='archive'/>
       </Stack>
     </DndContext>
   </Box>
