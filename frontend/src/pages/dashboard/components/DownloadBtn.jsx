@@ -29,7 +29,7 @@ function DownloadBtn({ cells, startDate, endDate }) {
         }else{
           // setDownloadStatus(true)
           pendingResponses += 1
-          pollDuration = (BACKOFF * failedTries) + pollDuration + INTERVAL
+          pollDuration = (BACKOFF * pendingResponses) + pollDuration + INTERVAL
         }
       } catch (error) {
         console.error('Error polling the task status', error);
