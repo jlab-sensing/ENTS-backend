@@ -68,19 +68,19 @@ def create_app(debug: bool = False) -> Flask:
     # Celery Setup
     # https://github.com/jangia/celery_ecs_example
     app.config.from_mapping(
-            CELERY=dict(
-                broker_url=os.getenv("CELERY_BROKER_URL"),
-                result_backend=os.getenv("CELERY_RESULT_BACKEND"),
-                task_ignore_result=True,
-                broker_transport_options={
-                    "visibility_timeout": timedelta(minutes=15).total_seconds(),
-                },
-                task_ack_late=True,
-                task_reject_on_worker_lost=True,
-                worker_prefetch_multipler=1,
-                broker_connection_retry_on_startup=True,
-            ),
-        )
+        CELERY=dict(
+            broker_url=os.getenv("CELERY_BROKER_URL"),
+            result_backend=os.getenv("CELERY_RESULT_BACKEND"),
+            task_ignore_result=True,
+            broker_transport_options={
+                "visibility_timeout": timedelta(minutes=15).total_seconds(),
+            },
+            task_ack_late=True,
+            task_reject_on_worker_lost=True,
+            worker_prefetch_multipler=1,
+            broker_connection_retry_on_startup=True,
+        ),
+    )
     app.config.from_prefixed_env()
     celery_init_app(app)
 
