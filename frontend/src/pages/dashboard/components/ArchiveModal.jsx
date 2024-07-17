@@ -74,13 +74,11 @@ export default function ArchiveModal ({cells}){
         return
        }
       /// Not changed
-      console.log('archive not changed');
       return ;
     }    
 
     const handleDragStart = (event) => {
         const {active} = event;
-        console.log("Dragging this cell", active)
         setActiveCell(active)
         return;
     }
