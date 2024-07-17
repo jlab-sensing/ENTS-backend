@@ -32,7 +32,7 @@ jobs:
           chmod 600 ~/.ssh/known_hosts
 
       - name: Generate destroy.sql
-        uses: cuchi/jinja2-action@v1.2.0
+        uses: cuchi/jinja2-action@v1.2.2
         with:
           template: sql/destroy.sql.j2
           output_file: sql/destroy.sql
@@ -60,7 +60,7 @@ jobs:
           psql -U ${{ secrets.DB_USER }} -d ${{ github.event.ref }}
 
       - name: Delete Deployment Environment
-        uses: strumwolf/delete-deployment-environment@v2.3.0
+        uses: strumwolf/delete-deployment-environment@v3.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           environment: ${{ github.event.ref }}
