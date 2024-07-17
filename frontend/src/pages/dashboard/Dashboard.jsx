@@ -8,6 +8,8 @@ import PowerCharts from './components/PowerCharts';
 import TerosCharts from './components/TerosCharts';
 import BackBtn from './components/BackBtn';
 import SensorChart from './components/SensorChart';
+import { useCells } from '../../services/cell';
+import  ArchiveModal from './components/ArchiveModal';
 
 function Dashboard() {
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
@@ -15,9 +17,10 @@ function Dashboard() {
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [selectedCells, setSelectedCells] = useState([]);
   const [stream, setStream] = useState(false);
-
+  const cells = useCells();
   return (
     <>
+    <Box>
       <Stack
         direction='column'
         divider={<Divider orientation='horizontal' flexItem />}
@@ -35,6 +38,7 @@ function Dashboard() {
               setEndDate={setEndDate}
             ></DateRangeSel>
           </Box>
+          {cells.isSuccess && <ArchiveModal cells={cells} />}
           <DownloadBtn
             disabled={dBtnDisabled}
             setDBtnDisabled={setDBtnDisabled}
@@ -73,8 +77,7 @@ function Dashboard() {
       >
         <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
       </Stack>
-    </>
-  );
-}
-
+    </Box>
+</>
+  ); }
 export default Dashboard;

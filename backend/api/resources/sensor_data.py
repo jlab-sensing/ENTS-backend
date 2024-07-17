@@ -38,7 +38,6 @@ from ..database.schemas.get_sensor_data_schema import GetSensorDataSchema
 
 
 class SensorData(Resource):
-
     get_sensor_data_schema = GetSensorDataSchema()
 
     def get(self):

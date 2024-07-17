@@ -15,13 +15,14 @@ export const getCells = () => {
   return axios.get(`${process.env.PUBLIC_URL}/api/cell/id`).then((res) => res.data);
 };
 
-export const addCell = (cellName, location, longitude, latitude) => {
+export const addCell = (cellName, location, longitude, latitude, archive) => {
   return axios
     .post(`${process.env.PUBLIC_URL}/api/cell/`, {
       name: cellName,
       location: location,
       longitude: longitude,
       latitude: latitude,
+      archive: archive
     })
     .then((res) => res.data)
     .catch((error) => {
@@ -36,6 +37,22 @@ export const useCells = () =>
     refetchOnWindowFocus: false,
   });
 
+  export const setCellArchive = async (cellId, archive) => {
+    const url = `${process.env.PUBLIC_URL}/api/cell/${cellId}`;
+    try {
+      const response = await axios.put(
+        url,
+        { archive },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error setting cell archive:', error.response ? error.response.data : error.message);
+      throw error;
+    }
+  };
+  
+  
 export const pollCellDataResult = (taskId) =>{
   return axios
   .get(
