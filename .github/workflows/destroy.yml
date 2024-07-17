@@ -32,7 +32,7 @@ jobs:
           chmod 600 ~/.ssh/known_hosts
 
       - name: Generate destroy.sql
-        uses: cuchi/jinja2-action@v1.2.0
+        uses: cuchi/jinja2-action@v1.2.2
         with:
           template: sql/destroy.sql.j2
           output_file: sql/destroy.sql
