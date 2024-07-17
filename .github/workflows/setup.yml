@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
 
       - name: Setup SSH
         shell: bash
@@ -35,7 +35,7 @@ jobs:
           chmod 600 ~/.ssh/known_hosts
 
       - name: Generate namespace.yaml
-        uses: cuchi/jinja2-action@v1.2.0
+        uses: cuchi/jinja2-action@v1.2.2
         with:
           template: k8s/namespace.yaml.j2
           output_file: k8s/namespace.yaml
@@ -54,7 +54,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
 
       - name: Setup SSH
         shell: bash
@@ -81,10 +81,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
 
       - name: Setup python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'

@@ -27,13 +27,13 @@ function CellSelect({ selectedCells, setSelectedCells }) {
         }}
       >
         {Array.isArray(cells.data)
-          ? cells.data.map((cell) => {
+          ? cells.data.filter((cell) => !cell.archive ).map((cell) => {
               return (
                 <MenuItem value={cell} key={cell.id}>
                   {cell.name}
                 </MenuItem>
               );
-            })
+        })
           : ''}
       </Select>
     </FormControl>
