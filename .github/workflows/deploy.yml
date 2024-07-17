@@ -1,4 +1,4 @@
-name: Build and Deploy Production
+name: DirtViz
 
 on:
   push:
@@ -14,7 +14,7 @@ env:
 concurrency: production
 
 jobs:
-  frontend:
+  build-and-deploy-frontend:
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -74,7 +74,7 @@ jobs:
       - name: Deploy to S3
         run: aws s3 sync ./frontend/build/. s3://dirtviz
 
-  backend:
+  build-and-deploy-backend:
     name: Deploy backend to aws
     runs-on: ubuntu-latest
     env:
@@ -158,7 +158,7 @@ jobs:
           cluster: ${{ env.AWS_ECS_CLUSTER_NAME }}
           wait-for-service-stability: true
 
-  worker:
+  build-and-deploy-worker:
     name: Deploy celery worker to aws
     runs-on: ubuntu-latest
     env:
@@ -232,10 +232,10 @@ jobs:
           service: ${{ env.AWS_ECS_SERVICE_NAME }}
           cluster: ${{ env.AWS_ECS_CLUSTER_NAME }}
           wait-for-service-stability: true
-
-  apply_db_migrations:
+  
+  apply-db-migrations:
     runs-on: ubuntu-latest
-    needs: [frontend, backend]
+    needs: [build-and-deploy-frontend, build-and-deploy-backend]
     environment: ${{ github.ref_name }}
 
     env:
