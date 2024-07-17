@@ -10,32 +10,31 @@ function DownloadBtn({ cells, startDate, endDate }) {
   const INTERVAL = 2000
   const BACKOFF = 2000
   let pendingResponses = 0
-  let pollDuration = INTERVAL
 
-  const pollTaskStatus = async (taskId, fileName) => {
-    const interval = setInterval(async () => {
-      try {
-        const {state, status} = await pollCellDataResult(taskId);
-        if (state === "SUCCESS") {
-          clearInterval(interval);
-          const blob = new Blob([status], { type: 'text/csv' });
-          const a = document.createElement('a');
-          a.download = fileName;
-          a.href = window.URL.createObjectURL(blob);
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          setDownloadStatus(false)
-        }else{
-          // setDownloadStatus(true)
+  const pollTaskStatus = async (taskId, fileName, pollDuration) => {
+    try {
+      const {state, status} = await pollCellDataResult(taskId);
+      if (state === "SUCCESS") {
+        const blob = new Blob([status], { type: 'text/csv' });
+        const a = document.createElement('a');
+        a.download = fileName;
+        a.href = window.URL.createObjectURL(blob);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setDownloadStatus(false)
+      }else{
+        // setDownloadStatus(true)
+        setTimeout(() =>{
           pendingResponses += 1
-          pollDuration = (BACKOFF * pendingResponses) + pollDuration + INTERVAL
-        }
-      } catch (error) {
-        console.error('Error polling the task status', error);
-        clearInterval(interval);
+          pollDuration = (BACKOFF * pendingResponses) + pollDuration
+          console.log("pending", pendingResponses, pollDuration)
+          return pollTaskStatus(taskId, fileName, pollDuration)
+        }, pollDuration);
       }
-    }, pollDuration); // Poll every 2 seconds
+    } catch (error) {
+      console.error('Error polling the task status', error);
+    }
   };
 
   const downloadFile = () => {
@@ -45,7 +44,7 @@ function DownloadBtn({ cells, startDate, endDate }) {
       const resample = 'none';
       getCellData(id, resample, startDate, endDate).then((data) => {
         const { result_id } = data;
-        pollTaskStatus(result_id, fileName);
+        pollTaskStatus(result_id, fileName, INTERVAL);
       });
     }
   };
