@@ -38,7 +38,5 @@ class Cell(Resource):
         if cell:
             cell.archive = archive
             cell.save()
-            # check docker logs
-            print("put: ", cell, flush=True)
             return {"message": "Successfully updated cell"}
         return jsonify({"message": "Cell not found"}), 404

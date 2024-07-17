@@ -16,8 +16,8 @@ class Cell(db.Model):
     user_id = db.Column(db.Uuid(), db.ForeignKey("user.id"))
 
     user = db.relationship("User", backref="cell")
-    # def __repr__(self):
-    #     return repr(self.name)
+    def __repr__(self):
+         return repr(self.name)
 
     def add_cell_by_user_email(
         self, name, location, latitude, longitude, archive, userEmail

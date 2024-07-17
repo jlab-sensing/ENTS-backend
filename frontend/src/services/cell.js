@@ -39,7 +39,6 @@ export const useCells = () =>
 
   export const setCellArchive = async (cellId, archive) => {
     const url = `${process.env.PUBLIC_URL}/api/cell/${cellId}`;
-    console.log('Setting cell archive URL:', url);
     try {
       const response = await axios.put(
         url,
