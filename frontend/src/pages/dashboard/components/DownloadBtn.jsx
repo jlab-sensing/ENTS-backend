@@ -24,11 +24,9 @@ function DownloadBtn({ cells, startDate, endDate }) {
         document.body.removeChild(a);
         setDownloadStatus(false)
       }else{
-        // setDownloadStatus(true)
         setTimeout(() =>{
           pendingResponses += 1
           pollDuration = (BACKOFF * pendingResponses) + pollDuration
-          console.log("pending", pendingResponses, pollDuration)
           return pollTaskStatus(taskId, fileName, pollDuration)
         }, pollDuration);
       }
