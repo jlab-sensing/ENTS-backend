@@ -38,7 +38,7 @@ function Dashboard() {
               setEndDate={setEndDate}
             ></DateRangeSel>
           </Box>
-          {cells.isSuccess && <ArchiveModal cells={cells} />}
+          {(!cells.isLoading && !cells.isError ) ? <ArchiveModal cells={cells} /> : <span>Loading...</span>}
           <DownloadBtn
             disabled={dBtnDisabled}
             setDBtnDisabled={setDBtnDisabled}

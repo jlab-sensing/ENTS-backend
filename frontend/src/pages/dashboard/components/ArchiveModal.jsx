@@ -4,7 +4,7 @@ import { DndContext, closestCorners} from '@dnd-kit/core';
 import { DropList } from './DropList/DropList';
 import archive from '../../../assets/archive.svg';
 import { arrayMove } from '@dnd-kit/sortable';
-import { setCellArchive } from '../../../services/cell';
+import { useSetCellArchive } from '../../../services/cell';
 import { PropTypes } from 'prop-types';
 
 export default function ArchiveModal ({cells}){
@@ -18,6 +18,7 @@ export default function ArchiveModal ({cells}){
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     const [activeCell, setActiveCell] = useState(null);
+    const {mutate: setCellArchive} = useSetCellArchive();
     
     const handleDragOver = (event) => {
         // activeID - selected dragItem id
@@ -43,7 +44,6 @@ export default function ArchiveModal ({cells}){
             ///If the tasks are in different columns
             if(cellsList[activeIndex].isArchived !== cellsList[overIndex].isArchived){
               cellsList[activeIndex].isArchived = cellsList[overIndex].isArchived;
-              ///              setCellArchive(activeID, cellsList[overIndex].columnID);
               return arrayMove(cellsList, activeIndex, overIndex);
             } else {
             ///If the tasks are in the same column
@@ -55,7 +55,6 @@ export default function ArchiveModal ({cells}){
         else if(cellsList[activeIndex].isArchived != (overID === 'archive')){
           setCellsList((cellsList) => {
             cellsList[activeIndex].isArchived = !cellsList[activeIndex].isArchived;
-            ///              setCellArchive(activeID, cellsList[overIndex].columnID);
             return arrayMove(cellsList, activeIndex, activeIndex) 
           })
         }  
@@ -65,12 +64,12 @@ export default function ArchiveModal ({cells}){
       const {over} = event;
       /// Over a column
       if(over.id==='unarchive' || over.id==='archive'){
-          setCellArchive(activeCell.id, over.id === 'archive');
+          setCellArchive({cellId: activeCell.id, archive:  over.id === 'archive'});
           return;
       }
       /// Over a cell
       else if (activeCell.data.current.columnID !== over.data.current.columnID){
-        setCellArchive(activeCell.id, !(activeCell.data.current.columnID === ('archive')) );
+        setCellArchive({cellId: activeCell.id, archive: !(activeCell.data.current.columnID === ('archive')) });
         return
        }
       /// Not changed
