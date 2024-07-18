@@ -17,7 +17,7 @@ do
                     watchmedo auto-restart --directory=./ --pattern=*.py --recursive -- celery -A backend.make_celery worker --concurrency=1 --loglevel INFO --uid=nobody --gid=nogroup;;
                 prod) 
                     echo "Running Celery in production mode"
-                    celery -A backend.make_celery worker --loglevel INFO;;
+                    celery -A backend.make_celery worker --loglevel WARNING;;
                 *)
                     echo "Invalid deployment stage specified: $OPTARG"
             esac
