@@ -4,7 +4,7 @@ from ...api import db
 from ..database.models.user import User
 from ..database.models.oauth_token import OAuthToken
 from functools import wraps
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import jwt
 from .json_encoder import UUIDSerializer
 from flask_restful import abort
@@ -54,7 +54,7 @@ def handle_login(user: User):
     access_token = jwt.encode(
         {
             "uid": user.id,
-            "exp": datetime.utcnow() + timedelta(minutes=15),
+            "exp": datetime.now(UTC) + timedelta(minutes=15),
         },
         config["accessToken"],
         algorithm="HS256",
@@ -63,7 +63,7 @@ def handle_login(user: User):
     refresh_token = jwt.encode(
         {
             "uid": user.id,
-            "exp": datetime.utcnow() + timedelta(days=1),
+            "exp": datetime.now(UTC) + timedelta(days=1),
         },
         config["refreshToken"],
         algorithm="HS256",
@@ -77,7 +77,7 @@ def handle_login(user: User):
         secure=True,
         httponly=True,
         samesite="None",
-        expires=datetime.utcnow() + timedelta(days=1),
+        expires=datetime.now(UTC) + timedelta(days=1),
     )
     return resp
 
@@ -97,7 +97,7 @@ def handle_refresh_token(refresh_token):
         access_token = jwt.encode(
             {
                 "uid": user.id,
-                "exp": datetime.utcnow() + timedelta(minutes=15),
+                "exp": datetime.now(UTC) + timedelta(minutes=15),
             },
             config["accessToken"],
             algorithm="HS256",
@@ -106,7 +106,7 @@ def handle_refresh_token(refresh_token):
         refresh_token = jwt.encode(
             {
                 "uid": user.id,
-                "exp": datetime.utcnow() + timedelta(days=1),
+                "exp": datetime.now(UTC) + timedelta(days=1),
             },
             config["refreshToken"],
             algorithm="HS256",
@@ -120,7 +120,7 @@ def handle_refresh_token(refresh_token):
             secure=True,
             httponly=True,
             samesite="None",
-            expires=datetime.utcnow() + timedelta(days=1),
+            expires=datetime.now(UTC) + timedelta(days=1),
         )
         return resp
     except jwt.exceptions.InvalidTokenError as e:
