@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import axios from 'axios';
 
 export const getCellData = (cellIds, resample, startTime, endTime) => {
@@ -52,6 +52,19 @@ export const useCells = () =>
     }
   };
   
+  export const useSetCellArchive = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: ({ cellId, archive }) => setCellArchive(cellId, archive),
+      onSuccess: () => {
+        // Invalidate or refetch the cells query to get updated data
+        queryClient.invalidateQueries(['cell info']);
+      },
+      onError: (error) => {
+        console.error('Error setting cell archive:', error);
+      },
+    });
+  };
   
 export const pollCellDataResult = (taskId) =>{
   return axios
