@@ -4,10 +4,8 @@ Deploys on gunicorn
 
 """
 
-from gevent import monkey
 from .api import create_app
 
-monkey.patch_all()
 handler = create_app()
 celery_app = handler.extensions["celery"]
 
