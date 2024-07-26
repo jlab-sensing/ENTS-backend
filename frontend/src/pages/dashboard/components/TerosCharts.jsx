@@ -134,6 +134,7 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
         });
         selectCounter += 1;
       }
+      console.log(newVwcChartData);
       setVwcChartData(newVwcChartData);
       setTempChartData(newTempChartData);
       setLoadedCells(loadCells);
