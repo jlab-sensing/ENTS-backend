@@ -588,7 +588,6 @@ describe('testing side button events', () => {
     );
     const chartElement = await screen.findByTestId(/chart-container/i);
     const zoomBtnElement = await screen.findByLabelText(/^Zoom$/);
-    const panBtnElement = await screen.findByLabelText(/^Pan$/);
     expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(true);
     expect(ChartJS.getChart(chartElement).config.options.plugins.zoom.zoom.drag.enabled).toBe(false);
     await user.click(zoomBtnElement);
