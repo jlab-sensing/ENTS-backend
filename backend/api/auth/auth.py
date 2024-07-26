@@ -4,7 +4,7 @@ from ...api import db
 from ..database.models.user import User
 from ..database.models.oauth_token import OAuthToken
 from functools import wraps
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta, timezone
 import jwt
 from .json_encoder import UUIDSerializer
 from flask_restful import abort
@@ -22,6 +22,8 @@ config = {
     "refreshToken": os.getenv("REFRESH_TOKEN_SECRET"),
     "tokenExpiration": 36000,
 }
+
+UTC = timezone.utc
 
 
 def authenticate(f):
