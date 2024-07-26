@@ -1,5 +1,0 @@
-{
-  "devDependencies": {
-    "vitest-canvas-mock": "^0.3.3"
-  }
-}
