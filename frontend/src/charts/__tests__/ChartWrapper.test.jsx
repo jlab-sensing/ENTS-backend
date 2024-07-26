@@ -538,7 +538,7 @@ describe('loading charts', () => {
   });
 });
 
-describe('testing side button functionality', () => {
+describe('testing side button events', () => {
   it('should toggle zoom', async () => {
     const user = userEvent.setup();
     render(
@@ -573,6 +573,51 @@ describe('testing side button functionality', () => {
     expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(true);
     await user.click(panBtnElement);
     expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(false);
+  });
+
+  it('should untoggle pan when zoom is clicked', async () => {
+    const user = userEvent.setup();
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={data}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    const chartElement = await screen.findByTestId(/chart-container/i);
+    const zoomBtnElement = await screen.findByLabelText(/^Zoom$/);
+    const panBtnElement = await screen.findByLabelText(/^Pan$/);
+    expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(true);
+    expect(ChartJS.getChart(chartElement).config.options.plugins.zoom.zoom.drag.enabled).toBe(false);
+    await user.click(zoomBtnElement);
+    expect(ChartJS.getChart(chartElement).config.options.plugins.zoom.zoom.drag.enabled).toBe(true);
+    expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(false);
+  });
+
+  it('should untoggle zoom when pan is clicked', async () => {
+    const user = userEvent.setup();
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={data}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    const chartElement = await screen.findByTestId(/chart-container/i);
+    const panBtnElement = await screen.findByLabelText(/^Pan$/);
+    const zoomBtnElement = await screen.findByLabelText(/^Zoom$/);
+    expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(true);
+    expect(ChartJS.getChart(chartElement).config.options.plugins.zoom.zoom.drag.enabled).toBe(false);
+    await user.click(zoomBtnElement);
+    expect(ChartJS.getChart(chartElement).config.options.plugins.zoom.zoom.drag.enabled).toBe(true);
+    expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(false);
+    await user.click(panBtnElement);
+    expect(ChartJS.getChart(chartElement).config.options.plugins.zoom.zoom.drag.enabled).toBe(false);
+    expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(true);
   });
 
   it('should zoom in chart by 1.1', async () => {
