@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { fireEvent } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 import ChartWrapper from '../ChartWrapper';
 import { getMaxAxisAndStepValues } from '../alignAxis';
 import { DateTime } from 'luxon';
 import { Chart as ChartJS } from 'chart.js';
+import PropTypes from 'prop-types';
 
 const data = {
   datasets: [
@@ -396,8 +396,17 @@ const streamChartOptions = {
   },
 };
 
+/* eslint-enable react/prop-types */
 const MockChartWrapper = ({ id, data, streamChartOptions, chartOptions, stream }) => {
-  return <ChartWrapper id='vwc' data={data} options={stream ? streamChartOptions : chartOptions} stream={stream} />;
+  return <ChartWrapper id={id} data={data} options={stream ? streamChartOptions : chartOptions} stream={stream} />;
+};
+
+MockChartWrapper.propTypes = {
+  id: PropTypes.string,
+  data: PropTypes.object,
+  streamChartOptions: PropTypes.object,
+  chartOptions: PropTypes.object,
+  stream: PropTypes.bool,
 };
 
 //** integration test: service calls on dashboard */
@@ -634,9 +643,6 @@ describe('testing side button functionality', () => {
     const chartElement = await screen.findByTestId(/chart-container/i);
     const resetBtnElement = await screen.findByLabelText(/^Reset$/);
     const zoomInBtnElement = await screen.findByLabelText(/^Zoom In$/);
-    let pos = chartElement.getBoundingClientRect();
-    const centerX = Math.floor((pos.left + pos.right) / 2);
-    const centerY = Math.floor((pos.top + pos.bottom) / 2);
     expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(1);
     expect(ChartJS.getChart(chartElement).scales.x.min).toBe(1717092000000);
     expect(ChartJS.getChart(chartElement).scales.x.max).toBe(1717189200000);
