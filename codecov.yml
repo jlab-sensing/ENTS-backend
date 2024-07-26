@@ -1,0 +1,6 @@
+component_management:
+  individual_components:
+    - component_id: frontend 
+      name: frontend 
+      paths:
+        - frontend/
