@@ -48,6 +48,7 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       setupFiles: ['./src/vitest.setup.js'],
       coverage: {
+        enabled: 'true',
         provider: 'istanbul',
         reporter: ['text', 'json', 'html'],
       },
