@@ -96,9 +96,9 @@ jobs:
       - name: Run smoke test
         run: ./k6 run tests/basic.js
 
-      - name: Run frontend tests
+      - name: Run frontend tests + coverage
         working-directory: ./frontend
-        run: npm run test
+        run: npm run coverage
 
       - name: Save all logs
         if: always()

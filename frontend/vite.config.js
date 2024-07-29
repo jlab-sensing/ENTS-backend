@@ -48,8 +48,10 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       setupFiles: ['./src/vitest.setup.js'],
       coverage: {
-        enabled: 'true',
         provider: 'istanbul',
+        all: 'true',
+        include: ['src/**/*.{js,jsx}'], // specify files to include
+        exclude: ['src/generated/**/*.ts'], // specify files to exclude
         reporter: ['text', 'json', 'html'],
       },
       server: {
