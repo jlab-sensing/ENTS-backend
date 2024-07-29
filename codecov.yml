@@ -7,3 +7,13 @@ flag_management:
         threshold: 1%
       - type: patch
         target: 90%
+  individual_flags: # exceptions to the default rules above, stated flag by flag
+    - name: frontend  #fill in your own flag name
+      paths: 
+      - frontend/  #fill in your own path. Note, accepts globs, not regexes
+      carryforward: true
+      statuses:
+        - type: project
+          target: 20%
+        - type: patch
+          target: 100%
