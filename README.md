@@ -2,6 +2,7 @@
 
 ![Build](https://github.com/jlab-sensing/DirtViz/actions/workflows/deploy.yml/badge.svg?branch=main)
 ![Test](https://github.com/jlab-sensing/DirtViz/actions/workflows/test.yml/badge.svg?branch=main)
+[![codecov](https://codecov.io/github/jlab-sensing/DirtViz/graph/badge.svg?token=L4PKSR61XU)](https://codecov.io/github/jlab-sensing/DirtViz)
 
 DirtViz is a project to visualize data collected from sensors deployed in sensor networks. The project involves developing web based plotting scripts to create a fully-fledged DataViz tool tailored to the data collected from embedded systems sensor networks. A live version of the website is available at [https://dirtviz.jlab.ucsc.edu/](https://dirtviz.jlab.ucsc.edu/).
 
