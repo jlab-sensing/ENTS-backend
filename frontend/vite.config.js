@@ -49,7 +49,6 @@ export default defineConfig(({ mode }) => {
       setupFiles: ['./src/vitest.setup.js'],
       coverage: {
         provider: 'istanbul',
-        all: 'true',
         include: ['src/**/*.{js,jsx}'], // specify files to include
         exclude: ['src/generated/**/*.ts'], // specify files to exclude
         reporter: ['text', 'json', 'html'],
