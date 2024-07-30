@@ -68,7 +68,8 @@
     "msw": "^1.2.5",
     "prettier": "^2.8.7",
     "vite": "^4.5.3",
-    "vitest": "^0.34.3"
+    "vitest": "^0.34.3",
+    "vitest-canvas-mock": "^0.3.3"
   },
   "type": "module"
 }

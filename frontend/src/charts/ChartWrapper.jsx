@@ -120,9 +120,12 @@ function ChartWrapper({ id, data, options, stream }) {
   //** Modifies chart ref with new scales object */
   function setScales(scaleRef) {
     if (chartRef.current) {
+      console.log(chartRef.current);
       for (const { axis, axisMin, axisMax } of axesWithScaleKeys) {
-        chartRef.current.scales[axis].options.min = scaleRef[axisMin];
-        chartRef.current.scales[axis].options.max = scaleRef[axisMax];
+        if (chartRef.current.scales[axis]) {
+          chartRef.current.scales[axis].options.min = scaleRef[axisMin];
+          chartRef.current.scales[axis].options.max = scaleRef[axisMax];
+        }
       }
       chartRef.current.update();
     }
@@ -255,7 +258,13 @@ function ChartWrapper({ id, data, options, stream }) {
         height: '100%',
       }}
     >
-      <Line key={id} ref={chartRef} data={data} options={{ ...optionsWithPlugins, ...globalChartOpts }}></Line>
+      <Line
+        data-testid='chart-container'
+        key={id}
+        ref={chartRef}
+        data={data}
+        options={{ ...optionsWithPlugins, ...globalChartOpts }}
+      ></Line>
       <Box
         sx={{
           display: 'flex',
@@ -436,7 +445,7 @@ function ChartWrapper({ id, data, options, stream }) {
             <Box component='img' src={Fullscreen} sx={{ width: '16px', height: '16px' }}></Box>
           </ToggleButton>
         </Tooltip>
-        <Modal open={open} onClose={handleClose} closeAfterTransition>
+        <Modal data-testid='fullscreen-modal' open={open} onClose={handleClose} closeAfterTransition>
           <Fade in={open}>
             <Box
               sx={{

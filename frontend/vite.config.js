@@ -46,10 +46,27 @@ export default defineConfig(({ mode }) => {
     },
     test: {
       environment: 'jsdom',
-      setupFiles: ['./src/setupTests.js'],
+      setupFiles: ['./src/vitest.setup.js'],
       coverage: {
         provider: 'istanbul',
+        include: ['src/**/*.{js,jsx}'], // specify files to include
+        exclude: ['src/generated/**/*.ts'], // specify files to exclude
         reporter: ['text', 'json', 'html'],
+      },
+      server: {
+        deps: {
+          inline: ['vitest-canvas-mock'],
+        },
+      },
+      poolOptions: {
+        threads: {
+          singleThread: true,
+        },
+      },
+      environmentOptions: {
+        jsdom: {
+          resources: 'usable',
+        },
       },
     },
     plugins: [react()],

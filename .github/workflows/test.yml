@@ -96,9 +96,9 @@ jobs:
       - name: Run smoke test
         run: ./k6 run tests/basic.js
 
-      - name: Run frontend tests
+      - name: Run frontend tests + coverage
         working-directory: ./frontend
-        run: npm run test
+        run: npm run coverage
 
       - name: Save all logs
         if: always()
@@ -119,3 +119,10 @@ jobs:
           path: |
             dirtviz.log
             dirtviz_short.log
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./frontend/coverage/coverage-final.json
+          flags: frontend
+          token: ${{ secrets.CODECOV_TOKEN }}
