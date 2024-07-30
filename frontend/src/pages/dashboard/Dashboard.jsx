@@ -1,4 +1,4 @@
-import { React, useState } from 'react';
+import { React, useState, useEffect } from 'react';
 import { DateTime } from 'luxon';
 import DownloadBtn from './components/DownloadBtn';
 import { Box, Grid, Stack, Divider, Button } from '@mui/material';
@@ -10,6 +10,8 @@ import BackBtn from './components/BackBtn';
 import SensorChart from './components/SensorChart';
 import { useCells } from '../../services/cell';
 import  ArchiveModal from './components/ArchiveModal';
+import {useSearchParams} from 'react-router-dom';
+import CopyLinkBtn from './components/CopyLinkBtn';
 
 function Dashboard() {
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
@@ -18,6 +20,30 @@ function Dashboard() {
   const [selectedCells, setSelectedCells] = useState([]);
   const [stream, setStream] = useState(false);
   const cells = useCells();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (!cells.data) return; 
+
+    const searchQueryCells = searchParams.get("cell_id");
+    const searchQueryStartDate = searchParams.get("startDate");
+    const searchQueryEndDate = searchParams.get("endDate");
+
+    if (searchQueryCells && searchQueryCells.length > 0) { 
+      const selectedCellIds = searchQueryCells.split(','); 
+      const selectedCells = cells.data.filter((cell) => selectedCellIds.includes(cell.id.toString())); 
+      setSelectedCells(selectedCells);
+    }
+
+    if (searchQueryStartDate) {
+      const parsedStartDate = DateTime.fromISO(searchQueryStartDate);
+      setStartDate(parsedStartDate);
+    }
+
+    if (searchQueryEndDate) {
+      const parsedEndDate = DateTime.fromISO(searchQueryEndDate);
+      setEndDate(parsedEndDate);    } 
+  }, [searchParams, cells.data]);
   return (
     <>
     <Box>
@@ -30,6 +56,7 @@ function Dashboard() {
         <Stack direction='row' alignItems='center' justifyContent='space-evenly' sx={{ p: 2 }} flex>
           <BackBtn />
           <CellSelect selectedCells={selectedCells} setSelectedCells={setSelectedCells} />
+          <CopyLinkBtn startDate={startDate} endDate={endDate} selectedCells={selectedCells} />
           <Box display='flex' justifyContent='center' alignItems='center'>
             <DateRangeSel
               startDate={startDate}
