@@ -1,6 +1,6 @@
 import { React } from 'react';
 import { Button, Box, Tooltip} from '@mui/material';
-import copy from '../../../assets/copy.svg';
+import share from '../../../assets/share.svg';
 import { PropTypes } from 'prop-types';
 
 export default function CopyLinkBtn({ startDate, endDate, selectedCells }) {
@@ -30,7 +30,7 @@ export default function CopyLinkBtn({ startDate, endDate, selectedCells }) {
         }}
       >
         <Button variant="outlined" onClick={copyLink}>
-            <Box component="img" src={copy} />
+            <Box component="img" src={share} />
         </Button>
         </Tooltip>
     );

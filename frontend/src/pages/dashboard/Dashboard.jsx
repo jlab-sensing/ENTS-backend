@@ -56,7 +56,6 @@ function Dashboard() {
         <Stack direction='row' alignItems='center' justifyContent='space-evenly' sx={{ p: 2 }} flex>
           <BackBtn />
           <CellSelect selectedCells={selectedCells} setSelectedCells={setSelectedCells} />
-          <CopyLinkBtn startDate={startDate} endDate={endDate} selectedCells={selectedCells} />
           <Box display='flex' justifyContent='center' alignItems='center'>
             <DateRangeSel
               startDate={startDate}
@@ -65,6 +64,7 @@ function Dashboard() {
               setEndDate={setEndDate}
             ></DateRangeSel>
           </Box>
+          <CopyLinkBtn startDate={startDate} endDate={endDate} selectedCells={selectedCells} />
           {(!cells.isLoading && !cells.isError ) ? <ArchiveModal cells={cells} /> : <span>Loading...</span>}
           <DownloadBtn
             disabled={dBtnDisabled}
