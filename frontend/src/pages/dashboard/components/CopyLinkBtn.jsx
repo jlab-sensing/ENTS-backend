@@ -5,7 +5,7 @@ import { PropTypes } from 'prop-types';
 
 export default function CopyLinkBtn({ startDate, endDate, selectedCells }) {
     const copyLink = () => {
-        const text = `dirtviz.jlab.ucsc.edu/dashboard?cell_id=${
+        const text = `${window.location.origin}/dashboard?cell_id=${
             selectedCells.map((cell) => cell.id).join(",")}
             &startDate=${startDate.toISO()}&endDate=${endDate.toISO()}`;
         navigator.clipboard.writeText(text);
