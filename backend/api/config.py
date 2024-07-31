@@ -28,3 +28,15 @@ class Config(object):
     SESSION_PERMANENT = False
     SESSION_USE_SIGNER = True
     SESSION_REDIS = redis.from_url("redis://redis:6379")
+
+
+class ProductionConfig(Config):
+    FLASK_ENV = 'production'
+
+class DevelopmentConfig(Config):
+    DEBUG = True
+
+class TestingConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = os.getenv('TEST_DATABASE_URI', 
+                                        default=f"sqlite:///{os.path.join(BASEDIR, 'instance', 'test.db)}")
