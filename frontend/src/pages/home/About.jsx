@@ -4,6 +4,7 @@ import { Box, Button, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import chart from '../../assets/chart.svg';
 import { useNavigate } from 'react-router-dom';
+import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
 
 function About() {
   const navigate = useNavigate();
@@ -17,7 +18,6 @@ function About() {
         scrollSnapStop: 'always',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'space-between',
         backgroundColor: '#DAD7CD',
       }}
     >
@@ -37,19 +37,22 @@ function About() {
           maxWidth='sm'
           sx={{
             display: 'flex',
-            flexGrow: '1',
+            flexGrow: '3',
             flexDirection: 'column',
             alignItems: 'start',
             gap: '5%',
           }}
         >
-          <Typography variant='h4' component='h1'>
-            A DATA VISUALIZATION PROGRAM FOR XYZ
+          <Typography variant='h2' component='h1' sx={{ color: '#364F42', fontWeight: 'bold' }}>
+            Data Visualization For Outdoor Sensor Networks
           </Typography>
-          <Typography variant='subtitle1' component='sub'>
-            sub-header to explain use case.... 🚧 under construction 🚧
+          <Typography variant='h6' component='sub' sx={{ color: '#588157', fontWeight: 'medium' }}>
+            DirtViz is part of the Open Sensing Platform&apos;s hardware and software ecosystem for outdoor sensor
+            networks. It&apos;s an data ingestion and visualization backend that receives data from the hardware nodes
+            and presents it in an easy-to-use web interface that allows users to dynamically generate plots, or download
+            data for offline processing.
           </Typography>
-          <Box maxWidth='sm' sx={{ display: 'flex', flexDirection: 'row' }}>
+          <Box maxWidth='md' sx={{ display: 'flex', flexDirection: 'row', gap: '35px' }}>
             <Button
               key='dashboard'
               onClick={() => navigate('/dashboard')}
@@ -64,11 +67,12 @@ function About() {
               Checkout live data
             </Button>
             <Button key='map' onClick={() => navigate('/map')}>
-              View Map
+              View Map &nbsp;
+              <ArrowRightAltIcon fontSize='small' />
             </Button>
           </Box>
         </Box>
-        <Box component='img' sx={{ alignSelf: 'start', width: 'auto' }} src={chart}></Box>
+        <Box component='img' sx={{ width: 'auto', pb: '2.5%' }} src={chart}></Box>
       </Box>
       <Box
         sx={{
