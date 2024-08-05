@@ -35,7 +35,8 @@ function CellSelect({ selectedCells, setSelectedCells }) {
               );
         })
           : ''}
-      </Select>
+        <MenuItem value='all' disabled = {true} sx = {{ color: 'black'}}>Can't find cell? Check Archive feature.</MenuItem>
+    </Select>
     </FormControl>
   );
 }
