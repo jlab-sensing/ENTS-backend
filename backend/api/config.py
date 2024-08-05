@@ -8,13 +8,13 @@ import os
 from .conn import dburl
 from datetime import timedelta
 import redis
+from sqlalchemy.engine import URL
 
 
 class Config(object):
     SECRET_KEY = os.environ.get("SECRET_KEY") or "super-secret-key"
     DEBUG = True
     CSRF_ENABLED = True
-    SQLALCHEMY_DATABASE_URI = dburl
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
     # SQLALCHEMY_ECHO = True
@@ -31,12 +31,15 @@ class Config(object):
 
 
 class ProductionConfig(Config):
-    FLASK_ENV = 'production'
+    SQLALCHEMY_DATABASE_URI = dburl
+    FLASK_ENV = "production"
+
 
 class DevelopmentConfig(Config):
+    SQLALCHEMY_DATABASE_URI = dburl
     DEBUG = True
+
 
 class TestingConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = os.getenv('TEST_DATABASE_URI', 
-                                        default=f"sqlite:///{os.path.join(BASEDIR, 'instance', 'test.db)}")
+    SQLALCHEMY_DATABASE_URI = os.environ["TEST_SQLALCHEMY_DATABASE_URI"]

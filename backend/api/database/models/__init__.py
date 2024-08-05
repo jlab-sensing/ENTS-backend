@@ -1,1 +1,1 @@
-from ....api import db as db
+from api import db as db

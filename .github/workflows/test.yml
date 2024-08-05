@@ -49,12 +49,23 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+
     env:
       DB_USER: dirtviz
       DB_PASS: password
       DB_HOST: localhost
       DB_PORT: 5432
       DB_DATABASE: dirtviz
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
       - name: Checkout
