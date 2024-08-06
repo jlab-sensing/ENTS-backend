@@ -1,6 +1,5 @@
 import { React } from 'react';
 import { Box, Typography } from '@mui/material';
-import aboutBg from '../../assets/about-bg.jpg';
 import soilSensor from '../../assets/soil-sensor.svg';
 import DescriptionIcon from '@mui/icons-material/Description';
 import SlideshowIcon from '@mui/icons-material/Slideshow';
