@@ -4,7 +4,7 @@ import { Box, Button, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import chart from '../../assets/chart.svg';
 import { useNavigate } from 'react-router-dom';
-import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
+import GitHubIcon from '@mui/icons-material/GitHub';
 
 function About() {
   const navigate = useNavigate();
@@ -48,9 +48,9 @@ function About() {
           </Typography>
           <Typography variant='h6' component='sub' sx={{ color: '#588157', fontWeight: 'medium' }}>
             DirtViz is part of the Open Sensing Platform&apos;s hardware and software ecosystem for outdoor sensor
-            networks. It&apos;s an data ingestion and visualization backend that receives data from the hardware nodes
-            and presents it in an easy-to-use web interface that allows users to dynamically generate plots, or download
-            data for offline processing.
+            networks. It&apos;s an open source data ingestion and visualization service that parses data from the
+            hardware nodes and presents it in an easy-to-use web interface. Users can dynamically generate interactive
+            plots, live monitor their sensors, or download data for offline processing.
           </Typography>
           <Box maxWidth='md' sx={{ display: 'flex', flexDirection: 'row', gap: '35px' }}>
             <Button
@@ -62,13 +62,15 @@ function About() {
                   backgroundColor: '#A3B18A',
                 },
                 color: '#364F42',
+                pl: '10px',
+                pr: '10px',
               }}
             >
               Checkout live data
             </Button>
-            <Button key='map' onClick={() => navigate('/map')}>
-              View Map &nbsp;
-              <ArrowRightAltIcon fontSize='small' />
+            <Button sx={{ pl: '10px', pr: '10px' }} key='map' onClick={() => (location.href = 'https://google.com')}>
+              Github Repo &nbsp;
+              <GitHubIcon fontSize='small' />
             </Button>
           </Box>
         </Box>
