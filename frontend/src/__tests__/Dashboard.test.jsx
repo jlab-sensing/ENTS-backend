@@ -59,7 +59,7 @@ describe('Testing copy functionality', () => {
     await user.click(copyLinkButton);
     const copiedText = `http://localhost:3000/dashboard?cell_id=${selectedCells
       .map((cell) => cell.id)
-      .join(',')}&startDate=${DateTimeNow.toISO()}&endDate=${DateTimeNow.toISO()}`;
+      .join(',')}&startDate=${DateTimeNow}&endDate=${DateTimeNow}`;
 
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
 
@@ -77,7 +77,7 @@ describe('Testing copy functionality', () => {
     await user.click(copyLinkButton);
     const copiedText = `http://localhost:3000/dashboard?cell_id=${selectedCells
       .map((cell) => cell.id)
-      .join(',')}&startDate=${DateTimeNow.toISO()}&endDate=${DateTimeNow.toISO()}`;
+      .join(',')}&startDate=${DateTimeNow}&endDate=${DateTimeNow}`;
 
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
 
@@ -93,7 +93,7 @@ describe('Testing copy functionality', () => {
     render(<CopyLinkBtn startDate={startDate} endDate={DateTimeNow} selectedCells={[]} />);
     const copyLinkButton = screen.getByLabelText('Copy Link');
     await user.click(copyLinkButton);
-    const copiedText = `http://localhost:3000/dashboard?cell_id=&startDate=${startDate.toISO()}&endDate=${DateTimeNow.toISO()}`;
+    const copiedText = `http://localhost:3000/dashboard?cell_id=&startDate=${startDate}&endDate=${DateTimeNow}`;
 
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
 
@@ -109,8 +109,7 @@ describe('Testing copy functionality', () => {
     render(<CopyLinkBtn startDate={DateTimeNow} endDate={endDate} selectedCells={[]} />);
     const copyLinkButton = screen.getByLabelText('Copy Link');
     await user.click(copyLinkButton);
-    const copiedText = `http://localhost:3000/dashboard?cell_id=&startDate=${DateTimeNow}&endDate=${endDate.toISO()}`;
-
+    const copiedText = `http://localhost:3000/dashboard?cell_id=&startDate=${DateTimeNow}&endDate=${endDate}`;
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
 
     vi.restoreAllMocks();
