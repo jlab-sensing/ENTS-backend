@@ -6,14 +6,13 @@
 }
 
 .ListBorder {
-  border: 3px solid #D3D3D3;
+  border: 3px solid #d3d3d3;
   border-radius: 5px;
   width: 90%;
   padding: 2px;
   padding-top: 15px;
   padding-bottom: 15px;
   margin: 10px 2;
-
 }
 
 .DropListStyle {
