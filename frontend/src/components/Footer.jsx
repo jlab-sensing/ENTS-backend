@@ -22,7 +22,7 @@ function Footer() {
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '2.5px' }}>
         <Box>
-          made by jLab, check out our website at:&nbsp;
+          made by jLab, check out our website at&nbsp;
           <Box component={'a'} sx={{ color: '#588157' }} href='https://sensors.soe.ucsc.edu/'>
             sensors.soe.ucsc.edu
           </Box>

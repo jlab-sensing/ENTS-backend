@@ -52,7 +52,7 @@ function About() {
             hardware nodes and presents it in an easy-to-use web interface. Users can dynamically generate interactive
             plots, live monitor their sensors, or download data for offline processing.
           </Typography>
-          <Box maxWidth='md' sx={{ display: 'flex', flexDirection: 'row', gap: '35px' }}>
+          <Box maxWidth='md' sx={{ display: 'flex', flexDirection: 'row', gap: '25px' }}>
             <Button
               key='dashboard'
               onClick={() => navigate('/dashboard')}
@@ -68,7 +68,11 @@ function About() {
             >
               Checkout live data
             </Button>
-            <Button sx={{ pl: '10px', pr: '10px' }} key='map' onClick={() => (location.href = 'https://google.com')}>
+            <Button
+              sx={{ pl: '10px', pr: '10px' }}
+              key='map'
+              onClick={() => (location.href = 'https://github.com/jlab-sensing/DirtViz')}
+            >
               Github Repo &nbsp;
               <GitHubIcon fontSize='small' />
             </Button>
