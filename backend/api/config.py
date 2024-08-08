@@ -8,7 +8,6 @@ import os
 from .conn import dburl
 from datetime import timedelta
 import redis
-from sqlalchemy.engine import URL
 
 
 class Config(object):

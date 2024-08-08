@@ -2,8 +2,8 @@ from flask_restful import Resource
 from flask import request, jsonify
 
 # from ..conn import engine
-from ..database.models.cell import Cell as CellModel
-from ..database.schemas.add_cell_schema import AddCellSchema
+from ..models.cell import Cell as CellModel
+from ..schemas.add_cell_schema import AddCellSchema
 
 cells_schema = AddCellSchema(many=True)
 cell_schema = AddCellSchema()

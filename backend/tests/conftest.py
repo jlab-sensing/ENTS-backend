@@ -3,13 +3,11 @@ import os
 import pytest
 
 from api import create_app, db
-from api.database.models.user import User
+from api.models.user import User
 
 import logging
 from pytest_postgresql import factories
 from pytest_postgresql.janitor import DatabaseJanitor
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm.session import sessionmaker
 
 # --------
 # Fixtures
@@ -106,7 +104,7 @@ def init_database(test_client):
 # @pytest.fixture(scope='function')
 # def log_in_default_user(test_client):
 #     test_client.post('/login',
-#                      data={'email': 'patkennedy79@gmail.com', 'password': 'FlaskIsAwesome'})
+#     data={'email': 'patkennedy79@gmail.com', 'password': 'FlaskIsAwesome'})
 #
 #     yield  # this is where the testing happens!
 #
@@ -116,7 +114,7 @@ def init_database(test_client):
 # @pytest.fixture(scope='function')
 # def log_in_second_user(test_client):
 #     test_client.post('login',
-#                      data={'email': 'patrick@yahoo.com','password': 'FlaskIsTheBest987'})
+#     data={'email': 'patrick@yahoo.com','password': 'FlaskIsTheBest987'})
 #
 #     yield   # this is where the testing happens!
 #

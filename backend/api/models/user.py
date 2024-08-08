@@ -29,6 +29,10 @@ class User(db.Model):
         if token:
             token.delete()
 
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
     @staticmethod
     def get_user(id):
         return User.query.filter_by(id=id).first()

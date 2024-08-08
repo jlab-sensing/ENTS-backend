@@ -33,8 +33,8 @@ from flask_restful import Resource
 
 from .util import process_measurement
 
-from ..database.models.sensor import Sensor
-from ..database.schemas.get_sensor_data_schema import GetSensorDataSchema
+from ..models.sensor import Sensor
+from ..schemas.get_sensor_data_schema import GetSensorDataSchema
 
 
 class SensorData(Resource):

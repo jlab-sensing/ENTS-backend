@@ -16,7 +16,7 @@ from flask_session import Session
 from authlib.integrations.flask_client import OAuth
 from celery import Celery, Task
 from datetime import timedelta
-
+from .config import DevelopmentConfig
 
 db = SQLAlchemy()
 ma = Marshmallow()
@@ -43,7 +43,7 @@ def create_app(debug: bool = False) -> Flask:
     """init flask app"""
     app = Flask(__name__)
     app.secret_key = os.getenv("APP_SECRET_KEY")
-    config_type = os.getenv("CONFIG_TYPE", default="api.config.DevelopmentConfig")
+    config_type = os.getenv("CONFIG_TYPE", default=DevelopmentConfig)
     app.config.from_object(config_type)
     db.init_app(app)
     ma.init_app(app)

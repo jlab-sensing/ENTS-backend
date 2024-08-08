@@ -1,7 +1,5 @@
-import pytest
 
-from api.database.models.power_data import PowerData
-from marshmallow import ValidationError
+from api.models.power_data import PowerData
 
 
 def test_new_power_data(init_database):
