@@ -55,7 +55,7 @@ def test_client(db_conn):
     # Set the Testing configuration prior to creating the Flask application
     os.environ["TEST_SQLALCHEMY_DATABASE_URI"] = db_conn
     os.environ["CONFIG_TYPE"] = "api.config.TestingConfig"
-    print(os.environ["TEST_SQLALCHEMY_DATABASE_URI"])
+    print("test", os.environ["TEST_SQLALCHEMY_DATABASE_URI"], flush=True)
     flask_app = create_app()
 
     # Create a test client using the Flask application configured for testing

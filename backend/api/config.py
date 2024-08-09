@@ -12,7 +12,6 @@ import redis
 
 class Config(object):
     SECRET_KEY = os.environ.get("SECRET_KEY") or "super-secret-key"
-    DEBUG = True
     CSRF_ENABLED = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
@@ -27,6 +26,7 @@ class Config(object):
     SESSION_PERMANENT = False
     SESSION_USE_SIGNER = True
     SESSION_REDIS = redis.from_url("redis://redis:6379")
+    # SQLALCHEMY_DATABASE_URI = os.getenv("TEST_SQLALCHEMY_DATABASE_URI")
 
 
 class ProductionConfig(Config):
@@ -41,4 +41,6 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = os.environ["TEST_SQLALCHEMY_DATABASE_URI"]
+    # for some reason env variable is not set here
+    print("Testing", os.getenv("TEST_SQLALCHEMY_DATABASE_URI"), flush=True)
+    SQLALCHEMY_DATABASE_URI = "123"
