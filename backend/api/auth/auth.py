@@ -62,7 +62,6 @@ def handle_login(user: User):
         algorithm="HS256",
         json_encoder=UUIDSerializer,
     )
-    print("accesstoken", access_token, flush=True)
     refresh_token = jwt.encode(
         {
             "uid": user.id,
