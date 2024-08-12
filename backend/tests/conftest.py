@@ -38,7 +38,7 @@ def db_conn(test_db):
         password=pg_password,
     ):
         connection_str = f"postgresql+psycopg2://{pg_user}:@{pg_host}:{pg_port}/{pg_db}"
-    return connection_str
+        yield connection_str
 
 
 @pytest.fixture(scope="module")

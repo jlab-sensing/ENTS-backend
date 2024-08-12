@@ -1,7 +1,7 @@
 import os
 from flask import request, jsonify, make_response
-from ...api.models.user import User
-from ...api.models.oauth_token import OAuthToken
+from ..models.user import User
+from ..models.oauth_token import OAuthToken
 from functools import wraps
 from datetime import datetime, timedelta, timezone
 import jwt

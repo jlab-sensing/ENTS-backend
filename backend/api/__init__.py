@@ -17,6 +17,7 @@ from authlib.integrations.flask_client import OAuth
 from celery import Celery, Task
 from datetime import timedelta
 from .config import DevelopmentConfig
+from .conn import dburl
 
 db = SQLAlchemy()
 ma = Marshmallow()
@@ -46,8 +47,11 @@ def create_app(debug: bool = False) -> Flask:
     config_type = os.getenv("CONFIG_TYPE", default=DevelopmentConfig)
     print("env set config", os.getenv("CONFIG_TYPE"), flush=True)
     app.config.from_object(config_type)
-    # print("config", app.config)
-    print("env set", os.getenv("TEST_SQLALCHEMY_DATABASE_URI"), flush=True)
+    app.config["SQLALCHEMY_DATABASE_URI"] = (
+        os.getenv("TEST_SQLALCHEMY_DATABASE_URI")
+        if os.getenv("TEST_SQLALCHEMY_DATABASE_URI")
+        else dburl
+    )
     db.init_app(app)
     ma.init_app(app)
     migrate.init_app(app, db)

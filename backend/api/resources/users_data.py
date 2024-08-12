@@ -1,6 +1,6 @@
 from flask_restful import Resource
 from ..models.user import User
-from ..resources import authenticate
+from ..auth.auth import authenticate
 from ..schemas.user_data_schema import UserDataSchema
 
 user_schema = UserDataSchema(only=(["email", "first_name", "last_name"]))
