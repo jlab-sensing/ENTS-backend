@@ -137,6 +137,7 @@ jobs:
               --build-arg OAUTH_REDIRECT_URI="${{ secrets.OAUTH_REDIRECT_URI }}" \
               --build-arg CELERY_BROKER_URL="${{ secrets.CELERY_BROKER_URL }}" \
               --build-arg CELERY_RESULT_BACKEND="${{ secrets.CELERY_RESULT_BACKEND }}" \
+              --build-arg CONFIG_TYPE="${{ secrets.CONFIG_TYPE }}" \
               --target production \
               -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
@@ -214,6 +215,7 @@ jobs:
               --build-arg OAUTH_REDIRECT_URI="${{ secrets.OAUTH_REDIRECT_URI }}" \
               --build-arg CELERY_BROKER_URL="${{ secrets.CELERY_BROKER_URL }}" \
               --build-arg CELERY_RESULT_BACKEND="${{ secrets.CELERY_RESULT_BACKEND }}" \
+              --build-arg CONFIG_TYPE="${{ secrets.CONFIG_TYPE }}" \
               --target prodworker \
               -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
@@ -232,7 +234,7 @@ jobs:
           service: ${{ env.AWS_ECS_SERVICE_NAME }}
           cluster: ${{ env.AWS_ECS_CLUSTER_NAME }}
           wait-for-service-stability: true
-  
+
   apply-db-migrations:
     runs-on: ubuntu-latest
     needs: [build-and-deploy-frontend, build-and-deploy-backend]

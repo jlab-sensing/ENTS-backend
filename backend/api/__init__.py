@@ -45,7 +45,6 @@ def create_app(debug: bool = False) -> Flask:
     app = Flask(__name__)
     app.secret_key = os.getenv("APP_SECRET_KEY")
     config_type = os.getenv("CONFIG_TYPE", default=DevelopmentConfig)
-    print("env set config", os.getenv("CONFIG_TYPE"), flush=True)
     app.config.from_object(config_type)
     app.config["SQLALCHEMY_DATABASE_URI"] = (
         os.getenv("TEST_SQLALCHEMY_DATABASE_URI")

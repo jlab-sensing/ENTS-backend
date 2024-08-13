@@ -29,6 +29,7 @@ def db_conn(test_db):
     pg_password = test_db.password
     pg_db = test_db.dbname
 
+    # Self cleanup for postgres testing db instance
     with DatabaseJanitor(
         user=pg_user,
         host=pg_host,
@@ -37,6 +38,7 @@ def db_conn(test_db):
         version=test_db.version,
         password=pg_password,
     ):
+        # Setting context of testing db
         connection_str = f"postgresql+psycopg2://{pg_user}:@{pg_host}:{pg_port}/{pg_db}"
         yield connection_str
 
@@ -70,58 +72,14 @@ def init_database(test_client):
     db.drop_all()
     # Create the database and the database table
     db.create_all()
-
-    # # Insert user data
-    # default_user = User(
-    #     email="patkennedy79@gmail.com", password_plaintext="FlaskIsAwesome"
-    # )
-    # second_user = User(
-    #     email="patrick@yahoo.com", password_plaintext="FlaskIsTheBest987"
-    # )
-    # db.session.add(default_user)
-    # db.session.add(second_user)
-
-    # Commit the changes for the users
     db.session.commit()
-    #
-    # # Insert book data
-    # book1 = Book('Malibu Rising', 'Taylor Jenkins Reid', '5', default_user.id)
-    # book2 = Book('Carrie Soto is Back', 'Taylor Jenkins Reid', '4', default_user.id)
-    # book3 = Book('Book Lovers', 'Emily Henry', '3', default_user.id)
-    # db.session.add(book1)
-    # db.session.add(book2)
-    # db.session.add(book3)
 
-    # # Commit the changes for the books
-    # db.session.commit()
-    #
-    yield  # this is where the testing happens!
+    # context for testing fixure
+    yield
 
-    # db.drop_all()
+    db.drop_all()
 
 
-#
-# @pytest.fixture(scope='function')
-# def log_in_default_user(test_client):
-#     test_client.post('/login',
-#     data={'email': 'patkennedy79@gmail.com', 'password': 'FlaskIsAwesome'})
-#
-#     yield  # this is where the testing happens!
-#
-#     test_client.get('/logout')
-#
-#
-# @pytest.fixture(scope='function')
-# def log_in_second_user(test_client):
-#     test_client.post('login',
-#     data={'email': 'patrick@yahoo.com','password': 'FlaskIsTheBest987'})
-#
-#     yield   # this is where the testing happens!
-#
-#     # Log out the user
-#     test_client.get('/logout')
-#
-#
 @pytest.fixture(scope="module")
 def cli_test_client():
     # Set the Testing configuration prior to creating the Flask application
