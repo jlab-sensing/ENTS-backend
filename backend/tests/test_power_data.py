@@ -6,7 +6,7 @@ from datetime import datetime
 
 def test_new_power_data(init_database):
     """
-    GIVEN a Power Data model
+    GIVEN a Power Data arguments
     WHEN a new Power Data is created
     THEN check the voltage, current, logger, cell fields are defined correctly
     """
