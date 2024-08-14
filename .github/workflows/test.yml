@@ -68,7 +68,7 @@ jobs:
           cache: 'pip'
 
       - name: Install backend dependencies
-        run: pip install -r ./backend/requirements.txt
+        run: pip install -r ./backend/requirements.txt -r ./backend/requirements-dev.txt
 
       - name: Install frontend packages
         working-directory: ./frontend
