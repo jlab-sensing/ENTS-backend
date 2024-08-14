@@ -97,6 +97,9 @@ jobs:
       - name: Run smoke test
         run: ./k6 run tests/basic.js
 
+      - name: Run backend tests
+        run: pytest
+
       - name: Run frontend tests + coverage
         working-directory: ./frontend
         run: npm run coverage
