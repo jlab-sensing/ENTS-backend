@@ -14,15 +14,15 @@ flag_management:
       carryforward: true
       statuses:
         - type: project
-          target: 20%
+          target: 60%
         - type: patch
-          target: 100%
+          target: 60%
     - name: backend  
       paths: 
       - backend/  #fill in your own path. Note, accepts globs, not regexes
       carryforward: true
       statuses:
         - type: project
-          target: 20%
+          target: 60%
         - type: patch
-          target: 100%
+          target: 60%
