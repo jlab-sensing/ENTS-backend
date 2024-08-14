@@ -1,4 +1,4 @@
-# DirtViz
+# ![Dirtviz](.github/assets/img/dirtviz_logo.svg)
 
 ![Build](https://github.com/jlab-sensing/DirtViz/actions/workflows/deploy.yml/badge.svg?branch=main)
 ![Test](https://github.com/jlab-sensing/DirtViz/actions/workflows/test.yml/badge.svg?branch=main)
