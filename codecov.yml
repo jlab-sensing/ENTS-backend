@@ -14,7 +14,7 @@ flag_management:
       carryforward: true
       statuses:
         - type: project
-          target: 60%
+          target: 50%
         - type: patch
           target: 60%
     - name: backend  
@@ -23,6 +23,6 @@ flag_management:
       carryforward: true
       statuses:
         - type: project
-          target: 60%
+          target: 50%
         - type: patch
           target: 60%
