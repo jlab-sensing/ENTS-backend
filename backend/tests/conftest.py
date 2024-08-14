@@ -77,8 +77,6 @@ def init_database(test_client):
     # context for testing fixure
     yield
 
-    db.drop_all()
-
 
 @pytest.fixture(scope="module")
 def cli_test_client():
