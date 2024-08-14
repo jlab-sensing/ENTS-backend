@@ -70,7 +70,7 @@ def handle_login(user: User):
         algorithm="HS256",
         json_encoder=UUIDSerializer,
     )
-    user.set_refresh_token(refresh_token)
+    user.set_token(access_token, refresh_token)
     resp = make_response(access_token, 201)
     resp.set_cookie(
         "refresh-token",
@@ -112,7 +112,7 @@ def handle_refresh_token(refresh_token):
             algorithm="HS256",
             json_encoder=UUIDSerializer,
         )
-        user.set_refresh_token(refresh_token)
+        user.set_token(access_token, refresh_token)
         resp = make_response(access_token, 201)
         resp.set_cookie(
             "refresh-token",

@@ -13,16 +13,16 @@ class User(db.Model):
     email: str = db.Column(db.String(255), unique=True)
     password: str = db.Column(db.String(72), nullable=False)
 
-    def set_refresh_token(self, refresh_token):
+    def set_token(self, access_token, refresh_token):
         token = OAuthToken.query.filter(OAuthToken.user_id == self.id).first()
         if not token:
             token = OAuthToken(
-                user_id=self.id, access_token="", refresh_token=refresh_token
+                user_id=self.id, access_token=access_token, refresh_token=refresh_token
             )
-            token.save()
         else:
+            token.access_token = access_token
             token.refresh_token = refresh_token
-            db.session.commit()
+        token.save()
 
     def clear_refresh_token(self):
         token = OAuthToken.query.filter(OAuthToken.user_id == self.id).first()
