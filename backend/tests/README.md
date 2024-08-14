@@ -2,8 +2,16 @@
 
 ## Run backend testing suite
 
+To run tests
+
 ```console
 $pytest
+```
+
+To run tests with coverage
+
+```console
+$pytest --cov
 ```
 
 ## Infrastructure
