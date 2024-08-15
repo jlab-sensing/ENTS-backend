@@ -18,10 +18,10 @@ from datetime import datetime
 from tqdm import tqdm
 from sqlalchemy.orm import Session
 
-from ...conn import engine
+from ..conn import engine
 from ..models.power_data import PowerData
 from ..models.teros_data import TEROSData
-from ..get_or_create import get_or_create_cell, get_or_create_logger
+from .get_or_create import get_or_create_cell, get_or_create_logger
 
 
 def import_cell_data(path, logger_name, cell_name, batch_size=10000):

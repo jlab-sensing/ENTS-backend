@@ -11,13 +11,13 @@ from flask_marshmallow import Marshmallow
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_restful import Api
-from .config import Config
 from flask_bcrypt import Bcrypt
 from flask_session import Session
 from authlib.integrations.flask_client import OAuth
 from celery import Celery, Task
 from datetime import timedelta
-
+from .config import DevelopmentConfig
+from .conn import dburl
 
 db = SQLAlchemy()
 ma = Marshmallow()
@@ -44,7 +44,13 @@ def create_app(debug: bool = False) -> Flask:
     """init flask app"""
     app = Flask(__name__)
     app.secret_key = os.getenv("APP_SECRET_KEY")
-    app.config.from_object(Config)
+    config_type = os.getenv("CONFIG_TYPE", default=DevelopmentConfig)
+    app.config.from_object(config_type)
+    app.config["SQLALCHEMY_DATABASE_URI"] = (
+        os.getenv("TEST_SQLALCHEMY_DATABASE_URI")
+        if os.getenv("TEST_SQLALCHEMY_DATABASE_URI")
+        else dburl
+    )
     db.init_app(app)
     ma.init_app(app)
     migrate.init_app(app, db)

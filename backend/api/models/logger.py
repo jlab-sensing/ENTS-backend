@@ -12,6 +12,11 @@ class Logger(db.Model):
     mac = db.Column(MACADDR)
     hostname = db.Column(db.Text())
 
+    def __init__(self, name, mac, hostname):
+        self.name = name
+        self.mac = mac
+        self.hostname = hostname
+
     def __repr__(self):
         return repr(self.name)
 

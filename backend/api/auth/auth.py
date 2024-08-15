@@ -1,8 +1,7 @@
 import os
 from flask import request, jsonify, make_response
-from ...api import db
-from ..database.models.user import User
-from ..database.models.oauth_token import OAuthToken
+from ..models.user import User
+from ..models.oauth_token import OAuthToken
 from functools import wraps
 from datetime import datetime, timedelta, timezone
 import jwt
@@ -87,8 +86,7 @@ def handle_login(user: User):
 def handle_refresh_token(refresh_token):
     try:
         found_user = (
-            db.session.query(User)
-            .join(OAuthToken, OAuthToken.user_id == User.id)
+            User.query.join(OAuthToken, OAuthToken.user_id == User.id)
             .filter(OAuthToken.refresh_token == refresh_token)
             .first()
         )

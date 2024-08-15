@@ -1,7 +1,6 @@
 import os
 from flask import Blueprint, request, jsonify
-from ...api import db
-from ..database.models.user import User
+from ..models.user import User
 import requests
 from google.oauth2 import id_token
 from google.auth.transport import requests as g_requests
@@ -81,7 +80,7 @@ def get_token():
         email = idinfo["email"]
         first_name = idinfo["given_name"]
         last_name = idinfo["family_name"]
-        user = db.session.query(User).filter_by(email=email).first()
+        user = User.query.filter_by(email=email).first()
 
         # Add user to DB if new user
         if not user:
@@ -89,8 +88,7 @@ def get_token():
             user = User(
                 first_name=first_name, last_name=last_name, email=email, password=""
             )
-            db.session.add(user)
-            db.session.commit()
+            user.save()
 
         # Handle login
         return handle_login(user)
