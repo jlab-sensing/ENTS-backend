@@ -105,9 +105,9 @@ python -m backend.api.database.utils.import_cell_data
 
 ## Maintainers
 
-- [Aaron Wu](mailto:awu70@ucsc.edu)
+- Aaron Wu [aaron-wu1](https://github.com/aaron-wu1)
 
 ## Contributors
 
-- [Steve Taylor](mailto:sgtaylor@ucsc.edu)
-- [Alec Levy](mailto:alevy1@ucsc.edu)
+- John Madden [jmadden173](https://github.com/jmadden173)
+- Alec Levy [aleclevy](https://github.com/aleclevy)
