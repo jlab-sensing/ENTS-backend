@@ -4,7 +4,7 @@
 ![Test](https://github.com/jlab-sensing/DirtViz/actions/workflows/test.yml/badge.svg?branch=main)
 [![codecov](https://codecov.io/github/jlab-sensing/DirtViz/graph/badge.svg?token=L4PKSR61XU)](https://codecov.io/github/jlab-sensing/DirtViz)
 
-DirtViz is a project to visualize data collected from sensors deployed in sensor networks. The project involves developing web based plotting scripts to create a fully-fledged DataViz tool tailored to the data collected from embedded systems sensor networks. A live version of the website is available at [https://dirtviz.jlab.ucsc.edu/](https://dirtviz.jlab.ucsc.edu/).
+DirtViz is part of the Open Sensing Platform's hardware and software ecosystem for outdoor sensor networks. It's an open source data ingestion and visualization service that parses data from the hardware nodes and presents it in an easy-to-use web interface. Users can dynamically generate interactive plots, live monitor their sensors, or download data for offline processing. A live version of the website is available at [https://dirtviz.jlab.ucsc.edu/](https://dirtviz.jlab.ucsc.edu/).
 
 ## Dependencies
 
@@ -20,7 +20,7 @@ DirtViz is a project to visualize data collected from sensors deployed in sensor
 
 A local version of Dirtviz can be started using `docker-compose.yml`. This will build the local images and start the required services in the background, including the database.
 
-```
+```console
 docker compose up --build -d
 ```
 
@@ -45,13 +45,23 @@ A migration script is provided in this repository that abstracts the migration p
 
 Real life example data is provided and can be imported with the following. The data was collected at UC Santa Cruz by jlab.
 
-```bash
+```console
 python ./import_example_data.py
 ```
 
 Now some graphs should appear on the website and look like the following.
 
 ![Example screenshot of Dirtviz](.github/assets/img/dashboard.png)
+
+## Support
+
+For bugs refer to [bug_template.md](.github/ISSUE_TEMPLATE/bug_template). For other needs, create an new issue in this repository.
+
+## Contributing
+
+To start contributing to DirtViz, please read [CONTRIBUTING.md](CONTRIBUTING.md)
+
+Here's a list of [good first issues](https://github.com/jlab-sensing/DirtViz/labels/good%20first%20issue) to get yourself familiar with DirtViz. Comment in the issue to pick it up, and feel free to ask any questions!
 
 ## FAQ
 
@@ -71,7 +81,7 @@ The script migrate.sh takes in a "-m \<msg\>" for generating a new migration and
 
 Sometimes the database breaks and causes errors. Usually deleting the docker volume `postgresqldata` causing the database to be recreated fixes the issue. The following does exactly that and reapplies the migrations to the cleaned database.
 
-```bash
+```console
 docker compose down
 docker volume rm dirtviz_postgresqldata
 docker compose up --build -d
@@ -89,3 +99,12 @@ There exists csv importers that can be used to populate the database. Python uti
 ```bash
 python -m backend.api.database.utils.import_cell_data
 ```
+
+## Maintainers
+
+- [Aaron Wu](mailto:awu70@ucsc.edu)
+
+## Contributors
+
+- [Steve Taylor](mailto:sgtaylor@ucsc.edu)
+- [Alec Levy](mailto:alevy1@ucsc.edu)
