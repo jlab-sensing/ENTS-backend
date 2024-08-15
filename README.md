@@ -55,7 +55,10 @@ Now some graphs should appear on the website and look like the following.
 
 ## Support
 
-For bugs refer to [bug_template.md](.github/ISSUE_TEMPLATE/bug_template). For other needs, create an new issue in this repository.
+For bugs refer to [bug_template.md](.github/ISSUE_TEMPLATE/bug_template). For other issues, create an new issue in this repository.
+
+For documentation on the backend, refer to [backend readme](backend/README.md)
+
 
 ## Contributing
 
