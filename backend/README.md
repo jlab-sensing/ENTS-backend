@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The DirtViz api is built using the [Flask](https://flask.palletsprojects.com/en/3.0.x/) factory app pattern. All modules revolve around the running Flask context. 
+The DirtViz api is built using the [Flask](https://flask.palletsprojects.com/en/3.0.x/) factory app pattern. All modules revolve around the running Flask context.
 
 ## API Reference
 
@@ -34,11 +34,32 @@ To handle long running tasks, DirtViz uses [Celery](https://docs.celeryq.dev/en/
 
 ## Testing
 
-Testing is conducted using [pytest](https://github.com/pytest-dev/pytest) and [testing fixtures](https://flask.palletsprojects.com/en/3.0.x/testing/) are spun up within the factory app pattern.
+Testing is conducted using [pytest](https://github.com/pytest-dev/pytest) and [testing fixtures](https://flask.palletsprojects.com/en/3.0.x/testing/) are spun up within the factory app pattern. Flask uses the testing configuration as defined under `api/config.py`. The testing fixtures are defined under `tests/conftest.py`.
 
-## Build
+## Linting
 
-For development builds, Fl
+Files are to be linted using [ruff](https://docs.astral.sh/ruff/).
+
+After installing ruff run below to lint
+
+```console
+ruff check ./backend
+```
+
+
+## Formatting
+
+Files are to be formatted using [black](https://github.com/psf/black).
+
+After installing ruff run below to format
+
+```console
+black ./backend
+```
+
+## Docker Builds
+
+There are two targets for building the api, `development` and `production`. In the development target, hot reload is avaliable as well as the running flask in developement mode (Debug logs print to stderr). In the production target, gunicorn is ran in front of flask and the env is set to production env vars.
 
 ## Production
 
