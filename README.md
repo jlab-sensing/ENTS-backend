@@ -4,7 +4,7 @@
 ![Test](https://github.com/jlab-sensing/DirtViz/actions/workflows/test.yml/badge.svg?branch=main)
 [![codecov](https://codecov.io/github/jlab-sensing/DirtViz/graph/badge.svg?token=L4PKSR61XU)](https://codecov.io/github/jlab-sensing/DirtViz)
 
-Environment Networked Sensing (ENTS) platform is part of the ENTS hardware and software ecosystem for outdoor sensor networks. It's an open source data ingestion and visualization service that parses data from the hardware nodes and presents it in an easy-to-use web interface. Users can dynamically generate interactive plots, live monitor their sensors, or download data for offline processing. A live version of the website is available at [https://dirtviz.jlab.ucsc.edu/](https://dirtviz.jlab.ucsc.edu/).
+Environmental Networked Sensing (ENTS) platform is part of the ENTS hardware and software ecosystem for outdoor sensor networks. It's an open source data ingestion and visualization service that parses data from the hardware nodes and presents it in an easy-to-use web interface. Users can dynamically generate interactive plots, live monitor their sensors, or download data for offline processing. A live version of the website is available at [https://dirtviz.jlab.ucsc.edu/](https://dirtviz.jlab.ucsc.edu/).
 
 ## Dependencies
 
