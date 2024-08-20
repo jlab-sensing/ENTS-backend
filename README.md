@@ -1,10 +1,10 @@
-# ![Dirtviz](.github/assets/img/dirtviz_logo.svg)
+# ![ENTS-Platform](.github/assets/img/ents_logo.svg)
 
 ![Build](https://github.com/jlab-sensing/DirtViz/actions/workflows/deploy.yml/badge.svg?branch=main)
 ![Test](https://github.com/jlab-sensing/DirtViz/actions/workflows/test.yml/badge.svg?branch=main)
 [![codecov](https://codecov.io/github/jlab-sensing/DirtViz/graph/badge.svg?token=L4PKSR61XU)](https://codecov.io/github/jlab-sensing/DirtViz)
 
-DirtViz is part of the Open Sensing Platform's hardware and software ecosystem for outdoor sensor networks. It's an open source data ingestion and visualization service that parses data from the hardware nodes and presents it in an easy-to-use web interface. Users can dynamically generate interactive plots, live monitor their sensors, or download data for offline processing. A live version of the website is available at [https://dirtviz.jlab.ucsc.edu/](https://dirtviz.jlab.ucsc.edu/).
+Environment Networked Sensing (ENTS) platform is part of the ENTS hardware and software ecosystem for outdoor sensor networks. It's an open source data ingestion and visualization service that parses data from the hardware nodes and presents it in an easy-to-use web interface. Users can dynamically generate interactive plots, live monitor their sensors, or download data for offline processing. A live version of the website is available at [https://dirtviz.jlab.ucsc.edu/](https://dirtviz.jlab.ucsc.edu/).
 
 ## Dependencies
 
@@ -18,13 +18,13 @@ DirtViz is part of the Open Sensing Platform's hardware and software ecosystem f
 
 ### Starting Services
 
-A local version of Dirtviz can be started using `docker-compose.yml`. This will build the local images and start the required services in the background, including the database.
+A local version of the ENTS platform can be started using `docker-compose.yml`. This will build the local images and start the required services in the background, including the database.
 
 ```console
 docker compose up --build -d
 ```
 
-At this point the portal is accessible at [http://localhost:3000/](http://localhost:3000/), but will likely show a blank page in your web browser and throw an error. This is due to the database being empty, therefore there is no data to display.
+At this point the platform is accessible at [http://localhost:3000/](http://localhost:3000/), but will likely show a blank page in your web browser and throw an error. This is due to the database being empty, therefore there is no data to display.
 
 <!-- for reference OLD -->
 
@@ -51,7 +51,13 @@ python ./import_example_data.py
 
 Now some graphs should appear on the website and look like the following.
 
-![Example screenshot of Dirtviz](.github/assets/img/dashboard.png)
+![Example screenshot of ENTS platform](.github/assets/img/dashboard.png)
+
+## Architecture
+
+### System
+
+ENTS platform's frontend is built with React and is located under the `frontend` folder. ENTS platform's backend is built with Flask and located under the `backend` folder. Check out the [frontend readme](frontend/README.md) and the [backend readme](backend/README.md) for more information.
 
 ## Support
 
@@ -62,9 +68,9 @@ For documentation on the backend, refer to [backend readme](backend/README.md)
 
 ## Contributing
 
-To start contributing to DirtViz, please read [CONTRIBUTING.md](CONTRIBUTING.md)
+To start contributing to the ENTS platform, please read [CONTRIBUTING.md](CONTRIBUTING.md)
 
-Here's a list of [good first issues](https://github.com/jlab-sensing/DirtViz/labels/good%20first%20issue) to get yourself familiar with DirtViz. Comment in the issue to pick it up, and feel free to ask any questions!
+Here's a list of [good first issues](https://github.com/jlab-sensing/DirtViz/labels/good%20first%20issue) to get yourself familiar with the ENTS Platform. Comment in the issue to pick it up, and feel free to ask any questions!
 
 ## FAQ
 
@@ -97,7 +103,7 @@ For this error, it either means that you've deleted a revision corresponding to 
 
 ### How do I import my own TEROS and Rocketlogger data previously collected?
 
-There exists csv importers that can be used to populate the database. Python utilities currently exist to import RocketLogger and TEROS data. These are available as modules under dirtviz. More information on used can be found by running the modules with the `--help` flag.
+There exists csv importers that can be used to populate the database. Python utilities currently exist to import RocketLogger and TEROS data. These are available as modules under the backend folder. More information on used can be found by running the modules with the `--help` flag.
 
 ```bash
 python -m backend.api.database.utils.import_cell_data
