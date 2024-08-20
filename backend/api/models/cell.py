@@ -17,7 +17,15 @@ class Cell(db.Model):
 
     user = db.relationship("User", backref="cell")
 
-    def __init__(self, name, location, latitude, longitude, archive, user_id):
+    def __init__(
+        self,
+        name="",
+        location="",
+        latitude=37.000786081466266,
+        longitude=-122.0631536846593,
+        archive=False,
+        user_id=None,
+    ):
         self.name = name
         self.location = location
         self.latitude = latitude
