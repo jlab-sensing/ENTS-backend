@@ -16,7 +16,7 @@ $pytest --cov
 
 ## Infrastructure
 
-This is DirtViz's current backend testing suite
+This is ENTS backend current API testing suite
 
 - [pytest](https://docs.pytest.org/en/stable/) as testing framework
 
