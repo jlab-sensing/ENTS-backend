@@ -26,8 +26,8 @@ def test_new_teros_data(init_database):
 def test_new_teros_data_cell_creation(init_database):
     """
     GIVEN a TEROS Data arguments
-    WHEN a new TEROS Data is created
-    THEN check the vwc, raw vwc, temp, ec, water potential is defined correctly
+    WHEN a new TEROS Data is created and a new cell does not exist
+    THEN check if a new cell is created
     """
     ts = 1705176162
     formated_ts = datetime.fromtimestamp(ts)
