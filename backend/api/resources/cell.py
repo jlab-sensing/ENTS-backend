@@ -17,11 +17,15 @@ class Cell(Resource):
     def post(self):
         json_data = request.json
         cell_data = cell_schema.load(json_data)
+        print(cell_data, flush=True)
         cell_name = cell_data["name"]
         location = cell_data["location"]
         lat = cell_data["latitude"]
         long = cell_data["longitude"]
-        userEmail = cell_data["userEmail"]
+        # FIXME:
+        # migrate user email to include authenticated user
+        # if userEmail["userEmail"] is None:
+        #     userEmail = cell_data["userEmail"]
         if cell_data["archive"] is None:
             archive = False
         else:
