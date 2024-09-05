@@ -17,7 +17,6 @@ class Cell(Resource):
     def post(self):
         json_data = request.json
         cell_data = cell_schema.load(json_data)
-        print(cell_data, flush=True)
         cell_name = cell_data["name"]
         location = cell_data["location"]
         lat = cell_data["latitude"]
@@ -31,7 +30,7 @@ class Cell(Resource):
         else:
             archive = cell_data["archive"]
         new_cell = CellModel.add_cell_by_user_emailcell(
-            cell_name, location, lat, long, archive, userEmail
+            cell_name, location, lat, long, archive
         )
         return jsonify(new_cell)
 

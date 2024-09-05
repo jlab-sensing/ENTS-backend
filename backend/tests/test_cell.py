@@ -7,10 +7,11 @@ def test_cell_data_endpoint(test_client, setup_cells):
     """
     response = test_client.get("/api/cell/")
     assert response.status_code == 200
-    print(response.data)
-    assert (
-        response.data
-        == b'[{"name": "cell_1", "location": "", "longitude": 1.0, "latitude": 1.0, "userEmail": "", "archive": false}, {"name": "cell_2", "location": "", "longitude": 2.0, "latitude": 2.0, "userEmail": "", "archive": false}]\n'
+    assert response.data == (
+        b'[{"name": "cell_1", "location": "", "longitude": 1.0, '
+        b'"latitude": 1.0, "userEmail": "", "archive": false}, '
+        b'{"name": "cell_2", "location": "", "longitude": 2.0, '
+        b'"latitude": 2.0, "userEmail": "", "archive": false}]\n'
     )
 
 
@@ -37,5 +38,8 @@ def test_cell_data_endpoint(test_client, setup_cells):
 #     assert response.status_code == 200
 #     assert (
 #         response.data
-#         == b'[{"name": "cell_1", "location": "", "longitude": 1.0, "latitude": 1.0}, {"name": "cell_2", "location": "", "longitude": 2.0, "latitude": 2.0}]\n'
+#         == b'[{"name": "cell_1", "location": "",
+# "longitude": 1.0, "latitude": 1.0},
+# {"name": "cell_2", "location": "",
+# "longitude": 2.0, "latitude": 2.0}]\n'
 #     )
