@@ -4,6 +4,7 @@ import pytest
 
 from api import create_app, db
 from api.models.user import User
+from api.models.cell import Cell
 
 import logging
 from pytest_postgresql import factories
@@ -72,10 +73,24 @@ def init_database(test_client):
     db.drop_all()
     # Create the database and the database table
     db.create_all()
+
+    # context for testing fixure
+    yield test_client
+
+
+@pytest.fixture(scope="module")
+def setup_cells(test_client):
+    db.drop_all()
+    # Create the database and the database table
+    db.create_all()
+    cell = Cell("cell_1", "", 1, 1, False, None)
+    cell2 = Cell("cell_2", "", 2, 2, False, None)
+    db.session.add(cell)
+    db.session.add(cell2)
     db.session.commit()
 
     # context for testing fixure
-    yield
+    yield test_client
 
 
 @pytest.fixture(scope="module")

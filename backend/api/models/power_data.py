@@ -72,7 +72,7 @@ class PowerData(db.Model):
         end_time=datetime.now(),
         stream=False,
     ):
-        """gets teros data as a list of objects
+        """gets power data as a list of objects
 
         The stream parameter controls data aggregation and timestamp. When False
         the data is aggregated according to the resample argument and the

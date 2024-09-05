@@ -18,6 +18,24 @@ For external devices ENTS backend plans utilize API Keys to authenticate request
 
 The authentication module is located under `auth`
 
+### Protecting Endpoints
+
+To add user authentication to endpoints, add an authentication decorator like so (based on Flask-RESTful syntax)
+
+**Example:**
+
+```Python
+from auth import authenticate
+
+class User_Data(Resource):
+    method_decorators = [‘get’: authenticate]
+
+    def get(self, user):
+        user = User.get_user(user.id)
+        return user_schema.dump(user)
+```
+
+
 ## Resources
 
 ENTS API utilizes [flaskRESTful](https://flask-restful.readthedocs.io/en/latest/) to abstract construction of a REST Api. Endpoints are imported into the app when the app is created and are stored under the `resources` folder
