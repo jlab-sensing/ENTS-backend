@@ -143,7 +143,7 @@ class PowerData(db.Model):
                 .order_by(PowerData.ts_server)
             )
         # turn into dictionary
-        for row in db.session.execute(stmt):
+        for row in db.session.execute(stmt).yield_per(1000):
             data["timestamp"].append(row.ts)
             data["v"].append(row.voltage)
             data["i"].append(row.current)

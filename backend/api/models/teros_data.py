@@ -136,7 +136,7 @@ class TEROSData(db.Model):
                 .order_by(TEROSData.ts)
             )
 
-        for row in db.session.execute(stmt):
+        for row in db.session.execute(stmt).yield_per(1000):
             data["timestamp"].append(row.ts)
             data["vwc"].append(row.vwc)
             data["temp"].append(row.temp)
