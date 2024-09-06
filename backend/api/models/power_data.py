@@ -1,4 +1,5 @@
 from ..models import db
+from sqlalchemy.sql import func
 from .cell import Cell
 from .logger import Logger
 from datetime import datetime
@@ -88,6 +89,8 @@ class PowerData(db.Model):
             "p": [],
         }
 
+        stmt = None
+
         if not stream:
             # select from actual timestamp and aggregate data
             if resample == "none":
@@ -95,50 +98,52 @@ class PowerData(db.Model):
                 stmt = (
                     db.select(
                         PowerData.ts.label("ts"),
-                        PowerData.voltage.label("voltage"),
-                        PowerData.current.label("current"),
+                        (PowerData.voltage * 1e3).label("voltage"),
+                        (PowerData.current * 1e6).label("current"),
+                        (PowerData.voltage * PowerData.current * 1e6).label("power"),
                     )
-                    .where(PowerData.cell_id == cell_id)
-                    .filter(PowerData.ts.between(start_time, end_time))
-                    .subquery()
+                    .where(
+                        (PowerData.cell_id == cell_id)
+                        & (PowerData.ts.between(start_time, end_time))
+                    )
+                    .order_by(PowerData.ts)
                 )
             else:
                 # Handle normal resampling case
+                date_trunc = db.func.date_trunc(resample, PowerData.ts)
                 stmt = (
                     db.select(
-                        db.func.date_trunc(resample, PowerData.ts).label("ts"),
-                        db.func.avg(PowerData.voltage).label("voltage"),
-                        db.func.avg(PowerData.current).label("current"),
+                        date_trunc.label("ts"),
+                        func.avg(PowerData.voltage * 1e3).label("voltage"),
+                        func.avg(PowerData.current * 1e6).label("current"),
+                        func.avg((PowerData.voltage * PowerData.current * 1e6)).label(
+                            "power"
+                        ),
                     )
-                    .where((PowerData.cell_id == cell_id))
-                    .filter((PowerData.ts.between(start_time, end_time)))
-                    .group_by(db.func.date_trunc(resample, PowerData.ts))
-                    .subquery()
+                    .where(
+                        (PowerData.cell_id == cell_id)
+                        & (PowerData.ts.between(start_time, end_time))
+                    )
+                    .group_by(date_trunc)
+                    .order_by(date_trunc)
                 )
         else:
             # select based off server timestamp for streaming data
             stmt = (
                 db.select(
                     PowerData.ts_server.label("ts"),
-                    PowerData.voltage.label("voltage"),
-                    PowerData.current.label("current"),
+                    (PowerData.voltage * 1e3).label("voltage"),
+                    (PowerData.current * 1e6).label("current"),
+                    (PowerData.voltage * PowerData.current * 1e6).label("power"),
                 )
-                .where(PowerData.cell_id == cell_id)
-                .filter((PowerData.ts_server.between(start_time, end_time)))
-                .subquery()
+                .where(
+                    (PowerData.cell_id == cell_id)
+                    & (PowerData.ts.between(start_time, end_time))
+                )
+                .order_by(PowerData.ts_server)
             )
-
-        # apply unit conversions
-        # expected units are mV, uA, and uW
-        adj_units = db.select(
-            stmt.c.ts.label("ts"),
-            (stmt.c.voltage * 1e3).label("voltage"),
-            (stmt.c.current * 1e6).label("current"),
-            (stmt.c.voltage * stmt.c.current * 1e6).label("power"),
-        ).order_by(stmt.c.ts)
-
         # turn into dictionary
-        for row in db.session.execute(adj_units):
+        for row in db.session.execute(stmt):
             data["timestamp"].append(row.ts)
             data["v"].append(row.voltage)
             data["i"].append(row.current)

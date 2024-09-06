@@ -51,7 +51,6 @@ def test_get_power_obj(init_database):
     power_data_obj = PowerData.get_power_data_obj(
         cell.id, "none", formated_ts, formated_ts, False
     )
-    datetime.fromtimestamp(ts).replace(minute=0, second=0, tzinfo=None)
     assert formated_ts in power_data_obj["timestamp"]
     # decimal multipled by 100 as a percentage
     assert 1 * 1e3 in power_data_obj["v"]
@@ -82,8 +81,92 @@ def test_get_power_obj_hour(init_database):
     assert 1 * 2 * 1e6 in power_data_obj["p"]
 
 
-#  for row in db.session.execute(adj_units):
-#             data["timestamp"].append(row.ts)
-#             data["v"].append(row.voltage)
-#             data["i"].append(row.current)
-#             data["p"].append(row.power)
+def test_get_power_obj_ts_ordered(init_database):
+    """
+    GIVEN a Cell Data arguments
+    WHEN Power Data is in database
+    THEN check if timestamps are in order
+    """
+    ts_jan_13_2024 = 1705176162
+    ts_jan_14_2024 = 1705266590
+    ts_jan_15_2024 = 1705352990
+    formated_ts_jan_13_2024 = datetime.fromtimestamp(ts_jan_13_2024)
+    formated_ts_jan_14_2024 = datetime.fromtimestamp(ts_jan_14_2024)
+    formated_ts_jan_15_2024 = datetime.fromtimestamp(ts_jan_15_2024)
+
+    cell = Cell("cell_5", "", 1, 1, False, None)
+    cell.save()
+    PowerData.add_power_data("logger_1", "cell_5", formated_ts_jan_13_2024, 1, 2)
+    PowerData.add_power_data("logger_1", "cell_5", formated_ts_jan_15_2024, 1, 2)
+    PowerData.add_power_data("logger_1", "cell_5", formated_ts_jan_14_2024, 1, 2)
+    power_data_obj = PowerData.get_power_data_obj(
+        cell.id, "none", formated_ts_jan_13_2024, formated_ts_jan_15_2024, False
+    )
+    assert formated_ts_jan_13_2024 == power_data_obj["timestamp"][0]
+    assert formated_ts_jan_14_2024 == power_data_obj["timestamp"][1]
+    assert formated_ts_jan_15_2024 == power_data_obj["timestamp"][2]
+    # decimal multipled by 100 as a percentage
+    assert 1 * 1e3 in power_data_obj["v"]
+    assert 2 * 1e6 in power_data_obj["i"]
+    assert 1 * 2 * 1e6 in power_data_obj["p"]
+
+
+def test_get_power_obj_hour_ts_ordered(init_database):
+    """
+    GIVEN a Cell Data arguments
+    WHEN Power Data is in database with hourly resampling
+    THEN check if timestamps are in order
+    """
+    ts_jan_13_2024 = 1705176162
+    ts_jan_14_2024 = 1705266590
+    ts_jan_15_2024 = 1705352990
+    formated_ts_jan_13_2024 = datetime.fromtimestamp(ts_jan_13_2024)
+    formated_ts_jan_14_2024 = datetime.fromtimestamp(ts_jan_14_2024)
+    formated_ts_jan_15_2024 = datetime.fromtimestamp(ts_jan_15_2024)
+
+    cell = Cell("cell_6", "", 1, 1, False, None)
+    cell.save()
+    PowerData.add_power_data("logger_1", "cell_6", formated_ts_jan_13_2024, 1, 2)
+    PowerData.add_power_data("logger_1", "cell_6", formated_ts_jan_15_2024, 1, 2)
+    PowerData.add_power_data("logger_1", "cell_6", formated_ts_jan_14_2024, 1, 2)
+    power_data_obj = PowerData.get_power_data_obj(
+        cell.id, "hour", formated_ts_jan_13_2024, formated_ts_jan_15_2024, False
+    )
+    # splice out minutes
+    formated_ts_jan_13_2024 = datetime.fromtimestamp(ts_jan_13_2024).replace(
+        minute=0, second=0, tzinfo=None
+    )
+    formated_ts_jan_14_2024 = datetime.fromtimestamp(ts_jan_14_2024).replace(
+        minute=0, second=0, tzinfo=None
+    )
+    formated_ts_jan_15_2024 = datetime.fromtimestamp(ts_jan_15_2024).replace(
+        minute=0, second=0, tzinfo=None
+    )
+    assert formated_ts_jan_13_2024 == power_data_obj["timestamp"][0]
+    assert formated_ts_jan_14_2024 == power_data_obj["timestamp"][1]
+    assert formated_ts_jan_15_2024 == power_data_obj["timestamp"][2]
+    # decimal multipled by 100 as a percentage
+    assert 1 * 1e3 in power_data_obj["v"]
+    assert 2 * 1e6 in power_data_obj["i"]
+    assert 1 * 2 * 1e6 in power_data_obj["p"]
+
+
+def test_new_power_protobuf_data(init_database):
+    """
+    GIVEN a TEROS Data arguments
+    WHEN a new TEROS Data is created
+    THEN check the vwc, raw vwc, temp, ec, water potential is defined correctly
+    """
+    ts = 1705176162
+    formated_ts = datetime.fromtimestamp(ts)
+    logger = Logger("logger_3", None, "")
+    logger.save()
+    cell = Cell("cell_7", "", 1, 1, False, None)
+    cell.save()
+    power_data = PowerData.add_protobuf_power_data(
+        logger.id, cell.id, formated_ts, 3, 4
+    )
+    assert power_data.cell.name == "cell_7"
+    assert datetime.timestamp(power_data.ts) == 1705176162
+    assert 3 == power_data.voltage
+    assert 4 == power_data.current

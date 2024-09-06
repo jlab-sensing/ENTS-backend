@@ -82,60 +82,61 @@ class TEROSData(db.Model):
 
         data = {"timestamp": [], "vwc": [], "temp": [], "ec": [], "raw_vwc": []}
 
+        stmt = None
+
         if not stream:
             if resample == "none":
                 # resampling is not required: select data without aggregate functions
                 stmt = (
                     db.select(
                         TEROSData.ts.label("ts"),
-                        TEROSData.vwc.label("vwc"),
+                        (TEROSData.vwc * 100).label("vwc"),
                         TEROSData.temp.label("temp"),
                         TEROSData.ec.label("ec"),
                         TEROSData.raw_vwc.label("raw_vwc"),
                     )
-                    .where(TEROSData.cell_id == cell_id)
-                    .filter(TEROSData.ts.between(start_time, end_time))
-                    .subquery()
+                    .where(
+                        (TEROSData.cell_id == cell_id)
+                        & (TEROSData.ts.between(start_time, end_time))
+                    )
+                    .order_by(TEROSData.ts)
                 )
             else:
                 # Handle normal resampling case
+                date_trunc = func.date_trunc(resample, TEROSData.ts).label("ts")
                 stmt = (
                     db.select(
-                        func.date_trunc(resample, TEROSData.ts).label("ts"),
-                        func.avg(TEROSData.vwc).label("vwc"),
+                        date_trunc.label("ts"),
+                        func.avg(TEROSData.vwc * 100).label("vwc"),
                         func.avg(TEROSData.temp).label("temp"),
                         func.avg(TEROSData.ec).label("ec"),
                         func.avg(TEROSData.raw_vwc).label("raw_vwc"),
                     )
-                    .where(TEROSData.cell_id == cell_id)
-                    .filter(TEROSData.ts.between(start_time, end_time))
-                    .group_by(func.date_trunc(resample, TEROSData.ts))
+                    .where(
+                        (TEROSData.cell_id == cell_id)
+                        & (TEROSData.ts.between(start_time, end_time))
+                    )
+                    .group_by(date_trunc)
+                    .order_by(date_trunc)
                 )
         else:
+            # using server timestamps
             stmt = (
                 db.select(
                     TEROSData.ts_server.label("ts"),
-                    TEROSData.vwc.label("vwc"),
+                    (TEROSData.vwc * 100).label("vwc"),
                     TEROSData.temp.label("temp"),
                     TEROSData.ec.label("ec"),
                     TEROSData.raw_vwc.label("raw_vwc"),
                 )
-                .where(TEROSData.cell_id == cell_id)
-                .filter((TEROSData.ts_server.between(start_time, end_time)))
-                .subquery()
+                .where(
+                    (TEROSData.cell_id == cell_id)
+                    & (TEROSData.ts.between(start_time, end_time))
+                )
+                .order_by(TEROSData.ts)
             )
 
-        # apply unit conversions
-        # VWC stored in decimal, converted to percentage
-        adj_units = db.select(
-            stmt.c.ts.label("ts"),
-            (stmt.c.vwc * 100).label("vwc"),
-            stmt.c.temp.label("temp"),
-            stmt.c.ec.label("ec"),
-            stmt.c.raw_vwc.label("raw_vwc"),
-        ).order_by(stmt.c.ts)
-
-        for row in db.session.execute(adj_units):
+        for row in db.session.execute(stmt):
             data["timestamp"].append(row.ts)
             data["vwc"].append(row.vwc)
             data["temp"].append(row.temp)
