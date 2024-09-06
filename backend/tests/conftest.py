@@ -94,8 +94,10 @@ def init_database(test_client):
     yield test_client
 
     # FIXME:
-    # can't clean up because methods in the power and teros models uses sessions to update data to the db
-    # hence since the test run asyncronously, we can't drop all the db tables since other tests are using them
+    # can't clean up because methods in the power and teros models
+    # uses sessions to update data to the db
+    # hence since the test run asyncronously, we can't drop all
+    # the db tables since other tests are using them
     # we need to wait or have the fixure generate all the values
     # db.session.commit()
     # db.drop_all()
