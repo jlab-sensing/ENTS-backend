@@ -74,7 +74,6 @@ def test_get_teros_obj(init_database):
     teros_data_obj = TEROSData.get_teros_data_obj(
         cell.id, "none", formated_ts, formated_ts, False
     )
-    datetime.fromtimestamp(ts).replace(minute=0, second=0, tzinfo=None)
     assert formated_ts in teros_data_obj["timestamp"]
     # decimal multipled by 100 as a percentage
     assert 100 in teros_data_obj["vwc"]
@@ -100,6 +99,78 @@ def test_get_teros_obj_hour(init_database):
     # splice out minutes
     formated_ts = datetime.fromtimestamp(ts).replace(minute=0, second=0, tzinfo=None)
     assert formated_ts in teros_data_obj["timestamp"]
+    # decimal multipled by 100 as a percentage
+    assert 100 in teros_data_obj["vwc"]
+    assert 2 in teros_data_obj["raw_vwc"]
+    assert 3 in teros_data_obj["temp"]
+    assert 4 in teros_data_obj["ec"]
+
+
+def test_get_power_obj_ts_ordered(init_database):
+    """
+    GIVEN a Cell Data arguments
+    WHEN TEROS Data is in database
+    THEN check if timestamps are in order
+    """
+    ts_jan_13_2024 = 1705176162
+    ts_jan_14_2024 = 1705266590
+    ts_jan_15_2024 = 1705352990
+    formated_ts_jan_13_2024 = datetime.fromtimestamp(ts_jan_13_2024)
+    formated_ts_jan_14_2024 = datetime.fromtimestamp(ts_jan_14_2024)
+    formated_ts_jan_15_2024 = datetime.fromtimestamp(ts_jan_15_2024)
+
+    cell = Cell("cell_7", "", 1, 1, False, None)
+    cell.save()
+    TEROSData.add_teros_data("cell_7", formated_ts_jan_13_2024, 1, 2, 3, 4, 5)
+    TEROSData.add_teros_data("cell_7", formated_ts_jan_15_2024, 1, 2, 3, 4, 5)
+    TEROSData.add_teros_data("cell_7", formated_ts_jan_14_2024, 1, 2, 3, 4, 5)
+    teros_data_obj = TEROSData.get_teros_data_obj(
+        cell.id, "none", formated_ts_jan_13_2024, formated_ts_jan_15_2024, False
+    )
+    assert formated_ts_jan_13_2024 == teros_data_obj["timestamp"][0]
+    assert formated_ts_jan_14_2024 == teros_data_obj["timestamp"][1]
+    assert formated_ts_jan_15_2024 == teros_data_obj["timestamp"][2]
+    # decimal multipled by 100 as a percentage
+    assert 100 in teros_data_obj["vwc"]
+    assert 2 in teros_data_obj["raw_vwc"]
+    assert 3 in teros_data_obj["temp"]
+    assert 4 in teros_data_obj["ec"]
+
+
+def test_get_power_obj_hour_ts_ordered(init_database):
+    """
+    GIVEN a Cell Data arguments
+    WHEN Power Data is in database with hourly resampling
+    THEN check if timestamps are in order
+    """
+    ts_jan_13_2024 = 1705176162
+    ts_jan_14_2024 = 1705266590
+    ts_jan_15_2024 = 1705352990
+    formated_ts_jan_13_2024 = datetime.fromtimestamp(ts_jan_13_2024)
+    formated_ts_jan_14_2024 = datetime.fromtimestamp(ts_jan_14_2024)
+    formated_ts_jan_15_2024 = datetime.fromtimestamp(ts_jan_15_2024)
+
+    cell = Cell("cell_8", "", 1, 1, False, None)
+    cell.save()
+    TEROSData.add_teros_data("cell_8", formated_ts_jan_13_2024, 1, 2, 3, 4, 5)
+    TEROSData.add_teros_data("cell_8", formated_ts_jan_15_2024, 1, 2, 3, 4, 5)
+    TEROSData.add_teros_data("cell_8", formated_ts_jan_14_2024, 1, 2, 3, 4, 5)
+    teros_data_obj = TEROSData.get_teros_data_obj(
+        cell.id, "hour", formated_ts_jan_13_2024, formated_ts_jan_15_2024, False
+    )
+    # splice out minutes
+    formated_ts_jan_13_2024 = datetime.fromtimestamp(ts_jan_13_2024).replace(
+        minute=0, second=0, tzinfo=None
+    )
+    formated_ts_jan_14_2024 = datetime.fromtimestamp(ts_jan_14_2024).replace(
+        minute=0, second=0, tzinfo=None
+    )
+    formated_ts_jan_15_2024 = datetime.fromtimestamp(ts_jan_15_2024).replace(
+        minute=0, second=0, tzinfo=None
+    )
+    assert formated_ts_jan_13_2024 == teros_data_obj["timestamp"][0]
+    assert formated_ts_jan_14_2024 == teros_data_obj["timestamp"][1]
+    assert formated_ts_jan_15_2024 == teros_data_obj["timestamp"][2]
     # decimal multipled by 100 as a percentage
     assert 100 in teros_data_obj["vwc"]
     assert 2 in teros_data_obj["raw_vwc"]

@@ -68,19 +68,44 @@ def test_client(db_conn):
             yield testing_client
 
 
+# split this up to multiple sessions
+# modify sql db here instead
+
+
 @pytest.fixture(scope="module")
 def init_database(test_client):
     db.drop_all()
     # Create the database and the database table
     db.create_all()
 
+    # FIXME:
+    # refactor later for support of cells
+    #
+
+    # setup cells
+    # cell = Cell("cell_1", "", 1, 1, False, None)
+    # cell2 = Cell("cell_2", "", 2, 2, False, None)
+    # db.session.add(cell)
+    # db.session.add(cell2)
+
+    # Insert Power data
+
     # context for testing fixure
     yield test_client
+
+    # FIXME:
+    # can't clean up because methods in the power and teros models
+    # uses sessions to update data to the db
+    # hence since the test run asyncronously, we can't drop all
+    # the db tables since other tests are using them
+    # we need to wait or have the fixure generate all the values
+    # db.session.commit()
+    # db.drop_all()
 
 
 @pytest.fixture(scope="module")
 def setup_cells(test_client):
-    db.drop_all()
+    # db.drop_all()
     # Create the database and the database table
     db.create_all()
     cell = Cell("cell_1", "", 1, 1, False, None)
