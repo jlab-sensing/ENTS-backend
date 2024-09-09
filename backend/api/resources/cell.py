@@ -1,7 +1,7 @@
 from flask_restful import Resource
 from flask import request, jsonify
 from ..auth.auth import authenticate
-from ..database.schemas.cell_schema import CellSchema
+from ..schemas.cell_schema import CellSchema
 
 # from ..conn import engine
 from ..models.cell import Cell as CellModel
