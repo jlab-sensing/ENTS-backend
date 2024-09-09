@@ -1,2 +1,6 @@
 ruff
 watchdog
+pytest-postgresql
+pytest
+pytest-cov
+psycopg[binary]

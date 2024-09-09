@@ -19,6 +19,8 @@ class Sensor(db.Model):
     unit = db.Column(db.Text())
     name = db.Column(db.Text(), nullable=False)
 
+    cell = db.relationship("Cell")
+
     def __repr__(self):
         return repr(self.name)
 
@@ -28,7 +30,7 @@ class Sensor(db.Model):
 
     @classmethod
     def get_all(sensor):
-        sensor.query.all()
+        return sensor.query.all()
 
     @classmethod
     def get_data(sensor, id):

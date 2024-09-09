@@ -4,9 +4,9 @@ Deploys on gunicorn
 
 """
 
-from .api import create_app
+from backend import api
 
-handler = create_app()
+handler = api.create_app()
 celery_app = handler.extensions["celery"]
 
 

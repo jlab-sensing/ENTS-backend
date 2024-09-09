@@ -1,13 +1,14 @@
 from flask import request, jsonify
 from flask_restful import Resource
 import pandas as pd
-from ..database.schemas.get_cell_data_schema import GetCellDataSchema
-from ..database.models.power_data import PowerData
-from ..database.models.teros_data import TEROSData
-from ..database.models.sensor import Sensor
+from ..schemas.get_cell_data_schema import GetCellDataSchema
+from ..models.power_data import PowerData
+from ..models.teros_data import TEROSData
+from ..models.sensor import Sensor
 from functools import reduce
 from io import StringIO
 from celery import shared_task
+import numpy as np
 
 get_cell_data = GetCellDataSchema()
 
@@ -48,14 +49,7 @@ def stream_csv(self, request_args):
                 end_time=v_args["endTime"],
             )
         )
-
-        data_frames = [
-            teros_data.to_json(),
-            power_data.to_json(),
-            sensor_data.to_json(),
-        ]
-
-        data_frames = map(lambda df_json: pd.read_json(StringIO(df_json)), data_frames)
+        data_frames = [teros_data, power_data, sensor_data]
 
         df_merged = reduce(
             lambda left, right: pd.merge(left, right, on=["timestamp"], how="outer"),
@@ -63,7 +57,10 @@ def stream_csv(self, request_args):
         ).fillna("void")
 
         csv_buffer = StringIO()
-        df_merged.to_csv(csv_buffer, index=False)
+
+        # buffer writes to memory
+        for chunk in np.array_split(df_merged, 10):
+            chunk.to_csv(csv_buffer, index=False, header=(csv_buffer.tell() == 0))
 
         return csv_buffer.getvalue()
 

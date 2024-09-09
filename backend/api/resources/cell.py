@@ -4,8 +4,8 @@ from ..auth.auth import authenticate
 from ..database.schemas.cell_schema import CellSchema
 
 # from ..conn import engine
-from ..database.models.cell import Cell as CellModel
-from ..database.schemas.add_cell_schema import AddCellSchema
+from ..models.cell import Cell as CellModel
+from ..schemas.add_cell_schema import AddCellSchema
 
 cells_schema = CellSchema(many=True)
 add_cell_schema = AddCellSchema()
@@ -100,13 +100,16 @@ class Cell(Resource):
         location = cell_data["location"]
         lat = cell_data["latitude"]
         long = cell_data["longitude"]
-        userEmail = cell_data["userEmail"]
+        # FIXME:
+        # migrate user email to include authenticated user
+        # if userEmail["userEmail"] is None:
+        #     userEmail = cell_data["userEmail"]
         if cell_data["archive"] is None:
             archive = False
         else:
             archive = cell_data["archive"]
         new_cell = CellModel.add_cell_by_user_emailcell(
-            cell_name, location, lat, long, archive, userEmail
+            cell_name, location, lat, long, archive
         )
         return jsonify(new_cell)
 

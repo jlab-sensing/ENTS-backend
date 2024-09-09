@@ -49,6 +49,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+
     env:
       DB_USER: dirtviz
       DB_PASS: password
@@ -67,7 +68,7 @@ jobs:
           cache: 'pip'
 
       - name: Install backend dependencies
-        run: pip install -r ./backend/requirements.txt
+        run: pip install -r ./backend/requirements.txt -r ./backend/requirements-dev.txt
 
       - name: Install frontend packages
         working-directory: ./frontend
@@ -96,6 +97,9 @@ jobs:
       - name: Run smoke test
         run: ./k6 run tests/basic.js
 
+      - name: Run backend tests
+        run: pytest --cov
+
       - name: Run frontend tests + coverage
         working-directory: ./frontend
         run: npm run coverage
@@ -120,7 +124,13 @@ jobs:
             dirtviz.log
             dirtviz_short.log
 
-      - name: Upload coverage reports to Codecov
+      - name: Upload backend coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          flags: backend
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload frontend coverage reports to Codecov
         uses: codecov/codecov-action@v4
         with:
           files: ./frontend/coverage/coverage-final.json

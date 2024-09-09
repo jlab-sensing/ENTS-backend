@@ -8,8 +8,8 @@ called while retaining object data from queried objects.
 
 from sqlalchemy import select
 
-from .models.logger import Logger
-from .models.cell import Cell
+from ..models.logger import Logger
+from ..models.cell import Cell
 
 
 def get_or_create_logger(sess, name, mac=None, hostname=None):
@@ -39,7 +39,15 @@ def get_or_create_logger(sess, name, mac=None, hostname=None):
     return log
 
 
-def get_or_create_cell(sess, name, location=None):
+def get_or_create_cell(
+    sess,
+    name,
+    location=None,
+    lattitude=None,
+    longitude=None,
+    archive=False,
+    user_id=None,
+):
     """Get or create Cell objects
 
     Returns
@@ -54,7 +62,14 @@ def get_or_create_cell(sess, name, location=None):
     cell = sess.execute(stmt).one_or_none()
 
     if not cell:
-        cell = Cell(name=name, location=location)
+        cell = Cell(
+            name=name,
+            location=location,
+            latitude=lattitude,
+            longitude=None,
+            archive=False,
+            user_id=None,
+        )
         sess.add(cell)
         sess.flush()
     else:
