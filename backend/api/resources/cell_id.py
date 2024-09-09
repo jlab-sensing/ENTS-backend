@@ -9,7 +9,7 @@ cells_schema = CellSchema(many=True)
 
 class Cell_Id(Resource):
     def get(self):
-        cells = Cell.query.all()
+        cells = Cell.get_all()
         return cells_schema.dump(cells)
 
     def post(self):

@@ -38,10 +38,14 @@ class Cell(db.Model):
     @staticmethod
     def get(id):
         return Cell.query.filter_by(id=id).first()
+    
+    @staticmethod
+    def get_cells_by_user_id(id):
+        return Cell.query.filter_by(user_id=id).all()
 
-    @classmethod
-    def get_all(cell):
-        cell.query.all()
+    @staticmethod
+    def get_all():
+        return Cell.query.all()
 
     def save(self):
         db.session.add(self)

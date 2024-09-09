@@ -25,7 +25,7 @@ config = {
 
 UTC = timezone.utc
 
-
+ 
 def authenticate(f):
     """Decorator for protecting resources from invalid/missing jwt tokens"""
 
@@ -85,53 +85,58 @@ def handle_login(user: User):
 
 
 def handle_refresh_token(refresh_token):
-    try:
-        found_user = (
-            db.session.query(User)
-            .join(OAuthToken, OAuthToken.user_id == User.id)
-            .filter(OAuthToken.refresh_token == refresh_token)
-            .first()
-        )
-        data = jwt.decode(refresh_token, config["refreshToken"], algorithms="HS256")
-        user = User.query.get(UUID(data["uid"]))
-        if user.id != found_user.id:
-            return make_response(jsonify({"msg": "Unauthorized user"}), 403)
-        access_token = jwt.encode(
-            {
-                "uid": user.id,
-                "exp": datetime.now(UTC) + timedelta(minutes=15),
-            },
-            config["accessToken"],
-            algorithm="HS256",
-            json_encoder=UUIDSerializer,
-        )
-        refresh_token = jwt.encode(
-            {
-                "uid": user.id,
-                "exp": datetime.now(UTC) + timedelta(days=1),
-            },
-            config["refreshToken"],
-            algorithm="HS256",
-            json_encoder=UUIDSerializer,
-        )
-        user.set_refresh_token(refresh_token)
-        resp = make_response(access_token, 201)
-        resp.set_cookie(
-            "refresh-token",
-            refresh_token,
-            secure=True,
-            httponly=True,
-            samesite="None",
-            expires=datetime.now(UTC) + timedelta(days=1),
-        )
-        return resp
-    except jwt.exceptions.InvalidTokenError as e:
-        print(repr(e), flush=True)
-        return make_response(jsonify({"msg": "Invalid token"}), 403)
-    except Exception as e:
-        print("WARNING NORMAL EXCEPTION CAUGHT")
-        print(repr(e), flush=True)
-        return jsonify({"msg": "Unauthorized user"}), 403
+    # try:
+    print(refresh_token, flush=True)
+    found_user = (
+        db.session.query(User)
+        .join(OAuthToken, OAuthToken.user_id == User.id)
+        .filter(OAuthToken.refresh_token == refresh_token)
+        .first()
+    )
+    print("----FOUND USER!---", found_user, flush=True)
+    data = jwt.decode(refresh_token, config["refreshToken"], algorithms="HS256")
+    user = User.query.get(UUID(data["uid"]))
+    if user.id != found_user.id:
+        return make_response(jsonify({"msg": "Unauthorized user"}), 403)
+    access_token = jwt.encode(
+        {
+            "uid": user.id,
+            "exp": datetime.now(UTC) + timedelta(minutes=15),
+        },
+        config["accessToken"],
+        algorithm="HS256",
+        json_encoder=UUIDSerializer,
+    )
+    refresh_token = jwt.encode(
+        {
+            "uid": user.id,
+            "exp": datetime.now(UTC) + timedelta(days=1),
+        },
+        config["refreshToken"],
+        algorithm="HS256",
+        json_encoder=UUIDSerializer,
+    )
+    user.set_refresh_token(refresh_token)
+    resp = make_response(access_token, 201)
+    resp.set_cookie(
+        "refresh-token",
+        refresh_token,
+        secure=True,
+        httponly=True,
+        samesite="None",
+        expires=datetime.now(UTC) + timedelta(days=1),
+    )
+    return resp
+    # except jwt.exceptions.InvalidTokenError as e:
+    #     print(repr(e), flush=True)
+    #     return make_response(jsonify({"msg": "Invalid token"}), 403)
+    # except Exception as e:
+    #     print("WARNING NORMAL EXCEPTION CAUGHT")
+    #     print(repr(e), flush=True)
+        
+    #     # NOTE: for some reason if this is a 403, it returns the refresh token as a result, 
+    #     # but if it's 500, it doesn't return teh refresh token
+    #     return jsonify({"msg": "Unauthorized user"}), 500
 
 
 def handle_logout(refresh_token):
