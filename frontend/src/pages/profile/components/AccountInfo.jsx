@@ -1,8 +1,8 @@
 import { Box, Typography } from '@mui/material';
-import useAuth from '../../../auth/hooks/useAuth';
+import { useOutletContext } from 'react-router-dom';
 
 function AccountInfo() {
-  const { user } = useAuth();
+  const [user] = useOutletContext();
 
   if (!user) {
     return <></>;
