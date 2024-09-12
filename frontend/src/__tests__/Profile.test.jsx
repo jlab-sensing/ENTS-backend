@@ -111,7 +111,7 @@ describe('CellsList Component', () => {
     vi.mocked(useOutletContext).mockReturnValue([{ user: { name: 'test-user' } }, vi.fn()]);
     renderCellsList();
 
-    expect(screen.queryByText('Your Cells')).toBeInTheDocument();
+    expect(screen.getByText('Your Cells')).toBeInTheDocument();
   });
 
   it('renders the AddCellModal component', () => {
@@ -141,19 +141,19 @@ describe('AccountInfo component', () => {
     vi.mocked(useOutletContext).mockReturnValue([{ user: { name: 'test-user' } }, vi.fn()]);
     renderAccountInfo();
 
-    expect(screen.queryByText('Account Info')).toBeInTheDocument();
+    expect(screen.getByText('Account Info')).toBeInTheDocument();
   });
 
   it('renders email properly', () => {
-    vi.mocked(useOutletContext).mockReturnValue([{ user: { name: 'test-user', email: 'test@email.com' } }, vi.fn()]);
+    vi.mocked(useOutletContext).mockReturnValue([{ user: { email: 'test@email.com' } }, vi.fn()]);
     renderAccountInfo();
 
-    expect(screen.queryByText('test@email.com')).toBeInTheDocument;
+    expect(screen.getByText('Email: test@email.com')).toBeInTheDocument;
   });
   it('renders name properly', () => {
-    vi.mocked(useOutletContext).mockReturnValue([{ user: { name: 'test-user', email: 'test@email.com' } }, vi.fn()]);
+    vi.mocked(useOutletContext).mockReturnValue([{ user: { first_name: 'test', last_name: 'user' } }, vi.fn()]);
     renderAccountInfo();
 
-    expect(screen.queryByText('test-user')).toBeInTheDocument;
+    expect(screen.getByText('Name: test user')).toBeInTheDocument;
   });
 });

@@ -3,11 +3,9 @@ import { useOutletContext } from 'react-router-dom';
 
 function AccountInfo() {
   const [user] = useOutletContext();
-
   if (!user) {
     return <></>;
   }
-
   return (
     <Box
       sx={{
@@ -32,7 +30,7 @@ function AccountInfo() {
         }}
       >
         <Typography variant='h6' sx={{ marginLeft: '5%', textalign: 'center' }}>
-          Email: {user.email}
+          Email: {user.user.email}
         </Typography>
       </Box>
       <Box
@@ -44,7 +42,7 @@ function AccountInfo() {
         }}
       >
         <Typography variant='h6' sx={{ marginLeft: '5%', textalign: 'center' }}>
-          Name: {user.first_name} {user.last_name}
+          Name: {user.user.first_name} {user.user.last_name}
         </Typography>
       </Box>
     </Box>
