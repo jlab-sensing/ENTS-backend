@@ -88,7 +88,7 @@ function CellsList() {
         >
           Your Cells
         </Typography>
-        <AddCellModal />
+        <AddCellModal user={user} />
       </Box>
       <DataGrid rows={rows} columns={columns} pageSize={5} />
     </Box>

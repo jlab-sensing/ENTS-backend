@@ -4,7 +4,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { addCell } from '../../../services/cell';
 
-function AddCellModal() {
+function AddCellModal(user) {
   const [isOpen, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
@@ -17,7 +17,6 @@ function AddCellModal() {
     setResponse(null);
   };
   const handleClose = () => setOpen(false);
-
   useEffect(() => {
     console.log(response);
   }, [response]);
@@ -109,7 +108,7 @@ function AddCellModal() {
               </Typography>
               <Button
                 onClick={() => {
-                  addCell(name, location, lat, long, archive).then((res) => setResponse(res));
+                  addCell(name, location, long, lat, archive, user.email).then((res) => setResponse(res));
                 }}
               >
                 Add Cell

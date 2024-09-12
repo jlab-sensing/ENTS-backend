@@ -22,7 +22,7 @@ export const getCells = () => {
     });
 };
 
-export const addCell = (cellName, location, longitude, latitude, archive) => {
+export const addCell = (cellName, location, longitude, latitude, archive, email) => {
   return axios
     .post(`${process.env.PUBLIC_URL}/api/cell/`, {
       name: cellName,
@@ -30,6 +30,7 @@ export const addCell = (cellName, location, longitude, latitude, archive) => {
       longitude: longitude,
       latitude: latitude,
       archive: archive,
+      userEmail: email,
     })
     .then((res) => res.data)
     .catch((error) => {
