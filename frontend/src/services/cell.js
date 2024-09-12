@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import useAxiosPrivate from '../auth/hooks/useAxiosPrivate';
 
 export const getCellData = (cellIds, resample, startTime, endTime) => {
   return axios

@@ -46,7 +46,7 @@ class Cell(Resource):
         else:
             archive = cell_data["archive"]
         new_cell = CellModel.add_cell_by_user_email(
-            self, cell_name, location, lat, long, archive, userEmail
+            cell_name, location, lat, long, archive, userEmail
         )
         if new_cell:
             return {"message": "Successfully added cell"}

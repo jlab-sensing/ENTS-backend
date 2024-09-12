@@ -3,8 +3,9 @@ import { Modal, Box, Typography, Button, TextField, IconButton } from '@mui/mate
 import CloseIcon from '@mui/icons-material/Close';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { addCell } from '../../../services/cell';
+import useAuth from '../../../auth/hooks/useAuth';
 
-function AddCellModal(user) {
+function AddCellModal() {
   const [isOpen, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
@@ -16,11 +17,14 @@ function AddCellModal(user) {
     setOpen(true);
     setResponse(null);
   };
+  const { user } = useAuth();
   const handleClose = () => setOpen(false);
   useEffect(() => {
     console.log(response);
   }, [response]);
-
+  if (!user) {
+    return <></>;
+  }
   return (
     <>
       <Button sx={{ color: 'black' }} key='prev' onClick={handleOpen}>

@@ -38,7 +38,7 @@ class Cell(db.Model):
 
     @staticmethod
     def add_cell_by_user_email(
-        self, name, location, latitude, longitude, archive, userEmail
+         name, location, latitude, longitude, archive, userEmail
     ):
         user_id = User.get_user_by_email(userEmail).id
         new_cell = Cell(
