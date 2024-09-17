@@ -54,7 +54,6 @@ def new_user():
 
 @pytest.fixture(scope="module")
 def test_client(db_conn):
-
     # Set the Testing configuration prior to creating the Flask application
     os.environ["TEST_SQLALCHEMY_DATABASE_URI"] = db_conn
     os.environ["CONFIG_TYPE"] = "api.config.TestingConfig"
