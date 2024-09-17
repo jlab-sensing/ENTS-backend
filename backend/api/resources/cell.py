@@ -14,19 +14,17 @@ add_cell_schema = AddCellSchema()
 
 
 class Cell(Resource):
-    method_decorators = {'get': [authenticate]}
+    method_decorators = {"get": [authenticate]}
+
     def get(self, user):
         json_data = request.args
         userCells = json_data.get("user")
-        print('please work',userCells, flush=True)
 
-        if(userCells):
+        if userCells:
             cells = CellModel.get_cells_by_user_id(user.id)
-            print('if in cell.py resources', flush=True)
             return cells_schema.dump(cells)
         else:
             cells = CellModel.get_all()
-            print('else in cell.py resources', flush=True)
             return cells_schema.dump(cells)
 
     def post(self):

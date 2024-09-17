@@ -37,9 +37,7 @@ class Cell(db.Model):
         return repr(self.name)
 
     @staticmethod
-    def add_cell_by_user_email(
-         name, location, latitude, longitude, archive, userEmail
-    ):
+    def add_cell_by_user_email(name, location, latitude, longitude, archive, userEmail):
         user_id = User.get_user_by_email(userEmail).id
         new_cell = Cell(
             name=name,
@@ -55,7 +53,7 @@ class Cell(db.Model):
     @staticmethod
     def get(id):
         return Cell.query.filter_by(id=id).first()
-    
+
     @staticmethod
     def get_cells_by_user_id(id):
         return Cell.query.filter_by(user_id=id).all()

@@ -148,12 +148,12 @@ describe('AccountInfo component', () => {
     vi.mocked(useOutletContext).mockReturnValue([{ user: { email: 'test@email.com' } }, vi.fn()]);
     renderAccountInfo();
 
-    expect(screen.getByText('Email: test@email.com')).toBeInTheDocument;
+    expect(screen.getByText('Email: test@email.com')).toBeInTheDocument();
   });
   it('renders name properly', () => {
     vi.mocked(useOutletContext).mockReturnValue([{ user: { first_name: 'test', last_name: 'user' } }, vi.fn()]);
     renderAccountInfo();
 
-    expect(screen.getByText('Name: test user')).toBeInTheDocument;
+    expect(screen.getByText('Name: test user')).toBeInTheDocument();
   });
 });

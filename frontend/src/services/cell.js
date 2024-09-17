@@ -16,8 +16,7 @@ export const getCells = () => {
     .get(`${process.env.PUBLIC_URL}/api/cell/id`)
     .then((res) => res.data)
     .catch((error) => {
-      console.error;
-      'Error getting cells:', error.response ? error.response.data : error.message;
+      console.log('Error getting cells:', error.response ? error.response.data : error.message);
     });
 };
 

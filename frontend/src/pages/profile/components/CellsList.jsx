@@ -57,7 +57,6 @@ function CellsList() {
       long: cell.longitude,
       archive: cell.archive,
     }));
-  } else {
   }
 
   return (

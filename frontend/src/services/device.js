@@ -1,7 +1,6 @@
-import useAxiosPrivate from '../auth/hooks/useAxiosPrivate';
+import axios from 'axios';
 
-export async function addDevice(name) {
-  const axiosPrivate = useAxiosPrivate();
+export async function addDevice(name, axiosPrivate) {
   try {
     return await axiosPrivate
       .post(`${process.env.PUBLIC_URL}/device`, {

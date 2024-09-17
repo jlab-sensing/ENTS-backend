@@ -40,7 +40,7 @@ describe('Loading dashboard', () => {
   it('should display mocked cell names when dropdown is open', async () => {
     const user = userEvent.setup();
     render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
-    const cellDropDownButton = screen.getByRole('button');
+    const cellDropDownButton = screen.getByLabelText('Cell');
     await user.click(cellDropDownButton);
     expect(await screen.findByText('test_cell_1')).toBeInTheDocument();
     expect(await screen.findByText('test_cell_2')).toBeInTheDocument();
