@@ -15,9 +15,9 @@ services:
       - DB_DATABASE=dirtviz
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
-    # uncomment to run local .env, comment for testing
-    env_file:
-      - ./.env
+      # uncomment to run local .env, comment for testing
+      # env_file:
+      #  - ./.env
     ports:
       - '8000:8000'
     depends_on:
