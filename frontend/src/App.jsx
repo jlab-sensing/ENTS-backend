@@ -8,6 +8,8 @@ import Home from './pages/home/Home';
 import Callback from './auth/Callback';
 import AuthContextProvider from './auth/AuthContextProvider';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import AccountInfo from './pages/profile/components/AccountInfo';
+import CellsList from './pages/profile/components/CellsList';
 
 const queryClient = new QueryClient();
 
@@ -43,7 +45,11 @@ function App() {
           <ThemeProvider theme={theme}>
             <Routes>
               <Route path='/auth/callback' exact element={<Callback />} />
-              <Route path='/profile' exact element={<Profile />} />
+              <Route path='/profile' exact element={<Navigate replace to='/profile/cells' />} />
+              <Route path='/profile' exact element={<Profile />}>
+                <Route path='account' element={<AccountInfo />} />
+                <Route path='cells' element={<CellsList />} />
+              </Route>
               <Route path='/dashboard' exact element={<Dashboard />} />
               <Route path='/map' exact element={<Map />} />
               <Route path='/' exact element={<Home />} />
