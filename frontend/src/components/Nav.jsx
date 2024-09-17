@@ -5,11 +5,12 @@ import DvIcon from './DvIcon';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../auth/hooks/useAuth';
 import { signIn, logout } from '../services/auth';
+
 import useAxiosPrivate from '../auth/hooks/useAxiosPrivate';
 
 function Nav() {
-  const axiosPrivate = useAxiosPrivate();
   const { user, setUser, loggedIn, setLoggedIn } = useAuth();
+  const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const [anchorElNav, setAnchorElNav] = useState(null);
   const handleOpenNavMenu = (event) => {
@@ -37,6 +38,7 @@ function Nav() {
             signal: controller.signal,
           })
           .then((res) => res.data);
+        console.log('user data', user);
         if (isMounted && user) {
           setUser(user);
           setLoggedIn(true);

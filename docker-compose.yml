@@ -16,8 +16,8 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     # uncomment to run local .env, comment for testing
-    env_file:
-      - ./.env
+    # env_file:
+    #   - ./.env
     ports:
       - '8000:8000'
     depends_on:
@@ -26,7 +26,7 @@ services:
       - './backend:/app/backend'
 
   worker:
-    build:
+    build: 
       context: ./backend
       target: prodworker
     environment:
@@ -37,14 +37,15 @@ services:
       - DB_DATABASE=dirtviz
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      # uncomment to run local .env, comment for testing
-      # env_file:
-      # - ./.env
+    # uncomment to run local .env, comment for testing
+    # env_file:
+    #   - ./.env
     depends_on:
       - backend
       - redis
     volumes:
       - './backend:/app/backend'
+
 
   frontend:
     build:
@@ -59,7 +60,7 @@ services:
     tty: true
     volumes:
       - './frontend/src:/app/src'
-
+  
   redis:
     image: redis:latest
     ports:
@@ -83,13 +84,13 @@ services:
           memory: 4g
         reservations:
           memory: 3g
-
+  
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin4_container
     restart: always
     ports:
-      - '8888:80'
+      - "8888:80"
     environment:
       PGADMIN_DEFAULT_EMAIL: user-name@domain-name.com
       PGADMIN_DEFAULT_PASSWORD: strong-password
