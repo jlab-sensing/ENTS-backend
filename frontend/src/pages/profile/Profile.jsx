@@ -4,50 +4,56 @@ import SideBar from './components/SideBar';
 import { Box } from '@mui/material';
 import useAuth from '../../auth/hooks/useAuth';
 import useAxiosPrivate from '../../auth/hooks/useAxiosPrivate';
+import { signIn } from '../../services/auth';
 function Profile() {
   const axiosPrivate = useAxiosPrivate();
   const user = useAuth();
-  return (
-    <Box
-      sx={{
-        height: '100vh',
-        width: '100%',
-        position: 'relative',
-        scrollSnapAlign: 'center',
-        scrollSnapStop: 'always',
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: '#DAD7CD',
-      }}
-    >
-      <Nav />
+  console.log(user.loggedIn);
+  if (!user.loggedIn) {
+    signIn();
+  } else {
+    return (
       <Box
         sx={{
+          height: '100vh',
+          width: '100%',
+          position: 'relative',
+          scrollSnapAlign: 'center',
+          scrollSnapStop: 'always',
           display: 'flex',
-          flex: 1,
-          marginTop: '6vh',
+          flexDirection: 'column',
+          backgroundColor: '#DAD7CD',
         }}
       >
+        <Nav />
         <Box
           sx={{
-            width: '20vw',
-            paddingLeft: '1vw',
-          }}
-        >
-          <SideBar />
-        </Box>
-        <Box
-          sx={{
+            display: 'flex',
             flex: 1,
-            paddingLeft: '4vw',
-            overflowY: 'auto',
+            marginTop: '6vh',
           }}
         >
-          <Outlet context={[user, axiosPrivate]} />
+          <Box
+            sx={{
+              width: '20vw',
+              paddingLeft: '1vw',
+            }}
+          >
+            <SideBar />
+          </Box>
+          <Box
+            sx={{
+              flex: 1,
+              paddingLeft: '4vw',
+              overflowY: 'auto',
+            }}
+          >
+            <Outlet context={[user, axiosPrivate]} />
+          </Box>
         </Box>
       </Box>
-    </Box>
-  );
+    );
+  }
 }
 
 export default Profile;
