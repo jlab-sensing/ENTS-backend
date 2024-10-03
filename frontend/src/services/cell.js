@@ -47,13 +47,12 @@ export const useCells = () =>
     refetchOnWindowFocus: true,
   });
 
-export const useUserCells = (axiosPrivate) => {
-  return useQuery({
+export const useUserCells = (axiosPrivate) =>
+  useQuery({
     queryKey: ['user cell info'],
     queryFn: () => getUserCells(axiosPrivate),
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
   });
-};
 
 export const setCellArchive = async (cellId, archive) => {
   const url = `${process.env.PUBLIC_URL}/api/cell/${cellId}`;

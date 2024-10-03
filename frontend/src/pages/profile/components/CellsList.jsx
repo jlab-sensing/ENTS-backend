@@ -1,15 +1,19 @@
 import { Box, Typography } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { useUserCells } from '../../../services/cell';
 import { useOutletContext } from 'react-router-dom';
 import AddCellModal from './AddCellModal';
 
 function CellsList() {
-  const [user, axiosPrivate] = useOutletContext();
-  const { data, isLoading, isError } = useUserCells(axiosPrivate);
-
+  let data = useOutletContext();
+  const isLoading = data[1];
+  const isError = data[2];
+  const user = data[4];
+  data = data[0];
   if (!user) {
     return <></>;
+  }
+  if (data === null) {
+    return;
   }
   if (isLoading) {
     return <Typography>Loading...</Typography>;
@@ -58,7 +62,6 @@ function CellsList() {
       archive: cell.archive,
     }));
   }
-
   return (
     <Box
       sx={{

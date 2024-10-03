@@ -3,13 +3,12 @@ import { AppBar, Button, IconButton, Toolbar, Box, Typography, Menu, MenuItem } 
 import MenuIcon from '@mui/icons-material/Menu';
 import DvIcon from './DvIcon';
 import { useNavigate } from 'react-router-dom';
-import useAuth from '../auth/hooks/useAuth';
 import { signIn, logout } from '../services/auth';
 import useAxiosPrivate from '../auth/hooks/useAxiosPrivate';
+import PropTypes from 'prop-types';
 
-function Nav() {
+function Nav({ user, setUser, loggedIn, setLoggedIn }) {
   const axiosPrivate = useAxiosPrivate();
-  const { user, setUser, loggedIn, setLoggedIn } = useAuth();
   const navigate = useNavigate();
   const [anchorElNav, setAnchorElNav] = useState(null);
   const handleOpenNavMenu = (event) => {
@@ -152,5 +151,11 @@ function Nav() {
     </AppBar>
   );
 }
+Nav.propTypes = {
+  user: PropTypes.array,
+  setUser: PropTypes.func,
+  loggedIn: PropTypes.Boolean,
+  setLoggedIn: PropTypes.func,
+};
 
 export default Nav;
