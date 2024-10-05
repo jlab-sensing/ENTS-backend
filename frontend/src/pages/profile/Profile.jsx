@@ -4,9 +4,13 @@ import SideBar from './components/SideBar';
 import { Box } from '@mui/material';
 import useAuth from '../../auth/hooks/useAuth';
 import useAxiosPrivate from '../../auth/hooks/useAxiosPrivate';
+import { useUserCells } from '../../services/cell';
 function Profile() {
   const axiosPrivate = useAxiosPrivate();
-  const user = useAuth();
+  const { user, setUser, loggedIn, setLoggedIn } = useAuth();
+
+  const { data, isLoading, isError, refetch } = useUserCells(axiosPrivate);
+
   return (
     <Box
       sx={{
@@ -20,7 +24,7 @@ function Profile() {
         backgroundColor: '#DAD7CD',
       }}
     >
-      <Nav />
+      <Nav user={user} setUser={setUser} loggedIn={loggedIn} setLoggedIn={setLoggedIn} />
       <Box
         sx={{
           display: 'flex',
@@ -43,7 +47,7 @@ function Profile() {
             overflowY: 'auto',
           }}
         >
-          <Outlet context={[user, axiosPrivate]} />
+          <Outlet context={[data, isLoading, isError, refetch, user, axiosPrivate]} />
         </Box>
       </Box>
     </Box>

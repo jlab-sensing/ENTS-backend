@@ -2,7 +2,8 @@ import { Box, Typography } from '@mui/material';
 import { useOutletContext } from 'react-router-dom';
 
 function AccountInfo() {
-  const [user] = useOutletContext();
+  let user = useOutletContext();
+  user = user[4];
   if (!user) {
     return <></>;
   }
@@ -30,7 +31,7 @@ function AccountInfo() {
         }}
       >
         <Typography variant='h6' sx={{ marginLeft: '5%', textalign: 'center' }}>
-          Email: {user.user.email}
+          Email: {user.email}
         </Typography>
       </Box>
       <Box
@@ -42,7 +43,7 @@ function AccountInfo() {
         }}
       >
         <Typography variant='h6' sx={{ marginLeft: '5%', textalign: 'center' }}>
-          Name: {user.user.first_name} {user.user.last_name}
+          Name: {user.first_name} {user.last_name}
         </Typography>
       </Box>
     </Box>
