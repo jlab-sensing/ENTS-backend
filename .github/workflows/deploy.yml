@@ -80,7 +80,7 @@ jobs:
     env:
       AWS_DEFAULT_REGION: us-west-2
       AWS_ECR_REPOSITORY_NAME: dirtviz-ecr
-      AWS_ECS_SERVICE_NAME: dirtviz-service
+      AWS_ECS_SERVICE_NAME: dirtviz-service-api
       AWS_ECS_CLUSTER_NAME: dirtviz-cluster
 
     steps:
@@ -165,8 +165,8 @@ jobs:
     env:
       AWS_DEFAULT_REGION: us-west-2
       AWS_ECR_REPOSITORY_NAME: dirtviz-worker-ecr
-      AWS_ECS_SERVICE_NAME: dirtviz-worker-service
-      AWS_ECS_CLUSTER_NAME: dirtviz-worker-cluster
+      AWS_ECS_SERVICE_NAME: dirtviz-service-celery
+      AWS_ECS_CLUSTER_NAME: dirtviz-cluster
 
     steps:
       - name: Checkout
