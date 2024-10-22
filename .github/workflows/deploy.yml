@@ -141,7 +141,7 @@ jobs:
 
       - name: Download task definition
         run: |
-          aws ecs describe-task-definition --task-definition dirtviz-task-definition --query taskDefinition > aws-task-definition.json
+          aws ecs describe-task-definition --task-definition dirtviz-task-api --query taskDefinition > aws-task-definition.json
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
@@ -220,7 +220,7 @@ jobs:
 
       - name: Download task definition
         run: |
-          aws ecs describe-task-definition --task-definition dirtviz-worker-task-definition --query taskDefinition > aws-task-definition.json
+          aws ecs describe-task-definition --task-definition dirtviz-task-worker --query taskDefinition > aws-task-definition.json
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
