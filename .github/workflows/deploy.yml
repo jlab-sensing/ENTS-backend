@@ -165,7 +165,7 @@ jobs:
     env:
       AWS_DEFAULT_REGION: us-west-2
       AWS_ECR_REPOSITORY_NAME: dirtviz-worker
-      AWS_ECS_SERVICE_NAME: dirtviz-service-celery
+      AWS_ECS_SERVICE_NAME: dirtviz-service-worker
       AWS_ECS_CLUSTER_NAME: dirtviz-cluster
 
     steps:
