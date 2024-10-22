@@ -79,7 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_DEFAULT_REGION: us-west-2
-      AWS_ECR_REPOSITORY_NAME: dirtviz-ecr
+      AWS_ECR_REPOSITORY_NAME: dirtviz-api
       AWS_ECS_SERVICE_NAME: dirtviz-service-api
       AWS_ECS_CLUSTER_NAME: dirtviz-cluster
 
@@ -164,7 +164,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_DEFAULT_REGION: us-west-2
-      AWS_ECR_REPOSITORY_NAME: dirtviz-worker-ecr
+      AWS_ECR_REPOSITORY_NAME: dirtviz-worker
       AWS_ECS_SERVICE_NAME: dirtviz-service-celery
       AWS_ECS_CLUSTER_NAME: dirtviz-cluster
 
