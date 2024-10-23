@@ -79,8 +79,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_DEFAULT_REGION: us-west-2
-      AWS_ECR_REPOSITORY_NAME: dirtviz-ecr
-      AWS_ECS_SERVICE_NAME: dirtviz-service
+      AWS_ECR_REPOSITORY_NAME: dirtviz-api
+      AWS_ECS_SERVICE_NAME: dirtviz-service-api
       AWS_ECS_CLUSTER_NAME: dirtviz-cluster
 
     steps:
@@ -102,10 +102,6 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Download task definition
-        run: |
-          aws ecs describe-task-definition --task-definition dirtviz-task-definition --query taskDefinition > aws-task-definition.json
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
@@ -143,6 +139,10 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition dirtviz-task-api --query taskDefinition > aws-task-definition.json
+
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -164,9 +164,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_DEFAULT_REGION: us-west-2
-      AWS_ECR_REPOSITORY_NAME: dirtviz-worker-ecr
-      AWS_ECS_SERVICE_NAME: dirtviz-worker-service
-      AWS_ECS_CLUSTER_NAME: dirtviz-worker-cluster
+      AWS_ECR_REPOSITORY_NAME: dirtviz-worker
+      AWS_ECS_SERVICE_NAME: dirtviz-service-worker
+      AWS_ECS_CLUSTER_NAME: dirtviz-cluster
 
     steps:
       - name: Checkout
@@ -183,9 +183,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Download task definition
-        run: |
-          aws ecs describe-task-definition --task-definition dirtviz-worker-task-definition --query taskDefinition > aws-task-definition.json
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         env:
@@ -220,6 +217,11 @@ jobs:
               -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition dirtviz-task-worker --query taskDefinition > aws-task-definition.json
+
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -227,6 +229,7 @@ jobs:
           task-definition: aws-task-definition.json
           container-name: ${{ env.AWS_ECR_REPOSITORY_NAME }}
           image: ${{ steps.build-image.outputs.image }}
+
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
