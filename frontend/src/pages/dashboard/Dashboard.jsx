@@ -54,9 +54,11 @@ function Dashboard() {
           justifyContent='spaced-evently'
           sx={{ height: '100vh', boxSizing: 'border-box' }}
         >
-          <Stack direction='row' alignItems='center' justifyContent='space-evenly' sx={{ p: 2 }} flex>
+          <Stack direction='row' alignItems='center' justifyContent={'space-evenly'} sx={{ p: 2 }} spacing={3}>
             <BackBtn />
-            <CellSelect selectedCells={selectedCells} setSelectedCells={setSelectedCells} />
+            <Box sx={{ flexGrow: 1, maxWidth: '30%' }}>
+              <CellSelect selectedCells={selectedCells} setSelectedCells={setSelectedCells} />
+            </Box>
             <Box display='flex' justifyContent='center' alignItems='center'>
               <DateRangeSel
                 startDate={startDate}
