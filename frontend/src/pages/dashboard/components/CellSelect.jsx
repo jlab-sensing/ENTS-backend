@@ -13,7 +13,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
     return <span>Error: {cells.error.message}</span>;
   }
   return (
-    <FormControl sx={{ width: 1 / 4 }}>
+    <FormControl sx={{ width: 1 }}>
       <InputLabel id='cell-select'>Cell</InputLabel>
       <Select
         labelId='cell-select-label'
