@@ -123,7 +123,7 @@ jobs:
               --build-arg DB_PASS="${{ secrets.DB_PASS }}" \
               --build-arg DB_PORT="${{ secrets.DB_PORT }}" \
               --build-arg DB_USER="${{ secrets.DB_USER }}" \
-              --build-arg DB_DATABASE="${{ github.ref_name }}" \
+              --build-arg DB_DATABASE="${{ secrets.DB_USER }}" \
               --build-arg SECRET_KEY="${{ secrets.SECRET_KEY }}" \
               --build-arg ACCESS_TOKEN_SECRET="${{ secrets.ACCESS_TOKEN_SECRET }}" \
               --build-arg REFRESH_TOKEN_SECRET="${{ secrets.REFRESH_TOKEN_SECRET }}" \
@@ -202,7 +202,7 @@ jobs:
               --build-arg DB_PASS="${{ secrets.DB_PASS }}" \
               --build-arg DB_PORT="${{ secrets.DB_PORT }}" \
               --build-arg DB_USER="${{ secrets.DB_USER }}" \
-              --build-arg DB_DATABASE="${{ github.ref_name }}" \
+              --build-arg DB_DATABASE="${{ secrets.DB_USER }}" \
               --build-arg SECRET_KEY="${{ secrets.SECRET_KEY }}" \
               --build-arg ACCESS_TOKEN_SECRET="${{ secrets.ACCESS_TOKEN_SECRET }}" \
               --build-arg REFRESH_TOKEN_SECRET="${{ secrets.REFRESH_TOKEN_SECRET }}" \
@@ -248,7 +248,7 @@ jobs:
       DB_PASS: ${{ secrets.DB_PASS }}
       DB_PORT: ${{ secrets.DB_PORT }}
       DB_USER: ${{ secrets.DB_USER }}
-      DB_DATABASE: ${{ github.ref_name }}
+      DB_DATABASE: ${{ secrets.DB_USER }}
 
     steps:
       - name: Checkout
