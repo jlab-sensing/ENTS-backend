@@ -70,7 +70,7 @@ function About() {
             >
               Checkout live data
             </Button>
-            <Button key='dashboard' onClick={() => navigate('/dashboard?cell_id=152')} sx={{ pl: '10px', pr: '10px' }}>
+            <Button key='dashboard' onClick={() => navigate('/dashboard?cell_id=161')} sx={{ pl: '10px', pr: '10px' }}>
               Demo
             </Button>
             <Button
