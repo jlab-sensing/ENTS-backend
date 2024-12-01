@@ -14,7 +14,7 @@ function About() {
     <Box
       sx={{
         height: '100vh',
-        width: '100%',
+        width: '100vw',
         position: 'relative',
         scrollSnapAlign: 'center',
         scrollSnapStop: 'always',
@@ -27,55 +27,88 @@ function About() {
       <Box
         sx={{
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: { xs: 'column', md: 'row' }, // Column for small screens, row for medium+
           justifyContent: 'space-between',
           flexGrow: 1,
-          paddingTop: '2.5%',
-          paddingRight: '5%',
-          paddingLeft: '5%',
+          padding: { xs: '5%', md: '2.5% 5%' },
+          gap: { xs: '20px', md: '0' }, // Add gap for small screens
         }}
       >
         <Box
-          maxWidth='sm'
           sx={{
+            flexGrow: 3,
             display: 'flex',
-            flexGrow: '3',
             flexDirection: 'column',
             alignItems: 'start',
-            gap: '5%',
+            gap: '20px',
           }}
         >
-          <Typography variant='h2' component='h1' sx={{ color: '#364F42', fontWeight: 'bold' }}>
+          <Typography
+            variant='h2'
+            component='h1'
+            sx={{
+              color: '#364F42',
+              fontWeight: 'bold',
+              fontSize: { xs: '2.0rem', md: '4rem' },
+              textAlign: { xs: 'center', md: 'start' },
+            }}
+          >
             Data Visualization For Outdoor Sensor Networks
           </Typography>
-          <Typography variant='h6' component='sub' sx={{ color: '#588157', fontWeight: 'medium' }}>
+          <Typography
+            variant='h6'
+            component='sub'
+            sx={{
+              color: '#588157',
+              fontWeight: 'medium',
+              fontSize: { xs: '0.90rem', md: '1.5rem' },
+              textAlign: { xs: 'center', md: 'start' },
+            }}
+          >
             DirtViz is part of the Open Sensing Platform&apos;s hardware and software ecosystem for outdoor sensor
             networks. It&apos;s an open source data ingestion and visualization service that parses data from the
             hardware nodes and presents it in an easy-to-use web interface. Users can dynamically generate interactive
             plots, live monitor their sensors, or download data for offline processing.
           </Typography>
-          <Box maxWidth='md' sx={{ display: 'flex', flexDirection: 'row', gap: '25px' }}>
+
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' }, // Stack buttons on small screens
+              gap: '10px',
+              width: { xs: '100%', sm: 'auto' },
+              justifyContent: { xs: 'center', sm: 'flex-start' },
+            }}
+          >
             <Button
               key='dashboard'
               onClick={() => navigate('/dashboard')}
               sx={{
                 backgroundColor: '#B3C297',
-                '&:hover': {
-                  backgroundColor: '#A3B18A',
-                },
+                '&:hover': { backgroundColor: '#A3B18A' },
                 color: '#364F42',
-                pl: '10px',
-                pr: '10px',
+                px: '10px',
+                width: { xs: '100%', sm: 'auto' }, // Full width for small screens
               }}
             >
               Checkout live data
             </Button>
-            <Button key='dashboard' onClick={() => navigate('/dashboard?cell_id=161')} sx={{ pl: '10px', pr: '10px' }}>
+            <Button
+              key='dashboard-demo'
+              onClick={() => navigate('/dashboard?cell_id=161')}
+              sx={{
+                px: '10px',
+                width: { xs: '100%', sm: 'auto' },
+              }}
+            >
               Demo
             </Button>
             <Button
-              sx={{ pl: '10px', pr: '10px' }}
-              key='map'
+              sx={{
+                px: '10px',
+                width: { xs: '100%', sm: 'auto' },
+              }}
+              key='github'
               onClick={() => (location.href = 'https://github.com/jlab-sensing/DirtViz')}
             >
               Github Repo &nbsp;
@@ -83,7 +116,8 @@ function About() {
             </Button>
           </Box>
         </Box>
-        <Box component='img' sx={{ width: 'auto', pb: '2.5%' }} src={chart}></Box>
+        <Box component='img' sx={{ width: 'auto', pb: { xs: '5%', sm: '2.5%' } }} src={chart}></Box>
+        <></>
       </Box>
       <Box
         sx={{
