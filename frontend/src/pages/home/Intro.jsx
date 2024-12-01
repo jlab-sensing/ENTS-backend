@@ -47,8 +47,7 @@ function Intro() {
           sx={{
             display: 'flex',
             flexDirection: { xs: 'column', md: 'row' }, // Column for small screens, row for medium+
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
+            justifyContent: 'space-evenly',
             gap: { xs: '20px', md: '5%' }, // Add gap for small screens
             height: '100%',
           }}
