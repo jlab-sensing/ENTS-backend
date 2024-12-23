@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 function BackBtn() {
   const navigate = useNavigate();
   return (
-    <Button sx={{ color: 'black' }} key='prev' onClick={() => navigate(-1)}>
+    <Button sx={{ color: 'black' }} key='prev' onClick={() => navigate('/')}>
       <NavigateBeforeIcon />
     </Button>
   );
