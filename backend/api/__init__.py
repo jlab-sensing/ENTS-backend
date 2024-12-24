@@ -80,6 +80,8 @@ def create_app(debug: bool = False) -> Flask:
             task_ignore_result=True,
             broker_transport_options={
                 "visibility_timeout": timedelta(minutes=15).total_seconds(),
+                "region": "us-west-2",
+                "queue_name_prefix": "dirtviz-celery-",
             },
             task_ack_late=True,
             task_reject_on_worker_lost=True,
