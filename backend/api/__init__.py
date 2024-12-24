@@ -79,7 +79,7 @@ def create_app(debug: bool = False) -> Flask:
             result_backend=os.getenv("CELERY_RESULT_BACKEND"),
             task_ignore_result=True,
             broker_transport_options={
-                "visibility_timeout": timedelta(minutes=15).total_seconds(),
+                "visibility_timeout": int(timedelta(minutes=15).total_seconds()),
                 "region": "us-west-2",
                 "queue_name_prefix": "dirtviz-celery-",
             },
