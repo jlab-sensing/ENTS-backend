@@ -119,6 +119,7 @@ COPY --from=builder /usr/src/app/requirements.txt .
 COPY --from=builder /usr/src/app/entrypoint.sh .
 RUN pip install --upgrade pip
 RUN pip install --no-cache /wheels/*
+RUN pip install -r requirements.txt
 
 # copy project
 COPY . $APP_HOME
@@ -221,6 +222,7 @@ COPY --from=builder /usr/src/app/requirements.txt .
 COPY --from=builder /usr/src/app/entrypoint.sh .
 RUN pip install --upgrade pip
 RUN pip install --no-cache /wheels/*
+RUN pip install -r requirements.txt
 
 # copy project
 COPY . $APP_HOME
