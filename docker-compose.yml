@@ -12,8 +12,8 @@ services:
       - DB_HOST=postgresql
       - DB_PORT=5432
       - DB_DATABASE=dirtviz
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://valkey:6379/0
+      - CELERY_RESULT_BACKEND=redis://valkey:6379/0
       # uncomment to run local .env, comment for testing
       # env_file:
       #  - ./.env
@@ -34,14 +34,14 @@ services:
       - DB_HOST=postgresql
       - DB_PORT=5432
       - DB_DATABASE=dirtviz
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://valkey:6379/0
+      - CELERY_RESULT_BACKEND=redis://valkey:6379/0
       # uncomment to run local .env, comment for testing
       # env_file:
       # - ./.env
     depends_on:
       - backend
-      - redis
+      - valkey
     volumes:
       - './backend:/home/app'
 
@@ -59,8 +59,8 @@ services:
     volumes:
       - './frontend/src:/app/src'
 
-  redis:
-    image: redis:latest
+  valkey:
+    image: valkey/valkey:latest
     ports:
       - '6379:6379'
 
@@ -100,10 +100,10 @@ services:
     environment:
       - ADMIN_USER=admin
       - ADMIN_PASS=admin
-      - REDIS_1_HOST=redis
+      - REDIS_1_HOST=valkey
       - REDIS_1_PORT=6379
     links:
-      - redis
+      - valkey
     ports:
       - '80:80'
 

@@ -48,7 +48,7 @@ For validatiaon, ENTS API utilizes [marshmallow](https://marshmallow.readthedocs
 
 ## Async Workers
 
-To handle long running tasks, ENTS API uses [Celery](https://docs.celeryq.dev/en/stable/getting-started/introduction.html) as a task queue and [Redis](https://redis.io/) as a message broker. A Celery worker configuration is handled under `backend/__init__.py` and is built under a seperate flag in the dockerfile named, prodworker and devworker.
+To handle long running tasks, ENTS API uses [Celery](https://docs.celeryq.dev/en/stable/getting-started/introduction.html) as a task queue and [Valkey](https://valkey.io/) as a message broker. A Celery worker configuration is handled under `backend/__init__.py` and is built under a seperate flag in the dockerfile named, prodworker and devworker.
 
 ## Testing
 
