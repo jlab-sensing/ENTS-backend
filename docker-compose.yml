@@ -1,5 +1,4 @@
-version: '3.9'
-
+---
 services:
   backend:
     build:
@@ -23,7 +22,7 @@ services:
     depends_on:
       - postgresql
     volumes:
-      - './backend:/app/backend'
+      - './backend:/home/app'
 
   worker:
     build:
@@ -44,7 +43,7 @@ services:
       - backend
       - redis
     volumes:
-      - './backend:/app/backend'
+      - './backend:/home/app'
 
   frontend:
     build:
