@@ -15,7 +15,7 @@
 
 USAGE="script usage: $(basename $0) [-u] [-m <msg>] [-d <ver>] [-c] [-v] [-h]"
 
-if (( $# == 0 )); then
+if [ "$#" -eq 0 ]; then
 	echo $USAGE
 	exit 1
 fi
