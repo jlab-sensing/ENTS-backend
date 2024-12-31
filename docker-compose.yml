@@ -43,6 +43,15 @@ services:
     volumes:
       - './frontend/src:/app/src'
 
+  migration:
+    build:
+      context: ./backend
+      target: migration
+    env_file:
+      - .env
+    depends_on:
+      - postgresql
+
   valkey:
     image: valkey/valkey:latest
     ports:

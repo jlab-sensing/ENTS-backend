@@ -93,3 +93,7 @@ EXPOSE 8000
 
 ENTRYPOINT ["./entrypoint.sh", "-w", "prod"]
 
+
+FROM base AS migration
+
+ENTRYPOINT ["./migrate.sh", "-u"]
