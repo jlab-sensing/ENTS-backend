@@ -207,7 +207,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_DEFAULT_REGION: us-west-2
-      AWS_ECR_REPOSITORY_NAME: dirtviz-worker
+      AWS_ECR_REPOSITORY_NAME: dirtviz-migration
       AWS_ECS_CLUSTER_NAME: dirtviz-cluster
 
     steps:
