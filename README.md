@@ -30,6 +30,8 @@ At this point the backend is accessible at [http://localhost:3000/](http://local
 
 The frontend and backend containers require environmental variables to be set in order to run. These are stored in a `.env` file in the root directory. The `.env` is used to provide the necessary environment variables to the local development containers and can be used as a base to setup environment variables for a production environment.
 
+> NOTE: We have run into issues with syntax of AWS ECS with the environment file. The string encapsulation characters `'` and `"` are treated as literals, while [docker supports quoting](https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/#env-file-syntax).
+
 #### Flask Configuration
 
 The `CONFIG_TYPE` configures the Flask app to run in either `development` mode with value of `Development` or `production` mode with a value of `Production`. There is a `testing` mode with value of `Testing` as well, but this is used for running unit tests and should not be used in production.
