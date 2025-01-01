@@ -32,7 +32,7 @@ The frontend and backend containers require environmental variables to be set in
 
 #### Flask Configuration
 
-The `CONFIG_TYPE` configures the Flask app to run in either `development` mode with value of `api.config.DevelopmentConfig` or `production` mode with a value of `api.config.ProductionConfig`. There is a `testing` mode with value of `api.config.TestingConfig` as well, but this is used for running unit tests and should not be used in production.
+The `CONFIG_TYPE` configures the Flask app to run in either `development` mode with value of `Development` or `production` mode with a value of `Production`. There is a `testing` mode with value of `Testing` as well, but this is used for running unit tests and should not be used in production.
 
 #### Database (Postgres)
 

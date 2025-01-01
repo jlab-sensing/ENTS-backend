@@ -56,7 +56,7 @@ def new_user():
 def test_client(db_conn):
     # Set the Testing configuration prior to creating the Flask application
     os.environ["TEST_SQLALCHEMY_DATABASE_URI"] = db_conn
-    os.environ["CONFIG_TYPE"] = "api.config.TestingConfig"
+    os.environ["CONFIG_TYPE"] = "Testing"
     print("test", os.environ["TEST_SQLALCHEMY_DATABASE_URI"], flush=True)
     flask_app = create_app()
 
@@ -120,7 +120,7 @@ def setup_cells(test_client):
 @pytest.fixture(scope="module")
 def cli_test_client():
     # Set the Testing configuration prior to creating the Flask application
-    os.environ["CONFIG_TYPE"] = "config.TestingConfig"
+    os.environ["CONFIG_TYPE"] = "Testing"
     flask_app = create_app()
 
     runner = flask_app.test_cli_runner()
