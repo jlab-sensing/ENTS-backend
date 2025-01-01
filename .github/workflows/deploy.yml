@@ -262,6 +262,6 @@ jobs:
           run-task: true
           run-task-security-groups: "sg-0159798cf8530f39d"
           run-task-subnets: "subnet-00502770a52ce4456, subnet-0cb0d0771ecaab730"
-          run-task-assign-public-ip: DISABLED
+          run-task-assign-public-ip: ENABLED
           run-task-launch-type: "FARGATE"
           wait-for-task-stopped: true
