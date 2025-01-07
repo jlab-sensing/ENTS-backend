@@ -116,24 +116,6 @@ jobs:
           # be deployed to ECS.
           docker buildx build \
               --platform linux/arm64 \
-              --build-arg AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-              --build-arg AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-              --build-arg AWS_DEFAULT_REGION="${{ env.AWS_DEFAULT_REGION }}" \
-              --build-arg DB_HOST="${{ secrets.DB_HOST }}" \
-              --build-arg DB_PASS="${{ secrets.DB_PASS }}" \
-              --build-arg DB_PORT="${{ secrets.DB_PORT }}" \
-              --build-arg DB_USER="${{ secrets.DB_USER }}" \
-              --build-arg DB_DATABASE="${{ secrets.DB_USER }}" \
-              --build-arg SECRET_KEY="${{ secrets.SECRET_KEY }}" \
-              --build-arg ACCESS_TOKEN_SECRET="${{ secrets.ACCESS_TOKEN_SECRET }}" \
-              --build-arg REFRESH_TOKEN_SECRET="${{ secrets.REFRESH_TOKEN_SECRET }}" \
-              --build-arg GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
-              --build-arg GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
-              --build-arg CLIENT_URL="${{ secrets.CLIENT_URL }}" \
-              --build-arg OAUTH_REDIRECT_URI="${{ secrets.OAUTH_REDIRECT_URI }}" \
-              --build-arg CELERY_BROKER_URL="${{ secrets.CELERY_BROKER_URL }}" \
-              --build-arg CELERY_RESULT_BACKEND="${{ secrets.CELERY_RESULT_BACKEND }}" \
-              --build-arg CONFIG_TYPE="${{ secrets.CONFIG_TYPE }}" \
               --target production \
               -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
@@ -195,24 +177,6 @@ jobs:
           # push it to ECR so that it can
           # be deployed to ECS.
           docker build \
-              --build-arg AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-              --build-arg AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-              --build-arg AWS_DEFAULT_REGION="${{ env.AWS_DEFAULT_REGION }}" \
-              --build-arg DB_HOST="${{ secrets.DB_HOST }}" \
-              --build-arg DB_PASS="${{ secrets.DB_PASS }}" \
-              --build-arg DB_PORT="${{ secrets.DB_PORT }}" \
-              --build-arg DB_USER="${{ secrets.DB_USER }}" \
-              --build-arg DB_DATABASE="${{ secrets.DB_USER }}" \
-              --build-arg SECRET_KEY="${{ secrets.SECRET_KEY }}" \
-              --build-arg ACCESS_TOKEN_SECRET="${{ secrets.ACCESS_TOKEN_SECRET }}" \
-              --build-arg REFRESH_TOKEN_SECRET="${{ secrets.REFRESH_TOKEN_SECRET }}" \
-              --build-arg GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
-              --build-arg GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
-              --build-arg CLIENT_URL="${{ secrets.CLIENT_URL }}" \
-              --build-arg OAUTH_REDIRECT_URI="${{ secrets.OAUTH_REDIRECT_URI }}" \
-              --build-arg CELERY_BROKER_URL="${{ secrets.CELERY_BROKER_URL }}" \
-              --build-arg CELERY_RESULT_BACKEND="${{ secrets.CELERY_RESULT_BACKEND }}" \
-              --build-arg CONFIG_TYPE="${{ secrets.CONFIG_TYPE }}" \
               --target prodworker \
               -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
@@ -239,29 +203,65 @@ jobs:
           wait-for-service-stability: true
 
   apply-db-migrations:
+    name: Apply database migrations
     runs-on: ubuntu-latest
-    needs: [build-and-deploy-frontend, build-and-deploy-backend]
-    environment: ${{ github.ref_name }}
-
     env:
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_PASS: ${{ secrets.DB_PASS }}
-      DB_PORT: ${{ secrets.DB_PORT }}
-      DB_USER: ${{ secrets.DB_USER }}
-      DB_DATABASE: ${{ secrets.DB_USER }}
+      AWS_DEFAULT_REGION: us-west-2
+      AWS_ECR_REPOSITORY_NAME: dirtviz-migration
+      AWS_ECS_CLUSTER_NAME: dirtviz-cluster
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup python
-        uses: actions/setup-python@v5
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          python-version: '3.10'
-          cache: 'pip'
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
-      - name: Install dependencies
-        run: pip install -r ./backend/requirements.txt
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Run migrations
-        run: flask --app backend.api db upgrade -d ./backend/api/migrations
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ env.AWS_ECR_REPOSITORY_NAME }}
+          IMAGE_TAG: ${{ github.sha }}
+        working-directory: ./backend
+        run: |
+          # Build a docker container and
+          # push it to ECR so that it can
+          # be deployed to ECS.
+          docker build \
+              --target migration \
+              -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition dirtviz-task-migration --query taskDefinition > aws-task-definition.json
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: aws-task-definition.json
+          container-name: ${{ env.AWS_ECR_REPOSITORY_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          cluster: ${{ env.AWS_ECS_CLUSTER_NAME }}
+          run-task: true
+          run-task-security-groups: "sg-0159798cf8530f39d"
+          run-task-subnets: "subnet-00502770a52ce4456, subnet-0cb0d0771ecaab730"
+          run-task-assign-public-ip: ENABLED
+          run-task-launch-type: "FARGATE"
+          wait-for-task-stopped: true
