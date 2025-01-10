@@ -108,7 +108,7 @@ export default function ArchiveModal({ cells }) {
       </Button>
       </Tooltip>
       <Modal open={open} onClose={handleClose} closeAfterTransition>
-        <Fade in={open}> 
+        <Fade in={open}>
           <Box
             sx={{
               position: 'absolute',
