@@ -106,7 +106,7 @@ export default function ArchiveModal({ cells }) {
       <Button variant='outlined' onClick={handleOpen} sx={{ heigh: '16px', width: '16px' }}>
         <Box component='img' src={archive}></Box>
       </Button>
-      </Tooltip>
+    </Tooltip>
       <Modal open={open} onClose={handleClose} closeAfterTransition>
         <Fade in={open}>
           <Box
