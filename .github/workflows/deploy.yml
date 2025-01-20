@@ -134,7 +134,7 @@ jobs:
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: ${{ env.AWS_ECS_SERVICE_NAME }}
@@ -195,7 +195,7 @@ jobs:
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: ${{ env.AWS_ECS_SERVICE_NAME }}
@@ -260,8 +260,8 @@ jobs:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           cluster: ${{ env.AWS_ECS_CLUSTER_NAME }}
           run-task: true
-          run-task-security-groups: "sg-0159798cf8530f39d"
-          run-task-subnets: "subnet-00502770a52ce4456, subnet-0cb0d0771ecaab730"
+          run-task-security-groups: 'sg-0159798cf8530f39d'
+          run-task-subnets: 'subnet-00502770a52ce4456, subnet-0cb0d0771ecaab730'
           run-task-assign-public-ip: ENABLED
-          run-task-launch-type: "FARGATE"
+          run-task-launch-type: 'FARGATE'
           wait-for-task-stopped: true

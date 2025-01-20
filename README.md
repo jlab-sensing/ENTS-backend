@@ -51,13 +51,13 @@ The `PUBLIC_URL` is the domain alias that the website is hosted on. This is used
 
 #### Google
 
-The Google API key is used to enable logins with Google accounts. Navigate to the [Google Cloud Console](https://console.cloud.google.com/) and create a new project or select the existing one associate with the website. Goto the *Google Auth Platform > Clients* and create a new client. The client ID and secret can be found in the client details and are populated in `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+The Google API key is used to enable logins with Google accounts. Navigate to the [Google Cloud Console](https://console.cloud.google.com/) and create a new project or select the existing one associate with the website. Goto the _Google Auth Platform > Clients_ and create a new client. The client ID and secret can be found in the client details and are populated in `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
 
-The `OAUTH_REDIRECT_URI` is the URI that Google will redirect to after a successful login. This should be set to the homepage of the hosted website, in our publically hosted instance this is set to `https://dirtviz.jlab.ucsc.edu/`. Ensure the domain is authorized in the Google Cloud Console. For local development, this can be set to `http://localhost:3000/`.
+The `OAUTH_REDIRECT_URI` is the URI that Google will redirect to after a successful login. This should be set to the homepage of the hosted website, in our publically hosted instance this is set to `https://dirtviz.jlab.ucsc.edu/auth/callback`. Ensure the domain is authorized in the Google Cloud Console. For local development, this can be set to `http://localhost:3000/auth/callback`.
 
 #### Flask Secrets
 
-To generate a secret key for the `SECRET_KEY`, `REFRESH_TOKEN_SECRET`, and `ACCESS_TOKEN_SECRET` variables, run the following *three separate times* in a python shell:
+To generate a secret key for the `SECRET_KEY`, `REFRESH_TOKEN_SECRET`, and `ACCESS_TOKEN_SECRET` variables, run the following _three separate times_ in a python shell:
 
 ```
 >>> import secrets
