@@ -38,7 +38,7 @@ function Map() {
         />
         <Marker position={[37.0006851012664, -122.0632022698968]}>
           <Popup>
-            The Location of where our lab is located.
+            The Location of where our lab in Jack Baskin Engineering.
           </Popup>
         </Marker>
       </MapContainer>
