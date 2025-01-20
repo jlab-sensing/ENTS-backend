@@ -38,7 +38,7 @@ function Map() {
         />
         <Marker position={[37.0006851012664, -122.0632022698968]}>
           <Popup>
-            A pretty CSS3 popup. <br /> Easily customizable.
+            The Location of where our lab is located.
           </Popup>
         </Marker>
       </MapContainer>
