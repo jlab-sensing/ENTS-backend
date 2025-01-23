@@ -13,7 +13,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
     return <span>Error: {cells.error.message}</span>;
   }
   return (
-    <FormControl sx={{ width: 1 / 4 }}>
+    <FormControl sx={{ width: 1 }}>
       <InputLabel id='cell-select'>Cell</InputLabel>
       <Select
         labelId='cell-select-label'
@@ -27,14 +27,19 @@ function CellSelect({ selectedCells, setSelectedCells }) {
         }}
       >
         {Array.isArray(cells.data)
-          ? cells.data.map((cell) => {
-              return (
-                <MenuItem value={cell} key={cell.id}>
-                  {cell.name}
-                </MenuItem>
-              );
-            })
+          ? cells.data
+              .filter((cell) => !cell.archive)
+              .map((cell) => {
+                return (
+                  <MenuItem value={cell} key={cell.id}>
+                    {cell.name}
+                  </MenuItem>
+                );
+              })
           : ''}
+        <MenuItem value='all' disabled={true} sx={{ color: 'black' }}>
+          Can&apos;t find cell? Check Archive feature.
+        </MenuItem>
       </Select>
     </FormControl>
   );

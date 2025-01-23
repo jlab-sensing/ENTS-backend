@@ -1,9 +1,9 @@
 from flask import request, jsonify
 from flask_restful import Resource
-from ..database.schemas.power_data_schema import PowerDataSchema
-from ..database.schemas.get_cell_data_schema import GetCellDataSchema
-from ..database.schemas.p_input import PInput
-from ..database.models.power_data import PowerData
+from ..schemas.power_data_schema import PowerDataSchema
+from ..schemas.get_cell_data_schema import GetCellDataSchema
+from ..schemas.p_input import PInput
+from ..models.power_data import PowerData
 
 from datetime import datetime
 

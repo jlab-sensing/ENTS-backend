@@ -1,6 +1,7 @@
 ## Project
 *.csv
 .DS_Store
+prod.env
 
 ## Python
 

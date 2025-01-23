@@ -3,24 +3,31 @@ import { Modal, Box, Typography, Button, TextField, IconButton } from '@mui/mate
 import CloseIcon from '@mui/icons-material/Close';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { addCell } from '../../../services/cell';
+import { useOutletContext } from 'react-router-dom';
 
 function AddCellModal() {
+  let data = useOutletContext();
+  const refetch = data[3];
+  const user = data[4];
+  data = data[0];
   const [isOpen, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [long, setLong] = useState('');
   const [lat, setLat] = useState('');
+  const archive = false;
   const [response, setResponse] = useState(null);
   const handleOpen = () => {
     setOpen(true);
     setResponse(null);
   };
   const handleClose = () => setOpen(false);
-
   useEffect(() => {
     console.log(response);
   }, [response]);
-
+  if (!user) {
+    return <></>;
+  }
   return (
     <>
       <Button sx={{ color: 'black' }} key='prev' onClick={handleOpen}>
@@ -108,7 +115,12 @@ function AddCellModal() {
               </Typography>
               <Button
                 onClick={() => {
-                  addCell(name, location, lat, long).then((res) => setResponse(res));
+                  addCell(name, location, long, lat, archive, user.email)
+                    .then((res) => {
+                      setResponse(res);
+                      refetch();
+                    })
+                    .catch((error) => console.error(error));
                 }}
               >
                 Add Cell
@@ -135,13 +147,7 @@ function AddCellModal() {
                 Here&apos;,s the endpoint to start uploading teros data, https://dirtviz.jlab.ucsc.edu/api/teros/
                 {response.id}
               </p>
-              <Button
-                onClick={() => {
-                  handleClose();
-                }}
-              >
-                Done
-              </Button>
+              <Button onClick={() => {}}>Done</Button>
             </>
           )}
         </Box>

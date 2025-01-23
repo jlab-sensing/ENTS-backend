@@ -1,4 +1,8 @@
-FROM python:3.11.0-slim-buster as development
+# Development image
+# The development image expects the backend code to be mounted into the
+# container at /home/app/. This allows for hot reloading of the code for live
+# updates of the website.
+FROM python:3.11.0-slim-buster AS development
 WORKDIR /app/backend/
 COPY requirements.txt ./
 RUN pip3 install --upgrade pip
@@ -9,14 +13,16 @@ ENV FLASK_APP=api
 COPY . ./
 WORKDIR /app/
 EXPOSE 8000
-ENTRYPOINT ["/app/backend/entrypoint.sh", "-d"]
+ENTRYPOINT ["./entrypoint.sh", "-d"]
 
-FROM python:3.11.0-slim-buster as builder
 
-# set work directory
-WORKDIR /usr/src/app
+# Base image
+# The base image contains the necessary dependencies to run the backend code.
+# It installs the necessary apt packages and installs the python dependencies. A new
+# user, "app", is created to run the code unprivileged.
+FROM python:3.11.0-slim-buster AS base
 
-# set environment variables
+# set environment variables to have python print to stdout
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
@@ -24,101 +30,70 @@ ENV PYTHONUNBUFFERED 1
 RUN apt-get update && \
     apt-get install -y --no-install-recommends gcc
 
-# lint
-# RUN pip install --upgrade pip
-# RUN pip install flake8==5.0.4
-# COPY . /usr/src/app/
-# RUN flake8 --ignore=E501,F401 .
-
-
 # install python dependencies
-COPY requirements.txt ./
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+#RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
-# entrypoint script
-COPY entrypoint.sh ./
-
-# gunicorn configuration
-COPY gunicorn.conf.py ./
-
-RUN pip install --no-cache-dir -r requirements.txt
-
-FROM python:3.11.0-slim-buster as production
-
-# create directory for the app user
-RUN mkdir -p /home/app
-
-# create the app user
-RUN addgroup --system app && adduser --system --group app
-
-# set AWS args
-ARG AWS_ACCESS_KEY_ID
-ARG AWS_SECRET_ACCESS_KEY
-ARG AWS_DEFAULT_REGION
-# -- AWS RDS vars -- #
-# ARG POSTGRES_USER
-# ARG POSTGRES_PW
-# ARG POSTGRES_URL
-# ARG POSTGRES_DB
-
-
-# -- Postgres vars -- #
-ARG DB_USER
-ARG DB_PASS
-ARG DB_HOST
-ARG DB_PORT
-ARG DB_DATABASE
-
-# -- Auth vars -- #
-ARG SECRET_KEY
-ARG ACCESS_TOKEN_SECRET
-ARG REFRESH_TOKEN_SECRET
-ARG GOOGLE_CLIENT_ID
-ARG GOOGLE_CLIENT_SECRET
-ARG OAUTH_REDIRECT_URI
-ARG CLIENT_URL
-
-# -- env -- #
-
-ENV DB_USER $DB_USER
-ENV DB_PASS $DB_PASS
-ENV DB_HOST $DB_HOST
-ENV DB_PORT $DB_PORT
-ENV DB_DATABASE $DB_DATABASE
-
-ENV AWS_ACCESS_KEY_ID $AWS_ACCESS_KEY_ID
-ENV AWS_SECRET_ACCESS_KEY $AWS_SECRET_ACCESS_KEY
-ENV AWS_DEFAULT_REGION $AWS_DEFAULT_REGION
-
-ENV SECRET_KEY $SECRET_KEY
-ENV ACCESS_TOKEN_SECRET $ACCESS_TOKEN_SECRET
-ENV REFRESH_TOKEN_SECRET $REFRESH_TOKEN_SECRET
-ENV GOOGLE_CLIENT_ID $GOOGLE_CLIENT_ID
-ENV GOOGLE_CLIENT_SECRET $GOOGLE_CLIENT_SECRET
-ENV CLIENT_URL $CLIENT_URL
-ENV OAUTH_REDIRECT_URI $OAUTH_REDIRECT_URI
-
-# create the appropriate directories
-ENV HOME=/home/app
-ENV APP_HOME=/home/app/backend
-RUN mkdir $APP_HOME
-WORKDIR $APP_HOME
-
-# install dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends netcat
-COPY --from=builder /usr/src/app/wheels /wheels
-COPY --from=builder /usr/src/app/requirements.txt .
-COPY --from=builder /usr/src/app/entrypoint.sh .
-RUN pip install --upgrade pip
-RUN pip install --no-cache /wheels/*
-
-# copy project
-COPY . $APP_HOME
-
-# chown all the files to the app user
-RUN chown -R app:app $APP_HOME
-
-# change to the app user
+# create new user and group to run the app with name "app"
+RUN adduser --system --group app
 USER app
-WORKDIR /home/app/
-ENTRYPOINT ["./backend/entrypoint.sh", "-p"]
+WORKDIR $HOME
+
+# copy files from source tree
+COPY . .
+
+
+# Production image
+# The production images runs the flask api code. The container has all the
+# bacend code and dependencies installed. The code is run as the "app" user.
+FROM base AS production
+
+ENTRYPOINT ["./entrypoint.sh", "-p"]
+
+
+# Development worker image
+# The developmet celery worker image is used to run the worker code in a development
+# with additional debug printouts and development dependencies. The backend
+# codebase should be mounted into the container at /home/app/ to allow for hot
+# reloading of the code.
+FROM base AS devworker
+
+# install development dependencies
+COPY requirements-dev.txt /tmp/requirements-dev.txt
+RUN pip install --no-cache-dir -r /tmp/requirements-dev.txt
+
+# set environment variables
+ENV FLASK_DEBUG=1
+ENV FLASK_RUN_HOST=0.0.0.0
+ENV FLASK_APP=api
+
+# default tries to process task before quiting (warm shutdown)
+# instead terminate instantly so when AWS kills the worker
+# the task is put back into queue
+# https://github.com/sayanarijit/remap-sigterm
+ENV REMAP_SIGTERM SIGQUIT
+
+EXPOSE 8000
+
+ENTRYPOINT ["./entrypoint.sh", "-w", "dev"]
+
+
+# Production working image
+# The production celery worker image .
+FROM base AS prodworker
+
+# default tries to process task before quiting (warm shutdown)
+# instead terminate instantly so when AWS kills the worker
+# the task is put back into queue
+# https://github.com/sayanarijit/remap-sigterm
+ENV REMAP_SIGTERM SIGQUIT
+
+EXPOSE 8000
+
+ENTRYPOINT ["./entrypoint.sh", "-w", "prod"]
+
+
+FROM base AS migration
+
+ENTRYPOINT ["./migrate.sh", "-u"]

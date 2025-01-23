@@ -8,9 +8,9 @@ from datetime import datetime
 from flask import Response
 from soil_power_sensor_protobuf import encode_response, decode_measurement
 
-from ..database.models.power_data import PowerData
-from ..database.models.teros_data import TEROSData
-from ..database.models.sensor import Sensor
+from ..models.power_data import PowerData
+from ..models.teros_data import TEROSData
+from ..models.sensor import Sensor
 
 
 def process_measurement(data: bytes):

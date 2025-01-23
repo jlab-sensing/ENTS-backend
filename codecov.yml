@@ -1,0 +1,28 @@
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - type: project
+        target: auto
+        threshold: 1%
+      - type: patch
+        target: 90%
+  individual_flags: # exceptions to the default rules above, stated flag by flag
+    - name: frontend  
+      paths: 
+      - frontend/  #fill in your own path. Note, accepts globs, not regexes
+      carryforward: true
+      statuses:
+        - type: project
+          target: 50%
+        - type: patch
+          target: 60%
+    - name: backend  
+      paths: 
+      - backend/  #fill in your own path. Note, accepts globs, not regexes
+      carryforward: true
+      statuses:
+        - type: project
+          target: 50%
+        - type: patch
+          target: 60%

@@ -1,10 +1,9 @@
 import os
 from flask import request, jsonify, make_response
-from ...api import db
-from ..database.models.user import User
-from ..database.models.oauth_token import OAuthToken
+from ..models.user import User
+from ..models.oauth_token import OAuthToken
 from functools import wraps
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import jwt
 from .json_encoder import UUIDSerializer
 from flask_restful import abort
@@ -22,6 +21,8 @@ config = {
     "refreshToken": os.getenv("REFRESH_TOKEN_SECRET"),
     "tokenExpiration": 36000,
 }
+
+UTC = timezone.utc
 
 
 def authenticate(f):
@@ -54,7 +55,7 @@ def handle_login(user: User):
     access_token = jwt.encode(
         {
             "uid": user.id,
-            "exp": datetime.utcnow() + timedelta(minutes=15),
+            "exp": datetime.now(UTC) + timedelta(minutes=15),
         },
         config["accessToken"],
         algorithm="HS256",
@@ -63,13 +64,13 @@ def handle_login(user: User):
     refresh_token = jwt.encode(
         {
             "uid": user.id,
-            "exp": datetime.utcnow() + timedelta(days=1),
+            "exp": datetime.now(UTC) + timedelta(days=1),
         },
         config["refreshToken"],
         algorithm="HS256",
         json_encoder=UUIDSerializer,
     )
-    user.set_refresh_token(refresh_token)
+    user.set_token(access_token, refresh_token)
     resp = make_response(access_token, 201)
     resp.set_cookie(
         "refresh-token",
@@ -77,7 +78,7 @@ def handle_login(user: User):
         secure=True,
         httponly=True,
         samesite="None",
-        expires=datetime.utcnow() + timedelta(days=1),
+        expires=datetime.now(UTC) + timedelta(days=1),
     )
     return resp
 
@@ -85,8 +86,7 @@ def handle_login(user: User):
 def handle_refresh_token(refresh_token):
     try:
         found_user = (
-            db.session.query(User)
-            .join(OAuthToken, OAuthToken.user_id == User.id)
+            User.query.join(OAuthToken, OAuthToken.user_id == User.id)
             .filter(OAuthToken.refresh_token == refresh_token)
             .first()
         )
@@ -97,7 +97,7 @@ def handle_refresh_token(refresh_token):
         access_token = jwt.encode(
             {
                 "uid": user.id,
-                "exp": datetime.utcnow() + timedelta(minutes=15),
+                "exp": datetime.now(UTC) + timedelta(minutes=15),
             },
             config["accessToken"],
             algorithm="HS256",
@@ -106,13 +106,13 @@ def handle_refresh_token(refresh_token):
         refresh_token = jwt.encode(
             {
                 "uid": user.id,
-                "exp": datetime.utcnow() + timedelta(days=1),
+                "exp": datetime.now(UTC) + timedelta(days=1),
             },
             config["refreshToken"],
             algorithm="HS256",
             json_encoder=UUIDSerializer,
         )
-        user.set_refresh_token(refresh_token)
+        user.set_token(access_token, refresh_token)
         resp = make_response(access_token, 201)
         resp.set_cookie(
             "refresh-token",
@@ -120,7 +120,7 @@ def handle_refresh_token(refresh_token):
             secure=True,
             httponly=True,
             samesite="None",
-            expires=datetime.utcnow() + timedelta(days=1),
+            expires=datetime.now(UTC) + timedelta(days=1),
         )
         return resp
     except jwt.exceptions.InvalidTokenError as e:

@@ -14,10 +14,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -49,6 +49,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+
     env:
       DB_USER: dirtviz
       DB_PASS: password
@@ -58,16 +59,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
 
       - name: Setup python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
 
       - name: Install backend dependencies
-        run: pip install -r ./backend/requirements.txt
+        run: pip install -r ./backend/requirements.txt -r ./backend/requirements-dev.txt
 
       - name: Install frontend packages
         working-directory: ./frontend
@@ -96,9 +97,12 @@ jobs:
       - name: Run smoke test
         run: ./k6 run tests/basic.js
 
-      - name: Run frontend tests
+      - name: Run backend tests
+        run: pytest --cov
+
+      - name: Run frontend tests + coverage
         working-directory: ./frontend
-        run: npm run test
+        run: npm run coverage
 
       - name: Save all logs
         if: always()
@@ -113,9 +117,22 @@ jobs:
 
       - name: Upload log artifact
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: DirtViz Logs
           path: |
             dirtviz.log
             dirtviz_short.log
+
+      - name: Upload backend coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          flags: backend
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload frontend coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./frontend/coverage/coverage-final.json
+          flags: frontend
+          token: ${{ secrets.CODECOV_TOKEN }}

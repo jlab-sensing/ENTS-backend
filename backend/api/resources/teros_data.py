@@ -1,9 +1,9 @@
 from flask import request, jsonify
 from flask_restful import Resource
-from ..database.schemas.teros_data_schema import TEROSDataSchema
-from ..database.schemas.get_cell_data_schema import GetCellDataSchema
-from ..database.schemas.t_input import TInput
-from ..database.models.teros_data import TEROSData
+from ..schemas.teros_data_schema import TEROSDataSchema
+from ..schemas.get_cell_data_schema import GetCellDataSchema
+from ..schemas.t_input import TInput
+from ..models.teros_data import TEROSData
 
 from datetime import datetime
 

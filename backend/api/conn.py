@@ -22,11 +22,11 @@ from sqlalchemy.engine import URL
 
 dburl = URL.create(
     "postgresql",
-    username=os.environ["DB_USER"],
-    password=os.environ["DB_PASS"],
-    host=os.environ["DB_HOST"],
-    port=os.environ["DB_PORT"],
-    database=os.environ["DB_DATABASE"],
+    username=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASS"),
+    host=os.getenv("DB_HOST"),
+    port=os.getenv("DB_PORT"),
+    database=os.getenv("DB_DATABASE"),
 )
 
 # Connect

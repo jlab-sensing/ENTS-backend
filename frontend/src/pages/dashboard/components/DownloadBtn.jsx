@@ -1,47 +1,48 @@
 // import { useEffect } from 'react';
 import { Button } from '@mui/material';
 import PropTypes from 'prop-types';
-import { getCellData } from '../../../services/cell';
-// import { DateTime } from 'luxon';
-// import { useQuery, useQueryClient } from '@tanstack/react-query';
-
+import { getCellData, pollCellDataResult } from '../../../services/cell';
+import { useState } from 'react';
 function DownloadBtn({ cells, startDate, endDate }) {
-  // Get QueryClient from the context
-  // const queryClient = useQueryClient();
 
-  // useEffect(() => {
-  //   queryClient.invalidateQueries({ queryKey: ['cells'] });
-  // }, [cells, startDate, endDate, queryClient]);
+  const [downloadStatus, setDownloadStatus] = useState(false);
 
-  // const { isLoading, isError, data, error } = useQuery({
-  //   queryKey: ['cells'],
-  //   queryFn: () =>
-  //     getCellData(
-  //       cells.map((c) => c.id),
-  //       'none',
-  //       startDate,
-  //       endDate,
-  //     ),
-  //   enabled: !!(Array.isArray(cells) && cells.length),
-  //   refetchOnWindowFocus: false,
-  // });
+  const INTERVAL = 2000
+  const BACKOFF = 2000
+  let pendingResponses = 0
 
-  const downloadFile = () => {
-    for (const { id, name } of cells) {
-      const fileName = name + '.csv';
-      const resample = 'none';
-      getCellData(id, resample, startDate, endDate).then((data) => {
-        const blob = data;
+  const pollTaskStatus = async (taskId, fileName, pollDuration) => {
+    try {
+      const {state, status} = await pollCellDataResult(taskId);
+      if (state === "SUCCESS") {
+        const blob = new Blob([status], { type: 'text/csv' });
         const a = document.createElement('a');
         a.download = fileName;
         a.href = window.URL.createObjectURL(blob);
-        const clickEvt = new MouseEvent('click', {
-          view: window,
-          bubbles: true,
-          cancelable: true,
-        });
-        a.dispatchEvent(clickEvt);
-        a.remove();
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setDownloadStatus(false)
+      }else{
+        setTimeout(() =>{
+          pendingResponses += 1
+          pollDuration = (BACKOFF * pendingResponses) + pollDuration
+          return pollTaskStatus(taskId, fileName, pollDuration)
+        }, pollDuration);
+      }
+    } catch (error) {
+      console.error('Error polling the task status', error);
+    }
+  };
+
+  const downloadFile = () => {
+    for (const { id, name } of cells) {
+      setDownloadStatus(true)
+      const fileName = name + '.csv';
+      const resample = 'none';
+      getCellData(id, resample, startDate, endDate).then((data) => {
+        const { result_id } = data;
+        pollTaskStatus(result_id, fileName, INTERVAL);
       });
     }
   };
@@ -55,30 +56,16 @@ function DownloadBtn({ cells, startDate, endDate }) {
   };
   return (
     <div className='DownloadBtn'>
-      {/* {data ? (
-        <Button disabled={false} variant='outlined' onClick={exportToCsv}>
-          Export to CSV
-        </Button>
-      ) : isError ? (
+      {downloadStatus ? (
         <Button disabled={true} variant='outlined' onClick={exportToCsv}>
-          ERROR: ${error}
-        </Button>
-      ) : isLoading ? (
-        <Button disabled={true} variant='outlined' onClick={exportToCsv}>
-          LOADING...
-        </Button>
-      ) : !Array.isArray(cells) && cells.length ? (
-        <Button disabled={true} variant='outlined' onClick={exportToCsv}>
-          Select a cell
-        </Button>
+        DOWNLOADING...
+    </Button>
       ) : (
-        <Button disabled={true} variant='outlined' onClick={exportToCsv}>
-          No data
-        </Button>
-      )} */}
-      <Button disabled={false} variant='outlined' onClick={exportToCsv}>
+        <Button disabled={false} variant='outlined' onClick={exportToCsv}>
         Export to CSV
       </Button>
+
+      )}
     </div>
   );
 }

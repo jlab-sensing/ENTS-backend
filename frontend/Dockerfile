@@ -56,7 +56,7 @@ RUN npm run build
 
 # Production Stage ####################
 # pull the official nginx:1.19.0 base image
-FROM nginx:1.19.0 as production
+FROM nginx:1.19.0 AS production
 
 # removing default nginx config file
 RUN rm /etc/nginx/conf.d/default.conf
