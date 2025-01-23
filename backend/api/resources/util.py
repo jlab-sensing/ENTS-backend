@@ -30,7 +30,7 @@ def process_measurement(data: bytes):
     """
 
     # decode binary protobuf data
-    meas = decode_measurement(data)
+    meas = decode_measurement(data, raw=False)
 
     obj_list = []
 
@@ -68,6 +68,22 @@ def process_measurement(data: bytes):
         obj2 = Sensor.add_data(meas_name="leafWetness", meas_unit="?", meas_dict=meas)
 
         obj_list.append(obj2)
+
+    elif meas["type"] == "bme280":
+        pressure_obj = Sensor.add_data(
+            meas_name="pressure", meas_unit="hPa", meas_dict=meas
+        )
+        obj_list.append(pressure_obj)
+
+        temperature_obj = Sensor.add_data(
+            meas_name="temperature", meas_unit="C", meas_dict=meas
+        )
+        obj_list.append(temperature_obj)
+
+        humidity_obj = Sensor.add_data(
+            meas_name="humidity", meas_unit="%", meas_dict=meas
+        )
+        obj_list.append(humidity_obj)
 
     # format response
     resp = Response()
