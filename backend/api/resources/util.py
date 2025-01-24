@@ -85,6 +85,15 @@ def process_measurement(data: bytes):
         )
         obj_list.append(humidity_obj)
 
+    elif meas["type"] == "teros21":
+        obj = Sensor.add_data(meas_name="matric_pot", meas_unit="kPa", meas_dict=meas)
+
+        obj_list.append(obj)
+
+        obj = Sensor.add_data(meas_name="temp", meas_unit="C", meas_dict=meas)
+
+        obj_list.append(obj)
+
     # format response
     resp = Response()
     resp.content_type = "application/octet-stream"
