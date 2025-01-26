@@ -12,6 +12,7 @@ import { useCells } from '../../services/cell';
 import ArchiveModal from './components/ArchiveModal';
 import { useSearchParams } from 'react-router-dom';
 import CopyLinkBtn from './components/CopyLinkBtn';
+import Nav from '../../components/Nav';
 
 function Dashboard() {
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
@@ -47,7 +48,21 @@ function Dashboard() {
   }, [searchParams, cells.data]);
   return (
     <>
-      <Box>
+      <Box
+        sx={{
+          height: '100vh',
+          width: '100%',
+          position: 'relative',
+          scrollSnapAlign: 'center',
+          scrollSnapStop: 'always',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          backgroundColor: '#DAD7CD',
+        }}
+      >
+        <Nav/>
+        
         <Stack
           direction='column'
           divider={<Divider orientation='horizontal' flexItem />}
