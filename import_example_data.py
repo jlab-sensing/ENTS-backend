@@ -4,7 +4,6 @@ from backend.api.utils.import_cell_data import import_cell_data
 # from backend.api.utils.import_teros_csv import import_teros_csv
 from tqdm import tqdm
 import os
-import csv
 
 if __name__ == "__main__":
 
