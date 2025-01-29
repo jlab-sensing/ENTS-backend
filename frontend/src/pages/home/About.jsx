@@ -1,4 +1,4 @@
-import { React } from 'react';
+import { React, useEffect, useRef, useState } from 'react';
 import Nav from '../../components/Nav';
 import { Box, Button, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -10,6 +10,21 @@ import useAuth from '../../auth/hooks/useAuth';
 function About() {
   const { user, setUser, loggedIn, setLoggedIn } = useAuth();
   const navigate = useNavigate();
+  const [contextMenuPosition, setContextMenuPosition] = useState(null);
+  const contextMenuRef = useRef(null);
+
+  const githubRightClick = (event) => {
+    event.preventDefault(); // prevents reloading a page and showing the default settings
+    setContextMenuPosition({ x: event.clientX, y: event.clientY }); // gets the coordinates of where the user has clicked the button. Easier to format this way. 
+  }
+
+
+  const handleOpenInNewTab = () => {
+    window.open('https://github.com/jlab-sensing/DirtViz'); // this allows for a window to be opened on a new tab
+    setContextMenuPosition(null);
+  };
+
+
   return (
     <Box
       sx={{
@@ -103,17 +118,44 @@ function About() {
             >
               Demo
             </Button>
-            <Button
+            <Button 
               sx={{
                 px: '10px',
                 width: { xs: '100%', sm: 'auto' },
               }}
               key='github'
               onClick={() => (location.href = 'https://github.com/jlab-sensing/DirtViz')}
+              onContextMenu = {githubRightClick}
             >
               Github Repo &nbsp;
               <GitHubIcon fontSize='small' />
             </Button>
+
+            <Box>
+            {contextMenuPosition && (
+              <Box
+                sx = {{
+                  position: 'absolute',
+                  left: contextMenuPosition.x,
+                  top: contextMenuPosition.y,
+                }}
+              >
+                <ul style = {{listStyle: 'none', padding: '10px'}}>
+                  <li
+                    style = {{
+                      padding: '10px 15px',
+                      cursor: 'pointer',
+                    }}
+                    onClick={handleOpenInNewTab} // Open link in new tab
+                  >
+                    Open Github Repo in new tab
+                  </li>
+                </ul>
+              </Box>
+
+            )}
+            </Box>
+      
           </Box>
         </Box>
         <Box component='img' sx={{ width: 'auto', pb: { xs: '5%', sm: '2.5%' } }} src={chart}></Box>
