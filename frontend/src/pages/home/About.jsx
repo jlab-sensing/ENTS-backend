@@ -162,7 +162,7 @@ function About() {
                     style = {{
                       padding: '10px 15px',
                       cursor: 'pointer',
-                      color: '#5594D0',
+                      color: '#2E8DCF',
                       border: '1px solid #000000',
                       backgroundColor: 'white'
                     }}
