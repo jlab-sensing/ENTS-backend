@@ -24,6 +24,10 @@ function About() {
     setContextMenuPosition(null);
   };
 
+  const closeContextMenu = () => {
+    setContextMenuPosition(null);
+  }
+
 
   return (
     <Box
@@ -145,11 +149,28 @@ function About() {
                     style = {{
                       padding: '10px 15px',
                       cursor: 'pointer',
+                      color: '#2E8DCF',
+                      border: '1px solid #000000',
+                      backgroundColor: 'white',
+                      margin: '0'
                     }}
                     onClick={handleOpenInNewTab} // Open link in new tab
                   >
-                    Open Github Repo in new tab
+                    Open Github Repo in New Tab
                   </li>
+                  <li
+                    style = {{
+                      padding: '10px 15px',
+                      cursor: 'pointer',
+                      color: '#5594D0',
+                      border: '1px solid #000000',
+                      backgroundColor: 'white'
+                    }}
+                    onClick={closeContextMenu} // Open link in new tab
+                  >
+                    Option to Close this Menu
+                  </li>
+
                 </ul>
               </Box>
 
