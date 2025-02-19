@@ -5,6 +5,9 @@
 FROM python:3.11.0-slim-buster AS development
 WORKDIR /app/backend/
 COPY requirements.txt ./
+# Ensure entrypoint.sh is copied into the image
+COPY entrypoint.sh /app/entrypoint.sh
+
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
 ENV FLASK_DEBUG=1
@@ -13,15 +16,14 @@ ENV FLASK_APP=api
 COPY . ./
 WORKDIR /app/
 EXPOSE 8000
-ENTRYPOINT ["./entrypoint.sh", "-d"]
 
+ENTRYPOINT ["/app/entrypoint.sh", "-d"]
 
 # Base image
 # The base image contains the necessary dependencies to run the backend code.
 # It installs the necessary apt packages and installs the python dependencies. A new
 # user, "app", is created to run the code unprivileged.
 FROM python:3.11.0-slim-buster AS base
-
 # set environment variables to have python print to stdout
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
