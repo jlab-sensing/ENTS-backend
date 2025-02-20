@@ -17,10 +17,18 @@ function AddCellModal() {
   const [lat, setLat] = useState('');
   const archive = false;
   const [response, setResponse] = useState(null);
+  const [closeDoneButton, setCloseDonebutton] = useState(true); 
   const handleOpen = () => {
     setOpen(true);
     setResponse(null);
   };
+
+  const DoneButtonClose = () => {
+    setCloseDonebutton(false);
+    setOpen(false);
+
+  }
+
   const handleClose = () => setOpen(false);
   useEffect(() => {
     console.log(response);
@@ -94,8 +102,8 @@ function AddCellModal() {
                   id='outlined-basic'
                   label='Longitude'
                   variant='outlined'
-                  error={long.length === 0}
-                  helperText={!long.length ? 'longitude is required' : ''}
+                  error={long.length === 0 || isNaN(Number(long))}
+                  helperText={!long.length ? 'longitude is required' : isNaN(Number(long)) ? 'Please Enter Numbers' : ''}
                   value={long}
                   onChange={(e) => {
                     setLong(e.target.value);
@@ -105,8 +113,8 @@ function AddCellModal() {
                   id='outlined-basic'
                   label='Latitude'
                   variant='outlined'
-                  error={lat.length === 0}
-                  helperText={!lat.length ? 'latitude is required' : ''}
+                  error={lat.length === 0 || isNaN(Number(lat))}
+                  helperText={!lat.length ? 'latitude is required' : isNaN(Number(lat)) ? 'Please Enter Numbers' : ''}
                   value={lat}
                   onChange={(e) => {
                     setLat(e.target.value);
@@ -147,7 +155,7 @@ function AddCellModal() {
                 Here&apos;,s the endpoint to start uploading teros data, https://dirtviz.jlab.ucsc.edu/api/teros/
                 {response.id}
               </p>
-              <Button onClick={() => {}}>Done</Button>
+              <Button onClick={DoneButtonClose}>Done</Button>
             </>
           )}
         </Box>
