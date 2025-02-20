@@ -116,7 +116,6 @@ export default function VChart({ data, stream }) {
           display: true,
           text: 'Cell Voltage (mV)',
         },
-        min: 0,
         suggestedMax: 400,
         grid: {
           drawOnChartArea: false,
@@ -131,7 +130,6 @@ export default function VChart({ data, stream }) {
           display: true,
           text: 'Current (µA)',
         },
-        min: 0,
         suggestedMax: 160,
       },
     },
