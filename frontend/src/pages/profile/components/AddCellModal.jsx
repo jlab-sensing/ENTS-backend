@@ -102,8 +102,8 @@ function AddCellModal() {
                   id='outlined-basic'
                   label='Longitude'
                   variant='outlined'
-                  error={long.length === 0}
-                  helperText={!long.length ? 'longitude is required' : ''}
+                  error={long.length === 0 || isNaN(Number(long))}
+                  helperText={!long.length ? 'longitude is required' : isNaN(Number(long)) ? 'Please Enter Numbers' : ''}
                   value={long}
                   onChange={(e) => {
                     setLong(e.target.value);
@@ -113,8 +113,8 @@ function AddCellModal() {
                   id='outlined-basic'
                   label='Latitude'
                   variant='outlined'
-                  error={lat.length === 0}
-                  helperText={!lat.length ? 'latitude is required' : ''}
+                  error={lat.length === 0 || isNaN(Number(lat))}
+                  helperText={!lat.length ? 'latitude is required' : isNaN(Number(lat)) ? 'Please Enter Numbers' : ''}
                   value={lat}
                   onChange={(e) => {
                     setLat(e.target.value);
