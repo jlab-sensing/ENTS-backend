@@ -27,7 +27,7 @@ function Map() {
       <Nav />
       {/* MAP PAGE */}
       <MapContainer
-        center={[37.0006851012664, -122.0632022698968]}
+        center={[36.95620689807501, -122.05855126777698]}
         zoom={40}
         scrollWheelZoom={true}
         style={styles.leafletContainer}
@@ -36,9 +36,9 @@ function Map() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
         />
-        <Marker position={[37.0006851012664, -122.0632022698968]}>
+        <Marker position={[36.95620689807501, -122.05855126777698]}>
           <Popup>
-            This is the location of our lab in Jack Baskin Engineering.
+            This is the location of our lab at Westside Research Park.
           </Popup>
         </Marker>
       </MapContainer>
