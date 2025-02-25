@@ -13,7 +13,7 @@ services:
     depends_on:
       - postgresql
     volumes:
-      - './backend:/home/app'
+      - './backend:/app'
 
   worker:
     build:
@@ -25,13 +25,13 @@ services:
       - backend
       - valkey
     volumes:
-      - './backend:/home/app'
+      - './backend:/app'
 
   frontend:
     build:
       context: ./frontend
       dockerfile: ./Dockerfile
-      target: production
+      target: development
     image: dirtviz-frontend
     env_file:
       - .env
