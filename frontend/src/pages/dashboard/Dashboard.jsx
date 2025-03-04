@@ -2,6 +2,7 @@ import { React, useState, useEffect } from 'react';
 import { DateTime } from 'luxon';
 import DownloadBtn from './components/DownloadBtn';
 import { Box, Grid, Stack, Divider, Button } from '@mui/material';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 import DateRangeSel from './components/DateRangeSel';
 import CellSelect from './components/CellSelect';
 import PowerCharts from './components/PowerCharts';
@@ -76,15 +77,46 @@ function Dashboard() {
               startDate={startDate}
               endDate={endDate}
             />
-            <Button
-              variant='outlined'
-              onClick={() => {
-                console.log('test');
-                setStream(!stream);
-              }}
-            >
-              {stream ? 'streaming' : 'hourly'}
-            </Button>
+            <Box display="flex" justifyContent="center" alignItems="center">
+  <ToggleButtonGroup
+    value={stream ? "streaming" : "hourly"}
+    exclusive
+    onChange={(event, newMode) => {
+      if (newMode !== null) {
+        setStream(newMode === "streaming");
+      }
+    }}
+    sx={{
+      backgroundColor: '#5d5f62',
+      borderRadius: '40px',
+      padding: '4px',
+      '& .MuiToggleButton-root': {
+        color: 'white',
+        border: 'none',
+        fontWeight: 'bold',
+        padding: '8px 16px',
+        borderRadius: '40px',
+        transition: 'all 0.3s ease-in-out',
+      },
+      '& .Mui-selected': {
+        backgroundColor: 'white',
+        color: 'black',
+        boxShadow: '0px 4px 10px rgba(255, 255, 255, 0)',
+        transition: 'all 0.3s ease-in-out',
+      },
+      '& .MuiToggleButton-root:hover': {
+        backgroundColor: 'rgba(255, 255, 255, 0.41)',
+        transition: 'all 0.3s ease-in-out',
+        color: 'black',
+
+      },
+    }}
+  >
+    <ToggleButton value="hourly">Hourly</ToggleButton>
+    <ToggleButton value="streaming">Streaming</ToggleButton>
+  </ToggleButtonGroup>
+</Box>
+
           </Stack>
           <Grid
             container
