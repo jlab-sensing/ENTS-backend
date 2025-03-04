@@ -87,7 +87,7 @@ function Dashboard() {
       }
     }}
     sx={{
-      backgroundColor: '#5d5f62',
+      backgroundColor: '#333',
       borderRadius: '40px',
       padding: '4px',
       '& .MuiToggleButton-root': {
@@ -101,7 +101,7 @@ function Dashboard() {
       '& .Mui-selected': {
         backgroundColor: 'white',
         color: 'black',
-        boxShadow: '0px 4px 10px rgba(255, 255, 255, 0)',
+        boxShadow: '0px 4px 10px rgba(255, 255, 255, 0.1)',
         transition: 'all 0.3s ease-in-out',
       },
       '& .MuiToggleButton-root:hover': {
