@@ -12,6 +12,8 @@ import { useCells } from '../../services/cell';
 import ArchiveModal from './components/ArchiveModal';
 import { useSearchParams } from 'react-router-dom';
 import CopyLinkBtn from './components/CopyLinkBtn';
+import SoilPotCharts from './components/SoilPotChart';
+import PresHumChart from './components/PresHumChart';
 
 function Dashboard() {
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
@@ -103,8 +105,10 @@ function Dashboard() {
           direction='column'
           divider={<Divider orientation='horizontal' flexItem />}
           justifyContent='spaced-evently'
-          sx={{ height: '100vh', boxSizing: 'border-box' }}
+          sx={{ height: '100vh', width: '95%', boxSizing: 'border-box' }}
         >
+          <SoilPotCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          <PresHumChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
         </Stack>
       </Box>

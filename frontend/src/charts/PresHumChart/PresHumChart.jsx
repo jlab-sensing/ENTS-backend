@@ -1,11 +1,11 @@
 import { React } from 'react';
 import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
-import ChartWrapper from './ChartWrapper';
-import { chartPlugins } from './plugins';
-import { getMaxAxisAndStepValues } from './alignAxis';
+import ChartWrapper from '../ChartWrapper';
+import { chartPlugins } from '../plugins';
+import { getMaxAxisAndStepValues } from '../alignAxis';
 
-export default function PresHumchart({ data }) {
+export default function PresHumChart({ data }) {
   const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 8, .2);
   const chartOptions = {
     maintainAspectRatio: false,
@@ -68,7 +68,7 @@ export default function PresHumchart({ data }) {
   return <ChartWrapper id='presHum' data={data} options={chartOptions} />;
 }
 
-SensorChartTemplate.propTypes = {
+PresHumChart.propTypes = {
   id: PropTypes.string,
   data: PropTypes.object,
 };
