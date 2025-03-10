@@ -6,6 +6,7 @@ import VChart from '../../../charts/VChart/VChart';
 import { DateTime } from 'luxon';
 import { getPowerData, streamPowerData } from '../../../services/power';
 import useInterval from '../../../hooks/useInterval';
+import { Colors } from 'chart.js';
 function PowerCharts({ cells, startDate, endDate, stream }) {
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
@@ -21,10 +22,11 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
   const [loadedCells, setLoadedCells] = useState([]);
   // Initialize the combined chart data with empty datasets
 
-  // Access data for each cell and update the combined charts accordingly
-  const pColors = ['lightgreen', 'darkgreen'];
-  const vColors = ['purple', 'blue'];
-  const iColors = ['orange', 'red'];
+  const pColors = ['#377eb8', '#56b4e9', '#009e73', '#e41a1c', '#e69f00', '#f781bf', '#a65628', '#000000'];
+  const vColors = ['#377eb8', '#56b4e9', '#009e73', '#e41a1c', '#e69f00', '#f781bf', '#a65628', '#000000']; 
+  const iColors = ['#4a90d9', '#5ccfe6', '#00c47e', '#ff5e5b', '#f4a742', '#ff85c2', '#c07d50', '#333333'];
+  
+  
 
   //** gets power data from backend */
   async function getPowerChartData() {
