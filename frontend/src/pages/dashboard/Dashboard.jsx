@@ -47,12 +47,12 @@ function Dashboard() {
   }, [searchParams, cells.data]);
   return (
     <>
-      <Box>
+      <Box sx ={{display: 'flex', minHeight: '100vh', flexDirection: 'column'}}>
         <Stack
           direction='column'
           divider={<Divider orientation='horizontal' flexItem />}
-          justifyContent='spaced-evently'
-          sx={{ height: '100vh', boxSizing: 'border-box' }}
+          justifyContent='space-evenly'
+          sx={{flexGrow: 1, boxSizing: 'border-box' }}
         >
           <Stack direction='row' alignItems='center' justifyContent={'space-evenly'} sx={{ p: 2 }} spacing={3}>
             <BackBtn />
@@ -102,8 +102,8 @@ function Dashboard() {
         <Stack
           direction='column'
           divider={<Divider orientation='horizontal' flexItem />}
-          justifyContent='spaced-evently'
-          sx={{ height: '100vh', boxSizing: 'border-box' }}
+          justifyContent='space-evenly'
+          sx={{flexGrow: 0, boxSizing: 'border-box' }}
         >
           <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
         </Stack>
