@@ -31,7 +31,7 @@ services:
     build:
       context: ./frontend
       dockerfile: ./Dockerfile
-      target: development
+      target: production
     image: dirtviz-frontend
     env_file:
       - .env
