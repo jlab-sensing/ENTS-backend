@@ -2,6 +2,7 @@
 *.csv
 .DS_Store
 prod.env
+.env
 
 ## Python
 
