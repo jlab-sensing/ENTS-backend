@@ -6,7 +6,6 @@ import VChart from '../../../charts/VChart/VChart';
 import { DateTime } from 'luxon';
 import { getPowerData, streamPowerData } from '../../../services/power';
 import useInterval from '../../../hooks/useInterval';
-import { Colors } from 'chart.js';
 function PowerCharts({ cells, startDate, endDate, stream }) {
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;

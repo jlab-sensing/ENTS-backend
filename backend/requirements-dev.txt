@@ -1,4 +1,5 @@
 ruff
+black
 watchdog
 pytest-postgresql
 pytest

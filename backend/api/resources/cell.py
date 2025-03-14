@@ -5,7 +5,6 @@ from ..schemas.cell_schema import CellSchema
 
 # from ..conn import engine
 from ..models.cell import Cell as CellModel
-from ..models.cell import Tag as TagModel
 from ..schemas.add_cell_schema import AddCellSchema
 
 cells_schema = CellSchema(many=True)
