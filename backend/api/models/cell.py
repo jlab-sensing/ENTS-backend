@@ -5,10 +5,12 @@ from .user import User
 """"This is the reference; we stole this from commenter
 https://stackoverflow.com/questions/5756559/how-to-build-many-to-many-relations-using-sqlalchemy-a-good-example"""
 
+
 class Cell_Tag(db.Model):
     __tablename__ = "cell_tag"
     cell_id = db.Column(db.Integer, db.ForeignKey("cell.id"), primary_key=True)
     tag_id = db.Column(db.Integer, db.ForeignKey("tag.id"), primary_key=True)
+
 
 class Cell(db.Model):
     """Table of cells"""
@@ -24,7 +26,8 @@ class Cell(db.Model):
     user_id = db.Column(db.Uuid(), db.ForeignKey("user.id"))
 
     user = db.relationship("User", backref="cell")
-    tags = db.relationship("Tag", secondary = Cell_Tag.__table__, backref = "cell")
+    tags = db.relationship("Tag", secondary=Cell_Tag.__table__, backref="cell")
+
     def __init__(
         self,
         name="",
@@ -74,18 +77,19 @@ class Cell(db.Model):
         db.session.add(self)
         db.session.commit()
 
+
 class Tag(db.Model):
     """Table of Tags"""
 
     __tablename__ = "tag"
 
-    id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.Text(), nullable = False, unique = True)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Text(), nullable=False, unique=True)
 
-    cells = db.relationship("Cell", secondary = Cell_Tag.__table__, backref = "tag")
+    cells = db.relationship("Cell", secondary=Cell_Tag.__table__, backref="tag")
+
     def __init__(self, name):
         self.name = name
 
     def __repr__(self):
         return repr(self.name)
-
