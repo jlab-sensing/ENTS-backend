@@ -17,7 +17,7 @@ function AddCellModal() {
   const [lat, setLat] = useState('');
   const archive = false;
   const [response, setResponse] = useState(null);
-  const [closeDoneButton, setCloseDonebutton] = useState(true); 
+  const [setCloseDonebutton] = useState(true); 
   const handleOpen = () => {
     setOpen(true);
     setResponse(null);
