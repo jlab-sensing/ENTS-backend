@@ -36,6 +36,15 @@ export const addCell = (cellName, location, longitude, latitude, archive, email)
     });
 };
 
+export const deleteCell = (cellId) => {
+  return axios
+    .delete(`${process.env.PUBLIC_URL}/api/cell/${cellId}`)
+    .then((res) => res.data)
+    .catch((error) => {
+      console.log("Error deleting cell:", error.response ? error.response.data : error.message);
+    });
+};
+
 export const getUserCells = (axiosPrivate) => {
   return axiosPrivate.get(`${process.env.PUBLIC_URL}/cell/?user=True`).then((res) => res.data);
 };
