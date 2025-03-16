@@ -1,10 +1,10 @@
-import { Outlet } from 'react-router-dom';
-import Nav from '../../components/Nav';
-import SideBar from './components/SideBar';
 import { Box } from '@mui/material';
+import { Outlet } from 'react-router-dom';
 import useAuth from '../../auth/hooks/useAuth';
 import useAxiosPrivate from '../../auth/hooks/useAxiosPrivate';
+import Nav from '../../components/Nav';
 import { useUserCells } from '../../services/cell';
+import SideBar from './components/SideBar';
 function Profile() {
   const axiosPrivate = useAxiosPrivate();
   const { user, setUser, loggedIn, setLoggedIn } = useAuth();
@@ -47,7 +47,7 @@ function Profile() {
             overflowY: 'auto',
           }}
         >
-          <Outlet context={[data, isLoading, isError, refetch, user, axiosPrivate]} />
+          <Outlet context={[data, isLoading, isError, refetch, user, setUser, axiosPrivate]} />
         </Box>
       </Box>
     </Box>
