@@ -17,7 +17,7 @@ function AddCellModal() {
   const [lat, setLat] = useState('');
   const archive = false;
   const [response, setResponse] = useState(null);
-  const [setCloseDonebutton] = useState(true); 
+  const [setCloseDonebutton] = useState(true);
   const handleOpen = () => {
     setOpen(true);
     setResponse(null);
@@ -26,8 +26,7 @@ function AddCellModal() {
   const DoneButtonClose = () => {
     setCloseDonebutton(false);
     setOpen(false);
-
-  }
+  };
 
   const handleClose = () => setOpen(false);
   useEffect(() => {
@@ -103,7 +102,9 @@ function AddCellModal() {
                   label='Longitude'
                   variant='outlined'
                   error={long.length === 0 || isNaN(Number(long))}
-                  helperText={!long.length ? 'longitude is required' : isNaN(Number(long)) ? 'Please Enter Numbers' : ''}
+                  helperText={
+                    !long.length ? 'longitude is required' : isNaN(Number(long)) ? 'Please Enter Numbers' : ''
+                  }
                   value={long}
                   onChange={(e) => {
                     setLong(e.target.value);

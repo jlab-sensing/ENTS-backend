@@ -1,4 +1,15 @@
-import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fade, TextField, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Fade,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import useAxiosPrivate from '../../../auth/hooks/useAxiosPrivate';
@@ -8,7 +19,7 @@ function AccountInfo() {
   const contextData = useOutletContext();
   const user = contextData?.[4]; // Keeping the same context access pattern as original
   const setUser = contextData?.[5]; // Get the setUser function from context
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -106,9 +117,9 @@ function AccountInfo() {
       }}
     >
       <Fade in={showSuccess} timeout={700}>
-        <Alert 
-          severity="success" 
-          sx={{ 
+        <Alert
+          severity='success'
+          sx={{
             position: 'absolute',
             top: 16,
             right: 16,
@@ -124,10 +135,10 @@ function AccountInfo() {
         <Typography variant='h5' sx={{ color: '#588157', fontWeight: 'bold' }}>
           Account Info
         </Typography>
-        <Button 
-          variant="contained" 
+        <Button
+          variant='contained'
           onClick={handleEdit}
-          sx={{ 
+          sx={{
             backgroundColor: '#588157',
             '&:hover': {
               backgroundColor: '#3a5a40',
@@ -150,7 +161,7 @@ function AccountInfo() {
           Email: {user.email}
         </Typography>
       </Box>
-      
+
       <Box
         sx={{
           backgroundColor: 'Gray',
@@ -164,28 +175,30 @@ function AccountInfo() {
         </Typography>
       </Box>
 
-      <Dialog 
-        open={isEditing} 
+      <Dialog
+        open={isEditing}
         onClose={handleCancel}
         PaperProps={{
           sx: {
             width: '400px',
             maxWidth: '90vw',
             borderRadius: '12px',
-          }
+          },
         }}
       >
-        <DialogTitle sx={{ 
-          borderBottom: '1px solid #E9ECEF',
-          px: 3,
-          py: 2,
-        }}>
+        <DialogTitle
+          sx={{
+            borderBottom: '1px solid #E9ECEF',
+            px: 3,
+            py: 2,
+          }}
+        >
           Edit Profile
         </DialogTitle>
         <DialogContent sx={{ p: 3 }}>
           <TextField
             fullWidth
-            label="First Name"
+            label='First Name'
             value={formData.first_name}
             onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
             sx={{ mb: 2, mt: 1 }}
@@ -194,33 +207,33 @@ function AccountInfo() {
           />
           <TextField
             fullWidth
-            label="Last Name"
+            label='Last Name'
             value={formData.last_name}
             onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
             error={error && error.includes('Last name')}
             required
           />
           {error && (
-            <Typography color="error" sx={{ mt: 2, fontSize: '0.875rem' }}>
+            <Typography color='error' sx={{ mt: 2, fontSize: '0.875rem' }}>
               {error}
             </Typography>
           )}
         </DialogContent>
         <DialogActions sx={{ p: 2, borderTop: '1px solid #E9ECEF' }}>
-          <Button 
+          <Button
             onClick={handleCancel}
-            sx={{ 
+            sx={{
               color: '#6C757D',
             }}
             disabled={isSubmitting}
           >
             Cancel
           </Button>
-          <Button 
-            variant="contained" 
+          <Button
+            variant='contained'
             onClick={handleSave}
             disabled={isSubmitting}
-            sx={{ 
+            sx={{
               backgroundColor: '#588157',
               '&:hover': {
                 backgroundColor: '#3a5a40',
