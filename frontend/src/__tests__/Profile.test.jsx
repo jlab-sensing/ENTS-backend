@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import CellsList from '../pages/profile/components/CellsList';
 import AccountInfo from '../pages/profile/components/AccountInfo';
+import { useUserCells } from '../services/cell';
 import DeleteCellModal from '../pages/profile/components/DeleteCellModal';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { getCells, deleteCell, getUserCells } from '../services/cell';
