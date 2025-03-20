@@ -59,10 +59,10 @@ class Cell(Resource):
             cell.save()
             return {"message": "Successfully updated cell"}
         return jsonify({"message": "Cell not found"}), 404
-    
+
     def delete(self, cellId):
         cell = CellModel.get(cellId)
         if not cell:
-            return jsonify({"message": "Cell not found"}),404
-        cell.delete() 
+            return jsonify({"message": "Cell not found"}), 404
+        cell.delete()
         return {"message": "Cell deleted successfully"}
