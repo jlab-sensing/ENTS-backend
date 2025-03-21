@@ -6,7 +6,7 @@ import { chartPlugins } from '../plugins';
 import { getMaxAxisAndStepValues } from '../alignAxis';
 
 export default function PresHumChart({ data }) {
-  const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 8, .2);
+  const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 8, 0.2);
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -60,7 +60,7 @@ export default function PresHumChart({ data }) {
         },
         min: 0,
         max: leftYMax,
-    },
+      },
     },
     plugins: structuredClone(chartPlugins),
   };

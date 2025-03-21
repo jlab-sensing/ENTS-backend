@@ -22,10 +22,8 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
   // Initialize the combined chart data with empty datasets
 
   const pColors = ['#377eb8', '#56b4e9', '#009e73', '#e41a1c', '#e69f00', '#f781bf', '#a65628', '#000000'];
-  const vColors = ['#377eb8', '#56b4e9', '#009e73', '#e41a1c', '#e69f00', '#f781bf', '#a65628', '#000000']; 
+  const vColors = ['#377eb8', '#56b4e9', '#009e73', '#e41a1c', '#e69f00', '#f781bf', '#a65628', '#000000'];
   const iColors = ['#4a90d9', '#5ccfe6', '#00c47e', '#ff5e5b', '#f4a742', '#ff85c2', '#c07d50', '#333333'];
-  
-  
 
   //** gets power data from backend */
   async function getPowerChartData() {

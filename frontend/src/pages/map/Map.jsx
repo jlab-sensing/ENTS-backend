@@ -37,9 +37,7 @@ function Map() {
           url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
         />
         <Marker position={[36.95620689807501, -122.05855126777698]}>
-          <Popup>
-            This is the location of our lab at Westside Research Park.
-          </Popup>
+          <Popup>This is the location of our lab at Westside Research Park.</Popup>
         </Marker>
       </MapContainer>
     </Box>
