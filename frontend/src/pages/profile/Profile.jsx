@@ -5,6 +5,7 @@ import { Box } from '@mui/material';
 import useAuth from '../../auth/hooks/useAuth';
 import useAxiosPrivate from '../../auth/hooks/useAxiosPrivate';
 import { useUserCells } from '../../services/cell';
+
 function Profile() {
   const axiosPrivate = useAxiosPrivate();
   const { user, setUser, loggedIn, setLoggedIn } = useAuth();
@@ -14,7 +15,7 @@ function Profile() {
   return (
     <Box
       sx={{
-        height: '100vh',
+        minHeight: '100vh', 
         width: '100%',
         position: 'relative',
         scrollSnapAlign: 'center',
