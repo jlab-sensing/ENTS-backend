@@ -52,7 +52,14 @@ Alternatively, you can also:
 
 ### Generating environmental variables
 
-The frontend and backend containers require environmental variables to be set in order to run. These are stored in a `.env` file in the root directory. The `.env` is used to provide the necessary environment variables to the local development containers and can be used as a base to setup environment variables for a production environment.
+The frontend and backend containers require environmental variables to be set in order to run. These are stored in a `.env` file in the root directory, which you will need to create based on the provided `.env.example` template. Copy `.env.example` to `.env` and update the values as needed.
+
+```bash
+cp .env.example .env
+# Now edit .env with your own values
+```
+
+The `.env` file is used to provide the necessary environment variables to the local development containers and can be used as a base to setup environment variables for a production environment. The `.env` file should never be committed to the repository as it contains sensitive information.
 
 > NOTE: We have run into issues with syntax of AWS ECS with the environment file. The string encapsulation characters `'` and `"` are treated as literals, while [docker supports quoting](https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/#env-file-syntax).
 
