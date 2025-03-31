@@ -106,11 +106,11 @@ jobs:
 
       - name: Save all logs
         if: always()
-        run: docker compose logs -t > dirtviz.log
+        run: ENV_FILE=.env.example docker compose logs -t > dirtviz.log
 
       - name: Save short logs
         if: always()
-        run: docker compose logs -t --since ${{ steps.timestamp.outputs.start_time }} > dirtviz_short.log
+        run: ENV_FILE=.env.example docker compose logs -t --since ${{ steps.timestamp.outputs.start_time }} > dirtviz_short.log
 
       - name: Check for errors
         run: "! grep -i 'error' dirtviz_short.log"
