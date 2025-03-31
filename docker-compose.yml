@@ -7,7 +7,7 @@ services:
       target: production
     image: dirtviz-backend
     env_file:
-      - ${ENV_FILE:-.env.example}
+      - ${ENV_FILE:-.env}
     ports:
       - "8000:8000"
     depends_on:
@@ -20,7 +20,7 @@ services:
       context: ./backend
       target: prodworker
     env_file:
-      - ${ENV_FILE:-.env.example}
+      - ${ENV_FILE:-.env}
     depends_on:
       - backend
       - valkey
@@ -34,7 +34,7 @@ services:
       target: production
     image: dirtviz-frontend
     env_file:
-      - ${ENV_FILE:-.env.example}
+      - ${ENV_FILE:-.env}
     ports:
       - "3000:80"
     depends_on:
@@ -48,7 +48,7 @@ services:
       context: ./backend
       target: migration
     env_file:
-      - ${ENV_FILE:-.env.example}
+      - ${ENV_FILE:-.env}
     depends_on:
       - postgresql
 
