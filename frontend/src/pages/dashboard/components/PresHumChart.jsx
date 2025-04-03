@@ -10,7 +10,7 @@ function PresHumCharts({ cells, startDate, endDate, stream }) {
   // CONFIGURATION
   // List out measurements that your chart is going to display
   const sensor_name = 'bme280';
-  const measurements = ['pressure', 'humidity' ];
+  const measurements = ['pressure', 'humidity'];
   const units = ['hPa', '%'];
   // Colors of data points. Each color represents the next color
   // of the data points as the user selects more cells to compare.

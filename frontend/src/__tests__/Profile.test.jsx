@@ -1,11 +1,12 @@
 import { render, screen } from '@testing-library/react';
 // import { waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import CellsList from '../pages/profile/components/CellsList';
 import AccountInfo from '../pages/profile/components/AccountInfo';
+import CellsList from '../pages/profile/components/CellsList';
 // import { useUserCells } from '../services/cell';
-import { describe, it, expect, vi, afterEach } from 'vitest';
 import { useOutletContext } from 'react-router-dom';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { AuthContext } from '../auth/AuthContextProvider';
 
 // Mock the entire react-router-dom module
 vi.mock('react-router-dom', () => ({
@@ -27,19 +28,33 @@ vi.mock('../pages/profile/components/AddCellModal', () => ({
 // Create a query client
 const queryClient = new QueryClient();
 
+// Mock auth context value
+const mockAuthContext = {
+  auth: {},
+  setAuth: vi.fn(),
+  user: null,
+  setUser: vi.fn(),
+  loggedIn: false,
+  setLoggedIn: vi.fn(),
+};
+
 // Helper function to render the component within the QueryClientProvider
 const renderCellsList = () =>
   render(
-    <QueryClientProvider client={queryClient}>
-      <CellsList />
-    </QueryClientProvider>,
+    <AuthContext.Provider value={mockAuthContext}>
+      <QueryClientProvider client={queryClient}>
+        <CellsList />
+      </QueryClientProvider>
+    </AuthContext.Provider>,
   );
 
 const renderAccountInfo = () =>
   render(
-    <QueryClientProvider client={queryClient}>
-      <AccountInfo />
-    </QueryClientProvider>,
+    <AuthContext.Provider value={mockAuthContext}>
+      <QueryClientProvider client={queryClient}>
+        <AccountInfo />
+      </QueryClientProvider>
+    </AuthContext.Provider>,
   );
 //Test cases
 

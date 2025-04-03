@@ -1,5 +1,5 @@
 import { React, useState } from 'react';
-import { Button, Box, Stack, Modal, Fade,Tooltip } from '@mui/material';
+import { Button, Box, Stack, Modal, Fade, Tooltip } from '@mui/material';
 import { DndContext, closestCorners } from '@dnd-kit/core';
 import { DropList } from './DropList/DropList';
 import archive from '../../../assets/archive.svg';
@@ -86,27 +86,27 @@ export default function ArchiveModal({ cells }) {
 
   return (
     <>
-    <Tooltip
-          title='Archive'
-          placement='bottom'
-          disableInteractive
-          slotProps={{
-            popper: {
-              modifiers: [
-                {
-                  name: 'offset',
-                  options: {
-                    offset: [0, -11],
-                  },
+      <Tooltip
+        title='Archive'
+        placement='bottom'
+        disableInteractive
+        slotProps={{
+          popper: {
+            modifiers: [
+              {
+                name: 'offset',
+                options: {
+                  offset: [0, -11],
                 },
-              ],
-            },
-          }}
-        >
-      <Button variant='outlined' onClick={handleOpen} sx={{ heigh: '16px', width: '16px' }}>
-        <Box component='img' src={archive}></Box>
-      </Button>
-    </Tooltip>
+              },
+            ],
+          },
+        }}
+      >
+        <Button variant='outlined' onClick={handleOpen} sx={{ heigh: '16px', width: '16px' }}>
+          <Box component='img' src={archive}></Box>
+        </Button>
+      </Tooltip>
       <Modal open={open} onClose={handleClose} closeAfterTransition>
         <Fade in={open}>
           <Box

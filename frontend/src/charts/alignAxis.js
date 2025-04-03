@@ -18,7 +18,7 @@ function calculateMax(tickCount, max, factor) {
   }
   // If max is not divisible by amount of labels, let's find out how much there
   // is missing from max so it could be divisible
-  const diffDivisibleByAmountOfLabels = (factor * tickCount) - (max % (factor * tickCount));
+  const diffDivisibleByAmountOfLabels = factor * tickCount - (max % (factor * tickCount));
 
   // Add missing value to max to get it divisible and achieve perfect fit
   // Also finds the next multiple to get even & readable spacing, based on label count
@@ -40,8 +40,8 @@ export function getMaxAxisAndStepValues(datasetsLeft, datasetsRight, tickCount, 
   let rightYStep = 2;
   if (datasetsLeft !== undefined && datasetsLeft.length !== 0) {
     if (datasetsLeft[0].data[0] != undefined) {
-      console.log(datasetsLeft[0].data[0], datasetsLeft.length !== 0)
-      leftYMax = datasetsLeft[0].data[0].y; 
+      console.log(datasetsLeft[0].data[0], datasetsLeft.length !== 0);
+      leftYMax = datasetsLeft[0].data[0].y;
     }
     datasetsLeft.forEach((datasetLeft) => {
       if (datasetLeft !== undefined && datasetLeft.length !== 0 && datasetLeft.data.length !== 0) {
@@ -55,8 +55,8 @@ export function getMaxAxisAndStepValues(datasetsLeft, datasetsRight, tickCount, 
 
   if (datasetsRight !== undefined && datasetsRight.length != 0) {
     if (datasetsRight[0].data[0] != undefined) {
-      console.log(datasetsRight[0].data[0], datasetsRight.length !== 0)
-      rightYMax = datasetsRight[0].data[0].y; 
+      console.log(datasetsRight[0].data[0], datasetsRight.length !== 0);
+      rightYMax = datasetsRight[0].data[0].y;
     }
     datasetsRight.forEach((datasetRight) => {
       if (datasetRight !== undefined && datasetRight.length !== 0 && datasetRight.data.length !== 0) {
@@ -67,10 +67,10 @@ export function getMaxAxisAndStepValues(datasetsLeft, datasetsRight, tickCount, 
       }
     });
   }
-  
+
   // steps should be positive
-  leftYStep = Math.abs(leftYStep)
-  rightYStep = Math.abs(rightYStep)
-  console.log("axis", leftYMax, leftYStep)
+  leftYStep = Math.abs(leftYStep);
+  rightYStep = Math.abs(rightYStep);
+  console.log('axis', leftYMax, leftYStep);
   return { leftYMax, rightYMax, leftYStep, rightYStep };
 }
