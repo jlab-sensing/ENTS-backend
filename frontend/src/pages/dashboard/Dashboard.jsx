@@ -7,7 +7,7 @@ import CellSelect from './components/CellSelect';
 import PowerCharts from './components/PowerCharts';
 import TerosCharts from './components/TerosCharts';
 import BackBtn from './components/BackBtn';
-import SensorChart from './components/SensorChart';
+import LeafWetnessChart from './components/LeafWetnessChart';
 import { useCells } from '../../services/cell';
 import ArchiveModal from './components/ArchiveModal';
 import { useSearchParams } from 'react-router-dom';
@@ -109,7 +109,7 @@ function Dashboard() {
         >
           <SoilPotCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           <PresHumChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-          <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          <LeafWetnessChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
         </Stack>
       </Box>
     </>

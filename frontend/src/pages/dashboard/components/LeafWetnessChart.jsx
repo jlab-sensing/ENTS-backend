@@ -6,10 +6,10 @@ import SensorChartTemplate from '../../../charts/SensorChartTemplate';
 import { getSensorData, streamSensorData } from '../../../services/sensor';
 import useInterval from '../../../hooks/useInterval';
 
-function SensorChart({ cells, startDate, endDate, stream }) {
+function LeafWetnessChart({ cells, startDate, endDate, stream }) {
   // CONFIGURATION
   // List out measurements that your chart is going to display
-  const sensor_name = 'EXAMPLE';
+  const sensor_name = 'phytos31';
   const measurements = ['voltage'];
   const units = ['V'];
   // Colors of data points. Each color represents the next color
@@ -251,11 +251,11 @@ function SensorChart({ cells, startDate, endDate, stream }) {
   );
 }
 
-SensorChart.propTypes = {
+LeafWetnessChart.propTypes = {
   cells: PropTypes.array,
   startDate: PropTypes.any,
   endDate: PropTypes.any,
   stream: PropTypes.bool,
 };
 
-export default SensorChart;
+export default LeafWetnessChart;
