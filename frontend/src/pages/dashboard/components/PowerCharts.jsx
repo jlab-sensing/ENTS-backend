@@ -8,7 +8,7 @@ import { getPowerData, streamPowerData } from '../../../services/power';
 import useInterval from '../../../hooks/useInterval';
 function PowerCharts({ cells, startDate, endDate, stream }) {
   //** QUICK WAY to change stream time in seconds */
-  const interval = 500;
+  const interval = 1000;
   const chartSettings = {
     labels: [],
     datasets: [],
