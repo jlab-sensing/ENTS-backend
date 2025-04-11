@@ -1,11 +1,11 @@
-import { React, useState, useEffect } from 'react';
 import { Grid } from '@mui/material';
-import PropTypes from 'prop-types';
 import { DateTime } from 'luxon';
-import VwcChart from '../../../charts/VwcChart/VwcChart';
+import PropTypes from 'prop-types';
+import { React, useEffect, useState } from 'react';
 import TempChart from '../../../charts/TempChart/TempChart';
-import { getTerosData, streamTerosData } from '../../../services/teros';
+import VwcChart from '../../../charts/VwcChart/VwcChart';
 import useInterval from '../../../hooks/useInterval';
+import { getTerosData, streamTerosData } from '../../../services/teros';
 
 function TerosCharts({ cells, startDate, endDate, stream }) {
   //** QUICK WAY to change stream time in seconds */
@@ -288,10 +288,10 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
   return (
     <>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <VwcChart data={vwcChartData} stream={stream} />
+        <VwcChart data={vwcChartData} stream={stream} startDate={startDate} endDate={endDate} />
       </Grid>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <TempChart data={tempChartData} stream={stream} />
+        <TempChart data={tempChartData} stream={stream} startDate={startDate} endDate={endDate} />
       </Grid>
     </>
   );

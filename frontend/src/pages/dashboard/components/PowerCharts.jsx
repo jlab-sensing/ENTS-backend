@@ -1,11 +1,11 @@
-import { React, useState, useEffect } from 'react';
 import { Grid } from '@mui/material';
+import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
+import { React, useEffect, useState } from 'react';
 import PwrChart from '../../../charts/PwrChart/PwrChart';
 import VChart from '../../../charts/VChart/VChart';
-import { DateTime } from 'luxon';
-import { getPowerData, streamPowerData } from '../../../services/power';
 import useInterval from '../../../hooks/useInterval';
+import { getPowerData, streamPowerData } from '../../../services/power';
 function PowerCharts({ cells, startDate, endDate, stream }) {
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
@@ -283,10 +283,10 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
   return (
     <>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <VChart data={vChartData} stream={stream} />
+        <VChart data={vChartData} stream={stream} startDate={startDate} endDate={endDate} />
       </Grid>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <PwrChart data={pwrChartData} stream={stream} />
+        <PwrChart data={pwrChartData} stream={stream} startDate={startDate} endDate={endDate} />
       </Grid>
     </>
   );

@@ -1,11 +1,11 @@
-import { React } from 'react';
 import 'chartjs-adapter-luxon';
-import PropTypes from 'prop-types';
-import ChartWrapper from '../ChartWrapper';
 import { DateTime } from 'luxon';
+import PropTypes from 'prop-types';
+import { React } from 'react';
 import { getMaxAxisAndStepValues } from '../alignAxis';
+import ChartWrapper from '../ChartWrapper';
 
-export default function VwcChart({ data, stream }) {
+export default function VwcChart({ data, stream, startDate, endDate }) {
   const { leftYMax, rightYMax, leftYStep, rightYStep } = getMaxAxisAndStepValues(
     data.datasets.filter((_, i) => i % 2 == 0),
     data.datasets.filter((_, i) => i % 2 == 1),
@@ -38,6 +38,8 @@ export default function VwcChart({ data, stream }) {
             day: 'MM/dd',
           },
         },
+        min: stream ? undefined : startDate?.toJSDate(),
+        max: stream ? undefined : endDate?.toJSDate(),
       },
       ecAxis: {
         type: 'linear',
@@ -145,4 +147,6 @@ export default function VwcChart({ data, stream }) {
 VwcChart.propTypes = {
   data: PropTypes.object,
   stream: PropTypes.bool,
+  startDate: PropTypes.object,
+  endDate: PropTypes.object,
 };
