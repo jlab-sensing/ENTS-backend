@@ -722,3 +722,241 @@ describe('testing side button events', () => {
     expect(fullscreenModalElement).toBeInTheDocument();
   });
 });
+
+describe('testing side button events', () => {
+  it('should toggle zoom', async () => {
+    const user = userEvent.setup();
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={data}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    const chartElement = await screen.findByTestId(/chart-container/i);
+    const zoomBtnElement = await screen.findByLabelText(/^Zoom$/);
+    expect(ChartJS.getChart(chartElement).config.options.plugins.zoom.zoom.drag.enabled).toBe(false);
+    await user.click(zoomBtnElement);
+    expect(ChartJS.getChart(chartElement).config.options.plugins.zoom.zoom.drag.enabled).toBe(true);
+  });
+
+  it('should toggle pan', async () => {
+    const user = userEvent.setup();
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={data}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    const chartElement = await screen.findByTestId(/chart-container/i);
+    const panBtnElement = await screen.findByLabelText(/^Pan$/);
+    expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(true);
+    await user.click(panBtnElement);
+    expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(false);
+  });
+
+  it('should untoggle pan when zoom is clicked', async () => {
+    const user = userEvent.setup();
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={data}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    const chartElement = await screen.findByTestId(/chart-container/i);
+    const zoomBtnElement = await screen.findByLabelText(/^Zoom$/);
+    expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(true);
+    expect(ChartJS.getChart(chartElement).config.options.plugins.zoom.zoom.drag.enabled).toBe(false);
+    await user.click(zoomBtnElement);
+    expect(ChartJS.getChart(chartElement).config.options.plugins.zoom.zoom.drag.enabled).toBe(true);
+    expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(false);
+  });
+
+  it('should untoggle zoom when pan is clicked', async () => {
+    const user = userEvent.setup();
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={data}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    const chartElement = await screen.findByTestId(/chart-container/i);
+    const panBtnElement = await screen.findByLabelText(/^Pan$/);
+    const zoomBtnElement = await screen.findByLabelText(/^Zoom$/);
+    expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(true);
+    expect(ChartJS.getChart(chartElement).config.options.plugins.zoom.zoom.drag.enabled).toBe(false);
+    await user.click(zoomBtnElement);
+    expect(ChartJS.getChart(chartElement).config.options.plugins.zoom.zoom.drag.enabled).toBe(true);
+    expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(false);
+    await user.click(panBtnElement);
+    expect(ChartJS.getChart(chartElement).config.options.plugins.zoom.zoom.drag.enabled).toBe(false);
+    expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(true);
+  });
+
+  it('should zoom in chart by 1.1', async () => {
+    const user = userEvent.setup();
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={data}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    const chartElement = await screen.findByTestId(/chart-container/i);
+    const zoomInBtnElement = await screen.findByLabelText(/Zoom In/i);
+    expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(1);
+    await user.click(zoomInBtnElement);
+    expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(1.11);
+  });
+
+  it('should zoom chart out by .9', async () => {
+    const user = userEvent.setup();
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={data}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    const chartElement = await screen.findByTestId(/chart-container/i);
+    const zoomOutBtnElement = await screen.findByLabelText(/Zoom Out/i);
+    expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(1);
+    await user.click(zoomOutBtnElement);
+    expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(0.91);
+  });
+
+  it('should toggle downsample', async () => {
+    const user = userEvent.setup();
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={data}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    const chartElement = await screen.findByTestId(/chart-container/i);
+    const downsampleBtnElement = await screen.findByLabelText(/Downsample/i);
+    expect(ChartJS.getChart(chartElement).config.options.plugins.decimation.enabled).toBe(true);
+    await user.click(downsampleBtnElement);
+    expect(ChartJS.getChart(chartElement).config.options.plugins.decimation.enabled).toBe(false);
+  });
+
+  it('should reset chart zoom', async () => {
+    const user = userEvent.setup();
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={data}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    const chartElement = await screen.findByTestId(/chart-container/i);
+    const resetBtnElement = await screen.findByLabelText(/^Reset$/);
+    const zoomInBtnElement = await screen.findByLabelText(/^Zoom In$/);
+    expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(1);
+    expect(ChartJS.getChart(chartElement).scales.x.min).toBe(1717092000000);
+    expect(ChartJS.getChart(chartElement).scales.x.max).toBe(1717189200000);
+    expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(true);
+    await user.click(zoomInBtnElement);
+    await user.click(zoomInBtnElement);
+    await user.click(zoomInBtnElement);
+    expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(1.37);
+    expect(ChartJS.getChart(chartElement).scales.x.min).toBe(1717092000000);
+    expect(ChartJS.getChart(chartElement).scales.x.max).toBe(1717162858800);
+    await user.click(resetBtnElement);
+    expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(1);
+    expect(ChartJS.getChart(chartElement).scales.x.min).toBe(1717092000000);
+    expect(ChartJS.getChart(chartElement).scales.x.max).toBe(1717189200000);
+  });
+
+  it('should toggle fullscreen modal', async () => {
+    const user = userEvent.setup();
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={data}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    const fullscreenBtnElement = await screen.findByLabelText(/Fullscreen/i);
+    let fullscreenModalElement = await screen.queryByTestId(/^fullscreen-modal$/);
+    expect(fullscreenModalElement).not.toBeInTheDocument();
+    await user.click(fullscreenBtnElement);
+    fullscreenModalElement = await screen.queryByTestId(/^fullscreen-modal$/);
+    expect(fullscreenModalElement).toBeInTheDocument();
+  });
+});
+
+it('should export chart as image when export button is clicked', async () => {
+  const user = userEvent.setup();
+  
+  const mockLink = {
+    href: '',
+    download: '',
+    click: jest.fn()
+  };
+  
+  const originalCreateElement = document.createElement;
+  const originalAppendChild = document.body.appendChild;
+  const originalRemoveChild = document.body.removeChild;
+  
+  document.createElement = jest.fn(() => mockLink);
+  document.body.appendChild = jest.fn();
+  document.body.removeChild = jest.fn();
+  
+  render(
+    <MockChartWrapper
+      id='vwc'
+      data={data}
+      streamChartOptions={streamChartOptions}
+      chartOptions={chartOptions}
+      stream={false}
+    />
+  );
+  
+  const chartElement = await screen.findByTestId(/chart-container/i);
+  const chart = ChartJS.getChart(chartElement);
+  
+  const originalToBase64Image = chart.toBase64Image;
+  
+  chart.toBase64Image = jest.fn().mockReturnValue('data:image/png;base64,mockImageData');
+  
+  const exportBtnElement = await screen.findByLabelText(/Export Chart/i);
+  await user.click(exportBtnElement);
+  
+  expect(document.createElement).toHaveBeenCalledWith('a');
+  expect(mockLink.href).toBe('data:image/png;base64,mockImageData');
+  expect(mockLink.download).toMatch(/chart-vwc-\d{4}-\d{2}-\d{2}\.png/);
+  expect(document.body.appendChild).toHaveBeenCalledWith(mockLink);
+  expect(mockLink.click).toHaveBeenCalled();
+  expect(document.body.removeChild).toHaveBeenCalledWith(mockLink);
+  
+  document.createElement = originalCreateElement;
+  document.body.appendChild = originalAppendChild;
+  document.body.removeChild = originalRemoveChild;
+  
+  if (originalToBase64Image) {
+    chart.toBase64Image = originalToBase64Image;
+  }
+});
