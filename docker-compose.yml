@@ -7,25 +7,25 @@ services:
       target: production
     image: dirtviz-backend
     env_file:
-      - .env
+      - ${ENV_FILE:-.env}
     ports:
-      - '8000:8000'
+      - "8000:8000"
     depends_on:
       - postgresql
     volumes:
-      - './backend:/app'
+      - "./backend:/app"
 
   worker:
     build:
       context: ./backend
       target: prodworker
     env_file:
-      - .env
+      - ${ENV_FILE:-.env}
     depends_on:
       - backend
       - valkey
     volumes:
-      - './backend:/app'
+      - "./backend:/app"
 
   frontend:
     build:
@@ -34,28 +34,28 @@ services:
       target: production
     image: dirtviz-frontend
     env_file:
-      - .env
+      - ${ENV_FILE:-.env}
     ports:
-      - '3000:80'
+      - "3000:80"
     depends_on:
       - backend
     tty: true
     volumes:
-      - './frontend/src:/app/src'
+      - "./frontend/src:/app/src"
 
   migration:
     build:
       context: ./backend
       target: migration
     env_file:
-      - .env
+      - ${ENV_FILE:-.env}
     depends_on:
       - postgresql
 
   valkey:
     image: valkey/valkey:latest
     ports:
-      - '6379:6379'
+      - "6379:6379"
 
   postgresql:
     image: postgres:16
@@ -64,7 +64,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASS}
       POSTGRES_DB: ${DB_DATABASE}
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - postgresql-16-data:/var/lib/postgresql/data
     networks:
@@ -81,7 +81,7 @@ services:
     container_name: pgadmin4_container
     restart: always
     ports:
-      - '8888:80'
+      - "8888:80"
     environment:
       PGADMIN_DEFAULT_EMAIL: user-name@domain-name.com
       PGADMIN_DEFAULT_PASSWORD: strong-password
@@ -98,7 +98,7 @@ services:
     links:
       - valkey
     ports:
-      - '80:80'
+      - "80:80"
 
 volumes:
   postgresql-16-data:

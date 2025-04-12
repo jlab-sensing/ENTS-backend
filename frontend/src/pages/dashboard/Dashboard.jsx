@@ -78,12 +78,13 @@ function Dashboard() {
               startDate={startDate}
               endDate={endDate}
             />
-            <Button
+          <Button
                 variant={stream ? "contained" : "outlined"}
                 color="primary"
                 onClick={() => setStream(true)}>
                    Streaming
             </Button>
+            <Button>
             <Button
                variant={!stream ? "contained" : "outlined"}
                color="primary"
