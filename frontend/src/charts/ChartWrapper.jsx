@@ -440,7 +440,7 @@ function ChartWrapper({ id, data, options, stream }) {
           </ToggleButton>
         </Tooltip>
         
-        {/* Export Chart button */}
+      
         <Tooltip
           title='Export Chart'
           placement='bottom'
@@ -654,7 +654,7 @@ function ChartWrapper({ id, data, options, stream }) {
                   </ToggleButton>
                 </Tooltip>
                 
-                {/* Add Export button to fullscreen modal */}
+    
                 <Tooltip
                   title='Export Chart'
                   placement='bottom'
