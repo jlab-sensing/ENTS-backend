@@ -1,7 +1,6 @@
 from api.models.cell import Cell as CellModel
 from api.models.user import User
 
-
 def test_delete_cell(test_client, init_database):
     """
     GIVEN a Cell ID
