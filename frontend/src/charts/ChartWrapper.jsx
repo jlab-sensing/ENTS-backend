@@ -11,6 +11,9 @@ import Fullscreen from '../assets/maximize.svg';
 import zoomIn from '../assets/zoom-in.svg';
 import zoomOut from '../assets/zoom-out.svg';
 import downsample from '../assets/downsample.svg';
+import downloadIcon from '../assets/download.svg';
+import GetAppIcon from '@mui/icons-material/GetApp';
+
 import {
   Chart as ChartJS,
   LineController,
@@ -250,7 +253,19 @@ function ChartWrapper({ id, data, options, stream }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scaleRef]);
 
+  const handleExportChart = () => {
+    if (chartRef.current) {
+      const link = document.createElement('a');
+      link.href = chartRef.current.toBase64Image();
+      link.download = `chart-${id}-${new Date().toISOString().split('T')[0]}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   return (
+    
     <Box
       sx={{
         display: 'flex',
@@ -424,6 +439,33 @@ function ChartWrapper({ id, data, options, stream }) {
             <Box component='img' src={downsample} sx={{ width: '16px', height: '16px' }}></Box>
           </ToggleButton>
         </Tooltip>
+        
+        <Tooltip
+          title='Export Chart'
+          placement='bottom'
+          disableInteractive
+          slotProps={{
+            popper: {
+              modifiers: [
+                {
+                  name: 'offset',
+                  options: {
+                    offset: [0, -11],
+                  },
+                },
+              ],
+            },
+          }}
+        >
+          <ToggleButton 
+            value={false} 
+            onClick={handleExportChart} 
+            sx={{ width: '32px', height: '32px' }}
+          >
+            <GetAppIcon sx={{ width: '16px', height: '16px' }} />
+          </ToggleButton>
+        </Tooltip>
+        
         <Tooltip
           title='Fullscreen'
           placement='bottom'
@@ -610,6 +652,29 @@ function ChartWrapper({ id, data, options, stream }) {
                     <Box component='img' src={downsample} sx={{ width: '20px', height: '20px' }}></Box>
                   </ToggleButton>
                 </Tooltip>
+                
+                <Tooltip
+                  title='Export Chart'
+                  placement='bottom'
+                  disableInteractive
+                  slotProps={{
+                    popper: {
+                      modifiers: [
+                        {
+                          name: 'offset',
+                          options: {
+                            offset: [0, -11],
+                          },
+                        },
+                      ],
+                    },
+                  }}
+                >
+                  <ToggleButton value={false} onClick={handleExportChart}>
+                    <Box component='img' src={downloadIcon} sx={{ width: '20px', height: '20px' }}></Box>
+                  </ToggleButton>
+                </Tooltip>
+                
                 <Tooltip
                   title='Windowed'
                   placement='bottom'
