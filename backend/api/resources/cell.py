@@ -65,4 +65,4 @@ class Cell(Resource):
         if cell:
             cell.delete()
             return {"message": "Successfully deleted cell"}
-        return jsonify({"message": "Cell not found"}), 404
+        return {"message": "Cell not found"}, 404
