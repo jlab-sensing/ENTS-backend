@@ -78,7 +78,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
                     onClick={(e) => handleMenuClick(e, cell)}
                     sx={{ ml: 2 }}
                   >
-                    <MoreVertIcon fontSize="small" />
+                    <MoreVertIcon data-testid="more-vert-icon" fontSize="small" />
                   </IconButton>
                 </MenuItem>
               ))

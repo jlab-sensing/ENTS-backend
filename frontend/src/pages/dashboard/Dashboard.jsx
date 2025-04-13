@@ -79,14 +79,19 @@ function Dashboard() {
               endDate={endDate}
             />
             <Button
-              variant='outlined'
-              onClick={() => {
-                console.log('test');
-                setStream(!stream);
-              }}
-            >
-              {stream ? 'streaming' : 'hourly'}
+                variant={stream ? "contained" : "outlined"}
+                color="primary"
+                onClick={() => setStream(true)}>
+                   Streaming
             </Button>
+            <Button
+               variant={!stream ? "contained" : "outlined"}
+               color="primary"
+               onClick={() => setStream(false)}>
+                   Hourly
+            </Button>
+
+            
           </Stack>
           <Grid
             container

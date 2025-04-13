@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll, afterEach, afterAll } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -7,6 +7,8 @@ import CellSelect from '../pages/dashboard/components/CellSelect';
 import CopyLinkBtn from '../pages/dashboard/components/CopyLinkBtn';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
+import { rest } from 'msw';
+import { setupServer } from 'msw/node';
 
 const queryClient = new QueryClient();
 const mockedSetSelectedCells = vi.fn();
@@ -113,5 +115,46 @@ describe('Testing copy functionality', () => {
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
 
     vi.restoreAllMocks();
+  });
+});
+
+
+const server = setupServer(
+  rest.get('/api/cell', (req, res, ctx) => {
+    return res(
+      ctx.json([
+        { id: 1, name: 'test_cell_1', archive: false },
+        { id: 2, name: 'test_cell_2', archive: false }
+      ])
+    );
+  })
+);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+
+describe('CellSelect Delete Functionality', () => {
+  it('should show delete confirmation and delete cell', async () => {
+    const user = userEvent.setup();
+    window.confirm = vi.fn(() => true);
+    
+    render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
+
+    await screen.findByLabelText('Cell');
+    const cellDropdown = screen.getByLabelText('Cell');
+    await user.click(cellDropdown);
+
+    const cell = await screen.findByText('test_cell_1', {}, { timeout: 2000 });
+    await user.click(cell);
+    
+    const moreButtons = screen.getAllByTestId('more-vert-icon');
+    const moreButton = moreButtons[0];
+    await user.click(moreButton);
+
+    const deleteButton = await screen.findByText(/delete cell/i);
+    await user.click(deleteButton);
+
+    expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to delete this cell?');
   });
 });

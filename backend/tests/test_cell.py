@@ -1,48 +1,27 @@
-# Broken test; authenticate in cell.py dosent work for this test
-#
-#
-# def test_cell_data_endpoint(test_client, setup_cells):
-#     """
-#     GIVEN a db with cells inserted under fixture setup_cells
-#     WHEN hitting the endpoint /api/cell
-#     THEN the response should be an array of cell objects with
-#     keys: name, location, lattitude and longitude
-#     """
-#     response = test_client.get("/api/cell/")
-#     assert response.status_code == 200
-#     assert response.data == (
-#         b'[{"name": "cell_1", "location": "", "longitude": 1.0, '
-#         b'"latitude": 1.0, "userEmail": "", "archive": false}, '
-#         b'{"name": "cell_2", "location": "", "longitude": 2.0, '
-#         b'"latitude": 2.0, "userEmail": "", "archive": false}]\n'
-#     )
+from api.models.cell import Cell as CellModel
 
 
-# FIXME:
-# cell post is messed up, need to refactor
-# def test_cell_data_endpoint(test_client):
-#     """
-#     GIVEN a db with cells inserted under fixture setup_cells
-#     WHEN hitting the endpoint /api/cell
-#     THEN the response should be an array of cell objects with
-#     keys: name, location, lattitude and longitude
-#     """
-#     response = test_client.post(
-#         "/api/cell/",
-#         json={
-#             "name": "cell",
-#             "location": "baskin",
-#             "longitude": 1,
-#             "latitude": 1,
-#             # "user_email": "test@gmail.com",
-#         },
-#         content_type="application/json",
-#     )
-#     assert response.status_code == 200
-#     assert (
-#         response.data
-#         == b'[{"name": "cell_1", "location": "",
-# "longitude": 1.0, "latitude": 1.0},
-# {"name": "cell_2", "location": "",
-# "longitude": 2.0, "latitude": 2.0}]\n'
-#     )
+def test_delete_cell(test_client):
+    """
+    GIVEN a Cell ID
+    WHEN a DELETE request is made to /api/cell/<id>
+    THEN check the cell is deleted
+    """
+    CellModel("test_cell", "", 1, 1, False, None).save()
+    cell = CellModel.get_by_name("test_cell")
+    
+    response = test_client.delete(f"/api/cell/{cell.id}")
+    assert response.status_code == 200
+    assert b"Successfully deleted cell" in response.data
+    
+    assert CellModel.get(cell.id) is None
+
+def test_delete_nonexistent_cell(test_client):
+    """
+    GIVEN a non-existent Cell ID
+    WHEN a DELETE request is made
+    THEN check appropriate error is returned
+    """
+    response = test_client.delete("/api/cell/99999")
+    assert response.status_code == 404
+    assert b"Cell not found" in response.data
