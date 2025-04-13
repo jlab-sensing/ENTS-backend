@@ -1,0 +1,39 @@
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout
+*.txt text
+*.md text
+*.py text
+*.json text
+*.yml text
+*.yaml text
+*.html text
+*.css text
+*.js text
+
+# Shell scripts should always use LF line endings
+*.sh text eol=lf
+entrypoint.sh text eol=lf
+migrate.sh text eol=lf
+backend/entrypoint.sh text eol=lf
+backend/migrate.sh text eol=lf
+sql/restore.sh text eol=lf
+sql/backup.sh text eol=lf
+
+# Denote all files that are truly binary and should not be modified
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.svg binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary 

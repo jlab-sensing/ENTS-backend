@@ -26,9 +26,40 @@ docker compose up --build -d
 
 At this point the backend is accessible at [http://localhost:3000/](http://localhost:3000/), but will likely show a blank page in your web browser and throw an error. This is due to the database being empty, therefore there is no data to display.
 
+## Windows Development Note
+
+When developing on Windows, be aware that Git may automatically convert line endings from LF (Unix-style) to CRLF (Windows-style). This can cause issues with shell scripts run inside Docker containers, such as `entrypoint.sh` and `migrate.sh`, resulting in errors like "entrypoint.sh not found" or "bad interpreter".
+
+To address this, we've added a `.gitattributes` file that forces shell scripts to maintain LF line endings regardless of the operating system.
+
+### For New Repository Clones
+
+The `.gitattributes` file will automatically ensure proper line endings for new files.
+
+### For Existing Repository Clones
+
+If you encounter line ending issues with existing files:
+
+1. Make sure you've pulled the latest changes with the `.gitattributes` file
+2. Run: `git add --renormalize .`
+3. Commit these changes: `git commit -m "Normalize line endings"`
+4. Reset your working directory: `git checkout -- .`
+
+Alternatively, you can also:
+
+- Run `git config --global core.autocrlf input` to configure Git to preserve line endings
+- Clone the repository again
+
 ### Generating environmental variables
 
-The frontend and backend containers require environmental variables to be set in order to run. These are stored in a `.env` file in the root directory. The `.env` is used to provide the necessary environment variables to the local development containers and can be used as a base to setup environment variables for a production environment.
+The frontend and backend containers require environmental variables to be set in order to run. These are stored in a `.env` file in the root directory, which you will need to create based on the provided `.env.example` template. Copy `.env.example` to `.env` and update the values as needed.
+
+```bash
+cp .env.example .env
+# Now edit .env with your own values
+```
+
+The `.env` file is used to provide the necessary environment variables to the local development containers and can be used as a base to setup environment variables for a production environment. The `.env` file should never be committed to the repository as it contains sensitive information.
 
 > NOTE: We have run into issues with syntax of AWS ECS with the environment file. The string encapsulation characters `'` and `"` are treated as literals, while [docker supports quoting](https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/#env-file-syntax).
 

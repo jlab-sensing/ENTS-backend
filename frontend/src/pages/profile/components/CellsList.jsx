@@ -9,6 +9,7 @@ function CellsList() {
   const isError = data[2];
   const user = data[4];
   data = data[0];
+
   if (!user) {
     return <></>;
   }
@@ -18,40 +19,20 @@ function CellsList() {
   if (isLoading) {
     return <Typography>Loading...</Typography>;
   }
-
   if (isError) {
     return <Typography>Error loading cells.</Typography>;
   }
 
   const columns = [
     { field: 'id', headerName: 'Cell ID', width: 90 },
-    {
-      field: 'name',
-      headerName: 'Name',
-      width: 150,
-    },
-    {
-      field: 'location',
-      headerName: 'Location',
-      width: 150,
-    },
-    {
-      field: 'lat',
-      headerName: 'Latitude',
-      width: 150,
-    },
-    {
-      field: 'long',
-      headerName: 'Longitude',
-      width: 150,
-    },
-    {
-      field: 'archive',
-      headerName: 'Archive',
-      width: 150,
-    },
+    { field: 'name', headerName: 'Name', width: 150 },
+    { field: 'location', headerName: 'Location', width: 150 },
+    { field: 'lat', headerName: 'Latitude', width: 150 },
+    { field: 'long', headerName: 'Longitude', width: 150 },
+    { field: 'archive', headerName: 'Archive', width: 150 },
   ];
-  let rows;
+
+  let rows = [];
   if (data.map) {
     rows = data.map((cell) => ({
       id: cell.id,
@@ -62,6 +43,7 @@ function CellsList() {
       archive: cell.archive,
     }));
   }
+
   return (
     <Box
       sx={{
@@ -69,12 +51,12 @@ function CellsList() {
         flexDirection: 'column',
         bgcolor: '#A0A0A0',
         width: '90%',
-        height: '100',
+        minHeight: '100vh',
         p: 2,
         borderRadius: '10px',
+        flexGrow: 1, 
       }}
     >
-      <div />
       <Box
         sx={{
           display: 'flex',
@@ -86,13 +68,34 @@ function CellsList() {
       >
         <Typography
           variant='h5'
-          sx={{ textAlign: 'center', color: '#588157', fontWeight: 'bold', flex: 1, marginRight: '-8.5%' }}
+          sx={{
+            textAlign: 'center',
+            color: '#588157',
+            fontWeight: 'bold',
+            flex: 1,
+            marginRight: '-8.5%',
+          }}
         >
           Your Cells
         </Typography>
         <AddCellModal />
       </Box>
-      <DataGrid rows={rows} columns={columns} pageSize={5} />
+
+      {/* Wrapper to ensure DataGrid does not exceed background */}
+      <Box
+        sx={{
+          flexGrow: 1, 
+          height: '100%', 
+          overflowY: 'auto', 
+        }}
+      >
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          pageSize={5}
+          autoHeight 
+        />
+      </Box>
     </Box>
   );
 }
