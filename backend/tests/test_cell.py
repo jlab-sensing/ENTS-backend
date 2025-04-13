@@ -2,7 +2,7 @@ from api.models.cell import Cell as CellModel
 from api.models.user import User
 
 
-def test_delete_cell(test_client):
+def test_delete_cell(test_client, init_database):
     """
     GIVEN a Cell ID
     WHEN a DELETE request is made to /api/cell/<id>
@@ -23,7 +23,7 @@ def test_delete_cell(test_client):
     assert CellModel.get(cell.id) is None
 
 
-def test_delete_nonexistent_cell(test_client):
+def test_delete_nonexistent_cell(test_client, init_database):
     """
     GIVEN a non-existent Cell ID
     WHEN a DELETE request is made
