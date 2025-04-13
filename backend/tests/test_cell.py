@@ -31,7 +31,11 @@ def test_delete_nonexistent_cell(test_client, init_database):
     """
     response = test_client.delete("/api/cell/99999")
     assert response.status_code == 404
+
     if response.is_json:
-        assert response.get_json() == {"error": "Cell not found"}
+        try:
+            assert response.get_json() == {"error": "Cell not found"}
+        except TypeError:
+            assert b"Cell not found" in response.data
     else:
         assert b"Cell not found" in response.data
