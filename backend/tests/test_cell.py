@@ -21,6 +21,3 @@ def test_delete_cell(test_client, init_database):
     assert b"Successfully deleted cell" in response.data
 
     assert CellModel.get(cell.id) is None
-
-
-
