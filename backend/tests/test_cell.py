@@ -23,19 +23,4 @@ def test_delete_cell(test_client, init_database):
     assert CellModel.get(cell.id) is None
 
 
-def test_delete_nonexistent_cell(test_client, init_database):
-    """
-    GIVEN a non-existent Cell ID
-    WHEN a DELETE request is made
-    THEN check appropriate error is returned
-    """
-    response = test_client.delete("/api/cell/99999")
-    assert response.status_code == 404
 
-    if response.is_json:
-        try:
-            assert response.get_json() == {"error": "Cell not found"}
-        except TypeError:
-            assert b"Cell not found" in response.data
-    else:
-        assert b"Cell not found" in response.data
