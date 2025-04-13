@@ -18,6 +18,6 @@ def test_delete_cell(test_client, init_database):
 
     response = test_client.delete(f"/api/cell/{cell.id}")
     assert response.status_code == 200
-    assert b"Successfully deleted cell" in response.data
+    assert response.json == {"message": "Successfully deleted cell"}
 
     assert CellModel.get(cell.id) is None
