@@ -1,4 +1,4 @@
-import { describe, it, expect,vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -762,5 +762,12 @@ describe('testing side button events', () => {
     createElementSpy.mockRestore();
     appendChildSpy.mockRestore();
     removeChildSpy.mockRestore();
+  });
+});
+
+beforeAll(() => {
+  Object.defineProperty(window, 'location', {
+    configurable: true,
+    value: { assign: vi.fn() }
   });
 });
