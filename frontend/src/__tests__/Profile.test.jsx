@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 // import { waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import AccountInfo from '../pages/profile/components/AccountInfo';
+// import AccountInfo from '../pages/profile/components/AccountInfo';
 import DeleteCellModal from '../pages/profile/components/DeleteCellModal';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { getCells, deleteCell, getUserCells } from '../services/cell';
