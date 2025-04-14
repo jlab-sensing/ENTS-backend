@@ -3,17 +3,14 @@ import { render, screen } from '@testing-library/react';
 // import { waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AccountInfo from '../pages/profile/components/AccountInfo';
-import CellsList from '../pages/profile/components/CellsList';
-// import { useUserCells } from '../services/cell';
-import { useUserCells } from '../services/cell';
 import DeleteCellModal from '../pages/profile/components/DeleteCellModal';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { getCells, deleteCell, getUserCells } from '../services/cell';
 import { useOutletContext } from 'react-router-dom';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AuthContext } from '../auth/AuthContextProvider';
 import axios from 'axios';
 vi.mock('axios');
+import CellsList from '../pages/profile/components/CellsList';
+import { AuthContext } from '../auth/AuthContextProvider';
 
 // Mock the entire react-router-dom module
 vi.mock('react-router-dom', () => ({
