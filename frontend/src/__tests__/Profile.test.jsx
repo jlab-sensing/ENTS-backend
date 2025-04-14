@@ -2,13 +2,16 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 // import { waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import CellsList from '../pages/profile/components/CellsList';
 import AccountInfo from '../pages/profile/components/AccountInfo';
+import CellsList from '../pages/profile/components/CellsList';
+// import { useUserCells } from '../services/cell';
 import { useUserCells } from '../services/cell';
 import DeleteCellModal from '../pages/profile/components/DeleteCellModal';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { getCells, deleteCell, getUserCells } from '../services/cell';
 import { useOutletContext } from 'react-router-dom';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { AuthContext } from '../auth/AuthContextProvider';
 import axios from 'axios';
 vi.mock('axios');
 
@@ -82,19 +85,33 @@ vi.mock('../pages/profile/components/CellsList', () => ({
 // Create a query client
 const queryClient = new QueryClient();
 
+// Mock auth context value
+const mockAuthContext = {
+  auth: {},
+  setAuth: vi.fn(),
+  user: null,
+  setUser: vi.fn(),
+  loggedIn: false,
+  setLoggedIn: vi.fn(),
+};
+
 // Helper function to render the component within the QueryClientProvider
 const renderCellsList = () =>
   render(
-    <QueryClientProvider client={queryClient}>
-      <CellsList />
-    </QueryClientProvider>,
+    <AuthContext.Provider value={mockAuthContext}>
+      <QueryClientProvider client={queryClient}>
+        <CellsList />
+      </QueryClientProvider>
+    </AuthContext.Provider>,
   );
 
 const renderAccountInfo = () =>
   render(
-    <QueryClientProvider client={queryClient}>
-      <AccountInfo />
-    </QueryClientProvider>,
+    <AuthContext.Provider value={mockAuthContext}>
+      <QueryClientProvider client={queryClient}>
+        <AccountInfo />
+      </QueryClientProvider>
+    </AuthContext.Provider>,
   );
 
 const renderDeleteCellModal = () =>

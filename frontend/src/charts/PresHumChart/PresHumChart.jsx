@@ -1,12 +1,12 @@
-import { React } from 'react';
 import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
+import { React } from 'react';
+import { getMaxAxisAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 import { chartPlugins } from '../plugins';
-import { getMaxAxisAndStepValues } from '../alignAxis';
 
-export default function PresHumChart({ data }) {
-  const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 8, .2);
+export default function PresHumChart({ data, startDate, endDate }) {
+  const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 8, 0.2);
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -32,6 +32,8 @@ export default function PresHumChart({ data }) {
             day: 'D',
           },
         },
+        min: startDate?.toJSDate(),
+        max: endDate?.toJSDate(),
       },
       pressure: {
         position: 'left',
@@ -60,7 +62,7 @@ export default function PresHumChart({ data }) {
         },
         min: 0,
         max: leftYMax,
-    },
+      },
     },
     plugins: structuredClone(chartPlugins),
   };
@@ -71,4 +73,6 @@ export default function PresHumChart({ data }) {
 PresHumChart.propTypes = {
   id: PropTypes.string,
   data: PropTypes.object,
+  startDate: PropTypes.object,
+  endDate: PropTypes.object,
 };

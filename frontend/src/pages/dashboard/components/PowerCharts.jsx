@@ -1,11 +1,11 @@
-import { React, useState, useEffect } from 'react';
 import { Grid } from '@mui/material';
+import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
+import { React, useEffect, useState } from 'react';
 import PwrChart from '../../../charts/PwrChart/PwrChart';
 import VChart from '../../../charts/VChart/VChart';
-import { DateTime } from 'luxon';
-import { getPowerData, streamPowerData } from '../../../services/power';
 import useInterval from '../../../hooks/useInterval';
+import { getPowerData, streamPowerData } from '../../../services/power';
 function PowerCharts({ cells, startDate, endDate, stream }) {
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
@@ -22,10 +22,8 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
   // Initialize the combined chart data with empty datasets
 
   const pColors = ['#377eb8', '#56b4e9', '#009e73', '#e41a1c', '#e69f00', '#f781bf', '#a65628', '#000000'];
-  const vColors = ['#377eb8', '#56b4e9', '#009e73', '#e41a1c', '#e69f00', '#f781bf', '#a65628', '#000000']; 
+  const vColors = ['#377eb8', '#56b4e9', '#009e73', '#e41a1c', '#e69f00', '#f781bf', '#a65628', '#000000'];
   const iColors = ['#4a90d9', '#5ccfe6', '#00c47e', '#ff5e5b', '#f4a742', '#ff85c2', '#c07d50', '#333333'];
-  
-  
 
   //** gets power data from backend */
   async function getPowerChartData() {
@@ -285,10 +283,10 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
   return (
     <>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <VChart data={vChartData} stream={stream} />
+        <VChart data={vChartData} stream={stream} startDate={startDate} endDate={endDate} />
       </Grid>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <PwrChart data={pwrChartData} stream={stream} />
+        <PwrChart data={pwrChartData} stream={stream} startDate={startDate} endDate={endDate} />
       </Grid>
     </>
   );

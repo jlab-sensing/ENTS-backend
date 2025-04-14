@@ -1,12 +1,12 @@
-import { React } from 'react';
 import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
+import { React } from 'react';
+import { getMaxAxisAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 import { chartPlugins } from '../plugins';
-import { getMaxAxisAndStepValues } from '../alignAxis';
 
-export default function SoilPotChart({ data }) {
-  const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 8, .2);
+export default function SoilPotChart({ data, startDate, endDate }) {
+  const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 8, 0.2);
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -32,6 +32,8 @@ export default function SoilPotChart({ data }) {
             day: 'D',
           },
         },
+        min: startDate?.toJSDate(),
+        max: endDate?.toJSDate(),
       },
       y: {
         position: 'left',
@@ -57,4 +59,6 @@ export default function SoilPotChart({ data }) {
 SoilPotChart.propTypes = {
   id: PropTypes.string,
   data: PropTypes.object,
+  startDate: PropTypes.object,
+  endDate: PropTypes.object,
 };
