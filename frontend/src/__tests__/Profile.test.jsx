@@ -102,14 +102,14 @@ const renderCellsList = () =>
     </AuthContext.Provider>,
   );
 
-const renderAccountInfo = () =>
-  render(
-    <AuthContext.Provider value={mockAuthContext}>
-      <QueryClientProvider client={queryClient}>
-        <AccountInfo />
-      </QueryClientProvider>
-    </AuthContext.Provider>,
-  );
+// const renderAccountInfo = () =>
+//   render(
+//     <AuthContext.Provider value={mockAuthContext}>
+//       <QueryClientProvider client={queryClient}>
+//         <AccountInfo />
+//       </QueryClientProvider>
+//     </AuthContext.Provider>,
+//   );
 
 const renderDeleteCellModal = () =>
   render(
