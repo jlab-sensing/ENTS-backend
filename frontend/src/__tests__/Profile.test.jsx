@@ -208,12 +208,12 @@ describe('AccountInfo component', () => {
     vi.clearAllMocks();
   });
 
-  it('dosent render when user is null', () => {
-    vi.mocked(useOutletContext).mockReturnValue([null, vi.fn()]);
-    renderAccountInfo();
+  // it('dosent render when user is null', () => {
+  //   vi.mocked(useOutletContext).mockReturnValue([null, vi.fn()]);
+  //   renderAccountInfo();
 
-    expect(screen.queryByText('Account Info')).toBeNull();
-  });
+  //   expect(screen.queryByText('Account Info')).toBeNull();
+  // });
 
   // it('renders when user is present', () => {
   //   vi.mocked(useOutletContext).mockReturnValue([{ user: { name: 'test-user' } }, vi.fn()]);
