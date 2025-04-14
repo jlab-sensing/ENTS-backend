@@ -203,10 +203,10 @@ describe('CellsList Component', () => {
   // });
 });
 
-describe('AccountInfo component', () => {
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
+// describe('AccountInfo component', () => {
+//   afterEach(() => {
+//     vi.clearAllMocks();
+//   });
 
   // it('dosent render when user is null', () => {
   //   vi.mocked(useOutletContext).mockReturnValue([null, vi.fn()]);
@@ -234,7 +234,7 @@ describe('AccountInfo component', () => {
 
   //   expect(screen.getByText('Name: test user')).toBeInTheDocument();
   // });
-});
+// });
 
 describe('DeleteCellModal component', () => {
   afterEach(() => {
