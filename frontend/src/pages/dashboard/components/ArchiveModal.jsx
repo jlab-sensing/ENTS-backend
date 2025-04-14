@@ -1,7 +1,8 @@
 import { React, useState } from 'react';
 import { Button, Box, Stack, Modal, Fade, Tooltip } from '@mui/material';
-import { DndContext, closestCorners } from '@dnd-kit/core';
+import { DndContext, closestCorners, DragOverlay } from '@dnd-kit/core';
 import { DropList } from './DropList/DropList';
+import { DragItem } from './DragItem/DragItem';
 import archive from '../../../assets/archive.svg';
 import { arrayMove } from '@dnd-kit/sortable';
 import { useSetCellArchive } from '../../../services/cell';
@@ -21,6 +22,7 @@ export default function ArchiveModal({ cells }) {
   const handleClose = () => setOpen(false);
   const [activeCell, setActiveCell] = useState(null);
   const { mutate: setCellArchive } = useSetCellArchive();
+  const [draggedItem, setDraggedItem] = useState(null);
 
   const handleDragOver = (event) => {
     // activeID - selected dragItem id
@@ -81,61 +83,37 @@ export default function ArchiveModal({ cells }) {
   const handleDragStart = (event) => {
     const { active } = event;
     setActiveCell(active);
-    return;
+    const draggedCell = cellsList.find(cell => cell.id === active.id);
+    setDraggedItem(draggedCell);
   };
 
   return (
     <>
-      <Tooltip
-        title='Archive'
-        placement='bottom'
-        disableInteractive
-        slotProps={{
-          popper: {
-            modifiers: [
-              {
-                name: 'offset',
-                options: {
-                  offset: [0, -11],
-                },
-              },
-            ],
-          },
-        }}
-      >
+      <Tooltip title='Archive' placement='bottom' disableInteractive>
         <Button variant='outlined' onClick={handleOpen} sx={{ heigh: '16px', width: '16px' }}>
           <Box component='img' src={archive}></Box>
         </Button>
       </Tooltip>
       <Modal open={open} onClose={handleClose} closeAfterTransition>
         <Fade in={open}>
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '70vw',
-              height: '70vh',
-              bgcolor: 'background.paper',
-              border: '1px solid #000',
-              boxShadow: 24,
-              p: 3,
-            }}
-          >
-            <Stack direction='row' justifyContent='space-between' alignItems='center'>
-              <h1>Archive</h1>
-              <Button variant='outlined' onClick={handleClose} sx={{ height: '75%' }}>
-                Close
-              </Button>
-            </Stack>
+          <Box sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '80%',
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+            borderRadius: '10px',
+          }}>
             <DndContext
-              collisionDetection={closestCorners}
               onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
               onDragOver={handleDragOver}
+              onDragEnd={handleDragEnd}
+              collisionDetection={closestCorners}
             >
-              <Stack direction='row' sx={{ width: '100%', height: '80%', paddingTop: '20px' }} spacing={2}>
+              <Stack direction='row' spacing={2} justifyContent='space-between'>
                 <DropList
                   id='unarchive'
                   dragItems={cellsList.filter((item) => item.isArchived === false)}
@@ -147,6 +125,15 @@ export default function ArchiveModal({ cells }) {
                   columnID='archive'
                 />
               </Stack>
+              <DragOverlay>
+                {draggedItem ? (
+                  <DragItem
+                    id={draggedItem.id}
+                    title={draggedItem.title}
+                    columnID={draggedItem.isArchived ? 'archive' : 'unarchive'}
+                  />
+                ) : null}
+              </DragOverlay>
             </DndContext>
           </Box>
         </Fade>
