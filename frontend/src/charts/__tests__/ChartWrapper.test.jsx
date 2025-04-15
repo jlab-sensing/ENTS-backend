@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect,vi } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -536,6 +536,20 @@ describe('loading charts', () => {
     const fullscreenBtnElement = await screen.findByLabelText(/Fullscreen/i);
     expect(fullscreenBtnElement).toBeInTheDocument();
   });
+
+  it('should render export button', async () => {
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={data}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    const exportBtnElement = await screen.findByLabelText(/Export Chart/i);
+    expect(exportBtnElement).toBeInTheDocument();
+  });
 });
 
 describe('testing side button events', () => {
@@ -720,5 +734,33 @@ describe('testing side button events', () => {
     await user.click(fullscreenBtnElement);
     fullscreenModalElement = await screen.queryByTestId(/^fullscreen-modal$/);
     expect(fullscreenModalElement).toBeInTheDocument();
+  });
+
+  it('should trigger chart export', async () => {
+    const user = userEvent.setup();
+    const createElementSpy = vi.spyOn(document, 'createElement');
+    const appendChildSpy = vi.spyOn(document.body, 'appendChild');
+    const removeChildSpy = vi.spyOn(document.body, 'removeChild');
+    
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={data}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    
+    const exportBtnElement = await screen.findByLabelText(/Export Chart/i);
+    await user.click(exportBtnElement);
+    
+    expect(createElementSpy).toHaveBeenCalledWith('a');
+    expect(appendChildSpy).toHaveBeenCalled();
+    expect(removeChildSpy).toHaveBeenCalled();
+    
+    createElementSpy.mockRestore();
+    appendChildSpy.mockRestore();
+    removeChildSpy.mockRestore();
   });
 });
