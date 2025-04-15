@@ -9,4 +9,10 @@
   justify-content: flex-start;
   gap: 20px;
   touch-action: none;
+  cursor: grab;
+  z-index: 999;
+}
+
+.DragItem:active {
+  cursor: grabbing;
 }
