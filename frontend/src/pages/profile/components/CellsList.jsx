@@ -1,7 +1,9 @@
+import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useOutletContext } from 'react-router-dom';
 import AddCellModal from './AddCellModal';
+import DeleteCellModal from './DeleteCellModal';
 
 function CellsList() {
   let data = useOutletContext();
@@ -79,6 +81,7 @@ function CellsList() {
           Your Cells
         </Typography>
         <AddCellModal />
+        <DeleteCellModal />
       </Box>
 
       {/* Wrapper to ensure DataGrid does not exceed background */}

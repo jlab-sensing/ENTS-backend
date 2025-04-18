@@ -1,10 +1,10 @@
-import { React, useState, useEffect } from 'react';
 import { Grid } from '@mui/material';
-import PropTypes from 'prop-types';
 import { DateTime } from 'luxon';
+import PropTypes from 'prop-types';
+import { React, useEffect, useState } from 'react';
 import PresHumChart from '../../../charts/PresHumChart/PresHumChart';
-import { getSensorData, streamSensorData } from '../../../services/sensor';
 import useInterval from '../../../hooks/useInterval';
+import { getSensorData, streamSensorData } from '../../../services/sensor';
 
 function PresHumCharts({ cells, startDate, endDate, stream }) {
   // CONFIGURATION
@@ -245,7 +245,7 @@ function PresHumCharts({ cells, startDate, endDate, stream }) {
   return (
     <>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <PresHumChart data={sensorChartData} />
+        <PresHumChart data={sensorChartData} startDate={startDate} endDate={endDate} />
       </Grid>
     </>
   );
