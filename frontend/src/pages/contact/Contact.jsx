@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import Swal from 'sweetalert2'
 import Nav from '../../components/Nav';
 
@@ -61,7 +61,7 @@ const Contact = () => {
             justifyContent: 'center',
             alignItems: 'center',
             height: '100vh',
-            backgroundColor: '#00cc00'
+            backgroundColor: '#C0C5AD'
          }}
       >
          <Box
@@ -70,7 +70,7 @@ const Contact = () => {
                marginTop: '20px',
                maxWidth: '600px',
                width: '100%',
-               backgroundColor: '#fff',
+               backgroundColor: '#DAD7CD',
                padding: '25px 25px 30px',
                borderRadius: '8px',
                boxShadow: '0 0 10px rgba(0, 0, 0, .1)',
@@ -84,12 +84,25 @@ const Contact = () => {
             <Box
                component = {'h2'}
                sx = {{
-                  fontSize: '30px',
-                  textAlign: 'center'
+                  fontSize: '62px',
+                  textAlign: 'center',
+                  color: '#3A5A50'
                }}   
             >
-               Contact Form
+               Contact jLab
             </Box>
+
+            <Box
+               component = {'h2'}
+               sx = {{
+                  fontSize: '21px',
+                  textAlign: 'left',
+                  color: '#3A5A50'
+               }}   
+            >
+               Want to see new features? Give us your suggestions here
+            </Box>
+
 
             <Box sx={{
                marginTop: '20px',
@@ -110,7 +123,7 @@ const Contact = () => {
                      marginTop: '8px',
                   }} 
                   type="text"  
-                  placeholder="Enter your name" 
+                  placeholder="Enter Name" 
                   name="name" 
                   required />
             </Box>
@@ -134,7 +147,7 @@ const Contact = () => {
                      marginTop: '8px',
                   }} 
                   type="email"  
-                  placeholder="Enter your email" 
+                  placeholder="user@email.com" 
                   name="email" 
                   required />
             </Box>
@@ -148,25 +161,24 @@ const Contact = () => {
                   sx={{
                      width: '95%',
                      height: '50px',
-                     background: 'transparent',
-                     border: '2px solid #ddd',
-                     outline: 'none',
-                     borderRadius: '6px',
+                     backgroundColor: '#D9D9D9',
+                     border: 'none',
                      padding: '15px',
-                     fontSize: '16px',
-                     color: '#333',
                      marginTop: '8px',
                      height: '200px',
-                     resize: 'none'
+                     resize: 'none',
+                     fontSize: '18px',
+                     fontFamily: 'Inter',
+                     fontWeight: '200',
+                     boxShadow: '2'
                   }} 
                   type="email"  
-                  placeholder="Enter your message" 
+                  placeholder="Message Text" 
                   name="message" 
                   required />
             </Box>
 
-            <Box
-               component = {'button'} 
+            <Button
                sx={{
                   backgroundColor: '#B3C297',
                   '&:hover': { backgroundColor: '#A3B18A' },
@@ -176,7 +188,7 @@ const Contact = () => {
                }}
                type="submit">
                   Send Message
-            </Box>
+            </Button>
          </Box>
       </Box>
    </Box>
