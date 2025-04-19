@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Button } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import Swal from 'sweetalert2'
 import Nav from '../../components/Nav';
 
@@ -60,67 +60,89 @@ const Contact = () => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            height: '100vh',
+            height: '100%',
             backgroundColor: '#C0C5AD'
          }}
       >
          <Box
             component = {'form'}
             sx={{
-               marginTop: '20px',
-               maxWidth: '600px',
+               maxWidth: '1280px',
                width: '100%',
                backgroundColor: '#DAD7CD',
                padding: '25px 25px 30px',
-               borderRadius: '8px',
+               borderRadius: '15px',
                boxShadow: '0 0 10px rgba(0, 0, 0, .1)',
                color: '#333',
                margin: '25px',
+               marginTop: '500-5%',
                fontSize: '30px',
-               textAlign: 'center'
+               textAlign: 'center',
+               height: '80%'
             }}
             onSubmit={onSubmit}
          >
-            <Box
+            <Typography
                component = {'h2'}
                sx = {{
+                  marginTop: '30px',
                   fontSize: '62px',
-                  textAlign: 'center',
-                  color: '#3A5A50'
+                  fontWeight: 'bold',
+                  textAlign: {xs: 'left', md: 'start'},
+                  color: '#3A5A50',
+                  marginLeft: '5%',
                }}   
             >
                Contact jLab
-            </Box>
+            </Typography>
 
-            <Box
+            <Typography
                component = {'h2'}
                sx = {{
                   fontSize: '21px',
-                  textAlign: 'left',
-                  color: '#3A5A50'
+                  fontWeight: 'bold',
+                  textAlign: {xs: 'left', md: 'start'},
+                  color: '#3A5A50',
+                  opacity: '60%',
+                  marginLeft: '5%',
                }}   
             >
-               Want to see new features? Give us your suggestions here
-            </Box>
-
+               What can we help you with?
+            </Typography>
 
             <Box sx={{
                marginTop: '20px',
             }}>
-               <label>Full Name</label>
+               {/* <label>Full Name</label> */}
+               <Typography
+                  component = {'h2'}
+                  sx = {{
+                     fontSize: '18px',
+                     textAlign: {xs: 'left', md: 'start'},
+                     color: '#1E1E1E',
+                     marginLeft: '6%',
+                  }}   
+               >
+                  Name:*
+               </Typography>
+
                <Box 
                   component = {'input'}
                   sx={{
-                     width: '95%',
+                     width: '70%',
                      height: '50px',
-                     background: 'transparent',
-                     border: '2px solid #ddd',
-                     outline: 'none',
-                     borderRadius: '6px',
-                     padding: '15px',
-                     fontSize: '16px',
-                     color: '#333',
-                     marginTop: '8px',
+                     backgroundColor: '#D9D9D9',
+                     border: 'none',
+                     paddingLeft: '15px',
+                     paddingBottom: '5px',
+                     paddingTop: '-5px',
+                     marginTop: '7px',
+                     marginLeft: '-15%',
+                     resize: 'none',
+                     fontSize: '18px',
+                     fontFamily: 'Inter',
+                     fontWeight: '200',
+                     boxShadow: '2',
                   }} 
                   type="text"  
                   placeholder="Enter Name" 
@@ -131,20 +153,34 @@ const Contact = () => {
             <Box sx={{
                marginTop: '20px',
             }}>
-               <label>Email Address</label>
+               <Typography
+                  component = {'h2'}
+                  sx = {{
+                     fontSize: '18px',
+                     textAlign: {xs: 'left', md: 'start'},
+                     color: '#1E1E1E',
+                     marginLeft: '6%',
+                  }}   
+               >
+                  Email:*
+               </Typography>
                <Box 
                   component = {'input'}
                   sx={{
-                     width: '95%',
+                     width: '70%',
                      height: '50px',
-                     background: 'transparent',
-                     border: '2px solid #ddd',
-                     outline: 'none',
-                     borderRadius: '6px',
-                     padding: '15px',
-                     fontSize: '16px',
-                     color: '#333',
-                     marginTop: '8px',
+                     backgroundColor: '#D9D9D9',
+                     border: 'none',
+                     paddingLeft: '15px',
+                     paddingBottom: '5px',
+                     paddingTop: '-5px',
+                     marginTop: '7px',
+                     marginLeft: '-15%',
+                     resize: 'none',
+                     fontSize: '18px',
+                     fontFamily: 'Inter',
+                     fontWeight: '200',
+                     boxShadow: '2',
                   }} 
                   type="email"  
                   placeholder="user@email.com" 
@@ -155,22 +191,34 @@ const Contact = () => {
             <Box sx={{
                marginTop: '20px',
             }}>
-               <label>Your Message</label>
+               <Typography
+                  component = {'h2'}
+                  sx = {{
+                     fontSize: '18px',
+                     textAlign: {xs: 'left', md: 'start'},
+                     color: '#1E1E1E',
+                     marginLeft: '6%',
+                  }}   
+               >
+                  Message:*
+               </Typography>
                <Box 
                   component = {'textarea'}
                   sx={{
-                     width: '95%',
-                     height: '50px',
+                     width: '90%',
                      backgroundColor: '#D9D9D9',
                      border: 'none',
-                     padding: '15px',
-                     marginTop: '8px',
-                     height: '200px',
+                     paddingLeft: '15px',
+                     paddingBottom: '5px',
+                     paddingTop: '15px',
+                     marginTop: '7px',
+                     marginLeft: '5%',
                      resize: 'none',
                      fontSize: '18px',
                      fontFamily: 'Inter',
                      fontWeight: '200',
-                     boxShadow: '2'
+                     boxShadow: '2',
+                     height: '200px',
                   }} 
                   type="email"  
                   placeholder="Message Text" 
