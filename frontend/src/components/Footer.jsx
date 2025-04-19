@@ -27,6 +27,9 @@ function Footer() {
             sensors.soe.ucsc.edu
           </Box>
         </Box>
+        <Box component={'a'} sx={{ color: '#588157', ml:1.5 }} href='/contact/'>
+          contact us
+        </Box>
         <Box
           component={'a'}
           sx={{
