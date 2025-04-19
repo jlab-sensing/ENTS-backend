@@ -1,5 +1,4 @@
 import React from 'react'
-import './Contact.css'
 import { Box } from '@mui/material';
 import Swal from 'sweetalert2'
 import Nav from '../../components/Nav';
@@ -67,7 +66,19 @@ const Contact = () => {
       >
          <Box
             component = {'form'}
-            sx={{marginTop: '20px'}}
+            sx={{
+               marginTop: '20px',
+               maxWidth: '600px',
+               width: '100%',
+               backgroundColor: '#fff',
+               padding: '25px 25px 30px',
+               borderRadius: '8px',
+               boxShadow: '0 0 10px rgba(0, 0, 0, .1)',
+               color: '#333',
+               margin: '25px',
+               fontSize: '30px',
+               textAlign: 'center'
+            }}
             onSubmit={onSubmit}
          >
             <Box
@@ -76,20 +87,96 @@ const Contact = () => {
                   fontSize: '30px',
                   textAlign: 'center'
                }}   
-            >Contact Form</Box>
-            <Box s={{marginTop: '20px'}}>
-               <label>Full Name</label>
-               <input type="text" className="field" placeholder="Enter your name" name="name" required />
+            >
+               Contact Form
             </Box>
-            <div className="input-box">
+
+            <Box sx={{
+               marginTop: '20px',
+            }}>
+               <label>Full Name</label>
+               <Box 
+                  component = {'input'}
+                  sx={{
+                     width: '95%',
+                     height: '50px',
+                     background: 'transparent',
+                     border: '2px solid #ddd',
+                     outline: 'none',
+                     borderRadius: '6px',
+                     padding: '15px',
+                     fontSize: '16px',
+                     color: '#333',
+                     marginTop: '8px',
+                  }} 
+                  type="text"  
+                  placeholder="Enter your name" 
+                  name="name" 
+                  required />
+            </Box>
+
+            <Box sx={{
+               marginTop: '20px',
+            }}>
                <label>Email Address</label>
-               <input type="email" className="field" placeholder="Enter your email" name="email" required />
-            </div>
-            <div className="input-box">
+               <Box 
+                  component = {'input'}
+                  sx={{
+                     width: '95%',
+                     height: '50px',
+                     background: 'transparent',
+                     border: '2px solid #ddd',
+                     outline: 'none',
+                     borderRadius: '6px',
+                     padding: '15px',
+                     fontSize: '16px',
+                     color: '#333',
+                     marginTop: '8px',
+                  }} 
+                  type="email"  
+                  placeholder="Enter your email" 
+                  name="email" 
+                  required />
+            </Box>
+
+            <Box sx={{
+               marginTop: '20px',
+            }}>
                <label>Your Message</label>
-               <textarea name="message" type="Your Message" className="field mess" placeholder="Enter your message"  required ></textarea>
-            </div>
-            <button type="submit">Send Message</button>
+               <Box 
+                  component = {'textarea'}
+                  sx={{
+                     width: '95%',
+                     height: '50px',
+                     background: 'transparent',
+                     border: '2px solid #ddd',
+                     outline: 'none',
+                     borderRadius: '6px',
+                     padding: '15px',
+                     fontSize: '16px',
+                     color: '#333',
+                     marginTop: '8px',
+                     height: '200px',
+                     resize: 'none'
+                  }} 
+                  type="email"  
+                  placeholder="Enter your message" 
+                  name="message" 
+                  required />
+            </Box>
+
+            <Box
+               component = {'button'} 
+               sx={{
+                  backgroundColor: '#B3C297',
+                  '&:hover': { backgroundColor: '#A3B18A' },
+                  color: '#364F42',
+                  px: '10px',
+                  width: { xs: '100%', sm: 'auto' },
+               }}
+               type="submit">
+                  Send Message
+            </Box>
          </Box>
       </Box>
    </Box>
