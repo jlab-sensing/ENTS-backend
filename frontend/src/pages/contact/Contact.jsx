@@ -60,7 +60,7 @@ const Contact = () => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            height: '100%',
+            height: '1000vh',
             backgroundColor: '#C0C5AD'
          }}
       >
@@ -123,7 +123,13 @@ const Contact = () => {
                      marginLeft: '6%',
                   }}   
                >
-                  Name:*
+                  Name:
+                  <Typography
+                     component = {'span'}
+                     sx={{color: '#FF0000'}}
+                     >
+                        *
+                  </Typography>
                </Typography>
 
                <Box 
@@ -162,7 +168,13 @@ const Contact = () => {
                      marginLeft: '6%',
                   }}   
                >
-                  Email:*
+                  Email:
+                  <Typography
+                     component = {'span'}
+                     sx={{color: '#FF0000'}}
+                     >
+                        *
+                  </Typography>
                </Typography>
                <Box 
                   component = {'input'}
@@ -200,7 +212,13 @@ const Contact = () => {
                      marginLeft: '6%',
                   }}   
                >
-                  Message:*
+                  Message:
+                  <Typography
+                     component = {'span'}
+                     sx={{color: '#FF0000'}}
+                     >
+                        *
+                  </Typography>
                </Typography>
                <Box 
                   component = {'textarea'}
