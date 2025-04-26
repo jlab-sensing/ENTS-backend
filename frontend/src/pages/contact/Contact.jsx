@@ -8,7 +8,7 @@ const Contact = () => {
       event.preventDefault();
       const formData = new FormData(event.target);
 
-      formData.append("access_key", "986e8fd0-f41f-4630-bbf7-637265ee3b52");
+      formData.append("access_key", "047f6953-649d-41b9-b286-941f9f54b62b");
 
       const object = Object.fromEntries(formData);
       const json = JSON.stringify(object);
@@ -38,7 +38,8 @@ const Contact = () => {
       },
    };
 
-  return (
+   var marginSize = '16px';
+   return (
    
    <Box
       sx={{
@@ -67,7 +68,7 @@ const Contact = () => {
          <Box
             component = {'form'}
             sx={{
-               maxWidth: '1280px',
+               maxWidth: '720px',
                width: '100%',
                backgroundColor: '#DAD7CD',
                padding: '25px 25px 30px',
@@ -78,19 +79,19 @@ const Contact = () => {
                marginTop: '500-5%',
                fontSize: '30px',
                textAlign: 'center',
-               height: '80%'
+               maxHeight: '720px'
             }}
             onSubmit={onSubmit}
          >
             <Typography
                component = {'h2'}
                sx = {{
-                  marginTop: '30px',
-                  fontSize: '62px',
-                  fontWeight: 'bold',
+                  marginTop: '15px',
+                  fontSize: '50px',
+                  fontWeight: '600',
                   textAlign: {xs: 'left', md: 'start'},
                   color: '#3A5A50',
-                  marginLeft: '5%',
+                  marginLeft: '6%',
                }}   
             >
                Contact jLab
@@ -99,25 +100,24 @@ const Contact = () => {
             <Typography
                component = {'h2'}
                sx = {{
-                  fontSize: '21px',
+                  fontSize: '18px',
                   fontWeight: 'bold',
                   textAlign: {xs: 'left', md: 'start'},
                   color: '#3A5A50',
                   opacity: '60%',
-                  marginLeft: '5%',
+                  marginLeft: '6%',
                }}   
             >
-               What can we help you with?
+               Want to reach out? Leave your questions, concerns, or comments below.
             </Typography>
 
             <Box sx={{
-               marginTop: '20px',
+               marginTop: '12px'
             }}>
-               {/* <label>Full Name</label> */}
                <Typography
                   component = {'h2'}
                   sx = {{
-                     fontSize: '18px',
+                     fontSiz6e: '1px',
                      textAlign: {xs: 'left', md: 'start'},
                      color: '#1E1E1E',
                      marginLeft: '6%',
@@ -136,7 +136,7 @@ const Contact = () => {
                   component = {'input'}
                   sx={{
                      width: '70%',
-                     height: '50px',
+                     height: '40px',
                      backgroundColor: '#D9D9D9',
                      border: 'none',
                      paddingLeft: '15px',
@@ -145,10 +145,11 @@ const Contact = () => {
                      marginTop: '7px',
                      marginLeft: '-15%',
                      resize: 'none',
-                     fontSize: '18px',
+                     fontSize: '16px',
                      fontFamily: 'Inter',
                      fontWeight: '200',
                      boxShadow: '2',
+                     outline: 'none'
                   }} 
                   type="text"  
                   placeholder="Enter Name" 
@@ -157,12 +158,12 @@ const Contact = () => {
             </Box>
 
             <Box sx={{
-               marginTop: '20px',
+               marginTop: marginSize,
             }}>
                <Typography
                   component = {'h2'}
                   sx = {{
-                     fontSize: '18px',
+                     fontSize: '16px',
                      textAlign: {xs: 'left', md: 'start'},
                      color: '#1E1E1E',
                      marginLeft: '6%',
@@ -180,7 +181,7 @@ const Contact = () => {
                   component = {'input'}
                   sx={{
                      width: '70%',
-                     height: '50px',
+                     height: '40px',
                      backgroundColor: '#D9D9D9',
                      border: 'none',
                      paddingLeft: '15px',
@@ -189,10 +190,11 @@ const Contact = () => {
                      marginTop: '7px',
                      marginLeft: '-15%',
                      resize: 'none',
-                     fontSize: '18px',
+                     fontSize: '16px',
                      fontFamily: 'Inter',
                      fontWeight: '200',
                      boxShadow: '2',
+                     outline: 'none'
                   }} 
                   type="email"  
                   placeholder="user@email.com" 
@@ -201,12 +203,12 @@ const Contact = () => {
             </Box>
 
             <Box sx={{
-               marginTop: '20px',
+               marginTop: marginSize,
             }}>
                <Typography
                   component = {'h2'}
                   sx = {{
-                     fontSize: '18px',
+                     fontSize: '16px',
                      textAlign: {xs: 'left', md: 'start'},
                      color: '#1E1E1E',
                      marginLeft: '6%',
@@ -223,20 +225,21 @@ const Contact = () => {
                <Box 
                   component = {'textarea'}
                   sx={{
-                     width: '90%',
+                     width: '85%',
                      backgroundColor: '#D9D9D9',
                      border: 'none',
                      paddingLeft: '15px',
                      paddingBottom: '5px',
                      paddingTop: '15px',
                      marginTop: '7px',
-                     marginLeft: '5%',
+                     marginLeft: '0%',
                      resize: 'none',
-                     fontSize: '18px',
+                     fontSize: '16px',
                      fontFamily: 'Inter',
                      fontWeight: '200',
                      boxShadow: '2',
-                     height: '200px',
+                     height: '140px',
+                     outline: 'none'
                   }} 
                   type="email"  
                   placeholder="Message Text" 
