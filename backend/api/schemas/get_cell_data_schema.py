@@ -21,7 +21,7 @@ class GetCellDataSchema(ma.SQLAlchemySchema):
                 "year",
             ]
         ),
-        missing="hour",
+        load_default="hour",
     )
     startTime = ma.DateTime("rfc", required=False)
     endTime = ma.DateTime("rfc", required=False)
