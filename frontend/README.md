@@ -42,7 +42,6 @@ Builds the app for production to the `build` folder.\
 The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
-
 ## Testing
 
 ### Intro

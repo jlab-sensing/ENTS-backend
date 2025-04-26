@@ -208,32 +208,32 @@ describe('CellsList Component', () => {
 //     vi.clearAllMocks();
 //   });
 
-  // it('dosent render when user is null', () => {
-  //   vi.mocked(useOutletContext).mockReturnValue([null, vi.fn()]);
-  //   renderAccountInfo();
+// it('dosent render when user is null', () => {
+//   vi.mocked(useOutletContext).mockReturnValue([null, vi.fn()]);
+//   renderAccountInfo();
 
-  //   expect(screen.queryByText('Account Info')).toBeNull();
-  // });
+//   expect(screen.queryByText('Account Info')).toBeNull();
+// });
 
-  // it('renders when user is present', () => {
-  //   vi.mocked(useOutletContext).mockReturnValue([{ user: { name: 'test-user' } }, vi.fn()]);
-  //   renderAccountInfo();
+// it('renders when user is present', () => {
+//   vi.mocked(useOutletContext).mockReturnValue([{ user: { name: 'test-user' } }, vi.fn()]);
+//   renderAccountInfo();
 
-  //   expect(screen.getByText('Account Info')).toBeInTheDocument();
-  // });
+//   expect(screen.getByText('Account Info')).toBeInTheDocument();
+// });
 
-  // it('renders email properly', () => {
-  //   vi.mocked(useOutletContext).mockReturnValue([{ user: { email: 'test@email.com' } }, vi.fn()]);
-  //   renderAccountInfo();
+// it('renders email properly', () => {
+//   vi.mocked(useOutletContext).mockReturnValue([{ user: { email: 'test@email.com' } }, vi.fn()]);
+//   renderAccountInfo();
 
-  //   expect(screen.getByText('Email: test@email.com')).toBeInTheDocument();
-  // });
-  // it('renders name properly', () => {
-  //   vi.mocked(useOutletContext).mockReturnValue([{ user: { first_name: 'test', last_name: 'user' } }, vi.fn()]);
-  //   renderAccountInfo();
+//   expect(screen.getByText('Email: test@email.com')).toBeInTheDocument();
+// });
+// it('renders name properly', () => {
+//   vi.mocked(useOutletContext).mockReturnValue([{ user: { first_name: 'test', last_name: 'user' } }, vi.fn()]);
+//   renderAccountInfo();
 
-  //   expect(screen.getByText('Name: test user')).toBeInTheDocument();
-  // });
+//   expect(screen.getByText('Name: test user')).toBeInTheDocument();
+// });
 // });
 
 describe('DeleteCellModal component', () => {

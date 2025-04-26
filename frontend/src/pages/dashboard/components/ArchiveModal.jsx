@@ -83,7 +83,7 @@ export default function ArchiveModal({ cells }) {
   const handleDragStart = (event) => {
     const { active } = event;
     setActiveCell(active);
-    const draggedCell = cellsList.find(cell => cell.id === active.id);
+    const draggedCell = cellsList.find((cell) => cell.id === active.id);
     setDraggedItem(draggedCell);
   };
 
@@ -96,17 +96,19 @@ export default function ArchiveModal({ cells }) {
       </Tooltip>
       <Modal open={open} onClose={handleClose} closeAfterTransition>
         <Fade in={open}>
-          <Box sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '80%',
-            bgcolor: 'background.paper',
-            boxShadow: 24,
-            p: 4,
-            borderRadius: '10px',
-          }}>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '80%',
+              bgcolor: 'background.paper',
+              boxShadow: 24,
+              p: 4,
+              borderRadius: '10px',
+            }}
+          >
             <DndContext
               onDragStart={handleDragStart}
               onDragOver={handleDragOver}
