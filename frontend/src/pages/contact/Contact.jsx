@@ -30,13 +30,6 @@ const Contact = () => {
          });
       }
    };
-  
-   const styles = {
-      leafletContainer: {
-         width: '100%',
-         height: '100vh',
-      },
-   };
 
    var marginSize = '16px';
    return (
