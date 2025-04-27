@@ -8,7 +8,7 @@ function Footer() {
       sx={{
         position: 'absolute',
         bottom: '0',
-        height: '8vh',
+        height: '5vh',
         width: '90%',
         textAlign: 'center',
         color: '#588157',
@@ -26,9 +26,6 @@ function Footer() {
           <Box component={'a'} sx={{ color: '#588157' }} href='https://sensors.soe.ucsc.edu/'>
             sensors.soe.ucsc.edu
           </Box>
-        </Box>
-        <Box component={'a'} sx={{ color: '#588157', ml:2 }} href='/contact/'>
-          contact us
         </Box>
         <Box
           component={'a'}
