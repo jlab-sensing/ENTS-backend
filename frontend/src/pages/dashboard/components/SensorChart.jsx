@@ -15,11 +15,8 @@ function SensorChart({ cells, startDate, endDate, stream }) {
   // Colors of data points. Each color represents the next color
   // of the data points as the user selects more cells to compare.
   // Add more measurements depending on how many different values on the charts
-  const meas_colors = [
-    ['lightgreen', 'darkgreen'],
-    ['purple', 'blue'],
-    ['orange', 'red'],
-  ];
+  const meas_colors= ['#26C6DA', '#FF7043', '#A2708A'];
+
   const axisIds = ['leafAxis'];
 
   //** QUICK WAY to change stream time in seconds */

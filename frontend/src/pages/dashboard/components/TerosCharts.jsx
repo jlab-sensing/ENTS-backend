@@ -18,9 +18,10 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
   const [loadedCells, setLoadedCells] = useState([]);
 
   // Access data for each cell and update the combined charts accordingly
-  const tempColors = ['lightgreen', 'darkgreen'];
-  const ecColors = ['purple', 'blue'];
-  const vwcColors = ['orange', 'red'];
+
+  const tempColors = ['#26C6DA', '#FF7043', '#A2708A'];
+  const ecColors = ['#26C6DA', '#FF7043', '#A2708A'];
+  const vwcColors= ['#112E51', '#78909C', '#C1F7DC'];
 
   //** gets teros data from backend */
   async function getTerosChartData() {
