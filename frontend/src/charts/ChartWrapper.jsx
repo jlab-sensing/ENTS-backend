@@ -13,8 +13,6 @@ import zoomOut from '../assets/zoom-out.svg';
 import downsample from '../assets/downsample.svg';
 import downloadIcon from '../assets/download.svg';
 
-
-
 import {
   Chart as ChartJS,
   LineController,
@@ -266,7 +264,6 @@ function ChartWrapper({ id, data, options, stream }) {
   };
 
   return (
-    
     <Box
       sx={{
         display: 'flex',
@@ -440,7 +437,7 @@ function ChartWrapper({ id, data, options, stream }) {
             <Box component='img' src={downsample} sx={{ width: '16px', height: '16px' }}></Box>
           </ToggleButton>
         </Tooltip>
-        
+
         <Tooltip
           title='Export Chart'
           placement='bottom'
@@ -458,16 +455,11 @@ function ChartWrapper({ id, data, options, stream }) {
             },
           }}
         >
-          <ToggleButton 
-            value={false} 
-            onClick={handleExportChart} 
-            sx={{ width: '32px', height: '32px' }}
-          >
-          
+          <ToggleButton value={false} onClick={handleExportChart} sx={{ width: '32px', height: '32px' }}>
             <Box component='img' src={downloadIcon} sx={{ width: '20px', height: '20px' }}></Box>
           </ToggleButton>
         </Tooltip>
-        
+
         <Tooltip
           title='Fullscreen'
           placement='bottom'
@@ -654,7 +646,7 @@ function ChartWrapper({ id, data, options, stream }) {
                     <Box component='img' src={downsample} sx={{ width: '20px', height: '20px' }}></Box>
                   </ToggleButton>
                 </Tooltip>
-                
+
                 <Tooltip
                   title='Export Chart'
                   placement='bottom'
@@ -676,7 +668,7 @@ function ChartWrapper({ id, data, options, stream }) {
                     <Box component='img' src={downloadIcon} sx={{ width: '20px', height: '20px' }}></Box>
                   </ToggleButton>
                 </Tooltip>
-                
+
                 <Tooltip
                   title='Windowed'
                   placement='bottom'

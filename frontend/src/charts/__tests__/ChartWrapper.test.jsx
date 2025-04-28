@@ -1,4 +1,4 @@
-import { describe, it, expect,vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -741,7 +741,7 @@ describe('testing side button events', () => {
     const createElementSpy = vi.spyOn(document, 'createElement');
     const appendChildSpy = vi.spyOn(document.body, 'appendChild');
     const removeChildSpy = vi.spyOn(document.body, 'removeChild');
-    
+
     render(
       <MockChartWrapper
         id='vwc'
@@ -751,14 +751,14 @@ describe('testing side button events', () => {
         stream={false}
       />,
     );
-    
+
     const exportBtnElement = await screen.findByLabelText(/Export Chart/i);
     await user.click(exportBtnElement);
-    
+
     expect(createElementSpy).toHaveBeenCalledWith('a');
     expect(appendChildSpy).toHaveBeenCalled();
     expect(removeChildSpy).toHaveBeenCalled();
-    
+
     createElementSpy.mockRestore();
     appendChildSpy.mockRestore();
     removeChildSpy.mockRestore();

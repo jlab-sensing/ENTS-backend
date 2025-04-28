@@ -56,7 +56,7 @@ function CellsList() {
         minHeight: '100vh',
         p: 2,
         borderRadius: '10px',
-        flexGrow: 1, 
+        flexGrow: 1,
       }}
     >
       <Box
@@ -87,17 +87,12 @@ function CellsList() {
       {/* Wrapper to ensure DataGrid does not exceed background */}
       <Box
         sx={{
-          flexGrow: 1, 
-          height: '100%', 
-          overflowY: 'auto', 
+          flexGrow: 1,
+          height: '100%',
+          overflowY: 'auto',
         }}
       >
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          pageSize={5}
-          autoHeight 
-        />
+        <DataGrid rows={rows} columns={columns} pageSize={5} autoHeight />
       </Box>
     </Box>
   );
