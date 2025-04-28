@@ -17,7 +17,7 @@ function SoilPotCharts({ cells, startDate, endDate, stream }) {
   // Add more measurements depending on how many different values on the charts
   const meas_colors = ['#26C6DA', '#FF7043', '#A2708A'];
  
-sIds = ['leafAxis'];
+const axisIds = ['leafAxis'];
 
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
