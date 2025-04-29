@@ -1,9 +1,11 @@
-import React from 'react';
 import { Box } from '@mui/material';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import React from 'react';
+import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
+import useAuth from '../../auth/hooks/useAuth';
 import Nav from '../../components/Nav';
 
 function Map() {
+  const { user, setUser, loggedIn, setLoggedIn } = useAuth();
   const styles = {
     leafletContainer: {
       width: '100%',
@@ -24,7 +26,7 @@ function Map() {
         backgroundColor: '#DAD7CD',
       }}
     >
-      <Nav />
+      <Nav user={user} setUser={setUser} loggedIn={loggedIn} setLoggedIn={setLoggedIn} />
       {/* MAP PAGE */}
       <MapContainer
         center={[36.95620689807501, -122.05855126777698]}
