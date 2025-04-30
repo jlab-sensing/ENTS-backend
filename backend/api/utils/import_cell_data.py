@@ -23,6 +23,13 @@ from ..models.power_data import PowerData
 from ..models.teros_data import TEROSData
 from .get_or_create import get_or_create_cell, get_or_create_logger
 
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO, 
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
 def import_cell_data(path, logger_name, cell_name, batch_size=10000):
     """Imports raw RocketLogger data in PowerData table. A logger instance for
@@ -44,58 +51,57 @@ def import_cell_data(path, logger_name, cell_name, batch_size=10000):
 
     # pylint: disable=R0801
 
-    with open(path, newline="", encoding="UTF-8") as csvfile:
-        data_reader = csv.reader(csvfile)
+    try:
+        with open(path, newline="", encoding="UTF-8") as csvfile:
+            data_reader = csv.reader(csvfile)
+            # Skip header
+            for _ in range(11):
+                next(data_reader)
 
-        # Skip header
-        for _ in range(11):
-            next(data_reader)
+            tmp = []
+            with Session(engine) as sess:
+                logger = get_or_create_logger(sess, logger_name)
+                cell = get_or_create_cell(sess, cell_name)
 
-        tmp = []
+                for row in tqdm(data_reader):
+                    try:
+                        # convert string to timestamp
+                        cleaned_ts = row[0][1:-4]
+                        ts = datetime.strptime(
+                            cleaned_ts, "%d %b %Y %H:%M:%S"
+                        ).replace(tzinfo=None)
 
-        with Session(engine) as sess:
-            # Get or create objects
-            logger = get_or_create_logger(sess, logger_name)
-            cell = get_or_create_cell(sess, cell_name)
+                        tmp.append(
+                            PowerData(
+                                logger_id=logger.id,
+                                cell_id=cell.id,
+                                ts=ts,
+                                current=float(row[2]) * 1e-6,
+                                voltage=float(row[1]) * 1e-3,
+                            )
+                        )
 
-            for row in tqdm(data_reader):
-                # convert string to timestamp
-                cleaned_ts = row[0][1:-4]
-                # print("\n" + repr(cleaned_ts))
-                ts = datetime.strptime(cleaned_ts, "%d %b %Y %H:%M:%S").replace(
-                    tzinfo=None
-                )
+                        tdata = TEROSData(
+                            cell_id=cell.id,
+                            ts=ts,
+                            vwc=float(row[5]),
+                            temp=float(row[6]),
+                            ec=float(row[4]),
+                        )
 
-                tmp.append(
-                    PowerData(
-                        logger_id=logger.id,
-                        cell_id=cell.id,
-                        ts=ts,
-                        current=float(row[2]) * 1e-6,
-                        voltage=float(row[1]) * 1e-3,
-                    )
-                )
+                        tmp.append(tdata)
 
-                tdata = TEROSData(
-                    cell_id=cell.id,
-                    ts=ts,
-                    vwc=float(row[5]),
-                    temp=float(row[6]),
-                    ec=float(row[4]),
-                )
+                        if len(tmp) > batch_size and tmp:
+                            sess.bulk_save_objects(tmp)
+                            sess.commit()
+                            tmp.clear()
+                    except Exception as e:
+                        logging.error(f"Error processing row {row}: {e}")
 
-                tmp.append(tdata)
-
-                if len(tmp) > batch_size and tmp:
-                    # Save objects
-                    sess.bulk_save_objects(tmp)
-                    sess.commit()
-                    # Reset array
-                    tmp.clear()
-
-            # Save remaining objects
-            sess.bulk_save_objects(tmp)
-            sess.commit()
+                sess.bulk_save_objects(tmp)
+                sess.commit()
+    except Exception as e:
+        logging.error(f"Failed to import data from {path}: {e}")
 
 
 if __name__ == "__main__":
@@ -111,4 +117,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    import_cell_data(args.path, args.rl, args.cell, args.cell2, args.batch_size)
+    # Fix: Remove args.cell2 which isn't defined in the argument parser
+    import_cell_data(args.path, args.rl, args.cell, args.batch_size)
