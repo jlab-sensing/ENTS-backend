@@ -27,9 +27,9 @@ import logging
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO, 
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
+
 
 def import_cell_data(path, logger_name, cell_name, batch_size=10000):
     """Imports raw RocketLogger data in PowerData table. A logger instance for
@@ -67,9 +67,9 @@ def import_cell_data(path, logger_name, cell_name, batch_size=10000):
                     try:
                         # convert string to timestamp
                         cleaned_ts = row[0][1:-4]
-                        ts = datetime.strptime(
-                            cleaned_ts, "%d %b %Y %H:%M:%S"
-                        ).replace(tzinfo=None)
+                        ts = datetime.strptime(cleaned_ts, "%d %b %Y %H:%M:%S").replace(
+                            tzinfo=None
+                        )
 
                         tmp.append(
                             PowerData(
@@ -117,5 +117,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # Fix: Remove args.cell2 which isn't defined in the argument parser
     import_cell_data(args.path, args.rl, args.cell, args.batch_size)
