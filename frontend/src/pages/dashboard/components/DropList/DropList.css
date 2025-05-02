@@ -24,6 +24,8 @@
   flex-direction: column;
   gap: 70px;
   min-height: 200px;
-  /* Remove overflow-y to prevent z-index issues */
+  overflow-y: auto; /* Reintroduce vertical scrolling */
+  overflow-x: hidden;
   position: relative;
+  z-index: 1; /* Ensure the z-index is set to keep the dragged item visible */
 }
