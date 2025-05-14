@@ -30,35 +30,67 @@ def process_measurement(data: bytes):
     """
 
     # decode binary protobuf data
+
     meas = decode_measurement(data, raw=False)
 
     obj_list = []
 
     # power measurement
+    # make power and teros just like the pythos31 and bme280 ones
     if meas["type"] == "power":
-        obj = PowerData.add_protobuf_power_data(
-            meas["loggerId"],
-            meas["cellId"],
-            datetime.fromtimestamp(meas["ts"]),
-            meas["data"]["voltage"],
-            meas["data"]["current"],
-        )
+        obj1 = Sensor.add_data(meas_name="voltage", meas_unit="V", meas_dict=meas)
 
-        obj_list.append(obj)
+        obj_list.append(obj1)
+
+        obj2 = Sensor.add_data(meas_name="current", meas_unit="A", meas_dict=meas)
+
+        obj_list.append(obj2)
+
+
+
+        # obj = PowerData.add_protobuf_power_data(
+        #     meas["loggerId"],
+        #     meas["cellId"],
+        #     datetime.fromtimestamp(meas["ts"]),
+        #     meas["data"]["voltage"],
+        #     meas["data"]["current"],
+        # )
+
+        # obj_list.append(obj)
+
+
 
     # teros12 measurement
     elif meas["type"] == "teros12":
-        obj = TEROSData.add_protobuf_teros_data(
-            meas["cellId"],
-            datetime.fromtimestamp(meas["ts"]),
-            meas["data"]["vwcAdj"],
-            meas["data"]["vwcRaw"],
-            meas["data"]["temp"],
-            meas["data"]["ec"],
-            None,
-        )
 
-        obj_list.append(obj)
+        #Do we need to store vwcRaw and vwcAdj?
+
+        obj1 = Sensor.add_data(meas_name="vwcRaw", meas_unit="V", meas_dict=meas)
+
+        obj_list.append(obj1)
+
+        obj2 = Sensor.add_data(meas_name="vwcAdj", meas_unit="?", meas_dict=meas)
+
+        obj_list.append(obj2)
+
+        obj3 = Sensor.add_data(meas_name="temp", meas_unit='C', meas_dict=meas)
+
+        obj_list.append(obj3)
+
+        obj4 = Sensor.add_data(meas_name="ec", meas_unit='µS/cm', meas_dict=meas)
+
+        obj_list.append(obj4)
+
+        
+        # obj = TEROSData.add_protobuf_teros_data(
+        #     meas["cellId"],
+        #     datetime.fromtimestamp(meas["ts"]),
+        #     meas["data"]["vwcAdj"],
+        #     meas["data"]["vwcRaw"],
+        #     meas["data"]["temp"],
+        #     meas["data"]["ec"],
+        #     None,
+        # )
 
     elif meas["type"] == "phytos31":
         obj1 = Sensor.add_data(meas_name="voltage", meas_unit="V", meas_dict=meas)

@@ -13,6 +13,7 @@ p_in = PInput()
 
 
 class Power_Data(Resource):
+    #this is never even used right now 
     def post(self):
         json_data = request.json
         power_data_obj = p_in.load(json_data)
