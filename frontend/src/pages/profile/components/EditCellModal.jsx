@@ -76,12 +76,10 @@ function EditCellModal({ cell }) {
           }}
         >
           {!response ? (
-            
             <>
               <Typography id="edit-cell-modal-title" variant="h6" component="h2" gutterBottom>
                 Edit Cell {cell.id} Info
               </Typography>
-
               <TextField
                 label="Name"
                 value={formData.name}
@@ -90,9 +88,7 @@ function EditCellModal({ cell }) {
                 margin="normal"
                 required
                 error={formData.name?.length === 0}
-
               />
-
               <TextField
                 label="Location"
                 value={formData.location}
@@ -101,7 +97,6 @@ function EditCellModal({ cell }) {
                 margin="normal"
                 required
                 error={formData.location?.length === 0}
-
               />
                 <TextField
                   label="Longitude"
@@ -114,7 +109,6 @@ function EditCellModal({ cell }) {
                   error={formData.long?.length === 0 || isNaN(Number(formData.long))}
                   helperText={isNaN(Number(formData.long)) ? 'Please Enter Numbers' : ''}
                 />
-
                 <TextField
                   label="Latitude"
                   variant="outlined"
@@ -125,7 +119,6 @@ function EditCellModal({ cell }) {
                   required
                   error={formData.lat?.length === 0 || isNaN(Number(formData.lat))}
                   helperText={isNaN(Number(formData.lat)) ? 'Please Enter Numbers' : ''}
-
                 />
 
               {/* following AccountInfo styling */}
@@ -176,3 +169,4 @@ function EditCellModal({ cell }) {
 }
 
 export default EditCellModal;
+
