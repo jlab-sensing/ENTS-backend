@@ -40,6 +40,7 @@ export const addCell = (cellName, location, longitude, latitude, archive, email)
 export const updateCell = async (cellId, updatedData) => {
   const url = `${process.env.PUBLIC_URL}/api/cell/${cellId}`;
   try {
+    console.log('Sending payload', updatedData);
     const response = await axios.put(url, updatedData, {
       headers: { 'Content-Type': 'application/json' },
     });

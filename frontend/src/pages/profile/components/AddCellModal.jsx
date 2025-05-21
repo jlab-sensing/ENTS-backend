@@ -156,7 +156,7 @@ function AddCellModal() {
                 Here&apos;,s the endpoint to start uploading teros data, https://dirtviz.jlab.ucsc.edu/api/teros/
                 {response.id}
               </p>
-              <Button onClick={DoneButtonClose}>Done</Button>
+              <Button onClick={handleClose}>Done</Button>
             </>
           )}
         </Box>
