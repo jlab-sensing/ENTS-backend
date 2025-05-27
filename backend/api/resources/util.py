@@ -6,7 +6,7 @@ author: John Madden <jmadden173@pm.me>
 from datetime import datetime
 
 from flask import Response
-from soil_power_sensor_protobuf.proto import encode_response, decode_measurement
+from ents.proto import encode_response, decode_measurement
 
 from ..models.power_data import PowerData
 from ..models.teros_data import TEROSData
