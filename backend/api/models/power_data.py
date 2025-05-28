@@ -27,8 +27,6 @@ class PowerData(db.Model):
     def __repr__(self):
         return f"PowerData(id={self.id!r}, ts={self.ts!r})"
 
-    # SHOULD NOT USE LOGGER NAME, SHOULD USE LOGGER ID
-    #this is actually kinda pointless right now, its only used for a direct post request from the frontend to power_data, which is never done 
     def add_power_data(logger_name, cell_name, ts, v, i):
         """add new data point for power table
         creates new logger or cell if they don't exist

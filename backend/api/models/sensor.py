@@ -18,7 +18,6 @@ class Sensor(db.Model):
     data_type = db.Column(db.Text(), nullable=False)
     unit = db.Column(db.Text())
     name = db.Column(db.Text(), nullable=False)
-    logger_id = db.Column(db.Integer, db.ForeignKey("logger.id"))
 
     cell = db.relationship("Cell")
 
@@ -118,7 +117,7 @@ class Sensor(db.Model):
         data["unit"] = cur_sensor.unit
         data["type"] = cur_sensor.data_type
         return data
-    # INCLUDE LOGGER_ID INTO THIS, NOT LOGGER NAME
+
     @staticmethod
     def add_data(
         meas_name: str,
