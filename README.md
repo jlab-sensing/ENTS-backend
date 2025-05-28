@@ -145,6 +145,8 @@ To start contributing to the ENTS backend, please read [CONTRIBUTING.md](CONTRIB
 
 Here's a list of [good first issues](https://github.com/jlab-sensing/DirtViz/labels/good%20first%20issue) to get yourself familiar with the ENTS backend. Comment in the issue to pick it up, and feel free to ask any questions!
 
+To keep in communication, we use [Zulip](https://ents.zulipchat.com/)! Feel free to join and ask questions. 
+
 ## FAQ
 
 ### How do I create database migrations?
