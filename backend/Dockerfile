@@ -30,7 +30,7 @@ ENV PYTHONUNBUFFERED 1
 
 # install system dependencies
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends gcc
+    apt-get install -y --no-install-recommends gcc qtbase5-dev-tools qt5-default qt5-qmake python3-pyqt5
 
 # install python dependencies
 COPY requirements.txt /tmp/requirements.txt
