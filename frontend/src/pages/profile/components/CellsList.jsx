@@ -4,6 +4,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import { useOutletContext } from 'react-router-dom';
 import AddCellModal from './AddCellModal';
 import DeleteCellModal from './DeleteCellModal';
+import EditCellModal from './EditCellModal';
 
 function CellsList() {
   let data = useOutletContext();
@@ -32,6 +33,9 @@ function CellsList() {
     { field: 'lat', headerName: 'Latitude', width: 150 },
     { field: 'long', headerName: 'Longitude', width: 150 },
     { field: 'archive', headerName: 'Archive', width: 150 },
+    { field: '', headerName: '', width: 85,   sortable: false, filterable: false, disableColumnMenu: true,
+      renderCell: (params) => (<EditCellModal cell={params.row} />) // edit button in new column
+    }
   ];
 
   let rows = [];
