@@ -2,16 +2,17 @@ import 'chartjs-adapter-luxon';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import { React } from 'react';
-import { getMaxAxisAndStepValues } from '../alignAxis';
+import { getAxisBoundsAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 
 export default function VwcChart({ data, stream, startDate, endDate }) {
-  const { leftYMax, rightYMax, leftYStep, rightYStep } = getMaxAxisAndStepValues(
+  const { leftYMin, leftYMax, leftYStep, rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
     data.datasets.filter((_, i) => i % 2 == 0),
     data.datasets.filter((_, i) => i % 2 == 1),
     10,
     10,
   );
+
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -44,33 +45,27 @@ export default function VwcChart({ data, stream, startDate, endDate }) {
       ecAxis: {
         type: 'linear',
         position: 'right',
-        beginAtZero: true,
-        suggestedMax: 650,
         title: {
           display: true,
           text: 'EC (µS/cm)',
         },
         ticks: {
-          beginAtZero: true,
           stepSize: rightYStep,
         },
-        min: 0,
+        min: rightYMin,
         max: rightYMax,
       },
       vwcAxis: {
         type: 'linear',
         position: 'left',
-        beginAtZero: true,
-        suggestedMax: 0.65,
         title: {
           display: true,
           text: 'VWC (%)',
         },
         ticks: {
-          beginAtZero: true,
           stepSize: leftYStep,
         },
-        min: 0,
+        min: leftYMin,
         max: leftYMax,
         grid: {
           drawOnChartArea: false,
@@ -117,8 +112,6 @@ export default function VwcChart({ data, stream, startDate, endDate }) {
         type: 'linear',
         grace: '10%',
         position: 'right',
-        beginAtZero: true,
-        suggestedMax: 650,
         title: {
           display: true,
           text: 'EC (µS/cm)',
@@ -128,8 +121,6 @@ export default function VwcChart({ data, stream, startDate, endDate }) {
         type: 'linear',
         grace: '10%',
         position: 'left',
-        beginAtZero: true,
-        suggestedMax: 0.65,
         title: {
           display: true,
           text: 'VWC (%)',
