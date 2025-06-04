@@ -1,19 +1,19 @@
-import { React, useState, useEffect } from 'react';
+import { Box, Button, Divider, Grid, Stack } from '@mui/material';
 import { DateTime } from 'luxon';
-import DownloadBtn from './components/DownloadBtn';
-import { Box, Grid, Stack, Divider, Button } from '@mui/material';
-import DateRangeSel from './components/DateRangeSel';
-import CellSelect from './components/CellSelect';
-import PowerCharts from './components/PowerCharts';
-import TerosCharts from './components/TerosCharts';
-import BackBtn from './components/BackBtn';
-import SensorChart from './components/SensorChart';
+import { React, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useCells } from '../../services/cell';
 import ArchiveModal from './components/ArchiveModal';
-import { useSearchParams } from 'react-router-dom';
+import BackBtn from './components/BackBtn';
+import CellSelect from './components/CellSelect';
 import CopyLinkBtn from './components/CopyLinkBtn';
-import SoilPotCharts from './components/SoilPotChart';
+import DateRangeSel from './components/DateRangeSel';
+import DownloadBtn from './components/DownloadBtn';
+import PowerCharts from './components/PowerCharts';
 import PresHumChart from './components/PresHumChart';
+import SensorChart from './components/SensorChart';
+import SoilPotCharts from './components/SoilPotChart';
+import TerosCharts from './components/TerosCharts';
 
 function Dashboard() {
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
@@ -21,9 +21,11 @@ function Dashboard() {
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [selectedCells, setSelectedCells] = useState([]);
   const [stream, setStream] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const cells = useCells();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
+  // Initialize state from URL parameters
   useEffect(() => {
     if (!cells.data) return;
 
@@ -46,7 +48,26 @@ function Dashboard() {
       const parsedEndDate = DateTime.fromISO(searchQueryEndDate);
       setEndDate(parsedEndDate);
     }
+
+    setIsInitialized(true);
   }, [searchParams, cells.data]);
+
+  // Sync state changes to URL
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const newParams = new URLSearchParams();
+
+    if (selectedCells.length > 0) {
+      newParams.set('cell_id', selectedCells.map((cell) => cell.id).join(','));
+    }
+
+    newParams.set('startDate', startDate.toISO());
+    newParams.set('endDate', endDate.toISO());
+
+    setSearchParams(newParams, { replace: true });
+  }, [startDate, endDate, selectedCells, isInitialized, setSearchParams]);
+
   return (
     <>
       <Box>
