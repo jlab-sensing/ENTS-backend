@@ -20,6 +20,7 @@ from api import db
 #         b'"latitude": 2.0, "userEmail": "", "archive": false}]\n'
 #     )
 
+
 def test_update_cell_endpoint(test_client, setup_cells):
     # Grab the first inserted test cell
     cell = db.session.query(Cell).filter_by(name="cell_1").first()
