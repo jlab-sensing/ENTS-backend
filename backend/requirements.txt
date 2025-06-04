@@ -20,6 +20,5 @@ redis
 PyJWT
 Requests
 google-auth
-soil-power-sensor-protobuf @ https://ents-python-package.s3.us-west-2.amazonaws.com/soil_power_sensor_protobuf-2.2.2.tar.gz
-gevent
+ents
 celery[redis,gevent,sqlalchemy,sqs]
