@@ -52,7 +52,7 @@ class Cell(Resource):
 
     def put(self, cellId):
         json_data = request.json
-        print("Received payload:", json_data)
+        #print("Received payload:", json_data)
         #archive = json_data.get("archive")
         cell = CellModel.get(cellId)
 
@@ -67,6 +67,7 @@ class Cell(Resource):
                 cell.longitude = json_data.get("long")
             if "archive" in json_data:
                 cell.archive = json_data.get("archive")
+
             cell.save()
             return {"message": "Successfully updated cell"}
         return jsonify({"message": "Cell not found"}), 404
@@ -76,4 +77,6 @@ class Cell(Resource):
         if not cell:
             return jsonify({"message": "Cell not found"}), 404
         cell.delete()
+        
         return {"message": "Cell deleted successfully"}
+
