@@ -42,8 +42,8 @@ export const updateCell = async (cellId, updatedData) => {
   try {
     //console.log('Sending payload', updatedData);
     const response = await axios.put(url, updatedData, { headers: { 'Content-Type': 'application/json' }});
-    
     return response.data;
+    
   } catch (error) {
     console.error('Error updating cell:', error.response ? error.response.data : error.message);
     throw error;
