@@ -17,16 +17,16 @@ function AddCellModal() {
   const [lat, setLat] = useState('');
   const archive = false;
   const [response, setResponse] = useState(null);
-  const [setCloseDonebutton] = useState(true);
+  // const [setCloseDonebutton] = useState(true);
   const handleOpen = () => {
     setOpen(true);
     setResponse(null);
   };
 
-  const DoneButtonClose = () => {
-    setCloseDonebutton(false);
-    setOpen(false);
-  };
+  // const DoneButtonClose = () => {
+  //   setCloseDonebutton(false);
+  //   setOpen(false);
+  // };
 
   const handleClose = () => setOpen(false);
   useEffect(() => {

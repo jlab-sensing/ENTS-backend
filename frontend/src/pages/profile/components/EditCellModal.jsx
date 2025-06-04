@@ -3,6 +3,7 @@ import { Modal, Box, Typography, Button, IconButton, TextField } from '@mui/mate
 import CloseIcon from '@mui/icons-material/Close';
 import { useOutletContext } from 'react-router-dom';
 import { updateCell } from '../../../services/cell';
+import PropTypes from 'prop-types';
 
 function EditCellModal({ cell }) {
   const data = useOutletContext();
@@ -36,7 +37,7 @@ function EditCellModal({ cell }) {
     //   setSubmitting(false);
     // }, 1000);
     
-    // backend request not yet implemented - TO DO
+    // backend request implemented - DONE
     updateCell(cell.id, formData)
       .then((res) => {
         setResponse(res);
@@ -170,3 +171,13 @@ function EditCellModal({ cell }) {
 
 export default EditCellModal;
 
+// expected prop types for EditCellModal - prop validation
+EditCellModal.propTypes = {
+  cell: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    name: PropTypes.string.isRequired,
+    location: PropTypes.string.isRequired,
+    long: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    lat: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  }).isRequired,
+};
