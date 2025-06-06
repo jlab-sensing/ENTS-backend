@@ -44,7 +44,7 @@ class Cell(Resource):
         else:
             archive = cell_data["archive"]
         if CellModel.find_by_name(cell_name):
-            return {"message": "Duplicate cell name"}, 402
+            return {"message": "Duplicate cell name"}, 400
         new_cell = CellModel.add_cell_by_user_email(
             cell_name, location, lat, long, archive, userEmail
         )

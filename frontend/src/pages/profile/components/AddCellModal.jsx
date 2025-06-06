@@ -17,7 +17,6 @@ function AddCellModal() {
   const [lat, setLat] = useState('');
   const archive = false;
   const [response, setResponse] = useState(null);
-  const [setCloseDonebutton] = useState(true);
   const [error, setError] = useState(null);
   const handleOpen = () => {
     setOpen(true);
@@ -25,13 +24,8 @@ function AddCellModal() {
     setError(null);
   };
 
-  const DoneButtonClose = () => {
-    setCloseDonebutton(false);
-    setOpen(false);
-    setError(false);
-  };
-
   const handleClose = () => setOpen(false);
+
   useEffect(() => {
     console.log(response);
   }, [response]);
@@ -157,7 +151,7 @@ function AddCellModal() {
               <p>
                 Duplicate cell names.
               </p>
-              <Button onClick={DoneButtonClose}>Done</Button>
+              <Button onClick={handleClose}>Done</Button>
             </>
           ) : response && (
             <>
@@ -178,7 +172,7 @@ function AddCellModal() {
                 Here&apos;,s the endpoint to start uploading teros data, https://dirtviz.jlab.ucsc.edu/api/teros/
                 {response.id}
               </p>
-              <Button onClick={DoneButtonClose}>Done</Button>
+              <Button onClick={handleClose}>Done</Button>
             </>
           )}
         </Box>
