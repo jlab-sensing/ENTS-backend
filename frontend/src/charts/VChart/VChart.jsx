@@ -2,16 +2,17 @@ import 'chartjs-adapter-luxon';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import { React } from 'react';
-import { getMaxAxisAndStepValues } from '../alignAxis';
+import { getAxisBoundsAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 
 export default function VChart({ data, stream, startDate, endDate }) {
-  const { leftYMax, rightYMax, leftYStep, rightYStep } = getMaxAxisAndStepValues(
+  const { leftYMin, leftYMax, leftYStep, rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
     data.datasets.filter((_, i) => i % 2 == 0),
     data.datasets.filter((_, i) => i % 2 == 1),
     10,
     10,
   );
+
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -43,16 +44,14 @@ export default function VChart({ data, stream, startDate, endDate }) {
       },
       vAxis: {
         position: 'left',
-        beginAtZero: true,
         title: {
           display: true,
           text: 'Cell Voltage (mV)',
         },
         ticks: {
-          beginAtZero: true,
           stepSize: leftYStep,
         },
-        min: 0,
+        min: leftYMin,
         max: leftYMax,
         grid: {
           drawOnChartArea: false,
@@ -60,16 +59,14 @@ export default function VChart({ data, stream, startDate, endDate }) {
       },
       cAxis: {
         position: 'right',
-        beginAtZero: true,
         title: {
           display: true,
           text: 'Current (µA)',
         },
         ticks: {
-          beginAtZero: true,
           stepSize: rightYStep,
         },
-        min: 0,
+        min: rightYMin,
         max: rightYMax,
       },
     },
@@ -113,12 +110,10 @@ export default function VChart({ data, stream, startDate, endDate }) {
         type: 'linear',
         grace: '10%',
         position: 'left',
-        beginAtZero: true,
         title: {
           display: true,
           text: 'Cell Voltage (mV)',
         },
-        suggestedMax: 400,
         grid: {
           drawOnChartArea: false,
         },
@@ -127,12 +122,10 @@ export default function VChart({ data, stream, startDate, endDate }) {
         type: 'linear',
         grace: '10%',
         position: 'right',
-        beginAtZero: true,
         title: {
           display: true,
           text: 'Current (µA)',
         },
-        suggestedMax: 160,
       },
     },
   };

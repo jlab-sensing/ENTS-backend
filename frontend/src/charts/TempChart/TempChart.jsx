@@ -2,11 +2,12 @@ import 'chartjs-adapter-luxon';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import { React } from 'react';
-import { getMaxAxisAndStepValues } from '../alignAxis';
+import { getAxisBoundsAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 
 export default function TempChart({ data, stream, startDate, endDate }) {
-  const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 10, 5);
+  const { leftYMin, leftYMax, leftYStep } = getAxisBoundsAndStepValues(data.datasets, [], 10, 5);
+
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -39,12 +40,10 @@ export default function TempChart({ data, stream, startDate, endDate }) {
       y: {
         type: 'linear',
         position: 'left',
-        beginAtZero: true,
         ticks: {
-          beginAtZero: true,
           stepSize: leftYStep,
         },
-        min: 0,
+        min: leftYMin,
         max: leftYMax,
         title: {
           display: true,
@@ -92,8 +91,6 @@ export default function TempChart({ data, stream, startDate, endDate }) {
         type: 'linear',
         grace: '10%',
         position: 'left',
-        beginAtZero: true,
-        suggestedMax: 35,
         title: {
           display: true,
           text: 'Temperature (°C)',
