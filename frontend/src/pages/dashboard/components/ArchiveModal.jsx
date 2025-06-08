@@ -1,12 +1,21 @@
-import { React, useState } from 'react';
-import { Button, Box, Stack, Modal, Fade, Tooltip } from '@mui/material';
-import { DndContext, closestCorners, DragOverlay } from '@dnd-kit/core';
-import { DropList } from './DropList/DropList';
-import { DragItem } from './DragItem/DragItem';
-import archive from '../../../assets/archive.svg';
+import {
+  DndContext,
+  DragOverlay,
+  MouseSensor,
+  closestCorners,
+  defaultDropAnimation,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
-import { useSetCellArchive } from '../../../services/cell';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import { Box, Button, Fade, Modal, Stack, Tooltip, Typography } from '@mui/material';
 import { PropTypes } from 'prop-types';
+import { React, useState } from 'react';
+import archive from '../../../assets/archive.svg';
+import { useSetCellArchive } from '../../../services/cell';
+import { DragItem } from './DragItem/DragItem';
+import { DropList } from './DropList/DropList';
 
 export default function ArchiveModal({ cells }) {
   const [cellsList, setCellsList] = useState(
@@ -23,6 +32,28 @@ export default function ArchiveModal({ cells }) {
   const [activeCell, setActiveCell] = useState(null);
   const { mutate: setCellArchive } = useSetCellArchive();
   const [draggedItem, setDraggedItem] = useState(null);
+
+  // Configure sensors with better activation constraints
+  const mouseSensor = useSensor(MouseSensor, {
+    activationConstraint: {
+      distance: 0,
+      delay: 0,
+      tolerance: 0,
+    },
+  });
+
+  const sensors = useSensors(mouseSensor);
+
+  // Position modifiers to adjust drag overlay position
+  const modifiers = [];
+
+  // Configure drop animation
+  const dropAnimation = {
+    ...defaultDropAnimation,
+    dragSourceOpacity: 0.5,
+    duration: 200,
+    easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+  };
 
   const handleDragOver = (event) => {
     // activeID - selected dragItem id
@@ -90,32 +121,97 @@ export default function ArchiveModal({ cells }) {
   return (
     <>
       <Tooltip title='Archive' placement='bottom' disableInteractive>
-        <Button variant='outlined' onClick={handleOpen} sx={{ heigh: '16px', width: '16px' }}>
-          <Box component='img' src={archive}></Box>
+        <Button
+          variant='outlined'
+          onClick={handleOpen}
+          sx={{
+            minWidth: '40px',
+            width: '40px',
+            height: '40px',
+            padding: '8px',
+            borderRadius: '8px',
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            },
+          }}
+        >
+          <Box
+            component='img'
+            src={archive}
+            sx={{
+              width: '20px',
+              height: '20px',
+              opacity: 0.8,
+            }}
+          />
         </Button>
       </Tooltip>
-      <Modal open={open} onClose={handleClose} closeAfterTransition>
+      <Modal
+        open={open}
+        onClose={handleClose}
+        closeAfterTransition
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <Fade in={open}>
           <Box
             sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
               width: '80%',
+              maxWidth: '1000px',
+              maxHeight: '80vh',
               bgcolor: 'background.paper',
-              boxShadow: 24,
+              borderRadius: '16px',
+              boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.15)',
               p: 4,
-              borderRadius: '10px',
+              position: 'relative',
+              overflow: 'hidden',
             }}
           >
+            <Typography
+              variant='h5'
+              component='h2'
+              sx={{
+                mb: 1,
+                textAlign: 'center',
+                fontWeight: 500,
+                color: 'text.primary',
+              }}
+            >
+              Manage Archives
+            </Typography>
+            <Typography
+              variant='body2'
+              sx={{
+                mb: 3,
+                textAlign: 'center',
+                color: 'text.secondary',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 0.5,
+              }}
+            >
+              <DragIndicatorIcon fontSize='small' /> Drag and drop items to move them between sections
+            </Typography>
             <DndContext
+              sensors={sensors}
               onDragStart={handleDragStart}
               onDragOver={handleDragOver}
               onDragEnd={handleDragEnd}
               collisionDetection={closestCorners}
             >
-              <Stack direction='row' spacing={2} justifyContent='space-between'>
+              <Stack
+                direction='row'
+                spacing={4}
+                justifyContent='space-between'
+                sx={{
+                  height: 'calc(80vh - 180px)',
+                  overflow: 'hidden',
+                }}
+              >
                 <DropList
                   id='unarchive'
                   dragItems={cellsList.filter((item) => item.isArchived === false)}
@@ -127,7 +223,7 @@ export default function ArchiveModal({ cells }) {
                   columnID='archive'
                 />
               </Stack>
-              <DragOverlay>
+              <DragOverlay dropAnimation={dropAnimation} modifiers={modifiers} zIndex={1000}>
                 {draggedItem ? (
                   <DragItem
                     id={draggedItem.id}
