@@ -17,16 +17,16 @@ function AddCellModal() {
   const [lat, setLat] = useState('');
   const archive = false;
   const [response, setResponse] = useState(null);
-  const [setCloseDonebutton] = useState(true);
+  // const [setCloseDonebutton] = useState(true);
   const handleOpen = () => {
     setOpen(true);
     setResponse(null);
   };
 
-  const DoneButtonClose = () => {
-    setCloseDonebutton(false);
-    setOpen(false);
-  };
+  // const DoneButtonClose = () => {
+  //   setCloseDonebutton(false);
+  //   setOpen(false);
+  // };
 
   const handleClose = () => setOpen(false);
   useEffect(() => {
@@ -156,7 +156,7 @@ function AddCellModal() {
                 Here&apos;,s the endpoint to start uploading teros data, https://dirtviz.jlab.ucsc.edu/api/teros/
                 {response.id}
               </p>
-              <Button onClick={DoneButtonClose}>Done</Button>
+              <Button onClick={handleClose}>Done</Button>
             </>
           )}
         </Box>
