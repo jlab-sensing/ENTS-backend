@@ -17,18 +17,15 @@ function AddCellModal() {
   const [lat, setLat] = useState('');
   const archive = false;
   const [response, setResponse] = useState(null);
-  const [setCloseDonebutton] = useState(true);
+  const [error, setError] = useState(null);
   const handleOpen = () => {
     setOpen(true);
     setResponse(null);
-  };
-
-  const DoneButtonClose = () => {
-    setCloseDonebutton(false);
-    setOpen(false);
+    setError(null);
   };
 
   const handleClose = () => setOpen(false);
+
   useEffect(() => {
     console.log(response);
   }, [response]);
@@ -60,7 +57,7 @@ function AddCellModal() {
           }}
           component='form'
         >
-          {response == null && (
+          {(error==null&&response == null) && (
             <>
               <IconButton
                 sx={{ position: 'absolute', top: 5, right: 5 }}
@@ -129,7 +126,10 @@ function AddCellModal() {
                       setResponse(res);
                       refetch();
                     })
-                    .catch((error) => console.error(error));
+                    .catch((error) => {
+                      setError(error);
+                      console.error(error);
+                    })
                 }}
               >
                 Add Cell
@@ -137,7 +137,23 @@ function AddCellModal() {
             </>
           )}
 
-          {response && (
+          {error ? (
+            <>
+              <IconButton
+                sx={{ position: 'absolute', top: 5, right: 5 }}
+                aria-label='delete'
+                size='small'
+                onClick={handleClose}
+              >
+                <CloseIcon fontSize='small' />
+              </IconButton>
+              <h1>Error</h1>
+              <p>
+                Duplicate cell names.
+              </p>
+              <Button onClick={handleClose}>Done</Button>
+            </>
+          ) : response && (
             <>
               <IconButton
                 sx={{ position: 'absolute', top: 5, right: 5 }}
@@ -156,7 +172,7 @@ function AddCellModal() {
                 Here&apos;,s the endpoint to start uploading teros data, https://dirtviz.jlab.ucsc.edu/api/teros/
                 {response.id}
               </p>
-              <Button onClick={DoneButtonClose}>Done</Button>
+              <Button onClick={handleClose}>Done</Button>
             </>
           )}
         </Box>
