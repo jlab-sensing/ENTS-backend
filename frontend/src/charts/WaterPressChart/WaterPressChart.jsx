@@ -1,11 +1,11 @@
 import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
 import { React } from 'react';
-import { getMaxAxisAndStepValues } from './alignAxis';
-import ChartWrapper from './ChartWrapper';
-import { chartPlugins } from './plugins';
+import { getMaxAxisAndStepValues } from '../alignAxis';
+import ChartWrapper from '../ChartWrapper';
+import { chartPlugins } from '../plugins';
 
-export default function SensorChartTemplate({ data, startDate, endDate }) {
+export default function WaterPressChart({ data, startDate, endDate }) {
   const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 8, 0.2);
   const chartOptions = {
     maintainAspectRatio: false,
@@ -56,7 +56,7 @@ export default function SensorChartTemplate({ data, startDate, endDate }) {
   return <ChartWrapper id='waterPress' data={data} options={chartOptions} />;
 }
 
-SensorChartTemplate.propTypes = {
+WaterPressChart.propTypes = {
   id: PropTypes.string,
   data: PropTypes.object,
   startDate: PropTypes.object,

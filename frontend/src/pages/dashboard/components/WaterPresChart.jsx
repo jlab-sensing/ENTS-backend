@@ -2,7 +2,7 @@ import { Grid } from '@mui/material';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import { React, useEffect, useState } from 'react';
-import SensorChartTemplate from '../../../charts/SensorChartTemplate';
+import WaterPressChart from '../../../charts/WaterPressChart/WaterPressChart';
 import useInterval from '../../../hooks/useInterval';
 import { getSensorData, streamSensorData } from '../../../services/sensor';
 
@@ -244,7 +244,7 @@ function SensorChart({ cells, startDate, endDate, stream }) {
   return (
     <>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <SensorChartTemplate data={sensorChartData} startDate={startDate} endDate={endDate} />
+        <WaterPressChart data={sensorChartData} startDate={startDate} endDate={endDate} />
       </Grid>
     </>
   );
