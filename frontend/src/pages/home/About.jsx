@@ -90,12 +90,12 @@ function About() {
                 px: '10px',
                 width: { xs: '100%', sm: 'auto' }, // Full width for small screens
               }}
-            >
-              Checkout live data
+            >               
+              View Data
             </Button>
             <Button
               key='dashboard-demo'
-              onClick={() => navigate('/dashboard?cell_id=161')}
+              onClick={() => navigate('/dashboard?cell_id=413')}
               sx={{
                 px: '10px',
                 width: { xs: '100%', sm: 'auto' },
