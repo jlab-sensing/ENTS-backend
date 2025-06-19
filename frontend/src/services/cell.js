@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
 export const getCellData = (cellIds, resample, startTime, endTime) => {
@@ -37,24 +37,13 @@ export const addCell = (cellName, location, longitude, latitude, archive, email)
 };
 
 export const deleteCell = async (cellId) => {
-  // Show confirmation dialog before proceeding with deletion
-  const confirmDelete = window.confirm('Are you sure you want to delete this cell?');
-
-  if (!confirmDelete) {
-    console.log('Deletion canceled by user.');
-    return; // Stop execution if the user cancels
-  }
-
   const url = `${process.env.PUBLIC_URL}/api/cell/${cellId}`;
 
   try {
     const response = await axios.delete(url, { headers: { 'Content-Type': 'application/json' } });
-
-    alert('Cell deleted successfully!'); // Notify user
     return response.data;
   } catch (error) {
     console.error('Error deleting cell:', error.response ? error.response.data : error.message);
-    alert('Failed to delete the cell. Checks if the cell ID is correct and try again.');
     throw error; // Rethrow the error for further handling
   }
 };
