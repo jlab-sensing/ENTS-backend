@@ -201,7 +201,7 @@ function AddCellModal() {
                       userSelect: 'all',
                     }}
                   >
-                    https://dirtviz.jlab.ucsc.edu/api/power/{response.id}
+                    https://dirtviz.jlab.ucsc.edu/api/sensor/{response.id}
                   </Typography>
                 </Box>
 
@@ -222,7 +222,7 @@ function AddCellModal() {
                       userSelect: 'all',
                     }}
                   >
-                    https://dirtviz.jlab.ucsc.edu/api/teros/{response.id}
+                    https://dirtviz.jlab.ucsc.edu/api/sensor/{response.id}
                   </Typography>
                 </Box>
               </Box>
