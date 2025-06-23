@@ -34,6 +34,23 @@ def process_measurement(data: bytes):
 
     obj_list = []
 
+    obj_list = process_measurement_dict(meas, obj_list)
+
+def process_measurement_json(data: dict):
+    """Process json measurement
+
+    Args:
+        data: Json measurement
+
+    Returns:
+        Flask response with status code and protobuf encoded response.
+    """
+    obj_list = []
+
+    obj_list = process_measurement_dict(dict, obj_list)
+
+
+def process_measurement_dict(meas: dict, obj_list: list):
     # power measurement
     if meas["type"] == "power":
         obj = PowerData.add_protobuf_power_data(
