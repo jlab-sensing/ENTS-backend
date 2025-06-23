@@ -1,9 +1,10 @@
-import { React, useState, useEffect } from 'react';
-import { Modal, Box, Typography, Button, TextField, IconButton } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import { addCell } from '../../../services/cell';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CloseIcon from '@mui/icons-material/Close';
+import { Box, Button, Chip, IconButton, Modal, TextField, Typography } from '@mui/material';
+import { React, useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { addCell } from '../../../services/cell';
 
 function AddCellModal() {
   let data = useOutletContext();
@@ -17,24 +18,42 @@ function AddCellModal() {
   const [lat, setLat] = useState('');
   const archive = false;
   const [response, setResponse] = useState(null);
-  // const [setCloseDonebutton] = useState(true);
+  
   const handleOpen = () => {
     setOpen(true);
     setResponse(null);
   };
 
-  // const DoneButtonClose = () => {
-  //   setCloseDonebutton(false);
-  //   setOpen(false);
-  // };
+  const DoneButtonClose = () => {
+    // Close modal and reset all states
+    setOpen(false);
+    setResponse(null);
+    setName('');
+    setLocation('');
+    setLong('');
+    setLat('');
+  };
 
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    // Reset states when closing via X button
+    setResponse(null);
+    setName('');
+    setLocation('');
+    setLong('');
+    setLat('');
+  };
+
+
+
   useEffect(() => {
     console.log(response);
   }, [response]);
+
   if (!user) {
     return <></>;
   }
+
   return (
     <>
       <Button sx={{ color: 'black' }} key='prev' onClick={handleOpen}>
@@ -99,6 +118,17 @@ function AddCellModal() {
                 />
                 <TextField
                   id='outlined-basic'
+                  label='Latitude'
+                  variant='outlined'
+                  error={lat.length === 0 || isNaN(Number(lat))}
+                  helperText={!lat.length ? 'latitude is required' : isNaN(Number(lat)) ? 'Please Enter Numbers' : ''}
+                  value={lat}
+                  onChange={(e) => {
+                    setLat(e.target.value);
+                  }}
+                />
+                <TextField
+                  id='outlined-basic'
                   label='Longitude'
                   variant='outlined'
                   error={long.length === 0 || isNaN(Number(long))}
@@ -108,17 +138,6 @@ function AddCellModal() {
                   value={long}
                   onChange={(e) => {
                     setLong(e.target.value);
-                  }}
-                />
-                <TextField
-                  id='outlined-basic'
-                  label='Latitude'
-                  variant='outlined'
-                  error={lat.length === 0 || isNaN(Number(lat))}
-                  helperText={!lat.length ? 'latitude is required' : isNaN(Number(lat)) ? 'Please Enter Numbers' : ''}
-                  value={lat}
-                  onChange={(e) => {
-                    setLat(e.target.value);
                   }}
                 />
               </Typography>
@@ -147,16 +166,84 @@ function AddCellModal() {
               >
                 <CloseIcon fontSize='small' />
               </IconButton>
-              <h1>Created new cell {response.name}</h1>
-              <p>
-                Here&apos;s the endpoint to start uploading power data, https://dirtviz.jlab.ucsc.edu/api/power/
-                {response.id}
-              </p>
-              <p>
-                Here&apos;,s the endpoint to start uploading teros data, https://dirtviz.jlab.ucsc.edu/api/teros/
-                {response.id}
-              </p>
-              <Button onClick={handleClose}>Done</Button>
+
+              {/* Success Header */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                <CheckCircleIcon sx={{ color: 'success.main', fontSize: 28 }} />
+                <Typography variant='h5' component='h2' sx={{ color: 'success.main', fontWeight: 'bold' }}>
+                  Cell Created Successfully!
+                </Typography>
+              </Box>
+
+              {/* Cell Name */}
+              <Typography variant='h6' sx={{ mb: 2, color: 'text.primary' }}>
+                Cell Name: <strong>{response.name}</strong>
+              </Typography>
+
+              {/* API Endpoints Section */}
+              <Typography variant='h6' sx={{ mb: 2, color: 'text.primary' }}>
+                API Endpoints:
+              </Typography>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
+                {/* Power Data Endpoint */}
+                <Box>
+                  <Chip label='Power Data' color='primary' variant='outlined' size='small' sx={{ mb: 1 }} />
+                  <Typography variant='body2' sx={{ mb: 1, mt: 1, color: 'text.secondary' }}>
+                    Here&apos;s the endpoint to start uploading power data:
+                  </Typography>
+                  <Typography
+                    variant='body2'
+                    sx={{
+                      fontFamily: 'monospace',
+                      backgroundColor: 'grey.100',
+                      p: 1,
+                      borderRadius: 1,
+                      wordBreak: 'break-all',
+                      userSelect: 'all',
+                    }}
+                  >
+                    https://dirtviz.jlab.ucsc.edu/api/sensor/{response.id}
+                  </Typography>
+                </Box>
+
+                {/* TEROS Data Endpoint */}
+                <Box>
+                  <Chip label='TEROS Data' color='secondary' variant='outlined' size='small' sx={{ mb: 1 }} />
+                  <Typography variant='body2' sx={{ mb: 1, mt: 1, color: 'text.secondary' }}>
+                    Here&apos;s the endpoint to start uploading TEROS data:
+                  </Typography>
+                  <Typography
+                    variant='body2'
+                    sx={{
+                      fontFamily: 'monospace',
+                      backgroundColor: 'grey.100',
+                      p: 1,
+                      borderRadius: 1,
+                      wordBreak: 'break-all',
+                      userSelect: 'all',
+                    }}
+                  >
+                    https://dirtviz.jlab.ucsc.edu/api/sensor/{response.id}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* Done Button */}
+              <Button
+                variant='contained'
+                color='success'
+                onClick={DoneButtonClose}
+                sx={{
+                  width: '100%',
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  fontWeight: 'bold',
+                }}
+              >
+                Done
+              </Button>
+
             </>
           )}
         </Box>
