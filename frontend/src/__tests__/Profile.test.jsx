@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // import AccountInfo from '../pages/profile/components/AccountInfo';
 import DeleteCellModal from '../pages/profile/components/DeleteCellModal';
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { getCells, deleteCell, getUserCells } from '../services/cell';
+import { updateCell, getCells, deleteCell, getUserCells } from '../services/cell';
 import { useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 vi.mock('axios');
@@ -248,6 +248,46 @@ describe('DeleteCellModal component', () => {
     expect(screen.queryByText('Delete Cell ')).toBeNull();
   });
 });
+
+describe('updateCell', () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('successfully updates a cell', async () => {
+    const mockCellId = 42;
+    const mockUpdatedData = { name: 'New Cell Name', location: 'Updated Location', lat: '12.34', long: '56.78' };
+    const mockResponse = { id: mockCellId, ...mockUpdatedData };
+
+    axios.put.mockResolvedValueOnce({ data: mockResponse });
+
+    const result = await updateCell(mockCellId, mockUpdatedData);
+
+    expect(axios.put).toHaveBeenCalledWith(
+      expect.stringContaining(`/api/cell/${mockCellId}`),
+      mockUpdatedData,
+      expect.any(Object)
+    );
+    expect(result).toEqual(mockResponse);
+  });
+
+  it('throws an error when the update fails', async () => {
+    const mockCellId = 42;
+    const mockUpdatedData = { name: 'Bad Cell Update' };
+    const mockError = {
+      response: {
+        data: { error: 'Update failed' },
+      },
+    };
+
+    axios.put.mockRejectedValueOnce(mockError);
+
+    await expect(updateCell(mockCellId, mockUpdatedData)).rejects.toThrow();
+    expect(axios.put).toHaveBeenCalled();
+  });
+});
+
+
 
 describe('Cell Service API Functions', () => {
   afterEach(() => {
