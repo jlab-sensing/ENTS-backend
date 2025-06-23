@@ -1,7 +1,7 @@
+import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import PropTypes from 'prop-types';
 import { React } from 'react';
 import { useCells } from '../../../services/cell';
-import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import PropTypes from 'prop-types';
 
 function CellSelect({ selectedCells, setSelectedCells }) {
   const cells = useCells();
@@ -29,6 +29,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
         {Array.isArray(cells.data)
           ? cells.data
               .filter((cell) => !cell.archive)
+              .sort((a, b) => a.name.localeCompare(b.name))
               .map((cell) => {
                 return (
                   <MenuItem value={cell} key={cell.id}>
