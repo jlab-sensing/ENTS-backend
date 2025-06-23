@@ -18,7 +18,7 @@ function AddCellModal() {
   const [lat, setLat] = useState('');
   const archive = false;
   const [response, setResponse] = useState(null);
-
+  
   const handleOpen = () => {
     setOpen(true);
     setResponse(null);
@@ -43,6 +43,8 @@ function AddCellModal() {
     setLong('');
     setLat('');
   };
+
+
 
   useEffect(() => {
     console.log(response);
@@ -241,6 +243,7 @@ function AddCellModal() {
               >
                 Done
               </Button>
+
             </>
           )}
         </Box>
