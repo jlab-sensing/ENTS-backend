@@ -8,9 +8,7 @@ Authors:
 - Alec Levy <aleclevy3@gmail.com>
 """
 
-import base64
-
-from flask import request, jsonify, Response
+from flask import request, jsonify
 from flask_restful import Resource
 
 from .util import process_measurement_json

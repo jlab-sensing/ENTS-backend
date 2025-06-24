@@ -142,7 +142,7 @@ class Sensor(db.Model):
         name = meas_dict["type"]
         cell_id = meas_dict["cellId"]
         meas_data = meas_dict["data"][meas_name]
-        meas_type = meas_dict["data_type"][meas_name].__name__
+        meas_type = type(meas_data).__name__
         ts = datetime.fromtimestamp(meas_dict["ts"])
 
         # check if cell exists

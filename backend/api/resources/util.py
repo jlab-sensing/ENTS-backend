@@ -36,6 +36,7 @@ def process_measurement(data: bytes):
 
     obj_list = process_measurement_dict(meas, obj_list)
 
+
 def process_measurement_json(data: dict):
     """Process json measurement
 
