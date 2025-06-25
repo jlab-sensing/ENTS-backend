@@ -96,6 +96,7 @@ def process_measurement(data: bytes):
 
     #sen0257 water pressure measurement
     elif meas["type"] == "sen0257":
+        print(meas)
         obj = Sensor.add_data(meas_name="pressure", meas_unit="kPa", meas_dict=meas)
 
         obj_list.append(obj)

@@ -20,5 +20,5 @@ redis
 PyJWT
 Requests
 google-auth
-ents
+https://ents-python-package.s3.amazonaws.com/4ce55f9423335238c5d0ef7c39ab5ecc7854ab23/ents-2.3.2-py3-none-any.whl
 celery[redis,gevent,sqlalchemy,sqs]
