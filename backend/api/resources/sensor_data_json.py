@@ -56,8 +56,8 @@ class SensorData_Json(Resource):
         resp = None
 
         if content_type == "application/json":
-            # get uplink binary data
-            data = request.data
+            # get uplink json
+            data = request.json
             resp = self.handle_json(data)
         else:
             err_str = f"Content-Type header of '{content_type}' incorrect"
