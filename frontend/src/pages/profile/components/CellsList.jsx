@@ -33,7 +33,7 @@ function CellsList() {
     { field: 'lat', headerName: 'Latitude', width: 150 },
     { field: 'long', headerName: 'Longitude', width: 150 },
     { field: 'archive', headerName: 'Archive', width: 150 },
-    { field: '', headerName: '', width: 85,   sortable: false, filterable: false, disableColumnMenu: true,
+    { field: 'edit', headerName: '', width: 85,   sortable: false, filterable: false, disableColumnMenu: true,
       renderCell: (params) => (<EditCellModal cell={params.row} />) // edit button in new column
     }
   ];
