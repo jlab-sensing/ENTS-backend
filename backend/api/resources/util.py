@@ -32,9 +32,7 @@ def process_measurement(data: bytes):
     # decode binary protobuf data
     meas = decode_measurement(data, raw=False)
 
-    obj_list = []
-
-    obj_list = process_measurement_dict(meas, obj_list)
+    return process_measurement_dict(meas)
 
 
 def process_measurement_json(data: dict):
