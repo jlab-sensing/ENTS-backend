@@ -21,7 +21,7 @@ class DataAvailability(Resource):
 
         Returns:
         - latest_timestamp: Most recent data point across all sensors
-        - earliest_timestamp: Oldest data point in the last 2 months
+        - earliest_timestamp: Oldest available data point
         - has_recent_data: Boolean indicating if data exists in last 14 days
         """
         cell_ids_param = request.args.get("cell_ids", "")
@@ -90,39 +90,34 @@ class DataAvailability(Resource):
         two_weeks_ago = datetime.now() - timedelta(days=14)
         has_recent_data = latest_timestamp >= two_weeks_ago
 
-        # Get earliest timestamp in the last 2 months for fallback range calculation
-        two_months_ago = datetime.now() - timedelta(days=60)
+        # Get earliest timestamp for fallback range calculation (no time limit)
         earliest_timestamps = []
 
-        # Check earliest in sensor data within last 2 months
+        # Check earliest in sensor data
         sensor_earliest = (
             db.session.query(func.min(Data.ts))
             .join(Sensor)
-            .filter(and_(Sensor.cell_id.in_(cell_ids), Data.ts >= two_months_ago))
+            .filter(Sensor.cell_id.in_(cell_ids))
             .scalar()
         )
 
         if sensor_earliest:
             earliest_timestamps.append(sensor_earliest)
 
-        # Check earliest in TEROS data within last 2 months
+        # Check earliest in TEROS data
         teros_earliest = (
             db.session.query(func.min(TEROSData.ts))
-            .filter(
-                and_(TEROSData.cell_id.in_(cell_ids), TEROSData.ts >= two_months_ago)
-            )
+            .filter(TEROSData.cell_id.in_(cell_ids))
             .scalar()
         )
 
         if teros_earliest:
             earliest_timestamps.append(teros_earliest)
 
-        # Check earliest in Power data within last 2 months
+        # Check earliest in Power data
         power_earliest = (
             db.session.query(func.min(PowerData.ts))
-            .filter(
-                and_(PowerData.cell_id.in_(cell_ids), PowerData.ts >= two_months_ago)
-            )
+            .filter(PowerData.cell_id.in_(cell_ids))
             .scalar()
         )
 
