@@ -6,7 +6,7 @@ from ..models.teros_data import TEROSData
 from ..models.power_data import PowerData
 from ..models import db
 from datetime import datetime, timedelta
-from sqlalchemy import func, and_
+from sqlalchemy import func
 
 
 class DataAvailability(Resource):
