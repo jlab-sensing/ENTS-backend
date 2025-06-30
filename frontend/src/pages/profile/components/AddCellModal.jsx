@@ -18,6 +18,7 @@ function AddCellModal() {
   const [lat, setLat] = useState('');
   const archive = false;
   const [response, setResponse] = useState(null);
+  const [error, setError] = useState(null);
   
   const handleOpen = () => {
     setOpen(true);
@@ -27,6 +28,7 @@ function AddCellModal() {
   const DoneButtonClose = () => {
     // Close modal and reset all states
     setOpen(false);
+    setError(null);
     setResponse(null);
     setName('');
     setLocation('');
@@ -36,6 +38,7 @@ function AddCellModal() {
 
   const handleClose = () => {
     setOpen(false);
+    setError(null);
     // Reset states when closing via X button
     setResponse(null);
     setName('');
@@ -75,11 +78,11 @@ function AddCellModal() {
             bgcolor: 'background.paper',
             border: '2px solid #000',
             boxShadow: 24,
-            p: 4,
+            p: 4
           }}
           component='form'
         >
-          {response == null && (
+          {(error == null && response == null) && (
             <>
               <IconButton
                 sx={{ position: 'absolute', top: 5, right: 5 }}
@@ -148,7 +151,11 @@ function AddCellModal() {
                       setResponse(res);
                       refetch();
                     })
-                    .catch((error) => console.error(error));
+                    .catch((error) => {
+                      setError(error);
+                      console.error(error);
+                      console.log("test")
+                    })
                 }}
               >
                 Add Cell
@@ -156,7 +163,23 @@ function AddCellModal() {
             </>
           )}
 
-          {response && (
+          {error ? (
+            <>
+              <IconButton
+                sx={{ position: 'absolute', top: 5, right: 5 }}
+                aria-label='delete'
+                size='small'
+                onClick={handleClose}
+              >
+                <CloseIcon fontSize='small' />
+              </IconButton>
+              <h1>Error</h1>
+              <p>
+                Duplicate cell names.
+              </p>
+              <Button onClick={handleClose}>Done</Button>
+            </>
+          ) : response && (
             <>
               <IconButton
                 sx={{ position: 'absolute', top: 5, right: 5 }}

@@ -43,12 +43,14 @@ class Cell(Resource):
             archive = False
         else:
             archive = cell_data["archive"]
+        if CellModel.find_by_name(cell_name):
+            return {"message": "Duplicate cell name"}, 400
         new_cell = CellModel.add_cell_by_user_email(
             cell_name, location, lat, long, archive, userEmail
         )
         if new_cell:
             return {"message": "Successfully added cell"}
-        return jsonify({"message": "Error adding cell"}), 400
+        return {"message": "Error adding cell"}, 400
 
     def put(self, cellId):
         json_data = request.json

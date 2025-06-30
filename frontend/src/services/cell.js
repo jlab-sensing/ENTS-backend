@@ -32,6 +32,7 @@ export const addCell = (cellName, location, longitude, latitude, archive, email)
     })
     .then((res) => res.data)
     .catch((error) => {
+      throw error;
       console.log(error);
     });
 };
