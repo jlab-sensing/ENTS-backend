@@ -98,4 +98,7 @@ ENTRYPOINT ["./entrypoint.sh", "-w", "prod"]
 
 FROM base AS migration
 
-ENTRYPOINT ["./migrate.sh", "-u"]
+# Copy the migration entrypoint script
+COPY --chmod=755 migrate-entrypoint.sh .
+
+ENTRYPOINT ["./migrate-entrypoint.sh"]
