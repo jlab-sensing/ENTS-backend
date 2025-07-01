@@ -57,7 +57,7 @@ function AddCellModal() {
           }}
           component='form'
         >
-          {(error==null&&response == null) && (
+          {error == null && response == null && (
             <>
               <IconButton
                 sx={{ position: 'absolute', top: 5, right: 5 }}
@@ -129,7 +129,7 @@ function AddCellModal() {
                     .catch((error) => {
                       setError(error);
                       console.error(error);
-                    })
+                    });
                 }}
               >
                 Add Cell
@@ -148,32 +148,32 @@ function AddCellModal() {
                 <CloseIcon fontSize='small' />
               </IconButton>
               <h1>Error</h1>
-              <p>
-                Duplicate cell names.
-              </p>
+              <p>Duplicate cell names.</p>
               <Button onClick={handleClose}>Done</Button>
             </>
-          ) : response && (
-            <>
-              <IconButton
-                sx={{ position: 'absolute', top: 5, right: 5 }}
-                aria-label='delete'
-                size='small'
-                onClick={handleClose}
-              >
-                <CloseIcon fontSize='small' />
-              </IconButton>
-              <h1>Created new cell {response.name}</h1>
-              <p>
-                Here&apos;s the endpoint to start uploading power data, https://dirtviz.jlab.ucsc.edu/api/power/
-                {response.id}
-              </p>
-              <p>
-                Here&apos;,s the endpoint to start uploading teros data, https://dirtviz.jlab.ucsc.edu/api/teros/
-                {response.id}
-              </p>
-              <Button onClick={handleClose}>Done</Button>
-            </>
+          ) : (
+            response && (
+              <>
+                <IconButton
+                  sx={{ position: 'absolute', top: 5, right: 5 }}
+                  aria-label='delete'
+                  size='small'
+                  onClick={handleClose}
+                >
+                  <CloseIcon fontSize='small' />
+                </IconButton>
+                <h1>Created new cell {response.name}</h1>
+                <p>
+                  Here&apos;s the endpoint to start uploading power data, https://dirtviz.jlab.ucsc.edu/api/power/
+                  {response.id}
+                </p>
+                <p>
+                  Here&apos;,s the endpoint to start uploading teros data, https://dirtviz.jlab.ucsc.edu/api/teros/
+                  {response.id}
+                </p>
+                <Button onClick={handleClose}>Done</Button>
+              </>
+            )
           )}
         </Box>
       </Modal>
