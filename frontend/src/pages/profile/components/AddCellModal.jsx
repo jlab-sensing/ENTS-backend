@@ -154,7 +154,6 @@ function AddCellModal() {
                     .catch((error) => {
                       setError(error);
                       console.error(error);
-                      console.log("test")
                     })
                 }}
               >
