@@ -33,29 +33,37 @@ export const addCell = (cellName, location, longitude, latitude, archive, email)
     .then((res) => res.data)
     .catch((error) => {
       console.log(error);
+      throw error;
     });
 };
-
 // used to edit cell data in the table with put request - BACKEND NOT YET IMPLEMENTED
 export const updateCell = async (cellId, updatedData) => {
   const url = `${process.env.PUBLIC_URL}/api/cell/${cellId}`;
   try {
     //console.log('Sending payload', updatedData);
-    const response = await axios.put(url, updatedData, { headers: { 'Content-Type': 'application/json' }});
+    const response = await axios.put(url, updatedData, { headers: { 'Content-Type': 'application/json' } });
     return response.data;
-    
   } catch (error) {
     console.error('Error updating cell:', error.response ? error.response.data : error.message);
     throw error;
   }
 };
 
-
 export const deleteCell = async (cellId) => {
+  // Show confirmation dialog before proceeding with deletion
+  // const confirmDelete = window.confirm('Are you sure you want to delete this cell?');
+
+  // if (!confirmDelete) {
+  //   console.log('Deletion canceled by user.');
+  //   return; // Stop execution if the user cancels
+  // }
+
   const url = `${process.env.PUBLIC_URL}/api/cell/${cellId}`;
 
   try {
     const response = await axios.delete(url, { headers: { 'Content-Type': 'application/json' } });
+
+    // alert('Cell deleted successfully!'); // Notify user
     return response.data;
   } catch (error) {
     console.error('Error deleting cell:', error.response ? error.response.data : error.message);
