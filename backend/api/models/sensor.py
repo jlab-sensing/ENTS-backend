@@ -63,13 +63,12 @@ class Sensor(db.Model):
         if cur_sensor is None:
             return data
 
-        match cur_sensor.data_type:
-            case "float":
-                t_data = Data.float_val
-            case "int":
-                t_data = Data.int_val
-            case "text":
-                t_data = Data.text_val
+        if cur_sensor.data_type == "float":
+            t_data = Data.float_val
+        elif cur_sensor.data_type == "int":
+            t_data = Data.int_val
+        elif cur_sensor.data_type == "text":
+            t_data = Data.text_val
         if not stream:
             # select from actual timestamp and aggregate data
             if resample == "none":
@@ -143,7 +142,7 @@ class Sensor(db.Model):
         name = meas_dict["type"]
         cell_id = meas_dict["cellId"]
         meas_data = meas_dict["data"][meas_name]
-        meas_type = meas_dict["data_type"][meas_name].__name__
+        meas_type = type(meas_data).__name__
         ts = datetime.fromtimestamp(meas_dict["ts"])
 
         # check if cell exists
@@ -176,27 +175,26 @@ class Sensor(db.Model):
             ).first()
 
         # add data based on measurement type
-        match meas_type:
-            case "float":
-                sensor_data = Data(
-                    sensor_id=cur_sensor.id,
-                    # measurement=measurement,
-                    ts=ts,
-                    float_val=meas_data,
-                )
-            case "int":
-                sensor_data = Data(
-                    sensor_id=cur_sensor.id,
-                    # measurement=measurement,
-                    ts=ts,
-                    int_val=meas_data,
-                )
-            case "text":
-                sensor_data = Data(
-                    sensor_id=cur_sensor.id,
-                    # measurement=measurement,
-                    ts=ts,
-                    text_val=meas_data,
-                )
+        if meas_type == "float":
+            sensor_data = Data(
+                sensor_id=cur_sensor.id,
+                # measurement=measurement,
+                ts=ts,
+                float_val=meas_data,
+            )
+        elif meas_type == "int":
+            sensor_data = Data(
+                sensor_id=cur_sensor.id,
+                # measurement=measurement,
+                ts=ts,
+                int_val=meas_data,
+            )
+        elif meas_type == "text":
+            sensor_data = Data(
+                sensor_id=cur_sensor.id,
+                # measurement=measurement,
+                ts=ts,
+                text_val=meas_data,
+            )
         sensor_data.save()
         return sensor_data

@@ -32,6 +32,23 @@ def process_measurement(data: bytes):
     # decode binary protobuf data
     meas = decode_measurement(data, raw=False)
 
+    return process_measurement_dict(meas)
+
+
+def process_measurement_json(data: dict):
+    """Process json measurement
+
+    Args:
+        data: Json measurement
+
+    Returns:
+        Flask response with status code and protobuf encoded response.
+    """
+
+    return process_measurement_dict(data)
+
+
+def process_measurement_dict(meas: dict):
     obj_list = []
 
     # power measurement

@@ -6,7 +6,7 @@ import { useCells } from '../../services/cell';
 import ArchiveModal from './components/ArchiveModal';
 import BackBtn from './components/BackBtn';
 import CellSelect from './components/CellSelect';
-import CopyLinkBtn from './components/CopyLinkBtn';
+
 import DateRangeSel from './components/DateRangeSel';
 import DownloadBtn from './components/DownloadBtn';
 import PowerCharts from './components/PowerCharts';
@@ -90,7 +90,6 @@ function Dashboard() {
                 setEndDate={setEndDate}
               ></DateRangeSel>
             </Box>
-            <CopyLinkBtn startDate={startDate} endDate={endDate} selectedCells={selectedCells} />
             {!cells.isLoading && !cells.isError ? <ArchiveModal cells={cells} /> : <span>Loading...</span>}
             <DownloadBtn
               disabled={dBtnDisabled}

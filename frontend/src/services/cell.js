@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
 export const getCellData = (cellIds, resample, startTime, endTime) => {
@@ -36,6 +36,18 @@ export const addCell = (cellName, location, longitude, latitude, archive, email)
       throw error;
     });
 };
+// used to edit cell data in the table with put request - BACKEND NOT YET IMPLEMENTED
+export const updateCell = async (cellId, updatedData) => {
+  const url = `${process.env.PUBLIC_URL}/api/cell/${cellId}`;
+  try {
+    //console.log('Sending payload', updatedData);
+    const response = await axios.put(url, updatedData, { headers: { 'Content-Type': 'application/json' } });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating cell:', error.response ? error.response.data : error.message);
+    throw error;
+  }
+};
 
 export const deleteCell = async (cellId) => {
   // Show confirmation dialog before proceeding with deletion
@@ -55,7 +67,6 @@ export const deleteCell = async (cellId) => {
     return response.data;
   } catch (error) {
     console.error('Error deleting cell:', error.response ? error.response.data : error.message);
-    alert('Failed to delete the cell. Checks if the cell ID is correct and try again.');
     throw error; // Rethrow the error for further handling
   }
 };
