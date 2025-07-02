@@ -6,7 +6,7 @@ import { useCells } from '../../services/cell';
 import ArchiveModal from './components/ArchiveModal';
 import BackBtn from './components/BackBtn';
 import CellSelect from './components/CellSelect';
-
+import CO2Charts from './components/CO2Charts';
 import DateRangeSel from './components/DateRangeSel';
 import DownloadBtn from './components/DownloadBtn';
 import PowerCharts from './components/PowerCharts';
@@ -127,6 +127,7 @@ function Dashboard() {
           <SoilPotCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           <PresHumChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          <CO2Charts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
         </Stack>
       </Box>
     </>

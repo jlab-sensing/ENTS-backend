@@ -110,6 +110,20 @@ def process_measurement_dict(meas: dict):
         obj = Sensor.add_data(meas_name="temp", meas_unit="C", meas_dict=meas)
 
         obj_list.append(obj)
+    elif meas["type"] == "co2":
+        obj = Sensor.add_data(meas_name="CO2", meas_unit="PPM", meas_dict=meas)
+
+        obj_list.append(obj)
+
+        obj = Sensor.add_data(meas_name="state", meas_unit="Boolean", meas_dict=meas)
+
+        obj_list.append(obj)
+
+        obj = Sensor.add_data(
+            meas_name="Photoresistivity", meas_unit="Ohms", meas_dict=meas
+        )
+
+        obj_list.append(obj)
 
     # format response
     resp = Response()
