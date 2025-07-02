@@ -21,7 +21,7 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
 
   const tempColors = ['#26C6DA', '#FF7043', '#A2708A'];
   const ecColors = ['#26C6DA', '#FF7043', '#A2708A'];
-  const vwcColors= ['#112E51', '#78909C', '#C1F7DC'];
+  const vwcColors = ['#112E51', '#78909C', '#C1F7DC'];
 
   //** gets teros data from backend */
   async function getTerosChartData() {
@@ -288,10 +288,10 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
 
   return (
     <>
-      <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+      <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
         <VwcChart data={vwcChartData} stream={stream} startDate={startDate} endDate={endDate} />
       </Grid>
-      <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+      <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
         <TempChart data={tempChartData} stream={stream} startDate={startDate} endDate={endDate} />
       </Grid>
     </>
