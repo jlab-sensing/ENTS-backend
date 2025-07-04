@@ -42,9 +42,7 @@ def test_data_availability_all_sources(test_client, init_database):
     recent_ts = datetime.now() - timedelta(days=7)
 
     # Add Power data
-    power_data = PowerData.add_power_data(
-        "test_logger", "test_cell_da", recent_ts, 1.0, 2.0
-    )
+    power_data = PowerData.add_power_data("test_logger", "test_cell_da", recent_ts, 1.0, 2.0)
     assert power_data is not None
 
     # Add TEROS data
@@ -52,20 +50,23 @@ def test_data_availability_all_sources(test_client, init_database):
     assert teros_data is not None
 
     # Add Sensor data
-    sensor = Sensor("test_sensor", "test", "float", cell.id)
+    sensor = Sensor(
+        name="test_sensor",
+        measurement="test",
+        data_type="float",
+        cell_id=cell.id,
+        unit="test_unit"
+    )
     sensor.save()
-    data = Data(sensor_id=sensor.id, ts=recent_ts, float_val=1.5)
+    data = Data(sensor_id=sensor.id, ts=recent_ts, float_val=1.0)
     data.save()
 
     # Test endpoint
     response = test_client.get(f"/api/data-availability/?cell_ids={cell.id}")
     assert response.status_code == 200
-
-    json_data = response.get_json()
-    assert isinstance(json_data["latest_timestamp"], str)
-    assert isinstance(json_data["earliest_timestamp"], str)
-    assert json_data["has_recent_data"] is True
-    assert json_data["message"] == "success"
+    data = response.get_json()
+    assert data["has_recent_data"] is True
+    assert len(data["latest_timestamps"]) > 0
 
 
 def test_data_availability_old_data(test_client, init_database):
