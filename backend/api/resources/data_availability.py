@@ -24,9 +24,9 @@ class DataAvailability(Resource):
         - earliest_timestamp: Oldest available data point
         - has_recent_data: Boolean indicating if data exists in last 14 days
         """
-        cell_ids_param = request.args.get("cell_ids", "")
+        cell_ids_param = request.args.get("cell_ids")
 
-        if not cell_ids_param:
+        if cell_ids_param is None:
             return {"error": "cell_ids parameter is required"}, 400
 
         try:
