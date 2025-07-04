@@ -90,7 +90,7 @@ function About() {
                 px: '10px',
                 width: { xs: '100%', sm: 'auto' }, // Full width for small screens
               }}
-            >               
+            >
               View Data
             </Button>
             <Button
