@@ -125,12 +125,8 @@ class DataAvailability(Resource):
         earliest_timestamp = min(earliest_timestamps) if earliest_timestamps else None
 
         # Format timestamps for response
-        latest_ts = (
-            latest_timestamp.isoformat() if latest_timestamp else None
-        )
-        earliest_ts = (
-            earliest_timestamp.isoformat() if earliest_timestamp else None
-        )
+        latest_ts = latest_timestamp.isoformat() if latest_timestamp else None
+        earliest_ts = earliest_timestamp.isoformat() if earliest_timestamp else None
 
         return {
             "latest_timestamp": latest_ts,

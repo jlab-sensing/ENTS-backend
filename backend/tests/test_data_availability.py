@@ -43,11 +43,7 @@ def test_data_availability_all_sources(test_client, init_database):
 
     # Add Power data
     power_data = PowerData.add_power_data(
-        "test_logger",
-        "test_cell_da",
-        recent_ts,
-        1.0,
-        2.0
+        "test_logger", "test_cell_da", recent_ts, 1.0, 2.0
     )
     assert power_data is not None
 
@@ -61,7 +57,7 @@ def test_data_availability_all_sources(test_client, init_database):
         measurement="test",
         data_type="float",
         cell_id=cell.id,
-        unit="test_unit"
+        unit="test_unit",
     )
     sensor.save()
     data = Data(sensor_id=sensor.id, ts=recent_ts, float_val=1.0)
