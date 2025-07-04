@@ -42,7 +42,13 @@ def test_data_availability_all_sources(test_client, init_database):
     recent_ts = datetime.now() - timedelta(days=7)
 
     # Add Power data
-    power_data = PowerData.add_power_data("test_logger", "test_cell_da", recent_ts, 1.0, 2.0)
+    power_data = PowerData.add_power_data(
+        "test_logger",
+        "test_cell_da",
+        recent_ts,
+        1.0,
+        2.0
+    )
     assert power_data is not None
 
     # Add TEROS data
@@ -66,7 +72,9 @@ def test_data_availability_all_sources(test_client, init_database):
     assert response.status_code == 200
     data = response.get_json()
     assert data["has_recent_data"] is True
-    assert len(data["latest_timestamps"]) > 0
+    assert data["latest_timestamp"] is not None
+    assert data["earliest_timestamp"] is not None
+    assert data["message"] == "success"
 
 
 def test_data_availability_old_data(test_client, init_database):

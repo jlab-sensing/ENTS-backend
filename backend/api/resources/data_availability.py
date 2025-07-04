@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request
 from flask_restful import Resource
 from ..models.sensor import Sensor
 from ..models.data import Data
@@ -27,17 +27,17 @@ class DataAvailability(Resource):
         cell_ids_param = request.args.get("cell_ids", "")
 
         if not cell_ids_param:
-            return jsonify({"error": "cell_ids parameter is required"}), 400
+            return {"error": "cell_ids parameter is required"}, 400
 
         try:
             cell_ids = [
                 int(id.strip()) for id in cell_ids_param.split(",") if id.strip()
             ]
         except ValueError:
-            return jsonify({"error": "Invalid cell_ids format"}), 400
+            return {"error": "Invalid cell_ids format"}, 400
 
         if not cell_ids:
-            return jsonify({"error": "At least one valid cell_id is required"}), 400
+            return {"error": "At least one valid cell_id is required"}, 400
 
         # Get latest timestamps from different data sources
         latest_timestamps = []
@@ -74,14 +74,12 @@ class DataAvailability(Resource):
             latest_timestamps.append(power_latest)
 
         if not latest_timestamps:
-            return jsonify(
-                {
-                    "latest_timestamp": None,
-                    "earliest_timestamp": None,
-                    "has_recent_data": False,
-                    "message": "No data found for specified cells",
-                }
-            )
+            return {
+                "latest_timestamp": None,
+                "earliest_timestamp": None,
+                "has_recent_data": False,
+                "message": "No data found for specified cells",
+            }
 
         # Find the most recent timestamp across all data sources
         latest_timestamp = max(latest_timestamps)
@@ -126,15 +124,17 @@ class DataAvailability(Resource):
 
         earliest_timestamp = min(earliest_timestamps) if earliest_timestamps else None
 
-        return jsonify(
-            {
-                "latest_timestamp": (
-                    latest_timestamp.isoformat() if latest_timestamp else None
-                ),
-                "earliest_timestamp": (
-                    earliest_timestamp.isoformat() if earliest_timestamp else None
-                ),
-                "has_recent_data": has_recent_data,
-                "message": "success",
-            }
+        # Format timestamps for response
+        latest_ts = (
+            latest_timestamp.isoformat() if latest_timestamp else None
         )
+        earliest_ts = (
+            earliest_timestamp.isoformat() if earliest_timestamp else None
+        )
+
+        return {
+            "latest_timestamp": latest_ts,
+            "earliest_timestamp": earliest_ts,
+            "has_recent_data": has_recent_data,
+            "message": "success",
+        }
