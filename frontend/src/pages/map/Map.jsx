@@ -1,17 +1,22 @@
 import { Box } from '@mui/material';
-import React from 'react';
+import {React, useEffect} from 'react';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import useAuth from '../../auth/hooks/useAuth';
 import Nav from '../../components/Nav';
+import { useCells } from '../../services/cell';
 
 function Map() {
   const { user, setUser, loggedIn, setLoggedIn } = useAuth();
+  const cells = useCells();
   const styles = {
     leafletContainer: {
       width: '100%',
       height: '100vh',
     },
   };
+
+  
+
   return (
     <Box
       sx={{
@@ -41,9 +46,13 @@ function Map() {
         <Marker position={[36.95620689807501, -122.05855126777698]}>
           <Popup>This is the location of our lab at Westside Research Park.</Popup>
         </Marker>
-        <Marker position={[36.95620689807501, -122.05855126777698]}>
-          <Popup>This is the location of our lab at Westside Research Park.</Popup>
-        </Marker>
+        {(!cells.isLoading && !cells.isError) && (
+          cells.data.map((cell) => (
+            <Marker position={[cell.latitude, cell.longitude]}>
+              <Popup>ID: {cell.id}; {cell.name}</Popup>
+            </Marker>
+          ))
+        )}
       </MapContainer>
     </Box>
   );
