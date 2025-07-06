@@ -116,7 +116,7 @@ function CO2Charts({ cells, startDate, endDate, stream }) {
         const name = cellChartData[cellid].name;
         const measurements = Object.keys(cellChartData[cellid]).filter((k) => k != 'name');
         for (const [idx, meas] of measurements.entries()) {
-          const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromFormat(dateTime, "yyyy-MM-dd HH:mm:ss"));
+          const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime));
           const measData = createDataset(timestamp, cellChartData[cellid][meas]['data']);
           newSensorChartData.labels = timestamp;
           newSensorChartData.datasets.push({
