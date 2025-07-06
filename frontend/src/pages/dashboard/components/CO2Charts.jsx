@@ -15,7 +15,7 @@ function CO2Charts({ cells, startDate, endDate, stream }) {
   // Colors of data points. Each color represents the next color
   // of the data points as the user selects more cells to compare.
   // Add more measurements depending on how many different values on the charts
-  const meas_colors = ['#26C6DA', '#FF7043', '#A2708A'];
+  const meas_colors = ['#26C6DA', '#FF7043'];
 
   const axisIds = ['CO2Axis', 'PhotoresistivityAxis'];
 
@@ -116,13 +116,13 @@ function CO2Charts({ cells, startDate, endDate, stream }) {
         const name = cellChartData[cellid].name;
         const measurements = Object.keys(cellChartData[cellid]).filter((k) => k != 'name');
         for (const [idx, meas] of measurements.entries()) {
-          const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime));
+          const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromFormat(dateTime, "yyyy-MM-dd HH:mm:ss"));
           const measData = createDataset(timestamp, cellChartData[cellid][meas]['data']);
           newSensorChartData.labels = timestamp;
           newSensorChartData.datasets.push({
             label: name + ` ${meas} (${units[idx]})`,
             data: measData,
-            borderColor: meas_colors[idx][selectCounter],
+            borderColor: meas_colors[(selectCounter * measurements.length + idx) % meas_colors.length],
             borderWidth: 2,
             fill: false,
             yAxisID: axisIds[idx],
@@ -181,7 +181,7 @@ function CO2Charts({ cells, startDate, endDate, stream }) {
             newSensorChartData.datasets.push({
               label: name + ` ${meas} (${units[idx]})`,
               data: sensorChartData[cellid][meas]['data'],
-              borderColor: meas_colors[idx][selectCounter],
+              borderColor: meas_colors[(selectCounter * measurements.length + idx) % meas_colors.length],
               borderWidth: 2,
               fill: false,
               yAxisID: axisIds[idx],
