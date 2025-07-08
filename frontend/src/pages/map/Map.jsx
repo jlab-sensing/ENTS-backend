@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Divider } from '@mui/material';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import useAuth from '../../auth/hooks/useAuth';
 import Nav from '../../components/Nav';
@@ -30,6 +30,7 @@ function Map() {
       }}
     >
       <Nav user={user} setUser={setUser} loggedIn={loggedIn} setLoggedIn={setLoggedIn} />
+      <Divider sx={{ borderColor: 'rgba(0, 0, 0, 0.32)', borderWidth: '2px', borderBottomWidth: '0px' }} />
       {/* MAP PAGE */}
       <MapContainer
         center={[home.latitude, home.longitude]}
