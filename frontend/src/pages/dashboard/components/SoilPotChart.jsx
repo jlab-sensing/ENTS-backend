@@ -16,8 +16,8 @@ function SoilPotCharts({ cells, startDate, endDate, stream }) {
   // of the data points as the user selects more cells to compare.
   // Add more measurements depending on how many different values on the charts
   const meas_colors = ['#26C6DA', '#FF7043', '#A2708A'];
- 
-const axisIds = ['leafAxis'];
+
+  const axisIds = ['leafAxis'];
 
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
