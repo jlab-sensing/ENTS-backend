@@ -15,8 +15,18 @@ function CO2Charts({ cells, startDate, endDate, stream }) {
   // Colors of data points. Each color represents the next color
   // of the data points as the user selects more cells to compare.
   // Add more measurements depending on how many different values on the charts
-  const meas_colors = ['#26C6DA', '#FF7043'];
-
+  const meas_colors = [
+    '#26C6DA',
+    '#FF7043',
+    '#A2708A',
+    '#FF5722',
+    '#607D8B',
+    '#4CAF50',
+    '#FF9800',
+    '#9C27B0',
+    '#2196F3',
+    '#E91E63',
+  ];
   const axisIds = ['CO2Axis', 'PhotoresistivityAxis'];
 
   //** QUICK WAY to change stream time in seconds */
