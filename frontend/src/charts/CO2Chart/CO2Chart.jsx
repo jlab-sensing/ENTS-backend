@@ -6,7 +6,12 @@ import ChartWrapper from '../ChartWrapper';
 import { chartPlugins } from '../plugins';
 
 export default function CO2Chart({ data, startDate, endDate }) {
-  const { leftYMin, leftYMax, leftYStep } = getAxisBoundsAndStepValues(data.datasets, [], 8, 0.2);
+  const { leftYMin, leftYMax, leftYStep, rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
+    data.datasets.filter((d) => d.yAxisID === 'CO2Axis'),
+    data.datasets.filter((d) => d.yAxisID === 'PhotoresistivityAxis'),
+    8,
+    0.2,
+  );
 
   const chartOptions = {
     maintainAspectRatio: false,
@@ -36,7 +41,7 @@ export default function CO2Chart({ data, startDate, endDate }) {
         min: startDate?.toJSDate(),
         max: endDate?.toJSDate(),
       },
-      CO2: {
+      CO2Axis: {
         position: 'left',
         title: {
           display: true,
@@ -48,17 +53,17 @@ export default function CO2Chart({ data, startDate, endDate }) {
         min: leftYMin,
         max: leftYMax,
       },
-      Photoresistivity: {
+      PhotoresistivityAxis: {
         position: 'right',
         title: {
           display: true,
           text: 'Photoresistivity (Ohms)',
         },
         ticks: {
-          stepSize: leftYStep,
+          stepSize: rightYStep,
         },
-        min: leftYMin,
-        max: leftYMax,
+        min: rightYMin,
+        max: rightYMax,
       },
     },
     plugins: structuredClone(chartPlugins),
