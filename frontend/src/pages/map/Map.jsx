@@ -7,14 +7,13 @@ import { useCells } from '../../services/cell';
 function Map() {
   const { user, setUser, loggedIn, setLoggedIn } = useAuth();
   const cells = useCells();
-  const home = {latitude: 36.95620689807501, longitude: -122.05855126777698}
+  const home = { latitude: 36.95620689807501, longitude: -122.05855126777698 };
   const styles = {
     leafletContainer: {
       width: '100%',
       height: '100vh',
     },
   };
-
 
   return (
     <Box
@@ -45,13 +44,15 @@ function Map() {
         <Marker position={[home.latitude, home.longitude]}>
           <Popup>This is the location of our lab at Westside Research Park.</Popup>
         </Marker>
-        {(!cells.isLoading && !cells.isError) && (
+        {!cells.isLoading &&
+          !cells.isError &&
           cells.data.map((cell) => (
-            <Marker position={[cell.latitude, cell.longitude]}>
-              <Popup>{cell.name}: {cell.id}</Popup>
+            <Marker key={cell.id} position={[cell.latitude, cell.longitude]}>
+              <Popup>
+                {cell.name}: {cell.id}
+              </Popup>
             </Marker>
-          ))
-        )}
+          ))}
       </MapContainer>
     </Box>
   );
