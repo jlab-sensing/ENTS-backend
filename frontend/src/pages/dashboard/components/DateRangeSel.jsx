@@ -1,4 +1,4 @@
-import { React, useCallback, useMemo, useState } from 'react';
+import { React, useMemo, useState } from 'react';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
@@ -148,12 +148,9 @@ function DateRangeSel({ startDate, endDate, setStartDate, setEndDate }) {
         <DateTimePickerWithAccept
           label='Start Date'
           value={startDate}
-          onAccept={useCallback(
-            (newStartDate) => {
-              setStartDate(newStartDate);
-            },
-            [setStartDate],
-          )}
+          onAccept={(newStartDate) => {
+            setStartDate(newStartDate);
+          }}
           views={['year', 'month', 'day', 'hours']}
           format='MM/dd HH:mm'
           slotProps={{
@@ -176,12 +173,9 @@ function DateRangeSel({ startDate, endDate, setStartDate, setEndDate }) {
         <DateTimePickerWithAccept
           label='End Date'
           value={endDate}
-          onAccept={useCallback(
-            (newEndDate) => {
-              setEndDate(newEndDate);
-            },
-            [setEndDate],
-          )}
+          onAccept={(newEndDate) => {
+            setEndDate(newEndDate);
+          }}
           views={['year', 'month', 'day', 'hours']}
           format='MM/dd HH:mm'
           slotProps={{
