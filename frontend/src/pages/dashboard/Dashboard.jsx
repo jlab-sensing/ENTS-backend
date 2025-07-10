@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Grid, Stack } from '@mui/material';
+import { Box, Button, Divider, Grid, Stack, Typography } from '@mui/material';
 import { DateTime } from 'luxon';
 import { React, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -22,6 +22,7 @@ function Dashboard() {
   const [selectedCells, setSelectedCells] = useState([]);
   const [stream, setStream] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [showNoDataMessage, setShowNoDataMessage] = useState(false);
   const cells = useCells();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -68,6 +69,31 @@ function Dashboard() {
     setSearchParams(newParams, { replace: true });
   }, [startDate, endDate, selectedCells, isInitialized, setSearchParams]);
 
+  useEffect(() => {
+    if (selectedCells.length === 0) {
+      setShowNoDataMessage(false);
+      return;
+    }
+
+    setShowNoDataMessage(false);
+
+    const checkForCharts = () => {
+      const chartContainers = document.querySelectorAll('canvas');
+      const hasVisibleCharts = chartContainers.length > 0;
+      setShowNoDataMessage(!hasVisibleCharts);
+    };
+
+    const timer1 = setTimeout(checkForCharts, 500);
+    const timer2 = setTimeout(checkForCharts, 1500);
+    const timer3 = setTimeout(checkForCharts, 3000);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+    };
+  }, [selectedCells, startDate, endDate, stream]);
+
   return (
     <>
       <Box>
@@ -105,30 +131,53 @@ function Dashboard() {
               Hourly
             </Button>
           </Stack>
-          <Grid
-            container
-            spacing={3}
-            sx={{ height: '100%', width: '100%', p: 2 }}
-            alignItems='center'
-            justifyContent='space-evenly'
-            columns={{ xs: 4, sm: 8, md: 12 }}
-          >
-            <PowerCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-            <TerosCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-          </Grid>
+          {selectedCells.length === 0 ? (
+            <Box display='flex' justifyContent='center' alignItems='center' sx={{ height: '100%' }}>
+              <Box textAlign='center'>
+                <Typography variant='h4' color='primary' gutterBottom>
+                  Welcome to ENTS Dashboard
+                </Typography>
+                <Typography variant='h6' color='text.secondary'>
+                  Please select one or more cells above to view environmental sensor data
+                </Typography>
+              </Box>
+            </Box>
+          ) : showNoDataMessage ? (
+            <Box display='flex' justifyContent='center' alignItems='center' sx={{ height: '100%' }}>
+              <Box textAlign='center'>
+                <Typography variant='body1' color='text.secondary'>
+                  No data available for the selected cells and date range
+                </Typography>
+              </Box>
+            </Box>
+          ) : (
+            <Grid
+              container
+              spacing={3}
+              sx={{ height: '100%', width: '100%', p: 2 }}
+              alignItems='center'
+              justifyContent='space-evenly'
+              columns={{ xs: 4, sm: 8, md: 12 }}
+            >
+              <PowerCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+              <TerosCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            </Grid>
+          )}
         </Stack>
 
-        <Stack
-          direction='column'
-          divider={<Divider orientation='horizontal' flexItem />}
-          justifyContent='spaced-evently'
-          sx={{ height: '100vh', width: '95%', boxSizing: 'border-box' }}
-        >
-          <SoilPotCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-          <PresHumChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-          <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-          <CO2Charts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-        </Stack>
+        {selectedCells.length > 0 && !showNoDataMessage && (
+          <Stack
+            direction='column'
+            divider={<Divider orientation='horizontal' flexItem />}
+            justifyContent='spaced-evently'
+            sx={{ width: '95%', boxSizing: 'border-box' }}
+          >
+            <SoilPotCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <PresHumChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <CO2Charts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          </Stack>
+        )}
       </Box>
     </>
   );

@@ -19,6 +19,7 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
   const [vChartData, setVChartData] = useState(chartSettings);
   const [pwrChartData, setPwrChartData] = useState(chartSettings);
   const [loadedCells, setLoadedCells] = useState([]);
+  const [hasData, setHasData] = useState(false);
   // Initialize the combined chart data with empty datasets
 
   const pColors = ['#26C6DA', '#FF7043', '#A2708A'];
@@ -86,6 +87,7 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
     getPowerChartData().then((cellChartData) => {
       let selectCounter = 0;
       let loadCells = cells;
+      let hasAnyData = false;
       if (!stream) {
         loadCells = cells.filter((c) => !(c.id in loadedCells));
       }
@@ -93,49 +95,59 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
         const cellid = id;
         const name = cellChartData[cellid].name;
         const powerData = cellChartData[cellid].powerData;
-        const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
-        newVChartData.labels = pTimestamp;
-        const vData = createDataset(pTimestamp, powerData.v);
-        const iData = createDataset(pTimestamp, powerData.i);
-        const pData = createDataset(pTimestamp, powerData.p);
-        newVChartData.datasets.push(
-          {
-            label: name + ' Voltage (mV)',
-            data: vData,
-            borderColor: vColors[selectCounter],
+
+        if (
+          (Array.isArray(powerData.v) && powerData.v.length > 0) ||
+          (Array.isArray(powerData.i) && powerData.i.length > 0) ||
+          (Array.isArray(powerData.p) && powerData.p.length > 0)
+        ) {
+          hasAnyData = true;
+
+          const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
+          newVChartData.labels = pTimestamp;
+          const vData = createDataset(pTimestamp, powerData.v);
+          const iData = createDataset(pTimestamp, powerData.i);
+          const pData = createDataset(pTimestamp, powerData.p);
+          newVChartData.datasets.push(
+            {
+              label: name + ' Voltage (mV)',
+              data: vData,
+              borderColor: vColors[selectCounter],
+              borderWidth: 2,
+              fill: false,
+              yAxisID: 'vAxis',
+              radius: 2,
+              pointRadius: 1,
+            },
+            {
+              label: name + ' Current (µA)',
+              data: iData,
+              borderColor: iColors[selectCounter],
+              borderWidth: 2,
+              fill: false,
+              yAxisID: 'cAxis',
+              radius: 2,
+              pointRadius: 1,
+            },
+          );
+          //power data
+          newPwrChartData.labels = pTimestamp;
+          newPwrChartData.datasets.push({
+            label: name + ' Power (µW)',
+            data: pData,
+            borderColor: pColors[selectCounter],
             borderWidth: 2,
             fill: false,
-            yAxisID: 'vAxis',
             radius: 2,
             pointRadius: 1,
-          },
-          {
-            label: name + ' Current (µA)',
-            data: iData,
-            borderColor: iColors[selectCounter],
-            borderWidth: 2,
-            fill: false,
-            yAxisID: 'cAxis',
-            radius: 2,
-            pointRadius: 1,
-          },
-        );
-        //power data
-        newPwrChartData.labels = pTimestamp;
-        newPwrChartData.datasets.push({
-          label: name + ' Power (µW)',
-          data: pData,
-          borderColor: pColors[selectCounter],
-          borderWidth: 2,
-          fill: false,
-          radius: 2,
-          pointRadius: 1,
-        });
+          });
+        }
         selectCounter += 1;
       }
       setVChartData(newVChartData);
       setPwrChartData(newPwrChartData);
       setLoadedCells(loadCells);
+      setHasData(hasAnyData);
     });
   }
 
@@ -246,6 +258,7 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
     };
     setVChartData(Object.assign({}, newVChartData));
     setPwrChartData(Object.assign({}, newPwrChartData));
+    setHasData(false);
   }
 
   //** clearning chart data points and labels */
@@ -272,13 +285,15 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
       setVChartData(clearChartDatasets(Object.assign({}, vChartData)));
       setPwrChartData(clearChartDatasets(Object.assign({}, pwrChartData)));
     } else {
-      // no selected cells
       clearCharts();
     }
 
-    // TODO: need to memoize updating charts
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cells, stream, startDate, endDate]);
+
+  if (!hasData) {
+    return <></>;
+  }
 
   return (
     <>

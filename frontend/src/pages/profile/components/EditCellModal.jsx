@@ -36,7 +36,7 @@ function EditCellModal({ cell }) {
     //   refetch();
     //   setSubmitting(false);
     // }, 1000);
-    
+
     // backend request implemented - DONE
     updateCell(cell.id, formData)
       .then((res) => {
@@ -45,19 +45,20 @@ function EditCellModal({ cell }) {
       })
       .catch((err) => console.error('Edit failed:', err))
       .finally(() => setSubmitting(false));
-    
   };
 
   return (
     <>
       {/* copied account edit profile button styling */}
-      <Button variant="contained" onClick={handleOpen} 
-        sx={{ backgroundColor: '#588157', 
-        '&:hover': { backgroundColor: '#3a5a40' } }}>
+      <Button
+        variant='contained'
+        onClick={handleOpen}
+        sx={{ backgroundColor: '#588157', '&:hover': { backgroundColor: '#3a5a40' } }}
+      >
         Edit
       </Button>
 
-      <Modal open={isOpen} onClose={handleClose} aria-labelledby="edit-cell-modal-title">
+      <Modal open={isOpen} onClose={handleClose} aria-labelledby='edit-cell-modal-title'>
         <Box
           sx={{
             position: 'absolute',
@@ -70,7 +71,7 @@ function EditCellModal({ cell }) {
             boxShadow: 24,
             p: 4,
           }}
-          component="form"
+          component='form'
           onSubmit={(e) => {
             e.preventDefault();
             handleSubmit();
@@ -78,49 +79,49 @@ function EditCellModal({ cell }) {
         >
           {!response ? (
             <>
-              <Typography id="edit-cell-modal-title" variant="h6" component="h2" gutterBottom>
+              <Typography id='edit-cell-modal-title' variant='h6' component='h2' gutterBottom>
                 Edit Cell {cell.id} Info
               </Typography>
               <TextField
-                label="Name"
+                label='Name'
                 value={formData.name}
                 onChange={handleChange('name')}
                 fullWidth
-                margin="normal"
+                margin='normal'
                 required
                 error={formData.name?.length === 0}
               />
               <TextField
-                label="Location"
+                label='Location'
                 value={formData.location}
                 onChange={handleChange('location')}
                 fullWidth
-                margin="normal"
+                margin='normal'
                 required
                 error={formData.location?.length === 0}
               />
-                <TextField
-                  label="Longitude"
-                  variant="outlined"
-                  value={formData.long || ''}
-                  onChange={handleChange('long')}
-                  fullWidth
-                  margin="normal"
-                  required
-                  error={formData.long?.length === 0 || isNaN(Number(formData.long))}
-                  helperText={isNaN(Number(formData.long)) ? 'Please Enter Numbers' : ''}
-                />
-                <TextField
-                  label="Latitude"
-                  variant="outlined"
-                  value={formData.lat || ''}
-                  onChange={handleChange('lat')}
-                  fullWidth
-                  margin="normal"
-                  required
-                  error={formData.lat?.length === 0 || isNaN(Number(formData.lat))}
-                  helperText={isNaN(Number(formData.lat)) ? 'Please Enter Numbers' : ''}
-                />
+              <TextField
+                label='Longitude'
+                variant='outlined'
+                value={formData.long || ''}
+                onChange={handleChange('long')}
+                fullWidth
+                margin='normal'
+                required
+                error={formData.long?.length === 0 || isNaN(Number(formData.long))}
+                helperText={isNaN(Number(formData.long)) ? 'Please Enter Numbers' : ''}
+              />
+              <TextField
+                label='Latitude'
+                variant='outlined'
+                value={formData.lat || ''}
+                onChange={handleChange('lat')}
+                fullWidth
+                margin='normal'
+                required
+                error={formData.lat?.length === 0 || isNaN(Number(formData.lat))}
+                helperText={isNaN(Number(formData.lat)) ? 'Please Enter Numbers' : ''}
+              />
 
               {/* following AccountInfo styling */}
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 2 }}>
@@ -134,8 +135,8 @@ function EditCellModal({ cell }) {
                   Cancel
                 </Button>
                 <Button
-                  type="submit"
-                  variant="contained"
+                  type='submit'
+                  variant='contained'
                   disabled={isSubmitting}
                   sx={{
                     backgroundColor: '#588157',

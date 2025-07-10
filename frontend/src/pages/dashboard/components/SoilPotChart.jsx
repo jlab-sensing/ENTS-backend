@@ -16,8 +16,8 @@ function SoilPotCharts({ cells, startDate, endDate, stream }) {
   // of the data points as the user selects more cells to compare.
   // Add more measurements depending on how many different values on the charts
   const meas_colors = ['#26C6DA', '#FF7043', '#A2708A'];
- 
-const axisIds = ['leafAxis'];
+
+  const axisIds = ['leafAxis'];
 
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
@@ -30,6 +30,7 @@ const axisIds = ['leafAxis'];
   };
   const [sensorChartData, setSensorChartData] = useState(chartSettings);
   const [loadedCells, setLoadedCells] = useState([]);
+  const [hasData, setHasData] = useState(false);
 
   // Initialize the combined chart data with empty datasets
   const newSensorChartData = {
@@ -108,6 +109,7 @@ const axisIds = ['leafAxis'];
     getCellChartData().then((cellChartData) => {
       let selectCounter = 0;
       let loadCells = cells;
+      let hasAnyData = false;
       if (!stream) {
         loadCells = cells.filter((c) => !(c.id in loadedCells));
       }
@@ -116,24 +118,29 @@ const axisIds = ['leafAxis'];
         const name = cellChartData[cellid].name;
         const measurements = Object.keys(cellChartData[cellid]).filter((k) => k != 'name');
         for (const [idx, meas] of measurements.entries()) {
-          const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime));
-          const measData = createDataset(timestamp, cellChartData[cellid][meas]['data']);
-          newSensorChartData.labels = timestamp;
-          newSensorChartData.datasets.push({
-            label: name + ` ${meas} (${units[idx]})`,
-            data: measData,
-            borderColor: meas_colors[idx][selectCounter],
-            borderWidth: 2,
-            fill: false,
-            yAxisID: axisIds[idx],
-            radius: 2,
-            pointRadius: 1,
-          });
+          const measDataArray = cellChartData[cellid][meas]['data'];
+          if (Array.isArray(measDataArray) && measDataArray.length > 0) {
+            hasAnyData = true;
+            const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime));
+            const measData = createDataset(timestamp, measDataArray);
+            newSensorChartData.labels = timestamp;
+            newSensorChartData.datasets.push({
+              label: name + ` ${meas} (${units[idx]})`,
+              data: measData,
+              borderColor: meas_colors[selectCounter],
+              borderWidth: 2,
+              fill: false,
+              yAxisID: axisIds[idx],
+              radius: 2,
+              pointRadius: 1,
+            });
+          }
         }
         selectCounter += 1;
       }
       setSensorChartData(newSensorChartData);
       setLoadedCells(loadCells);
+      setHasData(hasAnyData);
     });
   }
 
@@ -181,7 +188,7 @@ const axisIds = ['leafAxis'];
             newSensorChartData.datasets.push({
               label: name + ` ${meas} (${units[idx]})`,
               data: sensorChartData[cellid][meas]['data'],
-              borderColor: meas_colors[idx][selectCounter],
+              borderColor: meas_colors[selectCounter],
               borderWidth: 2,
               fill: false,
               yAxisID: axisIds[idx],
@@ -206,6 +213,7 @@ const axisIds = ['leafAxis'];
       datasets: [],
     };
     setSensorChartData(Object.assign({}, newSensorChartData));
+    setHasData(false);
   }
 
   //** clearning chart data points and labels */
@@ -231,20 +239,20 @@ const axisIds = ['leafAxis'];
       // updating react state for object requires new object
       setSensorChartData(clearChartDatasets(Object.assign({}, sensorChartData)));
     } else {
-      // no selected cells
       clearCharts();
     }
 
-    // TODO: need to memoize updating charts
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cells, stream, startDate, endDate]);
 
+  if (!hasData) {
+    return <></>;
+  }
+
   return (
-    <>
-      <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <SoilPotChart data={sensorChartData} startDate={startDate} endDate={endDate} />
-      </Grid>
-    </>
+    <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+      <SoilPotChart data={sensorChartData} startDate={startDate} endDate={endDate} />
+    </Grid>
   );
 }
 
