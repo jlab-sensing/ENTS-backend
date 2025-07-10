@@ -47,13 +47,15 @@ function Map() {
         </Marker>
         {!cells.isLoading &&
           !cells.isError &&
-          cells.data.map((cell) => (
+          cells.data
+          .filter((cell)=> cell.latitude && cell.longitude && cell.name && cell.id)
+          .map((cell) => 
             <Marker key={cell.id} position={[cell.latitude, cell.longitude]}>
               <Popup>
                 {cell.name}: {cell.id}
               </Popup>
             </Marker>
-          ))}
+        )}
       </MapContainer>
     </Box>
   );
