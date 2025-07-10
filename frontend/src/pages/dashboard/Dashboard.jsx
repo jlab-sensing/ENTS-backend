@@ -257,24 +257,31 @@ function Dashboard() {
         <Stack
           direction='column'
           divider={<Divider orientation='horizontal' flexItem />}
-          justifyContent='spaced-evently'
+          justifyContent='space-evenly'
           spacing={4}
-          sx={{ width: '95%', boxSizing: 'border-box', py: 3, margin: '0 auto' }}
+          sx={{
+            width: '100%',
+            boxSizing: 'border-box',
+            py: 3,
+            px: { xs: 2, sm: 3, md: 4 },
+          }}
         >
-          <Grid container spacing={3} columns={{ xs: 4, sm: 8, md: 12 }}>
-            <PowerCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-            <TerosCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-          </Grid>
-          <Box sx={{ py: 2 }}>
+          <Box sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
+            <Grid container spacing={3} columns={{ xs: 4, sm: 8, md: 12 }}>
+              <PowerCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+              <TerosCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            </Grid>
+          </Box>
+          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
             <SoilPotCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
-          <Box sx={{ py: 2 }}>
+          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
             <PresHumChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
-          <Box sx={{ py: 2 }}>
+          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
             <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
-          <Box sx={{ py: 2 }}>
+          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
             <CO2Charts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
         </Stack>
