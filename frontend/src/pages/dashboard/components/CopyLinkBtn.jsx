@@ -3,14 +3,11 @@ import { PropTypes } from 'prop-types';
 import { React } from 'react';
 import share from '../../../assets/share.svg';
 
-export default function CopyLinkBtn({ startDate, endDate, selectedCells, manualDateSelection }) {
+export default function CopyLinkBtn({ startDate, endDate, selectedCells }) {
   const copyLink = () => {
-    let text = `${window.location.origin}/dashboard?cell_id=${selectedCells.map((cell) => cell.id).join(',')}`;
-
-    // Only add date parameters if user manually selected them
-    if (manualDateSelection) {
-      text += `&startDate=${startDate.toISO()}&endDate=${endDate.toISO()}`;
-    }
+    const text = `${window.location.origin}/dashboard?cell_id=${selectedCells
+      .map((cell) => cell.id)
+      .join(',')}&startDate=${startDate.toISO()}&endDate=${endDate.toISO()}`;
 
     navigator.clipboard.writeText(text);
   };
@@ -44,5 +41,4 @@ CopyLinkBtn.propTypes = {
   startDate: PropTypes.object.isRequired,
   endDate: PropTypes.object.isRequired,
   selectedCells: PropTypes.array.isRequired,
-  manualDateSelection: PropTypes.bool.isRequired,
 };
