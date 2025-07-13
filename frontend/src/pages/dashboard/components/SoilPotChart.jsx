@@ -15,8 +15,18 @@ function SoilPotCharts({ cells, startDate, endDate, stream }) {
   // Colors of data points. Each color represents the next color
   // of the data points as the user selects more cells to compare.
   // Add more measurements depending on how many different values on the charts
-  const meas_colors = ['#26C6DA', '#FF7043', '#A2708A'];
-
+  const meas_colors = [
+    '#26C6DA',
+    '#FF7043',
+    '#A2708A',
+    '#FF5722',
+    '#607D8B',
+    '#4CAF50',
+    '#FF9800',
+    '#9C27B0',
+    '#2196F3',
+    '#E91E63',
+  ];
   const axisIds = ['leafAxis'];
 
   //** QUICK WAY to change stream time in seconds */
@@ -127,7 +137,7 @@ function SoilPotCharts({ cells, startDate, endDate, stream }) {
             newSensorChartData.datasets.push({
               label: name + ` ${meas} (${units[idx]})`,
               data: measData,
-              borderColor: meas_colors[selectCounter],
+              borderColor: meas_colors[(selectCounter * measurements.length + idx) % meas_colors.length],
               borderWidth: 2,
               fill: false,
               yAxisID: axisIds[idx],
@@ -188,7 +198,7 @@ function SoilPotCharts({ cells, startDate, endDate, stream }) {
             newSensorChartData.datasets.push({
               label: name + ` ${meas} (${units[idx]})`,
               data: sensorChartData[cellid][meas]['data'],
-              borderColor: meas_colors[selectCounter],
+              borderColor: meas_colors[(selectCounter * measurements.length + idx) % meas_colors.length],
               borderWidth: 2,
               fill: false,
               yAxisID: axisIds[idx],

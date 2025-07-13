@@ -6,7 +6,7 @@ import PwrChart from '../../../charts/PwrChart/PwrChart';
 import VChart from '../../../charts/VChart/VChart';
 import useInterval from '../../../hooks/useInterval';
 import { getPowerData, streamPowerData } from '../../../services/power';
-function PowerCharts({ cells, startDate, endDate, stream }) {
+function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) {
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
   const chartSettings = {
@@ -291,16 +291,23 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cells, stream, startDate, endDate]);
 
+  // Notify parent component when data status changes
+  useEffect(() => {
+    if (onDataStatusChange) {
+      onDataStatusChange(hasData);
+    }
+  }, [hasData, onDataStatusChange]);
+
   if (!hasData) {
     return <></>;
   }
 
   return (
     <>
-      <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+      <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
         <VChart data={vChartData} stream={stream} startDate={startDate} endDate={endDate} />
       </Grid>
-      <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+      <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
         <PwrChart data={pwrChartData} stream={stream} startDate={startDate} endDate={endDate} />
       </Grid>
     </>
@@ -312,6 +319,7 @@ PowerCharts.propTypes = {
   startDate: PropTypes.any,
   endDate: PropTypes.any,
   stream: PropTypes.bool,
+  onDataStatusChange: PropTypes.func,
 };
 
 export default PowerCharts;
