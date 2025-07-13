@@ -1,13 +1,16 @@
-import { React } from 'react';
-import { Button, Box, Tooltip } from '@mui/material';
-import share from '../../../assets/share.svg';
+import { Box, Button, Tooltip } from '@mui/material';
 import { PropTypes } from 'prop-types';
+import { React } from 'react';
+import share from '../../../assets/share.svg';
 
-export default function CopyLinkBtn({ startDate, endDate, selectedCells }) {
+export default function CopyLinkBtn({ startDate, endDate, selectedCells, manualDateSelection }) {
   const copyLink = () => {
-    const text = `${window.location.origin}/dashboard?cell_id=${selectedCells
-      .map((cell) => cell.id)
-      .join(',')}&startDate=${startDate.toISO()}&endDate=${endDate.toISO()}`;
+    let text = `${window.location.origin}/dashboard?cell_id=${selectedCells.map((cell) => cell.id).join(',')}`;
+
+    // Only add date parameters if user manually selected them
+    if (manualDateSelection) {
+      text += `&startDate=${startDate.toISO()}&endDate=${endDate.toISO()}`;
+    }
 
     navigator.clipboard.writeText(text);
   };
@@ -41,4 +44,5 @@ CopyLinkBtn.propTypes = {
   startDate: PropTypes.object.isRequired,
   endDate: PropTypes.object.isRequired,
   selectedCells: PropTypes.array.isRequired,
+  manualDateSelection: PropTypes.bool.isRequired,
 };
