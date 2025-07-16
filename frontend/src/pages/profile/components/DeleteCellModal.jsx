@@ -6,18 +6,19 @@ import { React, useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { deleteCell } from '../../../services/cell';
 
-function DeleteCellModal() {
+function DeleteCellModal( {id} ) {
   let data = useOutletContext();
   const refetch = data[3];
   const user = data[4];
   data = data[0];
   const [isOpen, setOpen] = useState(false);
-  const [cellId, setCellId] = useState('');
   const [response, setResponse] = useState(null);
+  const [cellId, setCellId] = useState('');
 
   const handleOpen = () => {
     setOpen(true);
     setResponse(null);
+    setCellId(id);
   };
 
   const handleClose = () => {
@@ -59,7 +60,7 @@ function DeleteCellModal() {
           }}
           component='form'
         >
-          {response == null && (
+          {cellId!='' && response == null && (
             <>
               <IconButton
                 sx={{ position: 'absolute', top: 5, right: 5 }}
@@ -71,21 +72,6 @@ function DeleteCellModal() {
               </IconButton>
               <Typography variant='h6' component='h2'>
                 Delete Cell
-              </Typography>
-              <Typography sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <TextField
-                  id='outlined-basic'
-                  label='Cell ID'
-                  variant='outlined'
-                  error={cellId.length === 0 || isNaN(Number(cellId))}
-                  helperText={
-                    !cellId.length ? 'Cell ID is required' : isNaN(Number(cellId)) ? 'Please enter a valid number' : ''
-                  }
-                  value={cellId}
-                  onChange={(e) => {
-                    setCellId(e.target.value);
-                  }}
-                />
               </Typography>
               <Button
                 onClick={() => {
@@ -102,8 +88,7 @@ function DeleteCellModal() {
               </Button>
             </>
           )}
-
-          {response && (
+          {cellId!='' && response && (
             <>
               <IconButton
                 sx={{ position: 'absolute', top: 5, right: 5 }}
