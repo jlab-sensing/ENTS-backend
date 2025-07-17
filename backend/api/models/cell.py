@@ -13,8 +13,6 @@ class Cell_Tag(db.Model):
 
 
 class Cell(db.Model):
-    """Table of cells"""
-
     __tablename__ = "cell"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -25,8 +23,9 @@ class Cell(db.Model):
     archive = db.Column(db.Boolean(), default=False, nullable=False)
     user_id = db.Column(db.Uuid(), db.ForeignKey("user.id"))
 
-    user = db.relationship("User", backref="cell")
-    tags = db.relationship("Tag", secondary=Cell_Tag.__table__, backref="cell")
+    user = db.relationship("User", backref="cells")
+
+    tags = db.relationship("Tag", secondary=Cell_Tag.__table__, back_populates="cells")
 
     def __init__(
         self,
@@ -86,14 +85,12 @@ class Cell(db.Model):
 
 
 class Tag(db.Model):
-    """Table of Tags"""
-
     __tablename__ = "tag"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text(), nullable=False, unique=True)
 
-    cells = db.relationship("Cell", secondary=Cell_Tag.__table__, backref="tag")
+    cells = db.relationship("Cell", secondary=Cell_Tag.__table__, back_populates="tags")
 
     def __init__(self, name):
         self.name = name
