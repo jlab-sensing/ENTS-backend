@@ -1,7 +1,7 @@
-import { Box, Button, Tooltip } from '@mui/material';
-import { PropTypes } from 'prop-types';
 import { React } from 'react';
+import { Button, Box, Tooltip } from '@mui/material';
 import share from '../../../assets/share.svg';
+import { PropTypes } from 'prop-types';
 
 export default function CopyLinkBtn({ startDate, endDate, selectedCells }) {
   const copyLink = () => {

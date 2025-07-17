@@ -54,14 +54,26 @@ function Dashboard() {
       setSelectedCells(selectedCells);
     }
 
-    // If dates are present in URL, treat them as manual selection
+    // Only treat URL dates as manual if they're different from the default dates
     if (searchQueryStartDate && searchQueryEndDate) {
       const parsedStartDate = DateTime.fromISO(searchQueryStartDate);
+
       const parsedEndDate = DateTime.fromISO(searchQueryEndDate);
+      const defaultStart = DateTime.now().minus({ days: 14 });
+      const defaultEnd = DateTime.now();
+
+      // Check if URL dates are significantly different from defaults (more than 1 hour difference)
+      const isManualSelection =
+        Math.abs(parsedStartDate.diff(defaultStart, 'hours').hours) > 1 ||
+        Math.abs(parsedEndDate.diff(defaultEnd, 'hours').hours) > 1;
 
       setStartDate(parsedStartDate);
       setEndDate(parsedEndDate);
-      setManualDateSelection(true);
+
+      // Only block smart date range if this appears to be a genuine manual selection
+      if (isManualSelection && searchQueryCells) {
+        setManualDateSelection(true);
+      }
     }
 
     setIsInitialized(true);
@@ -114,14 +126,11 @@ function Dashboard() {
       newParams.set('cell_id', selectedCells.map((cell) => cell.id).join(','));
     }
 
-    // Only add date parameters to URL if user manually selected them
-    if (manualDateSelection) {
-      newParams.set('startDate', startDate.toISO());
-      newParams.set('endDate', endDate.toISO());
-    }
+    newParams.set('startDate', startDate.toISO());
+    newParams.set('endDate', endDate.toISO());
 
     setSearchParams(newParams, { replace: true });
-  }, [startDate, endDate, selectedCells, isInitialized, manualDateSelection, setSearchParams]);
+  }, [startDate, endDate, selectedCells, isInitialized, setSearchParams]);
 
   // Handle manual date changes
   const handleStartDateChange = (newStartDate) => {
