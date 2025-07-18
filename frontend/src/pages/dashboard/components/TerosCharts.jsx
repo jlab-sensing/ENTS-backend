@@ -288,10 +288,10 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
 
   return (
     <>
-      <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+      <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
         <VwcChart data={vwcChartData} stream={stream} startDate={startDate} endDate={endDate} />
       </Grid>
-      <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+      <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
         <TempChart data={tempChartData} stream={stream} startDate={startDate} endDate={endDate} />
       </Grid>
     </>
