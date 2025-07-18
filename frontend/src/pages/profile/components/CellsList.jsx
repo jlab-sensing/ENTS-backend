@@ -4,8 +4,7 @@ import { useOutletContext } from 'react-router-dom';
 import AddCellModal from './AddCellModal';
 import DeleteCellModal from './DeleteCellModal';
 import EditCellModal from './EditCellModal';
-import {React, useState } from 'react';
-
+import { React, useState } from 'react';
 
 function CellsList() {
   let data = useOutletContext();
@@ -28,8 +27,6 @@ function CellsList() {
     return <Typography>Error loading cells.</Typography>;
   }
 
-
-
   const columns = [
     { field: 'id', headerName: 'Cell ID', width: 90 },
     { field: 'name', headerName: 'Name', width: 150 },
@@ -37,9 +34,15 @@ function CellsList() {
     { field: 'lat', headerName: 'Latitude', width: 150 },
     { field: 'long', headerName: 'Longitude', width: 150 },
     { field: 'archive', headerName: 'Archive', width: 150 },
-    { field: 'edit', headerName: '', width: 85,   sortable: false, filterable: false, disableColumnMenu: true,
-      renderCell: (params) => (<EditCellModal cell={params.row} />) // edit button in new column
-    }
+    {
+      field: 'edit',
+      headerName: '',
+      width: 85,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      renderCell: (params) => <EditCellModal cell={params.row} />, // edit button in new column
+    },
   ];
 
   let rows = [];
@@ -53,10 +56,10 @@ function CellsList() {
       archive: cell.archive,
     }));
   }
-  
+
   const handleRowSelection = (newSelection) => {
-    setSelectedRowId(newSelection[0])
-  }
+    setSelectedRowId(newSelection[0]);
+  };
 
   return (
     <Box
@@ -93,7 +96,7 @@ function CellsList() {
           Your Cells
         </Typography>
         <AddCellModal />
-        <DeleteCellModal id={selectedRowId}/>
+        <DeleteCellModal id={selectedRowId} />
       </Box>
 
       {/* Wrapper to ensure DataGrid does not exceed background */}
@@ -104,11 +107,11 @@ function CellsList() {
           overflowY: 'auto',
         }}
       >
-        <DataGrid 
-          rows={rows} 
-          columns={columns} 
-          pageSize={5} 
-          autoHeight 
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          pageSize={5}
+          autoHeight
           onRowSelectionModelChange={handleRowSelection}
         />
       </Box>

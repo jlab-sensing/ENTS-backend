@@ -1,12 +1,13 @@
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, Button, IconButton, Modal, TextField, Typography } from '@mui/material';
+import { Box, Button, IconButton, Modal, Typography } from '@mui/material';
 import { React, useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { deleteCell } from '../../../services/cell';
+import PropTypes from 'prop-types';
 
-function DeleteCellModal( {id} ) {
+function DeleteCellModal({ id }) {
   let data = useOutletContext();
   const refetch = data[3];
   const user = data[4];
@@ -16,7 +17,7 @@ function DeleteCellModal( {id} ) {
   const [cellId, setCellId] = useState('');
 
   const handleOpen = () => {
-    if(id!=''){
+    if (id != '') {
       setOpen(true);
       setCellId(id);
     }
@@ -138,3 +139,7 @@ function DeleteCellModal( {id} ) {
 }
 
 export default DeleteCellModal;
+
+DeleteCellModal.propTypes = {
+  id: PropTypes.oneOfType(PropTypes.number).isRequired,
+};
