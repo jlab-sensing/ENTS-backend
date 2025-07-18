@@ -16,9 +16,11 @@ function DeleteCellModal( {id} ) {
   const [cellId, setCellId] = useState('');
 
   const handleOpen = () => {
-    setOpen(true);
+    if(id!=''){
+      setOpen(true);
+      setCellId(id);
+    }
     setResponse(null);
-    setCellId(id);
   };
 
   const handleClose = () => {
@@ -40,6 +42,7 @@ function DeleteCellModal( {id} ) {
       <Button sx={{ color: 'black' }} key='delete' onClick={handleOpen}>
         <DeleteIcon />
       </Button>
+
       <Modal
         open={isOpen}
         onClose={handleClose}
@@ -60,7 +63,7 @@ function DeleteCellModal( {id} ) {
           }}
           component='form'
         >
-          {cellId!='' && response == null && (
+          {response == null && (
             <>
               <IconButton
                 sx={{ position: 'absolute', top: 5, right: 5 }}
@@ -71,7 +74,7 @@ function DeleteCellModal( {id} ) {
                 <CloseIcon fontSize='small' />
               </IconButton>
               <Typography variant='h6' component='h2'>
-                Delete Cell
+                Delete Cell?
               </Typography>
               <Button
                 onClick={() => {
@@ -84,11 +87,11 @@ function DeleteCellModal( {id} ) {
                 }}
                 color='error'
               >
-                Delete Cell
+                Confirm
               </Button>
             </>
           )}
-          {cellId!='' && response && (
+          {response && (
             <>
               <IconButton
                 sx={{ position: 'absolute', top: 5, right: 5 }}
