@@ -246,51 +246,52 @@ function Dashboard() {
               </Box>
             </Box>
           ) : (
-            <Grid
-              container
-              spacing={3}
-              sx={{
-                height: topSectionHasData ? 'auto' : '0px',
-                width: '100%',
-                p: topSectionHasData ? 2 : 0,
-                overflow: 'hidden',
-                transition: 'height 0.3s ease',
-              }}
-              alignItems='center'
-              justifyContent='space-evenly'
-              columns={{ xs: 4, sm: 8, md: 12 }}
-            >
-              <PowerCharts
-                cells={selectedCells}
-                startDate={startDate}
-                endDate={endDate}
-                stream={stream}
-                onDataStatusChange={setPowerHasData}
-              />
-              <TerosCharts
-                cells={selectedCells}
-                startDate={startDate}
-                endDate={endDate}
-                stream={stream}
-                onDataStatusChange={setTerosHasData}
-              />
-            </Grid>
+            <>
+              {/* Top section charts - always render but conditionally display */}
+              <Grid
+                container
+                spacing={3}
+                sx={{
+                  width: '100%',
+                  p: topSectionHasData ? 2 : 0,
+                  height: topSectionHasData ? 'auto' : '0px',
+                  overflow: 'hidden',
+                }}
+                alignItems='center'
+                justifyContent='space-evenly'
+                columns={{ xs: 4, sm: 8, md: 12 }}
+              >
+                <PowerCharts
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                  onDataStatusChange={setPowerHasData}
+                />
+                <TerosCharts
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                  onDataStatusChange={setTerosHasData}
+                />
+              </Grid>
+
+              {/* Bottom section charts - always rendered */}
+              <Stack
+                direction='column'
+                divider={<Divider orientation='horizontal' flexItem />}
+                justifyContent='spaced-evently'
+                sx={{ width: '95%', boxSizing: 'border-box' }}
+              >
+                <SoilPotCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <PresHumChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <CO2Charts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+              </Stack>
+            </>
           )}
         </Stack>
-
-        {selectedCells.length > 0 && !showNoDataMessage && (
-          <Stack
-            direction='column'
-            divider={<Divider orientation='horizontal' flexItem />}
-            justifyContent='spaced-evently'
-            sx={{ width: '95%', boxSizing: 'border-box' }}
-          >
-            <SoilPotCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-            <PresHumChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-            <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-            <CO2Charts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-          </Stack>
-        )}
       </Box>
     </>
   );
