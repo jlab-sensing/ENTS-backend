@@ -1,7 +1,9 @@
+from __future__ import annotations
 from enum import Enum
 import warnings
 
 import requests
+
 
 class EndDevice:
     class PHYVersion(Enum):
@@ -45,7 +47,6 @@ class EndDevice:
         MAC_V1_0_3 = 5
         MAC_V1_0_4 = 6
 
-
     frequency_plans = [
         "US_902_928_FSB_2",
     ]
@@ -66,11 +67,38 @@ class EndDevice:
 
         self.data = json_data | kwargs
 
+    def __repr__(self):
+        """Return a string representation of the EndDevice object."""
+
+        return f'EndDevice({self.id()}])'
+
+    def id(self) -> str:
+        """Return the device ID of the EndDevice.
+
+        Returns:
+            The device ID of the EndDevice.
+        """
+
+        return self.data["ids"]["device_id"]
+
+    def update(self, new: dict) -> EndDevice:
+        """Update the EndDevice data with new JSON data.
+
+        Fields from `new` will overwrite existing fields in `self.data`.
+
+        Args:
+            new: JSON data to update the EndDevice.
+        """
+
+        self.data.update(new)
+        return self
+
 class TTNApi:
     """High level interface for The Things Network API."""
 
     def __init__(self, api_key: str, app_id: str):
         self.end_device_reg = EndDeviceRegistry(api_key, app_id)
+        self.js_device_reg = JoinServerDeviceRegistry(api_key, app_id)
 
     def register_end_device(
         self,
@@ -110,6 +138,8 @@ class TTNApi:
                 raise ValueError(f"Missing EndDevice ids field {k}")
 
         end_device = self.end_device_reg.create(end_device)
+        end_device = self.js_device_reg.create(end_device)
+
         # TODO reg with JS, NS, and AS
 
         return end_device
@@ -189,7 +219,7 @@ class TTNApi:
         field_mask: list[str] | None = None,
         order: str | None = None,
         limit: int | None = None,
-        page: int | None = None
+        page: int | None = None,
     ) -> list[EndDevice] | None:
         """Get all End Devices in the TTN registry.
 
@@ -234,8 +264,8 @@ class TTNApi:
             List of EndDevice objects.
         """
 
-        return self.end_device_reg.get_list(field_mask, order, limit, page,
-                                            filters)
+        return self.end_device_reg.get_list(field_mask, order, limit, page, filters)
+
 
 class TTNApiEndpoint:
     def __init__(
@@ -254,6 +284,7 @@ class TTNApiEndpoint:
         self.session.headers.update({"Accept": "application/json"})
         self.session.headers.update({"User-Agent": "dirtviz/1.0"})
         self.session.headers.update({"Content-Type": "application/json"})
+
 
 class EndDeviceRegistry(TTNApiEndpoint):
     """Registry for End Devices in The Things Network. The selection of the
@@ -295,18 +326,16 @@ class EndDeviceRegistry(TTNApiEndpoint):
         # TODO Add application ID to the json request
         endpoint = f"{self.base_url}/applications/{self.app_id}/devices"
 
-        data = {
-            "end_device": end_device.data
-        }
+        data = {"end_device": end_device.data}
 
         req = self.session.post(endpoint, json=data)
         if req.status_code == 200:
-            return EndDevice(req.json())
+            return end_device.update(req.json())
         elif req.status_code == 409:
             warnings.warn(
                 f"End Device with device_id '{end_device.data['ids']['device_id']}' already exists."
             )
-            return EndDevice(req.json())
+            return end_device.update(req.json())
         else:
             warnings.warn(
                 f"Failed to create End Device on TTN: {req.status_code} - {req.text}"
@@ -315,10 +344,10 @@ class EndDeviceRegistry(TTNApiEndpoint):
 
     def get_all(
         self,
-        field_mask : str | None = None,
-        order : str | None = None,
+        field_mask: str | None = None,
+        order: str | None = None,
         limit: int | None = None,
-        page : int | None = None
+        page: int | None = None,
     ) -> list[EndDevice] | None:
         """Get all End Devices in the registry.
 
@@ -368,11 +397,11 @@ class EndDeviceRegistry(TTNApiEndpoint):
 
     def get_list(
         self,
-        field_mask : str | None = None,
-        order : str | None = None,
+        field_mask: str | None = None,
+        order: str | None = None,
         limit: int | None = None,
-        page : int | None = None,
-        filters : dict[str, str] | None = None,
+        page: int | None = None,
+        filters: dict[str, str] | None = None,
     ) -> list[EndDevice] | None:
         """Get all End Devices in the registry
 
@@ -429,11 +458,7 @@ class EndDeviceRegistry(TTNApiEndpoint):
 
         return end_devices
 
-
-    def delete(
-        self,
-        end_device: EndDevice
-    ) -> bool:
+    def delete(self, end_device: EndDevice) -> bool:
         """Delete an EndDevice from the registry.
 
         The end device must have ["ids"]["device_id"] set.
@@ -461,9 +486,7 @@ class EndDeviceRegistry(TTNApiEndpoint):
 
         # print warning if the request was not successful
         if req.status_code == 404:
-            warnings.warn(
-                f"ttn: End Device with device_id '{device_id}' not found."
-            )
+            warnings.warn(f"ttn: End Device with device_id '{device_id}' not found.")
 
             return False
 
@@ -496,9 +519,7 @@ class EndDeviceRegistry(TTNApiEndpoint):
             raise ValueError("EndDevice must have 'ids' and 'device_id' set.")
 
         # send request
-        data = {
-            "end_device": end_device.data
-        }
+        data = {"end_device": end_device.data}
         endpoint = f"{self.base_url}/applications/{self.app_id}/devices/{end_device.data['ids']['device_id']}"
         req = self.session.put(endpoint, json=data)
         if req.status_code != 200:
@@ -541,23 +562,71 @@ class EndDeviceRegistry(TTNApiEndpoint):
         req = self.session.get(endpoint, params=params)
 
         if req.status_code != 200:
+            warnings.warn(f"ttn: End Device with device_id '{device_id}' not found.")
+            return None
+
+        return end_device.update(req.json())
+
+
+class JoinServerDeviceRegistry(TTNApiEndpoint):
+    def create(
+        self,
+        end_device: EndDevice,
+    ) -> EndDevice | None:
+        """Create a new End Device in the Join Server registry.
+
+         Args:
+              end_device: The End Device object to create.
+
+        Returns:
+            The created End Device object.
+        """
+
+        endpoint = f"{self.base_url}/js/applications/{self.app_id}/devices"
+
+        data = {"end_device": end_device.data}
+
+        req = self.session.post(endpoint, json=data)
+        if req.status_code != 200:
             warnings.warn(
-                f"ttn: End Device with device_id '{device_id}' not found."
+                f"ttn: Failed to create end device on js: {req.status_code} - {req.text}"
             )
             return None
 
-        return EndDevice(req.json())
+        return end_device.update(req.json())
 
+    def get():
+        pass
 
-# class JoinServerDeviceRegistry(TTNApi):
-#    def create():
-#        pass
-#
-#    def get():
-#        pass
-#
-#    def delete():
-#        pass
-#
-#    def update():
-#        pass
+    def delete(
+        self,
+        end_device: EndDevice,
+    ) -> bool:
+        """Delete an End Device from the Join Server registry.
+
+        Args:
+            end_device: The End Device object to delete.
+
+        Raises:
+            ValueError: If the EndDevice does not have the required fields.
+
+        Returns:
+            True if the End Device was successfully deleted, False otherwise.
+        """
+
+        device_id = end_device.data["ids"]["device_id"]
+
+        endpoint = f"{self.base_url}/js/applications/{self.app_id}/devices/{device_id}"
+
+        req = self.session.delete(endpoint)
+
+        if req.status_code != 200:
+            warnings.warn(
+                f"ttn: Failed to delete end device on JS: {req.status_code} - {req.text}"
+            )
+            return False
+
+        return True
+
+    def update():
+        pass

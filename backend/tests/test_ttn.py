@@ -5,7 +5,7 @@ import pytest
 # global API
 api = TTNApi(
     "",
-    "soil-power-sensor"
+    "soil-power-sensor",
 )
 
 def test_create_end_device():
@@ -36,6 +36,7 @@ def test_create_end_device():
     assert "created_at" in end_device.data
     assert "updated_at" in end_device.data
 
+
 def test_get_end_device():
     """Test retrieving an End Device from the TTN registry."""
 
@@ -57,10 +58,11 @@ def test_get_end_device():
 
 def test_get_all_end_device():
     """Test retrieving all End Devices from the TTN registry."""
-    
+
     end_devices = api.get_all_end_devices()
 
     assert len(end_devices) > 0
+
 
 def test_get_list_end_device():
     """Test retrieving an End Device from the TTN registry."""
@@ -72,11 +74,10 @@ def test_get_list_end_device():
     # get a list of end devices with a specific device ID
     # NOTE: This is not functional because I don't understnad how the filtering
     # mechanism works in the TTN API. Just get by a specific device ID for now.
-    #filters = { "device_id": "dirtviz-unit-test", }
+    # filters = { "device_id": "dirtviz-unit-test", }
 
-    #end_devices = api.get_end_device_list(filters=filters)
-    #assert len(end_devices) == 1
-
+    # end_devices = api.get_end_device_list(filters=filters)
+    # assert len(end_devices) == 1
 
 
 def test_update_end_device():
@@ -93,6 +94,7 @@ def test_update_end_device():
     updated = api.update_end_device(end_device)
 
     assert updated is True
+
 
 @pytest.mark.filterwarnings("ignore:ttn")
 def test_delete_end_device():
