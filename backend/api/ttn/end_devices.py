@@ -79,7 +79,7 @@ class TTNApi:
         """Register a new end device in the TTN registry.
 
         Args:
-            end_device (EndDevice): The End Device object to register.
+            end_device: The End Device object to register.
 
         Returns:
             EndDevice: The registered End Device object.
@@ -131,7 +131,7 @@ class TTNApi:
             force: Ignore http response codes and always return true
 
         Returns:
-            bool: True if the End Device was successfully deleted, False otherwise.
+            True if the End Device was successfully deleted, False otherwise.
         """
 
         deleted = True
@@ -145,6 +145,97 @@ class TTNApi:
             return True
 
         return deleted
+
+    def update_end_device(
+        self,
+        end_device: EndDevice,
+    ) -> EndDevice | None:
+        """Update an End Device in the TTN registry.
+
+        Args:
+            end_device: The End Device object to update.
+
+        Returns:
+            The updated End Device object.
+        """
+
+        updated = self.end_device_reg.update(end_device)
+        if updated is False:
+            return updated
+
+        return updated
+
+    def get_end_device(
+        self,
+        end_device: EndDevice,
+        field_mask: list[str] | None = None,
+    ) -> EndDevice | None:
+        """Get an End Device from the TTN registry.
+
+        The end device must have ["ids"]["device_id"] set.
+
+        Args:
+            end_device: The End Device object to get.
+            field_mask: List of fields to include in the response.
+
+        Returns:
+            The End Device object if found, None otherwise.
+        """
+
+        return self.end_device_reg.get(end_device, field_mask)
+
+    def get_all_end_devices(
+        self,
+        field_mask: list[str] | None = None,
+        order: str | None = None,
+        limit: int | None = None,
+        page: int | None = None
+    ) -> list[EndDevice] | None:
+        """Get all End Devices in the TTN registry.
+
+        The parameter `order` specifies the field mask to order the results by.
+        Default ordering is by ID Prepend with a minus (-) to reverse the
+        order.
+
+        Args:
+            field_mask: List of fields to include in the response.
+            order: Order of the results by field mask.
+            limit: Maximum number of results to return per page.
+            page: Page number to retrieve.
+
+        Returns:
+           List of EndDevice objects.
+        """
+
+        return self.end_device_reg.get_all(field_mask, order, limit, page)
+
+    def get_end_device_list(
+        self,
+        field_mask: list[str] | None = None,
+        order: str | None = None,
+        limit: int | None = None,
+        page: int | None = None,
+        filters: dict[str, str] | None = None,
+    ) -> list[EndDevice] | None:
+        """Get all End Devices in the TTN registry.
+
+        The parameter `order` specifies the field mask to order the results by.
+        Default ordering is by ID Prepend with a minus (-) to reverse the
+        order.
+
+        Args:
+            field_mask: List of fields to include in the response.
+            order: Order of the results by field mask.
+            limit: Maximum number of results to return per page.
+            page: Page number to retrieve.
+            filters: Dictionary of filters to apply to the results.
+
+        Returns:
+            List of EndDevice objects.
+        """
+
+        return self.end_device_reg.get_list(field_mask, order, limit, page,
+                                            filters)
 
 class TTNApiEndpoint:
     def __init__(
@@ -195,10 +286,10 @@ class EndDeviceRegistry(TTNApiEndpoint):
         """Create a new End Device in the registry.
 
         Args:
-            end_device (EndDevice): The End Device object to create.
+            end_device: The End Device object to create.
 
         Returns:
-            EndDevice: The created End Device object.
+            The created End Device object.
         """
 
         # TODO Add application ID to the json request
@@ -222,8 +313,122 @@ class EndDeviceRegistry(TTNApiEndpoint):
             )
             return None
 
-    def get() -> list[EndDevice]:
-        pass
+    def get_all(
+        self,
+        field_mask : str | None = None,
+        order : str | None = None,
+        limit: int | None = None,
+        page : int | None = None
+    ) -> list[EndDevice] | None:
+        """Get all End Devices in the registry.
+
+        The parameter `order` specifies the field mask to order the results by.
+        Default ordering is by ID Prepend with a minus (-) to reverse the
+        order.
+
+        Args:
+            field_mask: List of fields to include in the response.
+            order: Order of the results by field mask.
+            limit: Maximum number of results to return per page.
+            page: Page number to retrieve.
+
+        Returns:
+            List of EndDevice objects.
+        """
+
+        params = {}
+
+        if field_mask is not None:
+            params["field_mask"] = field_mask
+
+        if order is not None:
+            params["order"] = order
+
+        if limit is not None:
+            params["limit"] = limit
+
+        if page is not None:
+            params["page"] = page
+
+        endpoint = f"{self.base_url}/applications/{self.app_id}/devices"
+
+        req = self.session.get(endpoint, params=params)
+        if req.status_code != 200:
+            warnings.warn(
+                f"ttn: Failed to get End Devices from TTN: {req.status_code} - {req.text}"
+            )
+            return None
+
+        end_devices = []
+
+        for e in req.json()["end_devices"]:
+            end_devices.append(EndDevice(e))
+
+        return end_devices
+
+    def get_list(
+        self,
+        field_mask : str | None = None,
+        order : str | None = None,
+        limit: int | None = None,
+        page : int | None = None,
+        filters : dict[str, str] | None = None,
+    ) -> list[EndDevice] | None:
+        """Get all End Devices in the registry
+
+        The parameter `order` specifies the field mask to order the results by.
+        Default ordering is by ID Prepend with a minus (-) to reverse the
+        order.
+
+        Example filters:
+            filters = {
+                "updated_since": "2025-04-23T18:25:43.511Z"
+            }
+
+        Args:
+            field_mask: List of fields to include in the response.
+            order: Order of the results by field mask.
+            limit: Maximum number of results to return per page.
+            page: Page number to retrieve.
+            filters: Dictionary of filters to apply to the results.
+
+        Returns:
+            List of EndDevice objects.
+        """
+
+        data = {}
+
+        if field_mask is not None:
+            data["field_mask"] = field_mask
+
+        if order is not None:
+            data["order"] = order
+
+        if limit is not None:
+            data["limit"] = limit
+
+        if page is not None:
+            data["page"] = page
+
+        if filters is not None:
+            data["filters"] = [filters]
+
+        endpoint = f"{self.base_url}/applications/{self.app_id}/devices/filter"
+
+        req = self.session.post(endpoint, json=data)
+        if req.status_code != 200:
+            warnings.warn(
+                f"ttn: Failed to get End Devices from TTN: {req.status_code} - {req.text}"
+            )
+            return None
+
+        end_devices = []
+
+        for e in req.json()["end_devices"]:
+            end_devices.append(EndDevice(e))
+
+        return end_devices
+
 
     def delete(
         self,
@@ -243,7 +448,7 @@ class EndDeviceRegistry(TTNApiEndpoint):
             ValueError: If the EndDevice does not have the required fields.
 
         Returns:
-            bool: True if the EndDevice was successfully deleted, False otherwise.
+            True if the EndDevice was successfully deleted, False otherwise.
         """
 
         if "ids" not in end_device.data or "device_id" not in end_device.data["ids"]:
@@ -271,8 +476,77 @@ class EndDeviceRegistry(TTNApiEndpoint):
 
         return True
 
-    def update() -> EndDevice:
-        pass
+    def update(self, end_device: EndDevice) -> bool:
+        """Update an End Device in the registry.
+
+        The end device must have ["ids"]["device_id"] set.
+
+        Args:
+            end_device: The EndDevice object to update.
+
+        Raises:
+            ValueError: If the EndDevice does not have the required fields.
+
+        Returns:
+            True if the EndDevice was successfully updated, False otherwise.
+        """
+
+        # check that device_id is set
+        if "ids" not in end_device.data or "device_id" not in end_device.data["ids"]:
+            raise ValueError("EndDevice must have 'ids' and 'device_id' set.")
+
+        # send request
+        data = {
+            "end_device": end_device.data
+        }
+        endpoint = f"{self.base_url}/applications/{self.app_id}/devices/{end_device.data['ids']['device_id']}"
+        req = self.session.put(endpoint, json=data)
+        if req.status_code != 200:
+            warnings.warn(
+                f"ttn: Failed to update end device on TTN: {req.status_code} - {req.text}"
+            )
+            return False
+
+        return True
+
+    def get(
+        self,
+        end_device: EndDevice,
+        field_mask: list[str] | None = None,
+    ) -> EndDevice | None:
+        """Get an End Device from the registry.
+
+        The end device must have ["ids"]["device_id"] set.
+
+        Args:
+            end_device: The EndDevice object to get.
+
+        Raises:
+            ValueError: If the EndDevice does not have the required fields.
+
+        Returns:
+            The EndDevice object if found, None otherwise.
+        """
+
+        if "ids" not in end_device.data or "device_id" not in end_device.data["ids"]:
+            raise ValueError("EndDevice must have 'ids' and 'device_id' set.")
+
+        params = {}
+
+        if field_mask is not None:
+            params["field_mask"] = field_mask
+
+        device_id = end_device.data["ids"]["device_id"]
+        endpoint = f"{self.base_url}/applications/{self.app_id}/devices/{device_id}"
+        req = self.session.get(endpoint, params=params)
+
+        if req.status_code != 200:
+            warnings.warn(
+                f"ttn: End Device with device_id '{device_id}' not found."
+            )
+            return None
+
+        return EndDevice(req.json())
 
 
 # class JoinServerDeviceRegistry(TTNApi):
