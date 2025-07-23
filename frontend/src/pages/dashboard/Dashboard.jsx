@@ -1,11 +1,10 @@
 import { Box, Button, Divider, Grid, Stack, useMediaQuery, useTheme } from '@mui/material';
 import { DateTime } from 'luxon';
-import { React, useCallback, useEffect, useState } from 'react';
+import { React, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 // import DateRangeNotification from '../../components/DateRangeNotification';
 // import { useSmartDateRange } from '../../hooks/useSmartDateRange';
 import { useCells } from '../../services/cell';
-import { debounce } from 'lodash';
 import ArchiveModal from './components/ArchiveModal';
 import BackBtn from './components/BackBtn';
 import CellSelect from './components/CellSelect';
@@ -33,14 +32,6 @@ function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-  // Create debounced setSearchParams function
-  const debouncedSetSearchParams = useCallback(
-    debounce((newParams) => {
-      setSearchParams(newParams, { replace: true });
-    }, 300),
-    [setSearchParams],
-  );
 
   // Smart date range functionality
   // const {
@@ -133,8 +124,8 @@ function Dashboard() {
     newParams.set('startDate', startDate.toISO());
     newParams.set('endDate', endDate.toISO());
 
-    debouncedSetSearchParams(newParams);
-  }, [startDate, endDate, selectedCells, isInitialized, debouncedSetSearchParams]);
+    setSearchParams(newParams, { replace: true });
+  }, [startDate, endDate, selectedCells, isInitialized, setSearchParams]);
 
   // Handle manual date changes
   const handleStartDateChange = (newStartDate) => {
