@@ -1,10 +1,11 @@
 import { Box, Button, Divider, Grid, Stack, useMediaQuery, useTheme } from '@mui/material';
 import { DateTime } from 'luxon';
-import { React, useEffect, useState } from 'react';
+import { React, useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 // import DateRangeNotification from '../../components/DateRangeNotification';
 // import { useSmartDateRange } from '../../hooks/useSmartDateRange';
 import { useCells } from '../../services/cell';
+import { debounce } from 'lodash';
 import ArchiveModal from './components/ArchiveModal';
 import BackBtn from './components/BackBtn';
 import CellSelect from './components/CellSelect';
@@ -25,13 +26,21 @@ function Dashboard() {
   const [stream, setStream] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [manualDateSelection, setManualDateSelection] = useState(false);
-  const [smartDateRangeApplied, setSmartDateRangeApplied] = useState(false);
+  // const [setSmartDateRangeApplied] = useState(false);
   // const [isInitialized] = useState(false);
   // const [smartDateRangeApplied] = useState(false);
   const cells = useCells();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Create debounced setSearchParams function
+  const debouncedSetSearchParams = useCallback(
+    debounce((newParams) => {
+      setSearchParams(newParams, { replace: true });
+    }, 300),
+    [setSearchParams],
+  );
 
   // Smart date range functionality
   // const {
@@ -112,32 +121,32 @@ function Dashboard() {
   // }, [selectedCells.map((cell) => cell.id).join(','), isInitialized, manualDateSelection, smartDateRangeApplied]);
 
   // Sync state changes to URL
-  // useEffect(() => {
-  //   if (!isInitialized) return;
+  useEffect(() => {
+    if (!isInitialized) return;
 
-  //   const newParams = new URLSearchParams();
+    const newParams = new URLSearchParams();
 
-  //   if (selectedCells.length > 0) {
-  //     newParams.set('cell_id', selectedCells.map((cell) => cell.id).join(','));
-  //   }
+    if (selectedCells.length > 0) {
+      newParams.set('cell_id', selectedCells.map((cell) => cell.id).join(','));
+    }
 
-  //   newParams.set('startDate', startDate.toISO());
-  //   newParams.set('endDate', endDate.toISO());
+    newParams.set('startDate', startDate.toISO());
+    newParams.set('endDate', endDate.toISO());
 
-  //   setSearchParams(newParams, { replace: true });
-  // }, [startDate, endDate, selectedCells, isInitialized, setSearchParams]);
+    debouncedSetSearchParams(newParams);
+  }, [startDate, endDate, selectedCells, isInitialized, debouncedSetSearchParams]);
 
   // Handle manual date changes
   const handleStartDateChange = (newStartDate) => {
     setStartDate(newStartDate);
     setManualDateSelection(true);
-    setSmartDateRangeApplied(true); // Prevent smart range from overriding manual selection
+    //setSmartDateRangeApplied(true); // Prevent smart range from overriding manual selection
   };
 
   const handleEndDateChange = (newEndDate) => {
     setEndDate(newEndDate);
     setManualDateSelection(true);
-    setSmartDateRangeApplied(true); // Prevent smart range from overriding manual selection
+    // setSmartDateRangeApplied(true); // Prevent smart range from overriding manual selection
   };
 
   // Handle cell selection changes
@@ -146,7 +155,7 @@ function Dashboard() {
     // Reset smart date range state when cells change to allow re-application
     if (!manualDateSelection) {
       setTimeout(() => {
-        setSmartDateRangeApplied(false);
+        //setSmartDateRangeApplied(false);
       }, 100);
     }
   };
