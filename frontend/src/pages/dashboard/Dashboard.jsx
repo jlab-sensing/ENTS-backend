@@ -107,14 +107,7 @@ function Dashboard() {
     };
 
     applySmartDateRange();
-  }, [
-    selectedCells,
-    isInitialized,
-    manualDateSelection,
-    smartDateRangeApplied,
-    calculateSmartDateRange,
-    showFallbackNotificationHandler,
-  ]);
+  }, [selectedCells.map((cell) => cell.id).join(','), isInitialized, manualDateSelection, smartDateRangeApplied]);
 
   // Sync state changes to URL
   useEffect(() => {
@@ -150,7 +143,9 @@ function Dashboard() {
     setSelectedCells(newSelectedCells);
     // Reset smart date range state when cells change to allow re-application
     if (!manualDateSelection) {
-      setSmartDateRangeApplied(false);
+      setTimeout(() => {
+        setSmartDateRangeApplied(false);
+      }, 100);
     }
   };
 
