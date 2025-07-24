@@ -125,6 +125,7 @@ class TTNApi:
 
         self.end_device_reg = EndDeviceRegistry(api_key, app_id)
         self.js_device_reg = JoinServerDeviceRegistry(api_key, app_id)
+        self.ns_device_reg = NetworkServerDeviceRegistry(api_key, app_id)
 
     def register_end_device(
         self,
@@ -165,6 +166,7 @@ class TTNApi:
 
         end_device = self.end_device_reg.create(end_device)
         end_device = self.js_device_reg.create(end_device)
+        end_device = self.ns_device_reg.create(end_device)
 
         # TODO reg with JS, NS, and AS
 
@@ -198,7 +200,13 @@ class TTNApi:
             return False
 
         # delete from join server
+        deleted = self.js_device_reg.delete(end_device)
+        if not deleted and not force:
+            return False
 
+        deleted = self.ns_device_reg.delete(end_device)
+        if not deleted and not force:
+            return False
 
         # always return true if force is set
         if force:
@@ -209,7 +217,7 @@ class TTNApi:
     def update_end_device(
         self,
         end_device: EndDevice,
-    ) -> EndDevice | None:
+    ) -> bool:
         """Update an End Device in the TTN registry.
 
         Args:
@@ -625,7 +633,7 @@ class JoinServerDeviceRegistry(TTNApiEndpoint):
 
         return end_device.update(req.json())
 
-    def get():
+    def get(self):
         pass
 
     def delete(
@@ -658,5 +666,68 @@ class JoinServerDeviceRegistry(TTNApiEndpoint):
 
         return True
 
-    def update():
+    def update(self):
+        pass
+
+class NetworkServerDeviceRegistry(TTNApiEndpoint):
+    def create(
+        self,
+        end_device: EndDevice,
+    ) -> EndDevice | None:
+        """Create a new End Device in the Network Server registry.
+
+         Args:
+              end_device: The End Device object to create.
+
+        Returns:
+            The created End Device object.
+        """
+
+        endpoint = f"{self.base_url}/ns/applications/{self.app_id}/devices"
+
+        data = {"end_device": end_device.data}
+
+        req = self.session.post(endpoint, json=data)
+        if req.status_code != 200:
+            warnings.warn(
+                f"ttn: Failed to create end device on ns: {req.status_code} - {req.text}"
+            )
+            return None
+
+        return end_device.update(req.json())
+
+    def get(self):
+        pass
+
+    def delete(
+        self,
+        end_device: EndDevice,
+    ) -> bool:
+        """Delete an End Device from the Application Server registry.
+
+        Args:
+            end_device: The End Device object to delete.
+
+        Raises:
+            ValueError: If the EndDevice does not have the required fields.
+
+        Returns:
+            True if the End Device was successfully deleted, False otherwise.
+        """
+
+        device_id = end_device.data["ids"]["device_id"]
+
+        endpoint = f"{self.base_url}/ns/applications/{self.app_id}/devices/{device_id}"
+
+        req = self.session.delete(endpoint)
+
+        if req.status_code != 200:
+            warnings.warn(
+                f"ttn: Failed to delete end device on ns: {req.status_code} - {req.text}"
+            )
+            return False
+
+        return True
+
+    def update(self):
         pass
