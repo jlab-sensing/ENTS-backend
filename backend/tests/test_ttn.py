@@ -2,10 +2,9 @@ from api.ttn.end_devices import EndDevice, TTNApi
 
 import pytest
 
-# global API
+# global API instance
 api = TTNApi(
-    "",
-    "soil-power-sensor",
+    app_id = "soil-power-sensor",
 )
 
 def test_create_end_device():

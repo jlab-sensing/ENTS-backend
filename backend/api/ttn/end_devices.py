@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 from enum import Enum
 import warnings
 
@@ -96,7 +97,32 @@ class EndDevice:
 class TTNApi:
     """High level interface for The Things Network API."""
 
-    def __init__(self, api_key: str, app_id: str):
+    def __init__(self, api_key: str = "", app_id: str = ""):
+        """ Initialize the TTNApi.
+
+        The param `api_key` is used to override the env variables
+        `TTN_API_KEY`. Similarly the `app_id` is used to override the
+        environment variable `TTN_APP_ID`. If the parameters are not set,
+
+        Args:
+            api_key: The API key for authentication.
+            app_id: The application ID to associate with the End Devices.
+        """
+
+        if api_key == "":
+            api_key_env = os.getenv("TTN_API_KEY")
+            if api_key_env is None:
+                raise ValueError("TTN_API_KEY environment variable is not set.")
+            else:
+                api_key = api_key_env
+
+        if app_id == "":
+            app_id_env = os.getenv("TTN_APP_ID")
+            if app_id_env is None:
+                raise ValueError("TTN_APP_ID environment variable is not set.")
+            else:
+                app_id = app_id_env
+
         self.end_device_reg = EndDeviceRegistry(api_key, app_id)
         self.js_device_reg = JoinServerDeviceRegistry(api_key, app_id)
 
@@ -166,9 +192,13 @@ class TTNApi:
 
         deleted = True
 
+        # delete from device registry
         deleted = self.end_device_reg.delete(end_device)
         if not deleted and not force:
             return False
+
+        # delete from join server
+
 
         # always return true if force is set
         if force:
