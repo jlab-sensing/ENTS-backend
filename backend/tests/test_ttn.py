@@ -95,7 +95,6 @@ def test_update_end_device():
     assert updated is True
 
 
-@pytest.mark.filterwarnings("ignore:ttn")
 def test_delete_end_device():
     """Test deleting an End Device in the TTN registry."""
 
@@ -112,7 +111,19 @@ def test_delete_end_device():
 
     assert deleted is True
 
-    # test deleting an end device that does NOT exist
+
+@pytest.mark.filterwarnings("ignore:ttn")
+def test_delete_end_device_not_found():
+    """Test deleting an End Device that does not exist in the TTN registry."""
+
+    data = {
+        "ids": {
+            "device_id": "non-existent-device",
+        },
+    }
+
+    end_device = EndDevice(data)
+
     deleted = api.delete_end_device(end_device)
 
     assert deleted is False
