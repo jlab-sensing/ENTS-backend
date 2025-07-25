@@ -101,7 +101,7 @@ def process_measurement(data: bytes):
 
         obj_list.append(pressure_obj)
 
-        voltage_obj = Sensor.add_data(meas_name="voltage", meas_unit="mV", meas_dict=meas)
+        voltage_obj = Sensor.add_data(meas_name="voltage", meas_unit="V", meas_dict=meas)
 
         obj_list.append(voltage_obj)
 
