@@ -105,6 +105,17 @@ def process_measurement(data: bytes):
 
         obj_list.append(voltage_obj)
 
+    #sen0308 soil humidity measurement
+    elif meas["type"] == "sen0308":
+        print(meas)
+        voltage_obj = Sensor.add_data(meas_name="voltage", meas_unit="V", meas_dict=meas)
+
+        obj_list.append(voltage_obj)
+
+        humidity_obj = Sensor.add_data(meas_name="humidity", meas_unit="%", meas_dict=meas)
+
+        obj_list.append(humidity_obj)
+
     # format response
     resp = Response()
     resp.content_type = "application/octet-stream"
