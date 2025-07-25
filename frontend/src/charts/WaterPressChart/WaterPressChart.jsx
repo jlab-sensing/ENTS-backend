@@ -6,7 +6,7 @@ import ChartWrapper from '../ChartWrapper';
 import { chartPlugins } from '../plugins';
 
 export default function WaterPressChart({ data, startDate, endDate }) {
-  const { leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 8, 0.2);
+  const { leftYMin, leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 8, 0.2);
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -35,7 +35,7 @@ export default function WaterPressChart({ data, startDate, endDate }) {
         min: startDate?.toJSDate(),
         max: endDate?.toJSDate(),
       },
-      leafAxis: {
+      pressure: {
         position: 'left',
         beginAtZero: true,
         title: {
@@ -46,7 +46,21 @@ export default function WaterPressChart({ data, startDate, endDate }) {
           beginAtZero: true,
           stepSize: leftYStep,
         },
-        min: 0,
+        min: leftYMin,
+        max: leftYMax,
+      },
+      voltage: {
+        position: 'right',
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Voltage (V)',
+        },
+        ticks: {
+          beginAtZero: true,
+          stepSize: leftYStep,
+        },
+        min: leftYMin,
         max: leftYMax,
       },
     },

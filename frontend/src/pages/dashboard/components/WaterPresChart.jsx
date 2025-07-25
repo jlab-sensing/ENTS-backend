@@ -11,15 +11,15 @@ function SensorChart({ cells, startDate, endDate, stream }) {
   // List out measurements that your chart is going to display
   // MUST MATCH FROM UTIL.PY
   const sensor_name = 'sen0257';
-  const measurements = ['pressure'];
-  const units = ['kPa'];
+  const measurements = ['pressure', 'voltage'];
+  const units = ['kPa', 'V'];
   // Colors of data points. Each color represents the next color
   // of the data points as the user selects more cells to compare.
   // Add more measurements depending on how many different values on the charts
   const meas_colors= ['#26C6DA', '#FF7043', '#A2708A'];
 
     //whatever you want it to say on the side
-  const axisIds = ['leafAxis'];
+  const axisIds = ['pressure', 'voltage'];
 
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
