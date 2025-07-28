@@ -11,15 +11,35 @@ def test_create_end_device():
     """Test creating an End Device in the TTN registry."""
 
     data = {
-        "name": "Dirtviz Unit Test",
+        # general requirements 
         "ids": {
             "device_id": "dirtviz-unit-test",
             "dev_eui": "0080E1150546D093",
             "join_eui": "0101010101010101",
         },
-        "lorawan_version": EndDevice.MACVersion.MAC_V1_0_3.value,
-        "lorawan_phy_version": EndDevice.PHYVersion.RP001_V1_0_3_REV_A.value,
+        "network_server_address": "nam1.cloud.thethings.network",
+        "application_server_address": "nam1.cloud.thethings.network",
+        "join_server_address": "nam1.cloud.thethings.network",
+        # end device registry
+        "name": "Dirtviz Unit Test",
+        # network server
+        "lorawan_version": "MAC_V1_0_3",
+        "lorawan_phy_version": "PHY_V1_0_3_REV_A",
         "frequency_plan_id": "US_902_928_FSB_2",
+        "mac_settings": {
+            "rx2_data_rate_index": 8,
+            "rx2_frequency": 923300000,
+        },
+        "supports_join": True,
+        "multicast": False,
+        "supports_class_b": False,
+        "supports_class_c": False,
+        # required for js
+        "root_keys": {
+            "app_key": {
+                "key": "CEC24E6A258B2B20A5A7C05ABD2C1724",
+            },
+        },
     }
 
     end_device = EndDevice(data)
