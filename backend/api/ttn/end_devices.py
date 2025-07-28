@@ -626,7 +626,20 @@ class JoinServerDeviceRegistry(TTNApiEndpoint):
 
         endpoint = f"{self.base_url}/js/applications/{self.app_id}/devices"
 
-        data = {"end_device": end_device.data}
+        data = {
+            "end_device": end_device.data,
+            "field_mask": {
+                "paths": [
+                    "network_server_address",
+                    "application_server_address",
+                    "ids.join_eui",
+                    "ids.dev_eui",
+                    "ids.device_id",
+                    "ids.application_ids.application_id",
+                    "root_keys.app_key.key"
+                ]
+            }
+        }
 
         req = self.session.post(endpoint, json=data)
         if req.status_code != 200:
@@ -686,12 +699,33 @@ class NetworkServerDeviceRegistry(TTNApiEndpoint):
         Returns:
             The created End Device object.
         """
+        
+        device_id = end_device.data["ids"]["device_id"]
 
-        endpoint = f"{self.base_url}/ns/applications/{self.app_id}/devices"
+        endpoint = f"{self.base_url}/ns/applications/{self.app_id}/devices/{device_id}"
 
-        data = {"end_device": end_device.data}
+        data = {
+            "end_device": end_device.data,
+            "field_mask": {
+                "paths": [
+                    "frequency_plan_id",
+                    "lorawan_version",
+                    "lorawan_phy_version",
+                    "supports_join",
+                    "multicast",
+                    "supports_class_b",
+                    "supports_class_c",
+                    "mac_settings.rx2_data_rate_index",
+                    "mac_settings.rx2_frequency",
+                    "ids.join_eui",
+                    "ids.dev_eui",
+                    "ids.device_id",
+                    "ids.application_ids.application_id"
+                ]
+            }
+        }
 
-        req = self.session.post(endpoint, json=data)
+        req = self.session.put(endpoint, json=data)
         if req.status_code != 200:
             warnings.warn(
                 f"ttn: Failed to create end device on ns: {req.status_code} - {req.text}"
@@ -752,7 +786,17 @@ class ApplicationServerDeviceRegistry(TTNApiEndpoint):
 
         endpoint = f"{self.base_url}/as/applications/{self.app_id}/devices"
 
-        data = {"end_device": end_device.data}
+        data = {
+            "end_device": end_device.data,
+            "field_mask": {
+                "paths": [
+                    "ids.join_eui",
+                    "ids.dev_eui",
+                    "ids.device_id",
+                    "ids.application_ids.application_id"
+                ]
+            }
+        }
 
         req = self.session.post(endpoint, json=data)
         if req.status_code != 200:
