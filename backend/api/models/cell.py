@@ -89,11 +89,54 @@ class Tag(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text(), nullable=False, unique=True)
+    category = db.Column(db.String(50))
+    description = db.Column(db.Text())
+    created_at = db.Column(db.DateTime, default=db.func.now())
+    created_by = db.Column(db.Uuid(), db.ForeignKey("user.id"))
 
     cells = db.relationship("Cell", secondary=Cell_Tag.__table__, back_populates="tags")
+    creator = db.relationship("User", backref="created_tags")
 
-    def __init__(self, name):
+    def __init__(self, name, category=None, description=None, created_by=None):
         self.name = name
+        self.category = category
+        self.description = description
+        self.created_by = created_by
 
     def __repr__(self):
         return repr(self.name)
+
+    @staticmethod
+    def get_or_create(name, category=None, created_by=None):
+        tag = Tag.query.filter_by(name=name).first()
+        if not tag:
+            tag = Tag(name=name, category=category, created_by=created_by)
+            tag.save()
+        return tag
+
+    @staticmethod
+    def get_by_category(category):
+        return Tag.query.filter_by(category=category).all()
+
+    @staticmethod
+    def search_by_name(pattern):
+        return Tag.query.filter(Tag.name.ilike(f'%{pattern}%')).all()
+
+    @staticmethod
+    def get_all():
+        return Tag.query.all()
+
+    @staticmethod
+    def get(id):
+        return Tag.query.filter_by(id=id).first()
+
+    def get_cell_count(self):
+        return len(self.cells)
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
