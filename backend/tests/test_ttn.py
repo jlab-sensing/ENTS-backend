@@ -3,9 +3,7 @@ from api.ttn.end_devices import EndDevice, EntsEndDevice, TTNApi
 import pytest
 
 # global API instance
-api = TTNApi(
-    app_id = "soil-power-sensor",
-)
+api = TTNApi()
 
 def test_create_end_device():
     """Test creating an End Device in the TTN registry."""
