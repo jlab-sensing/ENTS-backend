@@ -1,72 +1,26 @@
 from __future__ import annotations
 import os
-from enum import Enum
 import warnings
 
 import requests
 
-
 class EndDevice:
-    class PHYVersion(Enum):
-        """PHY Version Enum for End Devices
-
-        See https://www.thethingsindustries.com/docs/api/reference/grpc/end_device/#enum:PHYVersion
-        """
-
-        PHY_UNKNOWN = 0
-        PHY_V1_0 = 1
-        TS001_V1_0 = 1
-        PHY_V1_0_1 = 2
-        TS001_V1_0_1 = 2
-        PHY_V1_0_2_REV_A = 3
-        RP001_V1_0_2 = 3
-        PHY_V1_0_2_REV_B = 4
-        RP001_V1_0_2_REV_B = 4
-        PHY_V1_1_REV_A = 5
-        RP001_V1_1_REV_A = 5
-        PHY_V1_1_REV_B = 6
-        RP001_V1_1_REV_B = 6
-        PHY_V1_0_3_REV_A = 7
-        RP001_V1_0_3_REV_A = 7
-        RP002_V1_0_0 = 8
-        RP002_V1_0_1 = 9
-        RP002_V1_0_2 = 10
-        RP002_V1_0_3 = 11
-        RP002_V1_0_4 = 12
-
-    class MACVersion(Enum):
-        """MAC Version Enum for End Devices
-
-        See https://www.thethingsindustries.com/docs/api/reference/grpc/end_device/#enum:MACVersion
-        """
-
-        MAC_UNKNOWN = 0
-        MAC_V1_0 = 1
-        MAC_V1_0_1 = 2
-        MAC_V1_0_2 = 3
-        MAC_V1_1 = 4
-        MAC_V1_0_3 = 5
-        MAC_V1_0_4 = 6
-
-    frequency_plans = [
-        "US_902_928_FSB_2",
-    ]
+    defaults: dict = {}
 
     def __init__(
         self,
-        json_data: dict,
-        **kwargs,
+        data: dict = {},
     ):
         """Initialize an EndDevice object.
 
-        The kwargs overrides anything in the json_data.
+        The `data` parameter can override the default values in `defaults`.
 
         Args:
-            json_data: JSON data to initialize the EndDevice.
-            **kwargs: Additional keyword arguments to include in the EndDevice data.
+            data: A dictionary containing the EndDevice data.
         """
 
-        self.data = json_data | kwargs
+        self.data = self.defaults
+        self.data.update(data)
 
     def __repr__(self):
         """Return a string representation of the EndDevice object."""
@@ -82,6 +36,17 @@ class EndDevice:
 
         return self.data["ids"]["device_id"]
 
+    def json(self) -> dict:
+        """Return the EndDevice data as a JSON dictionary.
+
+        Adds a top level field for "end_device" to match the TTN API.
+
+        Returns:
+            dict: The EndDevice data as a JSON dictionary.
+        """
+
+        return {"end_device": self.data}
+
     def update(self, new: dict) -> EndDevice:
         """Update the EndDevice data with new JSON data.
 
@@ -93,6 +58,54 @@ class EndDevice:
 
         self.data.update(new)
         return self
+
+
+class EntsEndDevice(EndDevice):
+
+    defaults = {
+        # default network server configuration
+        "lorawan_version": "MAC_V1_0_3",
+        "lorawan_phy_version": "PHY_V1_0_3_REV_A",
+        "frequency_plan_id": "US_902_928_FSB_2",
+        "mac_settings": {
+            "rx2_data_rate_index": 8,
+            "rx2_frequency": 923300000,
+        },
+        "supports_join": True,
+        "multicast": False,
+        "supports_class_b": False,
+        "supports_class_c": False,
+    }
+
+    def __init__(
+        self,
+        name: str,
+        dev_eui: str,
+        join_eui: str,
+        app_key: str,
+        **kwargs,
+    ):
+        # format device id
+        device_id = f"eui-{dev_eui}"
+        device_id = device_id.lower()
+
+        # TODO add more required fields
+        data = {
+            "ids": {
+                "device_id": device_id,
+                "dev_eui": dev_eui,
+                "join_eui": join_eui
+            },
+            "name": name,
+            "root_keys": {
+                "app_key": {
+                    "key": app_key,
+                },
+            },
+        }
+
+        super().__init__(data)
+
 
 class TTNApi:
     """High level interface for The Things Network API."""
@@ -141,29 +154,13 @@ class TTNApi:
             EndDevice: The registered End Device object.
         """
 
-        required_end_device_fields = [
-            "name",
-            "ids",
-            "lorawan_version",
-            "lorawan_phy_version",
-            "frequency_plan_id",
-        ]
-
-        # check top level
-        for k in required_end_device_fields:
-            if k not in end_device.data:
-                raise ValueError(f"Missing EndDevice field {k}")
-
-        required_ids_fields = [
-            "device_id",
-            "dev_eui",
-            "join_eui",
-        ]
-
-        # check ids
-        for k in required_ids_fields:
-            if k not in end_device.data["ids"]:
-                raise ValueError(f"Missing EndDevice ids field {k}")
+        # add missing server addresses for the device
+        server_addresses = {
+            "network_server_address": "nam1.cloud.thethings.network",
+            "application_server_address": "nam1.cloud.thethings.network",
+            "join_server_address": "nam1.cloud.thethings.network",
+        }
+        end_device.update(server_addresses)
 
         self.end_device_reg.create(end_device)
         self.ns_device_reg.create(end_device)
@@ -240,7 +237,7 @@ class TTNApi:
     def get_end_device(
         self,
         end_device: EndDevice,
-        field_mask: list[str] | None = None,
+        field_mask: list[str] = [],
     ) -> EndDevice | None:
         """Get an End Device from the TTN registry.
 
@@ -283,7 +280,7 @@ class TTNApi:
 
     def get_end_device_list(
         self,
-        field_mask: list[str] | None = None,
+        field_mask: list[str]= [],
         order: str | None = None,
         limit: int | None = None,
         page: int | None = None,
@@ -386,7 +383,7 @@ class EndDeviceRegistry(TTNApiEndpoint):
 
     def get_all(
         self,
-        field_mask: str | None = None,
+        field_mask: list[str] = [],
         order: str | None = None,
         limit: int | None = None,
         page: int | None = None,
@@ -439,7 +436,7 @@ class EndDeviceRegistry(TTNApiEndpoint):
 
     def get_list(
         self,
-        field_mask: str | None = None,
+        field_mask: list[str] = [],
         order: str | None = None,
         limit: int | None = None,
         page: int | None = None,
