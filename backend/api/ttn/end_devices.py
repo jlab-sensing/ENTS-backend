@@ -96,10 +96,27 @@ class EntsEndDevice(EndDevice):
         dev_eui: str,
         join_eui: str,
         app_key: str,
+        device_id: str = "",
         **kwargs,
     ):
+        """Initialize an EntsEndDevice object.
+
+        Parameter precidence is in the following order from highest to lowest:
+        kwargs, args, defaults.
+
+        Args:
+            name: The name of the End Device.
+            dev_eui: The DevEUI of the End Device.
+            join_eui: The JoinEUI of the End Device.
+            app_key: The AppKey for the End Device.
+            device_id: Optional device ID, if not set it will be formatted
+                as "eui-{dev_eui}".
+            **kwargs: Additional fields to override in the End Device data.
+        """
+
         # format device id
-        device_id = f"eui-{dev_eui}"
+        if device_id == "":
+            device_id = f"eui-{dev_eui}"
         device_id = device_id.lower()
 
         # TODO add more required fields
@@ -116,6 +133,8 @@ class EntsEndDevice(EndDevice):
                 },
             },
         }
+
+        data.update(kwargs)
 
         super().__init__(data)
 
