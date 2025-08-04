@@ -401,8 +401,9 @@ class EndDeviceRegistry(TTNApiEndpoint):
         if req.status_code == 200:
             return end_device.update(req.json())
         elif req.status_code == 409:
+            device_id = end_device.data["ids"]["device_id"]
             warnings.warn(
-                f"End Device with device_id '{end_device.data['ids']['device_id']}' already exists."
+                f"End Device with device_id '{device_id}' already exists."
             )
             return end_device.update(req.json())
         else:
@@ -454,7 +455,8 @@ class EndDeviceRegistry(TTNApiEndpoint):
         req = self.session.get(endpoint, params=data)
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to get End Devices from TTN: {req.status_code} - {req.text}"
+                "ttn: Failed to get End Devices from TTN:"
+                f"{req.status_code} - {req.text}"
             )
             return []
 
@@ -518,7 +520,8 @@ class EndDeviceRegistry(TTNApiEndpoint):
         req = self.session.post(endpoint, json=data)
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to get End Devices from TTN: {req.status_code} - {req.text}"
+                "ttn: Failed to get End Devices from TTN:"
+                f"{req.status_code} - {req.text}"
             )
             return []
 
@@ -563,7 +566,8 @@ class EndDeviceRegistry(TTNApiEndpoint):
 
         elif req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to delete End Device on TTN: {req.status_code} - {req.text}"
+                "ttn: Failed to delete End Device on TTN:"
+                f"{req.status_code} - {req.text}"
             )
 
             return False
@@ -591,11 +595,12 @@ class EndDeviceRegistry(TTNApiEndpoint):
 
         # send request
         data = {"end_device": end_device.data}
-        endpoint = f"{self.base_url}/applications/{self.app_id}/devices/{end_device.data['ids']['device_id']}"
+        endpoint = f"{self.base_url}/applications/{self.app_id}/devices/{end_device.data['ids']['device_id']}" #noqa: E501
         req = self.session.put(endpoint, json=data)
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to update end device on TTN: {req.status_code} - {req.text}"
+                "ttn: Failed to update end device on TTN:"
+                f"{req.status_code} - {req.text}"
             )
             return False
 
@@ -673,7 +678,8 @@ class JoinServerDeviceRegistry(TTNApiEndpoint):
         req = self.session.post(endpoint, json=data)
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to create end device on js: {req.status_code} - {req.text}"
+                "ttn: Failed to create end device on js:"
+                f"{req.status_code} - {req.text}"
             )
             return None
 
@@ -706,7 +712,8 @@ class JoinServerDeviceRegistry(TTNApiEndpoint):
 
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to delete end device on JS: {req.status_code} - {req.text}"
+                "ttn: Failed to delete end device on JS:"
+                f"{req.status_code} - {req.text}"
             )
             return False
 
@@ -758,7 +765,8 @@ class NetworkServerDeviceRegistry(TTNApiEndpoint):
         req = self.session.put(endpoint, json=data)
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to create end device on ns: {req.status_code} - {req.text}"
+                "ttn: Failed to create end device on ns:"
+                f"{req.status_code} - {req.text}"
             )
             return None
 
@@ -791,7 +799,8 @@ class NetworkServerDeviceRegistry(TTNApiEndpoint):
 
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to delete end device on ns: {req.status_code} - {req.text}"
+                "ttn: Failed to delete end device on ns:"
+                f"{req.status_code} - {req.text}"
             )
             return False
 
@@ -832,7 +841,8 @@ class ApplicationServerDeviceRegistry(TTNApiEndpoint):
         req = self.session.post(endpoint, json=data)
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to create end device on as: {req.status_code} - {req.text}"
+                "ttn: Failed to create end device on as:"
+                f"{req.status_code} - {req.text}"
             )
             return None
 
@@ -865,7 +875,8 @@ class ApplicationServerDeviceRegistry(TTNApiEndpoint):
 
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to delete end device on as: {req.status_code} - {req.text}"
+                "ttn: Failed to delete end device on as:"
+                f"{req.status_code} - {req.text}"
             )
             return False
 
