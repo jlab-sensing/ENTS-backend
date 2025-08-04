@@ -5,10 +5,11 @@ from flask_restful import Resource
 
 from ..ttn.end_device import TTNApi, EntsEndDevice, EndDevice
 
+
 class Logger(Resource):
     ttn_api = TTNApi()
 
-    def get(self, logger_id: int | None=None):
+    def get(self, logger_id: int | None = None):
         """Get a logger or all loggers.
 
         When getting data from all loggers, only data from the table is
@@ -36,9 +37,7 @@ class Logger(Resource):
             if _type == "ents":
                 ed = EndDevice(
                     {
-                        "ids": {
-                            "device_id": f"dirtviz-{logger_id}"
-                        },
+                        "ids": {"device_id": f"dirtviz-{logger_id}"},
                     }
                 )
 
@@ -113,11 +112,9 @@ class Logger(Resource):
         _type = "ents"
 
         ed = EndDevice(
-                {
-                    "ids": {
-                        "device_id": f"dirtviz-{logger_id}"
-                    },
-                }
+            {
+                "ids": {"device_id": f"dirtviz-{logger_id}"},
+            }
         )
 
         # Here you would handle updating a log entry
@@ -139,9 +136,7 @@ class Logger(Resource):
         if _type == "ents":
             ed = EndDevice(
                 {
-                    "ids": {
-                        "device_id": f"dirtviz-{logger_id}"
-                    },
+                    "ids": {"device_id": f"dirtviz-{logger_id}"},
                 }
             )
 

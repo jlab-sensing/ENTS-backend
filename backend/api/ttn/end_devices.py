@@ -4,6 +4,7 @@ import warnings
 
 import requests
 
+
 class EndDevice:
     defaults: dict = {}
 
@@ -25,7 +26,7 @@ class EndDevice:
     def __repr__(self):
         """Return a string representation of the EndDevice object."""
 
-        return f'EndDevice({self.id()}])'
+        return f"EndDevice({self.id()}])"
 
     def id(self) -> str:
         """Return the device ID of the EndDevice.
@@ -74,7 +75,6 @@ class EndDevice:
 
 
 class EntsEndDevice(EndDevice):
-
     defaults = {
         # default network server configuration
         "lorawan_version": "MAC_V1_0_3",
@@ -121,11 +121,7 @@ class EntsEndDevice(EndDevice):
 
         # TODO add more required fields
         data = {
-            "ids": {
-                "device_id": device_id,
-                "dev_eui": dev_eui,
-                "join_eui": join_eui
-            },
+            "ids": {"device_id": device_id, "dev_eui": dev_eui, "join_eui": join_eui},
             "name": name,
             "root_keys": {
                 "app_key": {
@@ -143,7 +139,7 @@ class TTNApi:
     """High level interface for The Things Network API."""
 
     def __init__(self, api_key: str = "", app_id: str = ""):
-        """ Initialize the TTNApi.
+        """Initialize the TTNApi.
 
         The param `api_key` is used to override the env variables
         `TTN_API_KEY`. Similarly the `app_id` is used to override the
@@ -314,7 +310,7 @@ class TTNApi:
 
     def get_end_device_list(
         self,
-        field_mask: list[str]= [],
+        field_mask: list[str] = [],
         order: str | None = None,
         limit: int | None = None,
         page: int | None = None,
@@ -669,9 +665,9 @@ class JoinServerDeviceRegistry(TTNApiEndpoint):
                     "ids.dev_eui",
                     "ids.device_id",
                     "ids.application_ids.application_id",
-                    "root_keys.app_key.key"
+                    "root_keys.app_key.key",
                 ]
-            }
+            },
         }
 
         req = self.session.post(endpoint, json=data)
@@ -719,6 +715,7 @@ class JoinServerDeviceRegistry(TTNApiEndpoint):
     def update(self):
         pass
 
+
 class NetworkServerDeviceRegistry(TTNApiEndpoint):
     def create(
         self,
@@ -732,7 +729,7 @@ class NetworkServerDeviceRegistry(TTNApiEndpoint):
         Returns:
             The created End Device object.
         """
-        
+
         device_id = end_device.data["ids"]["device_id"]
 
         endpoint = f"{self.base_url}/ns/applications/{self.app_id}/devices/{device_id}"
@@ -753,9 +750,9 @@ class NetworkServerDeviceRegistry(TTNApiEndpoint):
                     "ids.join_eui",
                     "ids.dev_eui",
                     "ids.device_id",
-                    "ids.application_ids.application_id"
+                    "ids.application_ids.application_id",
                 ]
-            }
+            },
         }
 
         req = self.session.put(endpoint, json=data)
@@ -803,6 +800,7 @@ class NetworkServerDeviceRegistry(TTNApiEndpoint):
     def update(self):
         pass
 
+
 class ApplicationServerDeviceRegistry(TTNApiEndpoint):
     def create(
         self,
@@ -826,9 +824,9 @@ class ApplicationServerDeviceRegistry(TTNApiEndpoint):
                     "ids.join_eui",
                     "ids.dev_eui",
                     "ids.device_id",
-                    "ids.application_ids.application_id"
+                    "ids.application_ids.application_id",
                 ]
-            }
+            },
         }
 
         req = self.session.post(endpoint, json=data)

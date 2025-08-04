@@ -5,11 +5,12 @@ import pytest
 # global API instance
 api = TTNApi()
 
+
 def test_create_end_device():
     """Test creating an End Device in the TTN registry."""
 
-    #data = {
-    #    # general requirements 
+    # data = {
+    #    # general requirements
     #    "ids": {
     #        "device_id": "dirtviz-unit-test",
     #        "dev_eui": "0080E1150546D093",
@@ -38,13 +39,13 @@ def test_create_end_device():
     #            "key": "CEC24E6A258B2B20A5A7C05ABD2C1724",
     #        },
     #    },
-    #}
+    # }
 
     end_device = EntsEndDevice(
         name="Dirtviz Unit Test",
         dev_eui="0080E1150546D093",
         join_eui="0101010101010101",
-        app_key="CEC24E6A258B2B20A5A7C05ABD2C1724"
+        app_key="CEC24E6A258B2B20A5A7C05ABD2C1724",
     )
 
     end_device = api.register_end_device(end_device)
