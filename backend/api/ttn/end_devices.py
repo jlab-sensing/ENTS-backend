@@ -59,6 +59,19 @@ class EndDevice:
         self.data.update(new)
         return self
 
+    def merge(self, other: EndDevice) -> EndDevice:
+        """Merge another EndDevice into this one.
+
+        The `other` EndDevice's data will overwrite the existing data in
+        this EndDevice.
+
+        Args:
+            other: The EndDevice to merge into this one.
+        """
+
+        self.data.update(other.data)
+        return self
+
 
 class EntsEndDevice(EndDevice):
 
@@ -162,12 +175,14 @@ class TTNApi:
         }
         end_device.update(server_addresses)
 
-        self.end_device_reg.create(end_device)
-        self.ns_device_reg.create(end_device)
-        self.as_device_reg.create(end_device)
-        self.js_device_reg.create(end_device)
+        new_end_device = EndDevice()
 
-        return end_device
+        new_end_device.merge(self.end_device_reg.create(end_device))
+        new_end_device.merge(self.ns_device_reg.create(end_device))
+        new_end_device.merge(self.as_device_reg.create(end_device))
+        new_end_device.merge(self.js_device_reg.create(end_device))
+
+        return new_end_device
 
     def delete_end_device(
         self,
@@ -404,28 +419,29 @@ class EndDeviceRegistry(TTNApiEndpoint):
             List of EndDevice objects.
         """
 
-        params = {}
+        data = {}
 
-        if field_mask is not None:
-            params["field_mask"] = field_mask
+        if field_mask:
+            field_mask_str = ",".join(field_mask)
+            data["field_mask"] = field_mask_str
 
         if order is not None:
-            params["order"] = order
+            data["order"] = order
 
         if limit is not None:
-            params["limit"] = limit
+            data["limit"] = limit
 
         if page is not None:
-            params["page"] = page
+            data["page"] = page
 
         endpoint = f"{self.base_url}/applications/{self.app_id}/devices"
 
-        req = self.session.get(endpoint, params=params)
+        req = self.session.get(endpoint, params=data)
         if req.status_code != 200:
             warnings.warn(
                 f"ttn: Failed to get End Devices from TTN: {req.status_code} - {req.text}"
             )
-            return None
+            return []
 
         end_devices = []
 
@@ -441,7 +457,7 @@ class EndDeviceRegistry(TTNApiEndpoint):
         limit: int | None = None,
         page: int | None = None,
         filters: dict[str, str] | None = None,
-    ) -> list[EndDevice] | None:
+    ) -> list[EndDevice]:
         """Get all End Devices in the registry
 
         The parameter `order` specifies the field mask to order the results by.
@@ -466,8 +482,9 @@ class EndDeviceRegistry(TTNApiEndpoint):
 
         data = {}
 
-        if field_mask is not None:
-            data["field_mask"] = field_mask
+        if field_mask:
+            field_mask_str = ",".join(field_mask)
+            data["field_mask"] = field_mask_str
 
         if order is not None:
             data["order"] = order
@@ -488,7 +505,7 @@ class EndDeviceRegistry(TTNApiEndpoint):
             warnings.warn(
                 f"ttn: Failed to get End Devices from TTN: {req.status_code} - {req.text}"
             )
-            return None
+            return []
 
         end_devices = []
 
@@ -572,7 +589,7 @@ class EndDeviceRegistry(TTNApiEndpoint):
     def get(
         self,
         end_device: EndDevice,
-        field_mask: list[str] | None = None,
+        field_mask: list[str] = [],
     ) -> EndDevice | None:
         """Get an End Device from the registry.
 
@@ -593,7 +610,7 @@ class EndDeviceRegistry(TTNApiEndpoint):
 
         params = {}
 
-        if field_mask is not None:
+        if field_mask:
             params["field_mask"] = field_mask
 
         device_id = end_device.data["ids"]["device_id"]

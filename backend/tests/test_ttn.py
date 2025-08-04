@@ -45,16 +45,17 @@ def test_create_end_device():
     end_device = EntsEndDevice(
         name="Dirtviz Unit Test",
         dev_eui="0080E1150546D093",
-        join_edui="0101010101010101",
+        join_eui="0101010101010101",
         app_key="CEC24E6A258B2B20A5A7C05ABD2C1724"
     )
 
     end_device = api.register_end_device(end_device)
 
+    # Register end device does not return a new end device object
     assert end_device is not None
     assert end_device.data["name"] == "Dirtviz Unit Test"
     assert "ids" in end_device.data
-    assert end_device.data["ids"]["device_id"] == "dirtviz-unit-test"
+    assert end_device.data["ids"]["device_id"] == "eui-0080e1150546d093"
     assert end_device.data["ids"]["dev_eui"] == "0080E1150546D093"
     assert end_device.data["ids"]["join_eui"] == "0101010101010101"
     assert "created_at" in end_device.data
@@ -66,7 +67,7 @@ def test_get_end_device():
 
     data = {
         "ids": {
-            "device_id": "dirtviz-unit-test",
+            "device_id": "eui-0080e1150546d093",
         },
     }
 
@@ -75,7 +76,7 @@ def test_get_end_device():
     end_device = api.get_end_device(end_device)
 
     assert end_device is not None
-    assert end_device.data["ids"]["device_id"] == "dirtviz-unit-test"
+    assert end_device.data["ids"]["device_id"] == "eui-0080e1150546d093"
     assert end_device.data["ids"]["dev_eui"] == "0080E1150546D093"
     assert end_device.data["ids"]["join_eui"] == "0101010101010101"
 
@@ -110,7 +111,7 @@ def test_update_end_device():
     data = {
         "description": "Unit tests update description",
         "ids": {
-            "device_id": "dirtviz-unit-test",
+            "device_id": "eui-0080e1150546d093",
         },
     }
 
@@ -125,7 +126,7 @@ def test_delete_end_device():
 
     data = {
         "ids": {
-            "device_id": "dirtviz-unit-test",
+            "device_id": "eui-0080e1150546d093",
         },
     }
 
