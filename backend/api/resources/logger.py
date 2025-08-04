@@ -111,7 +111,7 @@ class Logger(Resource):
         # TODO: Check the type of logger
         _type = "ents"
 
-        ed = EndDevice( # noqa: F841
+        ed = EndDevice(  # noqa: F841
             {
                 "ids": {"device_id": f"dirtviz-{logger_id}"},
             }
