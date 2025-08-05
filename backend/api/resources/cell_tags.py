@@ -1,6 +1,5 @@
 from flask_restful import Resource
 from flask import request, jsonify
-from ..auth.auth import authenticate
 from ..models.cell import Cell as CellModel, Tag as TagModel
 from ..schemas.tag_schema import TagSchema
 
@@ -11,9 +10,9 @@ tag_schema = TagSchema()
 
 class CellTags(Resource):
     """Resource for managing tags associated with a specific cell"""
-    method_decorators = {"get": [authenticate], "post": [authenticate]}
+    # No authentication required - following Cell resource pattern
 
-    def get(self, user, cell_id):
+    def get(self, cell_id):
         """Get all tags for a specific cell"""
         cell = CellModel.get(cell_id)
         if not cell:
@@ -21,7 +20,7 @@ class CellTags(Resource):
 
         return tags_schema.dump(cell.tags)
 
-    def post(self, user, cell_id):
+    def post(self, cell_id):
         """Assign multiple tags to a cell (replaces existing tags)"""
         cell = CellModel.get(cell_id)
         if not cell:
@@ -59,9 +58,9 @@ class CellTags(Resource):
 
 class CellTagDetail(Resource):
     """Resource for managing individual tag assignment to a cell"""
-    method_decorators = {"put": [authenticate], "delete": [authenticate]}
+    # No authentication required - following Cell resource pattern
 
-    def put(self, user, cell_id, tag_id):
+    def put(self, cell_id, tag_id):
         """Add a specific tag to a cell"""
         cell = CellModel.get(cell_id)
         if not cell:
@@ -87,7 +86,7 @@ class CellTagDetail(Resource):
         except Exception as e:
             return {"message": "Error adding tag to cell", "error": str(e)}, 500
 
-    def delete(self, user, cell_id, tag_id):
+    def delete(self, cell_id, tag_id):
         """Remove a specific tag from a cell"""
         cell = CellModel.get(cell_id)
         if not cell:
@@ -113,9 +112,9 @@ class CellTagDetail(Resource):
 
 class CellsByTag(Resource):
     """Resource for getting cells by tag"""
-    method_decorators = {"get": [authenticate]}
+    # No authentication required - following Cell resource pattern
 
-    def get(self, user, tag_id):
+    def get(self, tag_id):
         """Get all cells that have a specific tag"""
         tag = TagModel.get(tag_id)
         if not tag:

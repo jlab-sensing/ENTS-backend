@@ -12,8 +12,8 @@ export const getTags = (params = {}) => {
 };
 
 // Get specific tag by ID
-export const getTag = (axiosPrivate, tagId) => {
-  return axiosPrivate.get(`${process.env.PUBLIC_URL}/tag/${tagId}`).then((res) => res.data);
+export const getTag = (tagId) => {
+  return axios.get(`${process.env.PUBLIC_URL}/api/tag/${tagId}`).then((res) => res.data);
 };
 
 // Create new tag
@@ -22,13 +22,13 @@ export const createTag = (tagData) => {
 };
 
 // Update tag
-export const updateTag = (axiosPrivate, tagId, tagData) => {
-  return axiosPrivate.put(`${process.env.PUBLIC_URL}/tag/${tagId}`, tagData).then((res) => res.data);
+export const updateTag = (tagId, tagData) => {
+  return axios.put(`${process.env.PUBLIC_URL}/api/tag/${tagId}`, tagData).then((res) => res.data);
 };
 
 // Delete tag
-export const deleteTag = (axiosPrivate, tagId) => {
-  return axiosPrivate.delete(`${process.env.PUBLIC_URL}/tag/${tagId}`).then((res) => res.data);
+export const deleteTag = (tagId) => {
+  return axios.delete(`${process.env.PUBLIC_URL}/api/tag/${tagId}`).then((res) => res.data);
 };
 
 // Get all unique tag categories
@@ -47,18 +47,18 @@ export const assignCellTags = (cellId, tagIds) => {
 };
 
 // Add single tag to cell
-export const addTagToCell = (axiosPrivate, cellId, tagId) => {
-  return axiosPrivate.put(`${process.env.PUBLIC_URL}/cell/${cellId}/tags/${tagId}`).then((res) => res.data);
+export const addTagToCell = (cellId, tagId) => {
+  return axios.put(`${process.env.PUBLIC_URL}/api/cell/${cellId}/tags/${tagId}`).then((res) => res.data);
 };
 
 // Remove tag from cell
-export const removeTagFromCell = (axiosPrivate, cellId, tagId) => {
-  return axiosPrivate.delete(`${process.env.PUBLIC_URL}/cell/${cellId}/tags/${tagId}`).then((res) => res.data);
+export const removeTagFromCell = (cellId, tagId) => {
+  return axios.delete(`${process.env.PUBLIC_URL}/api/cell/${cellId}/tags/${tagId}`).then((res) => res.data);
 };
 
 // Get cells by tag
-export const getCellsByTag = (axiosPrivate, tagId) => {
-  return axiosPrivate.get(`${process.env.PUBLIC_URL}/tags/${tagId}/cells`).then((res) => res.data);
+export const getCellsByTag = (tagId) => {
+  return axios.get(`${process.env.PUBLIC_URL}/api/tags/${tagId}/cells`).then((res) => res.data);
 };
 
 // React Query hooks
@@ -69,11 +69,11 @@ export const useTags = (params = {}) =>
     refetchOnWindowFocus: false,
   });
 
-export const useTag = (axiosPrivate, tagId) =>
+export const useTag = (tagId) =>
   useQuery({
     queryKey: ['tag', tagId],
-    queryFn: () => getTag(axiosPrivate, tagId),
-    enabled: !!axiosPrivate && !!tagId,
+    queryFn: () => getTag(tagId),
+    enabled: !!tagId,
     refetchOnWindowFocus: false,
   });
 
@@ -103,10 +103,10 @@ export const useCreateTag = () => {
   });
 };
 
-export const useUpdateTag = (axiosPrivate) => {
+export const useUpdateTag = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ tagId, tagData }) => updateTag(axiosPrivate, tagId, tagData),
+    mutationFn: ({ tagId, tagData }) => updateTag(tagId, tagData),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries(['tags']);
       queryClient.invalidateQueries(['tag', variables.tagId]);
@@ -115,10 +115,10 @@ export const useUpdateTag = (axiosPrivate) => {
   });
 };
 
-export const useDeleteTag = (axiosPrivate) => {
+export const useDeleteTag = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (tagId) => deleteTag(axiosPrivate, tagId),
+    mutationFn: deleteTag,
     onSuccess: () => {
       queryClient.invalidateQueries(['tags']);
       queryClient.invalidateQueries(['tag-categories']);
@@ -137,10 +137,10 @@ export const useAssignCellTags = () => {
   });
 };
 
-export const useAddTagToCell = (axiosPrivate) => {
+export const useAddTagToCell = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ cellId, tagId }) => addTagToCell(axiosPrivate, cellId, tagId),
+    mutationFn: ({ cellId, tagId }) => addTagToCell(cellId, tagId),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries(['cell-tags', variables.cellId]);
       queryClient.invalidateQueries(['tags']);
@@ -148,10 +148,10 @@ export const useAddTagToCell = (axiosPrivate) => {
   });
 };
 
-export const useRemoveTagFromCell = (axiosPrivate) => {
+export const useRemoveTagFromCell = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ cellId, tagId }) => removeTagFromCell(axiosPrivate, cellId, tagId),
+    mutationFn: ({ cellId, tagId }) => removeTagFromCell(cellId, tagId),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries(['cell-tags', variables.cellId]);
       queryClient.invalidateQueries(['tags']);

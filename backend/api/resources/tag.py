@@ -13,9 +13,9 @@ tag_list_schema = TagListSchema(many=True)
 
 
 class Tag(Resource):
-    method_decorators = {"get": [authenticate], "post": [authenticate], "put": [authenticate], "delete": [authenticate]}
+    # No authentication required - following Cell resource pattern
 
-    def get(self, user):
+    def get(self):
         """Get all tags or filter by category"""
         json_data = request.args
         category = json_data.get("category")
@@ -30,7 +30,7 @@ class Tag(Resource):
 
         return tags_schema.dump(tags)
 
-    def post(self, user):
+    def post(self):
         """Create a new tag"""
         json_data = request.json
         
@@ -57,7 +57,7 @@ class Tag(Resource):
                 name=name,
                 category=category,
                 description=description,
-                created_by=user.id
+                created_by=None  # No authentication, so no user ID
             )
             new_tag.save()
             
@@ -70,9 +70,9 @@ class Tag(Resource):
 
 
 class TagDetail(Resource):
-    method_decorators = {"get": [authenticate], "put": [authenticate], "delete": [authenticate]}
+    # No authentication required - following Cell resource pattern
 
-    def get(self, user, tag_id):
+    def get(self, tag_id):
         """Get specific tag by ID"""
         tag = TagModel.get(tag_id)
         if not tag:
@@ -80,7 +80,7 @@ class TagDetail(Resource):
 
         return tag_schema.dump(tag)
 
-    def put(self, user, tag_id):
+    def put(self, tag_id):
         """Update tag"""
         tag = TagModel.get(tag_id)
         if not tag:
@@ -121,7 +121,7 @@ class TagDetail(Resource):
         except Exception as e:
             return {"message": "Error updating tag", "error": str(e)}, 500
 
-    def delete(self, user, tag_id):
+    def delete(self, tag_id):
         """Delete tag"""
         tag = TagModel.get(tag_id)
         if not tag:
@@ -135,9 +135,9 @@ class TagDetail(Resource):
 
 
 class TagCategories(Resource):
-    method_decorators = {"get": [authenticate]}
+    # No authentication required for reading categories
 
-    def get(self, user):
+    def get(self):
         """Get all unique tag categories"""
         from ..models import db
         categories = db.session.query(TagModel.category).filter(TagModel.category.isnot(None)).distinct().all()

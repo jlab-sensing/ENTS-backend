@@ -22,16 +22,16 @@ class CreateTagSchema(ma.Schema):
     """Schema for validating tag creation data"""
     
     name = ma.String(required=True, validate=validate.Length(min=1, max=255))
-    category = ma.String(validate=validate.Length(max=50))
-    description = ma.String()
+    category = ma.String(validate=validate.Length(max=50), allow_none=True)
+    description = ma.String(allow_none=True)
 
 
 class UpdateTagSchema(ma.Schema):
     """Schema for validating tag update data"""
     
     name = ma.String(validate=validate.Length(min=1, max=255))
-    category = ma.String(validate=validate.Length(max=50))
-    description = ma.String()
+    category = ma.String(validate=validate.Length(max=50), allow_none=True)
+    description = ma.String(allow_none=True)
 
 
 class TagListSchema(ma.Schema):
