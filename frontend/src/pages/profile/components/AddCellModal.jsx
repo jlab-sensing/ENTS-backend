@@ -5,20 +5,26 @@ import { Box, Button, Chip, IconButton, Modal, TextField, Typography } from '@mu
 import { React, useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { addCell } from '../../../services/cell';
+import { useAssignCellTags } from '../../../services/tag';
+import TagSelector from '../../../components/TagSelector';
 
 function AddCellModal() {
   let data = useOutletContext();
   const refetch = data[3];
   const user = data[4];
+  const axiosPrivate = data[6];
   data = data[0];
   const [isOpen, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [long, setLong] = useState('');
   const [lat, setLat] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
   const archive = false;
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
+
+  const assignCellTagsMutation = useAssignCellTags();
 
   const handleOpen = () => {
     setOpen(true);
@@ -35,6 +41,7 @@ function AddCellModal() {
     setLocation('');
     setLong('');
     setLat('');
+    setSelectedTags([]);
   };
 
   const handleClose = () => {
@@ -46,6 +53,7 @@ function AddCellModal() {
     setLocation('');
     setLong('');
     setLat('');
+    setSelectedTags([]);
   };
 
   useEffect(() => {
@@ -142,18 +150,30 @@ function AddCellModal() {
                     setLong(e.target.value);
                   }}
                 />
+                
+                <TagSelector
+                  selectedTags={selectedTags}
+                  onTagsChange={setSelectedTags}
+                  axiosPrivate={axiosPrivate}
+                />
               </Typography>
               <Button
-                onClick={() => {
-                  addCell(name, location, long, lat, archive, user.email)
-                    .then((res) => {
-                      setResponse(res);
-                      refetch();
-                    })
-                    .catch((error) => {
-                      setError(error);
-                      console.error(error);
-                    });
+                onClick={async () => {
+                  try {
+                    const res = await addCell(name, location, long, lat, archive, user.email);
+                    
+                    // Assign tags to the newly created cell if any tags are selected
+                    if (selectedTags.length > 0 && res.id) {
+                      const tagIds = selectedTags.map(tag => tag.id);
+                      await assignCellTagsMutation.mutateAsync({ cellId: res.id, tagIds });
+                    }
+                    
+                    setResponse(res);
+                    refetch();
+                  } catch (error) {
+                    setError(error);
+                    console.error(error);
+                  }
                 }}
               >
                 Add Cell
