@@ -9,6 +9,7 @@ class TEROSData(db.Model):
     """Table for TEROS-12 Data"""
 
     __tablename__ = "teros_data"
+    __table_args__ = (db.Index("idx_teros_data_cell_id_ts", "cell_id", "ts"),)
 
     id = db.Column(db.Integer, primary_key=True)
     cell_id = db.Column(

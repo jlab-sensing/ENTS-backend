@@ -97,5 +97,7 @@ ENTRYPOINT ["./entrypoint.sh", "-w", "prod"]
 
 
 FROM base AS migration
+# If you want to run the migrations locally and still run commands in the container, use this commented entrypoint instead of the current one. 
+#ENTRYPOINT ["sh", "-c", "./migrate.sh -u && sleep infinity"]
 
 ENTRYPOINT ["./migrate.sh", "-u"]
