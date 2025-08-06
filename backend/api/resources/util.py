@@ -147,7 +147,7 @@ def process_measurement_dict(meas: dict):
 
         obj_list.append(humidity_obj)
 
-    #y soil humidity measurement
+    #yfs210c water flow measurement
     elif meas["type"] == "yfs210c":
 
         flow_obj = Sensor.add_data(meas_name="flow rate", meas_unit="L/Min", meas_dict=meas)
