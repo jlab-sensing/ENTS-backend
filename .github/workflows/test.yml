@@ -77,7 +77,9 @@ jobs:
 
       - name: Source .env file
         run: |
+          set -a
           source .env
+          set +a
 
       - name: Print env test
         run: |
