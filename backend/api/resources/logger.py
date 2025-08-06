@@ -3,7 +3,7 @@ import warnings
 from flask import request
 from flask_restful import Resource
 
-from ..ttn.end_device import TTNApi, EntsEndDevice, EndDevice
+from ..ttn.end_devices import TTNApi, EntsEndDevice, EndDevice
 
 
 class Logger(Resource):
