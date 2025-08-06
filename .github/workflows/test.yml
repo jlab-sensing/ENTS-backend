@@ -97,8 +97,8 @@ jobs:
       # - name: Apply migrations
       #   run: flask --app backend.api db upgrade -d ./backend/api/migrations
 
-      - name: Import example data
-        run: python import_example_data.py
+          #- name: Import example data
+          #  run: python import_example_data.py
 
       - name: Run smoke test
         run: ./k6 run tests/basic.js
