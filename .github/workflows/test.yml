@@ -50,13 +50,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    env:
-      DB_USER: dirtviz
-      DB_PASS: password
-      DB_HOST: localhost
-      DB_PORT: 5432
-      DB_DATABASE: dirtviz
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -79,10 +72,14 @@ jobs:
           curl https://github.com/loadimpact/k6/releases/download/v0.26.2/k6-v0.26.2-linux64.tar.gz -L | tar xvz --strip-components 1
 
       - name: Copy .env file
-        run: echo ${{ secrets.ENV_FILE }} > .env
+        run: echo ${{ secrets.ENV_FILE }} > dev.env
 
       - name: Source .env file
-        run: source .env
+        run: source dev.env
+
+      - name: Print env test
+        run: |
+          echo "TTN_APP_ID"
 
       - name: Start services
         run: docker compose up -d
