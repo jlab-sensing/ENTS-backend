@@ -73,7 +73,7 @@ jobs:
 
       - name: Copy .env file
         run: |
-          echo ${{ secrets.ENV_FILE }} > .env
+          echo "${{ secrets.ENV_FILE }}" > .env
 
       - name: Source .env file
         run: |
