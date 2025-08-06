@@ -73,17 +73,13 @@ jobs:
 
       - name: Copy .env file
         run: |
-          printf "%s" "${{ secrets.ENV_FILE }}" > .env
+          echo ${{ secrets.TTN_API_KEY }} > .env
 
       - name: Source .env file
         run: |
           set -a
           source .env
           set +a
-
-      - name: Print env test
-        run: |
-          echo "$TTN_APP_ID"
 
       - name: Start services
         run: docker compose up -d
