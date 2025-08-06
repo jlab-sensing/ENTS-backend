@@ -2,16 +2,16 @@ import { Grid } from '@mui/material';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import { React, useEffect, useState } from 'react';
-import SoilPotChart from '../../../charts/SoilPotChart/SoilPotChart';
+import CO2Chart from '../../../charts/CO2Chart/CO2Chart';
 import useInterval from '../../../hooks/useInterval';
 import { getSensorData, streamSensorData } from '../../../services/sensor';
 
-function SoilPotCharts({ cells, startDate, endDate, stream }) {
+function CO2Charts({ cells, startDate, endDate, stream }) {
   // CONFIGURATION
   // List out measurements that your chart is going to display
-  const sensor_name = 'teros21';
-  const measurements = ['matricPot'];
-  const units = ['kPa'];
+  const sensor_name = 'co2';
+  const measurements = ['CO2', 'Photoresistivity'];
+  const units = ['PPM', 'Ohms'];
   // Colors of data points. Each color represents the next color
   // of the data points as the user selects more cells to compare.
   // Add more measurements depending on how many different values on the charts
@@ -27,7 +27,7 @@ function SoilPotCharts({ cells, startDate, endDate, stream }) {
     '#2196F3',
     '#E91E63',
   ];
-  const axisIds = ['leafAxis'];
+  const axisIds = ['CO2Axis', 'PhotoresistivityAxis'];
 
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
@@ -252,17 +252,17 @@ function SoilPotCharts({ cells, startDate, endDate, stream }) {
   return (
     <>
       <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <SoilPotChart data={sensorChartData} startDate={startDate} endDate={endDate} />
+        <CO2Chart data={sensorChartData} startDate={startDate} endDate={endDate} />
       </Grid>
     </>
   );
 }
 
-SoilPotCharts.propTypes = {
+CO2Charts.propTypes = {
   cells: PropTypes.array,
   startDate: PropTypes.any,
   endDate: PropTypes.any,
   stream: PropTypes.bool,
 };
 
-export default SoilPotCharts;
+export default CO2Charts;

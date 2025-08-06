@@ -43,19 +43,33 @@ class Cell(Resource):
             archive = False
         else:
             archive = cell_data["archive"]
+        if CellModel.find_by_name(cell_name):
+            return {"message": "Duplicate cell name"}, 400
         new_cell = CellModel.add_cell_by_user_email(
             cell_name, location, lat, long, archive, userEmail
         )
         if new_cell:
             return {"message": "Successfully added cell"}
-        return jsonify({"message": "Error adding cell"}), 400
+        return {"message": "Error adding cell"}, 400
 
     def put(self, cellId):
         json_data = request.json
-        archive = json_data.get("archive")
+        # print("Received payload:", json_data)
+        # archive = json_data.get("archive")
         cell = CellModel.get(cellId)
+
         if cell:
-            cell.archive = archive
+            if "name" in json_data:
+                cell.name = json_data.get("name")
+            if "location" in json_data:
+                cell.location = json_data.get("location")
+            if "lat" in json_data:
+                cell.latitude = json_data.get("lat")
+            if "long" in json_data:
+                cell.longitude = json_data.get("long")
+            if "archive" in json_data:
+                cell.archive = json_data.get("archive")
+
             cell.save()
             return {"message": "Successfully updated cell"}
         return jsonify({"message": "Cell not found"}), 404
@@ -65,4 +79,5 @@ class Cell(Resource):
         if not cell:
             return jsonify({"message": "Cell not found"}), 404
         cell.delete()
+
         return {"message": "Cell deleted successfully"}

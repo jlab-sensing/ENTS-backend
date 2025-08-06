@@ -5,13 +5,14 @@ import { getAxisBoundsAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 import { chartPlugins } from '../plugins';
 
-export default function SoilPotChart({ data, startDate, endDate }) {
-  const { leftYMin, leftYMax, leftYStep } = getAxisBoundsAndStepValues(
-    data.datasets.filter((d) => d.yAxisID === 'leafAxis'),
-    [],
+export default function CO2Chart({ data, startDate, endDate }) {
+  const { leftYMin, leftYMax, leftYStep, rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
+    data.datasets.filter((d) => d.yAxisID === 'CO2Axis'),
+    data.datasets.filter((d) => d.yAxisID === 'PhotoresistivityAxis'),
     8,
     0.2,
   );
+
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -40,11 +41,11 @@ export default function SoilPotChart({ data, startDate, endDate }) {
         min: startDate?.toJSDate(),
         max: endDate?.toJSDate(),
       },
-      leafAxis: {
+      CO2Axis: {
         position: 'left',
         title: {
           display: true,
-          text: 'Soil Potential (kPA)',
+          text: 'CO2 Concentration (PPM)',
         },
         ticks: {
           stepSize: leftYStep,
@@ -52,14 +53,26 @@ export default function SoilPotChart({ data, startDate, endDate }) {
         min: leftYMin,
         max: leftYMax,
       },
+      PhotoresistivityAxis: {
+        position: 'right',
+        title: {
+          display: true,
+          text: 'Photoresistivity (Ohms)',
+        },
+        ticks: {
+          stepSize: rightYStep,
+        },
+        min: rightYMin,
+        max: rightYMax,
+      },
     },
     plugins: structuredClone(chartPlugins),
   };
 
-  return <ChartWrapper id='sPot' data={data} options={chartOptions} />;
+  return <ChartWrapper id='CO2' data={data} options={chartOptions} />;
 }
 
-SoilPotChart.propTypes = {
+CO2Chart.propTypes = {
   id: PropTypes.string,
   data: PropTypes.object,
   startDate: PropTypes.object,

@@ -109,10 +109,12 @@ def create_app(debug: bool = False) -> Flask:
     from .resources.power_data import Power_Data
     from .resources.teros_data import Teros_Data
     from .resources.sensor_data import SensorData
+    from .resources.sensor_data_json import SensorData_Json
     from .resources.cell import Cell
     from .resources.session import Session_r
     from .resources.users_data import User_Data
     from .resources.status import Status
+    from .resources.data_availability import DataAvailability
 
     from .auth.routes import auth
 
@@ -123,6 +125,8 @@ def create_app(debug: bool = False) -> Flask:
     api.add_resource(Power_Data, "/power/", "/power/<int:cell_id>")
     api.add_resource(Teros_Data, "/teros/", "/teros/<int:cell_id>")
     api.add_resource(SensorData, "/sensor/")
+    api.add_resource(SensorData_Json, "/sensor_json/")
+    api.add_resource(DataAvailability, "/data-availability/")
     api.add_resource(Session_r, "/session")
     api.add_resource(User_Data, "/user")
     api.add_resource(Status, "/status/<string:id>")

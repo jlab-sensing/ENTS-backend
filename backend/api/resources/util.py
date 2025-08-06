@@ -32,6 +32,23 @@ def process_measurement(data: bytes):
     # decode binary protobuf data
     meas = decode_measurement(data, raw=False)
 
+    return process_measurement_dict(meas)
+
+
+def process_measurement_json(data: dict):
+    """Process json measurement
+
+    Args:
+        data: Json measurement
+
+    Returns:
+        Flask response with status code and protobuf encoded response.
+    """
+
+    return process_measurement_dict(data)
+
+
+def process_measurement_dict(meas: dict):
     obj_list = []
 
     # power measurement
@@ -91,6 +108,20 @@ def process_measurement(data: bytes):
         obj_list.append(obj)
 
         obj = Sensor.add_data(meas_name="temp", meas_unit="C", meas_dict=meas)
+
+        obj_list.append(obj)
+    elif meas["type"] == "co2":
+        obj = Sensor.add_data(meas_name="CO2", meas_unit="PPM", meas_dict=meas)
+
+        obj_list.append(obj)
+
+        obj = Sensor.add_data(meas_name="state", meas_unit="Boolean", meas_dict=meas)
+
+        obj_list.append(obj)
+
+        obj = Sensor.add_data(
+            meas_name="Photoresistivity", meas_unit="Ohms", meas_dict=meas
+        )
 
         obj_list.append(obj)
 

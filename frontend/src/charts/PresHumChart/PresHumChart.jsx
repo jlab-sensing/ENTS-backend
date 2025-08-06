@@ -6,7 +6,12 @@ import ChartWrapper from '../ChartWrapper';
 import { chartPlugins } from '../plugins';
 
 export default function PresHumChart({ data, startDate, endDate }) {
-  const { leftYMin, leftYMax, leftYStep } = getAxisBoundsAndStepValues(data.datasets, [], 8, 0.2);
+  const { leftYMin, leftYMax, leftYStep, rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
+    data.datasets.filter((d) => d.yAxisID === 'pressureAxis'),
+    data.datasets.filter((d) => d.yAxisID === 'humidityAxis'),
+    8,
+    0.2,
+  );
 
   const chartOptions = {
     maintainAspectRatio: false,
@@ -36,7 +41,7 @@ export default function PresHumChart({ data, startDate, endDate }) {
         min: startDate?.toJSDate(),
         max: endDate?.toJSDate(),
       },
-      pressure: {
+      pressureAxis: {
         position: 'left',
         title: {
           display: true,
@@ -48,17 +53,17 @@ export default function PresHumChart({ data, startDate, endDate }) {
         min: leftYMin,
         max: leftYMax,
       },
-      humidity: {
+      humidityAxis: {
         position: 'right',
         title: {
           display: true,
           text: 'Humidity (% RH)',
         },
         ticks: {
-          stepSize: leftYStep,
+          stepSize: rightYStep,
         },
-        min: leftYMin,
-        max: leftYMax,
+        min: rightYMin,
+        max: rightYMax,
       },
     },
     plugins: structuredClone(chartPlugins),

@@ -1,9 +1,10 @@
-import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useOutletContext } from 'react-router-dom';
 import AddCellModal from './AddCellModal';
 import DeleteCellModal from './DeleteCellModal';
+import EditCellModal from './EditCellModal';
+import { React, useState } from 'react';
 
 function CellsList() {
   let data = useOutletContext();
@@ -11,6 +12,7 @@ function CellsList() {
   const isError = data[2];
   const user = data[4];
   data = data[0];
+  const [selectedRowId, setSelectedRowId] = useState('');
 
   if (!user) {
     return <></>;
@@ -32,6 +34,15 @@ function CellsList() {
     { field: 'lat', headerName: 'Latitude', width: 150 },
     { field: 'long', headerName: 'Longitude', width: 150 },
     { field: 'archive', headerName: 'Archive', width: 150 },
+    {
+      field: 'edit',
+      headerName: '',
+      width: 85,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      renderCell: (params) => <EditCellModal cell={params.row} />, // edit button in new column
+    },
   ];
 
   let rows = [];
@@ -45,6 +56,10 @@ function CellsList() {
       archive: cell.archive,
     }));
   }
+
+  const handleRowSelection = (newSelection) => {
+    setSelectedRowId(newSelection[0]);
+  };
 
   return (
     <Box
@@ -81,7 +96,7 @@ function CellsList() {
           Your Cells
         </Typography>
         <AddCellModal />
-        <DeleteCellModal />
+        <DeleteCellModal id={selectedRowId} />
       </Box>
 
       {/* Wrapper to ensure DataGrid does not exceed background */}
@@ -92,7 +107,13 @@ function CellsList() {
           overflowY: 'auto',
         }}
       >
-        <DataGrid rows={rows} columns={columns} pageSize={5} autoHeight />
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          pageSize={5}
+          autoHeight
+          onRowSelectionModelChange={handleRowSelection}
+        />
       </Box>
     </Box>
   );

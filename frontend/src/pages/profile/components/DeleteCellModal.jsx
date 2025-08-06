@@ -1,25 +1,34 @@
-import { React, useState, useEffect } from 'react';
-import { Modal, Box, Typography, Button, TextField, IconButton } from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { deleteCell } from '../../../services/cell';
+import { Box, Button, IconButton, Modal, Typography } from '@mui/material';
+import { React, useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { deleteCell } from '../../../services/cell';
+import PropTypes from 'prop-types';
 
-function DeleteCellModal() {
+function DeleteCellModal({ id }) {
   let data = useOutletContext();
   const refetch = data[3];
   const user = data[4];
   data = data[0];
   const [isOpen, setOpen] = useState(false);
-  const [cellId, setCellId] = useState('');
   const [response, setResponse] = useState(null);
+  const [cellId, setCellId] = useState('');
 
   const handleOpen = () => {
-    setOpen(true);
+    if (id != '') {
+      setOpen(true);
+      setCellId(id);
+    }
     setResponse(null);
   };
 
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setResponse(null);
+    setCellId('');
+  };
 
   useEffect(() => {
     console.log(response);
@@ -34,6 +43,7 @@ function DeleteCellModal() {
       <Button sx={{ color: 'black' }} key='delete' onClick={handleOpen}>
         <DeleteIcon />
       </Button>
+
       <Modal
         open={isOpen}
         onClose={handleClose}
@@ -65,22 +75,7 @@ function DeleteCellModal() {
                 <CloseIcon fontSize='small' />
               </IconButton>
               <Typography variant='h6' component='h2'>
-                Delete Cell
-              </Typography>
-              <Typography sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <TextField
-                  id='outlined-basic'
-                  label='Cell ID'
-                  variant='outlined'
-                  error={cellId.length === 0 || isNaN(Number(cellId))}
-                  helperText={
-                    !cellId.length ? 'Cell ID is required' : isNaN(Number(cellId)) ? 'Please enter a valid number' : ''
-                  }
-                  value={cellId}
-                  onChange={(e) => {
-                    setCellId(e.target.value);
-                  }}
-                />
+                Delete Cell?
               </Typography>
               <Button
                 onClick={() => {
@@ -93,11 +88,10 @@ function DeleteCellModal() {
                 }}
                 color='error'
               >
-                Delete Cell
+                Confirm
               </Button>
             </>
           )}
-
           {response && (
             <>
               <IconButton
@@ -108,9 +102,34 @@ function DeleteCellModal() {
               >
                 <CloseIcon fontSize='small' />
               </IconButton>
-              <h1>Cell Deleted</h1>
-              <p>The cell with ID {cellId} has been successfully deleted.</p>
-              <Button onClick={handleClose}>Done</Button>
+
+              {/* Success Header */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                <CheckCircleIcon sx={{ color: 'success.main', fontSize: 28 }} />
+                <Typography variant='h5' component='h2' sx={{ color: 'success.main', fontWeight: 'bold' }}>
+                  Cell Deleted Successfully!
+                </Typography>
+              </Box>
+
+              {/* Deletion Confirmation */}
+              <Typography variant='h6' sx={{ mb: 2, color: 'text.primary' }}>
+                The cell with ID <strong>{cellId}</strong> has been successfully deleted.
+              </Typography>
+
+              {/* Done Button */}
+              <Button
+                variant='contained'
+                color='success'
+                onClick={handleClose}
+                sx={{
+                  width: '100%',
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  fontWeight: 'bold',
+                }}
+              >
+                Done
+              </Button>
             </>
           )}
         </Box>
@@ -120,3 +139,7 @@ function DeleteCellModal() {
 }
 
 export default DeleteCellModal;
+
+DeleteCellModal.propTypes = {
+  id: PropTypes.oneOfType(PropTypes.number).isRequired,
+};

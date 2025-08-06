@@ -65,8 +65,8 @@ function About() {
               textAlign: { xs: 'center', md: 'start' },
             }}
           >
-            DirtViz is part of the Open Sensing Platform&apos;s hardware and software ecosystem for outdoor sensor
-            networks. It&apos;s an open source data ingestion and visualization service that parses data from the
+            DirtViz is part of the EnTS (Environmentally Networked Sensors) hardware and software ecosystem for outdoor
+            sensor networks. It&apos;s an open source data ingestion and visualization service that parses data from the
             hardware nodes and presents it in an easy-to-use web interface. Users can dynamically generate interactive
             plots, live monitor their sensors, or download data for offline processing.
           </Typography>
@@ -90,7 +90,7 @@ function About() {
                 px: '10px',
                 width: { xs: '100%', sm: 'auto' }, // Full width for small screens
               }}
-            >               
+            >
               View Data
             </Button>
             <Button
