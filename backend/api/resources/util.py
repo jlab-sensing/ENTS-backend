@@ -96,7 +96,7 @@ def process_measurement(data: bytes):
 
     #sen0257 water pressure measurement
     elif meas["type"] == "sen0257":
-        print(meas)
+
         pressure_obj = Sensor.add_data(meas_name="pressure", meas_unit="kPa", meas_dict=meas)
 
         obj_list.append(pressure_obj)
@@ -107,7 +107,7 @@ def process_measurement(data: bytes):
 
     #sen0308 soil humidity measurement
     elif meas["type"] == "sen0308":
-        print(meas)
+
         voltage_obj = Sensor.add_data(meas_name="voltage", meas_unit="V", meas_dict=meas)
 
         obj_list.append(voltage_obj)
@@ -115,6 +115,13 @@ def process_measurement(data: bytes):
         humidity_obj = Sensor.add_data(meas_name="humidity", meas_unit="%", meas_dict=meas)
 
         obj_list.append(humidity_obj)
+
+    #y soil humidity measurement
+    elif meas["type"] == "yfs210c":
+
+        flow_obj = Sensor.add_data(meas_name="flow rate", meas_unit="L/Min", meas_dict=meas)
+
+        obj_list.append(flow_obj)
 
     # format response
     resp = Response()
