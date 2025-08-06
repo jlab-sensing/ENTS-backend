@@ -16,6 +16,7 @@ import SoilPotCharts from './components/SoilPotChart';
 import TerosCharts from './components/TerosCharts';
 import WaterPresChart from './components/WaterPresChart';
 import SoilHumChart from './components/SoilHumChart';
+import WaterFlowChart from './components/WaterFlowChart';
 
 function Dashboard() {
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
@@ -131,6 +132,7 @@ function Dashboard() {
           <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           <SoilHumChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           <WaterPresChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          <WaterFlowChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
         </Stack>
       </Box>
     </>
