@@ -4,6 +4,7 @@ import warnings
 
 import requests
 
+
 class EndDevice:
     defaults: dict = {}
 
@@ -25,7 +26,7 @@ class EndDevice:
     def __repr__(self):
         """Return a string representation of the EndDevice object."""
 
-        return f'EndDevice({self.id()}])'
+        return f"EndDevice({self.id()}])"
 
     def id(self) -> str:
         """Return the device ID of the EndDevice.
@@ -59,9 +60,21 @@ class EndDevice:
         self.data.update(new)
         return self
 
+    def merge(self, other: EndDevice) -> EndDevice:
+        """Merge another EndDevice into this one.
+
+        The `other` EndDevice's data will overwrite the existing data in
+        this EndDevice.
+
+        Args:
+            other: The EndDevice to merge into this one.
+        """
+
+        self.data.update(other.data)
+        return self
+
 
 class EntsEndDevice(EndDevice):
-
     defaults = {
         # default network server configuration
         "lorawan_version": "MAC_V1_0_3",
@@ -83,19 +96,32 @@ class EntsEndDevice(EndDevice):
         dev_eui: str,
         join_eui: str,
         app_key: str,
+        device_id: str = "",
         **kwargs,
     ):
+        """Initialize an EntsEndDevice object.
+
+        Parameter precidence is in the following order from highest to lowest:
+        kwargs, args, defaults.
+
+        Args:
+            name: The name of the End Device.
+            dev_eui: The DevEUI of the End Device.
+            join_eui: The JoinEUI of the End Device.
+            app_key: The AppKey for the End Device.
+            device_id: Optional device ID, if not set it will be formatted
+                as "eui-{dev_eui}".
+            **kwargs: Additional fields to override in the End Device data.
+        """
+
         # format device id
-        device_id = f"eui-{dev_eui}"
+        if device_id == "":
+            device_id = f"eui-{dev_eui}"
         device_id = device_id.lower()
 
         # TODO add more required fields
         data = {
-            "ids": {
-                "device_id": device_id,
-                "dev_eui": dev_eui,
-                "join_eui": join_eui
-            },
+            "ids": {"device_id": device_id, "dev_eui": dev_eui, "join_eui": join_eui},
             "name": name,
             "root_keys": {
                 "app_key": {
@@ -104,6 +130,8 @@ class EntsEndDevice(EndDevice):
             },
         }
 
+        data.update(kwargs)
+
         super().__init__(data)
 
 
@@ -111,7 +139,7 @@ class TTNApi:
     """High level interface for The Things Network API."""
 
     def __init__(self, api_key: str = "", app_id: str = ""):
-        """ Initialize the TTNApi.
+        """Initialize the TTNApi.
 
         The param `api_key` is used to override the env variables
         `TTN_API_KEY`. Similarly the `app_id` is used to override the
@@ -162,12 +190,14 @@ class TTNApi:
         }
         end_device.update(server_addresses)
 
-        self.end_device_reg.create(end_device)
-        self.ns_device_reg.create(end_device)
-        self.as_device_reg.create(end_device)
-        self.js_device_reg.create(end_device)
+        new_end_device = EndDevice()
 
-        return end_device
+        new_end_device.merge(self.end_device_reg.create(end_device))
+        new_end_device.merge(self.ns_device_reg.create(end_device))
+        new_end_device.merge(self.as_device_reg.create(end_device))
+        new_end_device.merge(self.js_device_reg.create(end_device))
+
+        return new_end_device
 
     def delete_end_device(
         self,
@@ -280,7 +310,7 @@ class TTNApi:
 
     def get_end_device_list(
         self,
-        field_mask: list[str]= [],
+        field_mask: list[str] = [],
         order: str | None = None,
         limit: int | None = None,
         page: int | None = None,
@@ -371,9 +401,8 @@ class EndDeviceRegistry(TTNApiEndpoint):
         if req.status_code == 200:
             return end_device.update(req.json())
         elif req.status_code == 409:
-            warnings.warn(
-                f"End Device with device_id '{end_device.data['ids']['device_id']}' already exists."
-            )
+            device_id = end_device.data["ids"]["device_id"]
+            warnings.warn(f"End Device with device_id '{device_id}' already exists.")
             return end_device.update(req.json())
         else:
             warnings.warn(
@@ -404,28 +433,30 @@ class EndDeviceRegistry(TTNApiEndpoint):
             List of EndDevice objects.
         """
 
-        params = {}
+        data = {}
 
-        if field_mask is not None:
-            params["field_mask"] = field_mask
+        if field_mask:
+            field_mask_str = ",".join(field_mask)
+            data["field_mask"] = field_mask_str
 
         if order is not None:
-            params["order"] = order
+            data["order"] = order
 
         if limit is not None:
-            params["limit"] = limit
+            data["limit"] = limit
 
         if page is not None:
-            params["page"] = page
+            data["page"] = page
 
         endpoint = f"{self.base_url}/applications/{self.app_id}/devices"
 
-        req = self.session.get(endpoint, params=params)
+        req = self.session.get(endpoint, params=data)
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to get End Devices from TTN: {req.status_code} - {req.text}"
+                "ttn: Failed to get End Devices from TTN:"
+                f"{req.status_code} - {req.text}"
             )
-            return None
+            return []
 
         end_devices = []
 
@@ -441,7 +472,7 @@ class EndDeviceRegistry(TTNApiEndpoint):
         limit: int | None = None,
         page: int | None = None,
         filters: dict[str, str] | None = None,
-    ) -> list[EndDevice] | None:
+    ) -> list[EndDevice]:
         """Get all End Devices in the registry
 
         The parameter `order` specifies the field mask to order the results by.
@@ -466,8 +497,9 @@ class EndDeviceRegistry(TTNApiEndpoint):
 
         data = {}
 
-        if field_mask is not None:
-            data["field_mask"] = field_mask
+        if field_mask:
+            field_mask_str = ",".join(field_mask)
+            data["field_mask"] = field_mask_str
 
         if order is not None:
             data["order"] = order
@@ -486,9 +518,10 @@ class EndDeviceRegistry(TTNApiEndpoint):
         req = self.session.post(endpoint, json=data)
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to get End Devices from TTN: {req.status_code} - {req.text}"
+                "ttn: Failed to get End Devices from TTN:"
+                f"{req.status_code} - {req.text}"
             )
-            return None
+            return []
 
         end_devices = []
 
@@ -531,7 +564,8 @@ class EndDeviceRegistry(TTNApiEndpoint):
 
         elif req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to delete End Device on TTN: {req.status_code} - {req.text}"
+                "ttn: Failed to delete End Device on TTN:"
+                f"{req.status_code} - {req.text}"
             )
 
             return False
@@ -559,11 +593,12 @@ class EndDeviceRegistry(TTNApiEndpoint):
 
         # send request
         data = {"end_device": end_device.data}
-        endpoint = f"{self.base_url}/applications/{self.app_id}/devices/{end_device.data['ids']['device_id']}"
+        endpoint = f"{self.base_url}/applications/{self.app_id}/devices/{end_device.data['ids']['device_id']}"  # noqa: E501
         req = self.session.put(endpoint, json=data)
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to update end device on TTN: {req.status_code} - {req.text}"
+                "ttn: Failed to update end device on TTN:"
+                f"{req.status_code} - {req.text}"
             )
             return False
 
@@ -572,7 +607,7 @@ class EndDeviceRegistry(TTNApiEndpoint):
     def get(
         self,
         end_device: EndDevice,
-        field_mask: list[str] | None = None,
+        field_mask: list[str] = [],
     ) -> EndDevice | None:
         """Get an End Device from the registry.
 
@@ -593,7 +628,7 @@ class EndDeviceRegistry(TTNApiEndpoint):
 
         params = {}
 
-        if field_mask is not None:
+        if field_mask:
             params["field_mask"] = field_mask
 
         device_id = end_device.data["ids"]["device_id"]
@@ -633,15 +668,15 @@ class JoinServerDeviceRegistry(TTNApiEndpoint):
                     "ids.dev_eui",
                     "ids.device_id",
                     "ids.application_ids.application_id",
-                    "root_keys.app_key.key"
+                    "root_keys.app_key.key",
                 ]
-            }
+            },
         }
 
         req = self.session.post(endpoint, json=data)
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to create end device on js: {req.status_code} - {req.text}"
+                f"ttn: Failed to create end device on js:{req.status_code} - {req.text}"
             )
             return None
 
@@ -674,7 +709,7 @@ class JoinServerDeviceRegistry(TTNApiEndpoint):
 
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to delete end device on JS: {req.status_code} - {req.text}"
+                f"ttn: Failed to delete end device on JS:{req.status_code} - {req.text}"
             )
             return False
 
@@ -682,6 +717,7 @@ class JoinServerDeviceRegistry(TTNApiEndpoint):
 
     def update(self):
         pass
+
 
 class NetworkServerDeviceRegistry(TTNApiEndpoint):
     def create(
@@ -696,7 +732,7 @@ class NetworkServerDeviceRegistry(TTNApiEndpoint):
         Returns:
             The created End Device object.
         """
-        
+
         device_id = end_device.data["ids"]["device_id"]
 
         endpoint = f"{self.base_url}/ns/applications/{self.app_id}/devices/{device_id}"
@@ -717,15 +753,15 @@ class NetworkServerDeviceRegistry(TTNApiEndpoint):
                     "ids.join_eui",
                     "ids.dev_eui",
                     "ids.device_id",
-                    "ids.application_ids.application_id"
+                    "ids.application_ids.application_id",
                 ]
-            }
+            },
         }
 
         req = self.session.put(endpoint, json=data)
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to create end device on ns: {req.status_code} - {req.text}"
+                f"ttn: Failed to create end device on ns:{req.status_code} - {req.text}"
             )
             return None
 
@@ -758,7 +794,7 @@ class NetworkServerDeviceRegistry(TTNApiEndpoint):
 
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to delete end device on ns: {req.status_code} - {req.text}"
+                f"ttn: Failed to delete end device on ns:{req.status_code} - {req.text}"
             )
             return False
 
@@ -766,6 +802,7 @@ class NetworkServerDeviceRegistry(TTNApiEndpoint):
 
     def update(self):
         pass
+
 
 class ApplicationServerDeviceRegistry(TTNApiEndpoint):
     def create(
@@ -790,15 +827,15 @@ class ApplicationServerDeviceRegistry(TTNApiEndpoint):
                     "ids.join_eui",
                     "ids.dev_eui",
                     "ids.device_id",
-                    "ids.application_ids.application_id"
+                    "ids.application_ids.application_id",
                 ]
-            }
+            },
         }
 
         req = self.session.post(endpoint, json=data)
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to create end device on as: {req.status_code} - {req.text}"
+                f"ttn: Failed to create end device on as:{req.status_code} - {req.text}"
             )
             return None
 
@@ -831,7 +868,7 @@ class ApplicationServerDeviceRegistry(TTNApiEndpoint):
 
         if req.status_code != 200:
             warnings.warn(
-                f"ttn: Failed to delete end device on as: {req.status_code} - {req.text}"
+                f"ttn: Failed to delete end device on as:{req.status_code} - {req.text}"
             )
             return False
 
