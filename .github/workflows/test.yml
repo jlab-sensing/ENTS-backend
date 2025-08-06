@@ -19,8 +19,8 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-          cache: "pip"
+          python-version: '3.11'
+          cache: 'pip'
 
       - name: Install backend dependencies
         run: pip install -r ./backend/requirements.txt -r ./backend/requirements-dev.txt
@@ -31,9 +31,9 @@ jobs:
       - name: Black format check
         uses: psf/black@stable
         with:
-          options: "--check --verbose"
-          src: "./backend"
-          version: "24.3.0"
+          options: '--check --verbose'
+          src: './backend'
+          version: '24.3.0'
 
       - name: Install frontend packages
         working-directory: ./frontend
@@ -57,8 +57,8 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-          cache: "pip"
+          python-version: '3.11'
+          cache: 'pip'
 
       - name: Install backend dependencies
         run: pip install -r ./backend/requirements.txt -r ./backend/requirements-dev.txt
@@ -73,7 +73,7 @@ jobs:
 
       - name: Copy .env file
         run: |
-          echo "${{ secrets.ENV_FILE }}" > .env
+          printf "%s" "${{ secrets.ENV_FILE }}" > .env
 
       - name: Source .env file
         run: |
@@ -98,8 +98,8 @@ jobs:
       # - name: Apply migrations
       #   run: flask --app backend.api db upgrade -d ./backend/api/migrations
 
-          #- name: Import example data
-          #  run: python import_example_data.py
+      #- name: Import example data
+      #  run: python import_example_data.py
 
       - name: Run smoke test
         run: ./k6 run tests/basic.js
