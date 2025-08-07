@@ -1,24 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Box, Typography, Button, IconButton, TextField } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useOutletContext } from 'react-router-dom';
 import { updateCell } from '../../../services/cell';
+import { useCellTags, useAssignCellTags } from '../../../services/tag';
+import TagSelector from '../../../components/TagSelector';
 import PropTypes from 'prop-types';
 
 function EditCellModal({ cell }) {
   const data = useOutletContext();
   const refetch = data[3];
+  const axiosPrivate = data[6];
 
   const [isOpen, setOpen] = useState(false);
   const [formData, setFormData] = useState({ ...cell });
+  const [selectedTags, setSelectedTags] = useState([]);
   const [response, setResponse] = useState(null);
   const [isSubmitting, setSubmitting] = useState(false);
+
+  const { data: cellTags = [] } = useCellTags(cell.id);
+  const assignCellTagsMutation = useAssignCellTags();
 
   const handleOpen = () => {
     setOpen(true);
     setResponse(null);
     setFormData({ ...cell });
+    setSelectedTags(cellTags);
   };
+
+  useEffect(() => {
+    if (cellTags.length > 0) {
+      setSelectedTags(cellTags);
+    }
+  }, [cellTags]);
 
   const handleClose = () => setOpen(false);
 
@@ -26,26 +40,24 @@ function EditCellModal({ cell }) {
     setFormData({ ...formData, [field]: e.target.value });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setSubmitting(true);
 
-    // simulate a successful request
-    // setTimeout(() => {
-    //   const fakeResponse = { success: true, data: formData };
-    //   setResponse(fakeResponse);
-    //   refetch();
-    //   setSubmitting(false);
-    // }, 1000);
-    
-    // backend request implemented - DONE
-    updateCell(cell.id, formData)
-      .then((res) => {
-        setResponse(res);
-        refetch();
-      })
-      .catch((err) => console.error('Edit failed:', err))
-      .finally(() => setSubmitting(false));
-    
+    try {
+      // Update cell data
+      const cellResponse = await updateCell(cell.id, formData);
+      
+      // Update cell tags
+      const tagIds = selectedTags.map(tag => tag.id);
+      await assignCellTagsMutation.mutateAsync({ cellId: cell.id, tagIds });
+      
+      setResponse(cellResponse);
+      refetch();
+    } catch (err) {
+      console.error('Edit failed:', err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -120,6 +132,12 @@ function EditCellModal({ cell }) {
                   required
                   error={formData.lat?.length === 0 || isNaN(Number(formData.lat))}
                   helperText={isNaN(Number(formData.lat)) ? 'Please Enter Numbers' : ''}
+                />
+
+                <TagSelector
+                  selectedTags={selectedTags}
+                  onTagsChange={setSelectedTags}
+                  axiosPrivate={axiosPrivate}
                 />
 
               {/* following AccountInfo styling */}

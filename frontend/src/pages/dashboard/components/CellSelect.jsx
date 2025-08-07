@@ -1,10 +1,16 @@
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import PropTypes from 'prop-types';
-import { React } from 'react';
+import { React, useMemo } from 'react';
 import { useCells } from '../../../services/cell';
 
-function CellSelect({ selectedCells, setSelectedCells }) {
+function CellSelect({ selectedCells, setSelectedCells, filteredByTags = [], axiosPrivate }) {
   const cells = useCells();
+  
+  // For now, return all cells (tag filtering temporarily disabled)
+  const filteredCells = useMemo(() => {
+    return cells.data || [];
+  }, [cells.data]);
+  
   if (cells.isLoading) {
     return <span>Loading...</span>;
   }
@@ -26,8 +32,8 @@ function CellSelect({ selectedCells, setSelectedCells }) {
           setSelectedCells(e.target.value);
         }}
       >
-        {Array.isArray(cells.data)
-          ? cells.data
+        {Array.isArray(filteredCells)
+          ? filteredCells
               .filter((cell) => !cell.archive)
               .sort((a, b) => a.name.localeCompare(b.name))
               .map((cell) => {
@@ -39,7 +45,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
               })
           : ''}
         <MenuItem value='all' disabled={true} sx={{ color: 'black' }}>
-          Can&apos;t find cell? Check Archive feature.
+          "Can't find cell? Check Archive feature."
         </MenuItem>
       </Select>
     </FormControl>
@@ -49,6 +55,8 @@ function CellSelect({ selectedCells, setSelectedCells }) {
 CellSelect.propTypes = {
   selectedCells: PropTypes.array,
   setSelectedCells: PropTypes.func.isRequired,
+  filteredByTags: PropTypes.array,
+  axiosPrivate: PropTypes.object,
 };
 
 export default CellSelect;

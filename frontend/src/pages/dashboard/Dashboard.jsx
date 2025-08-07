@@ -4,7 +4,9 @@ import { React, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 // import DateRangeNotification from '../../components/DateRangeNotification';
 // import { useSmartDateRange } from '../../hooks/useSmartDateRange';
+import useAxiosPrivate from '../../auth/hooks/useAxiosPrivate';
 import { useCells } from '../../services/cell';
+import TagFilter from '../../components/TagFilter';
 import ArchiveModal from './components/ArchiveModal';
 import BackBtn from './components/BackBtn';
 import CellSelect from './components/CellSelect';
@@ -18,10 +20,12 @@ import SoilPotCharts from './components/SoilPotChart';
 import TerosCharts from './components/TerosCharts';
 
 function Dashboard() {
+  const axiosPrivate = useAxiosPrivate();
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
   const [endDate, setEndDate] = useState(DateTime.now());
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [selectedCells, setSelectedCells] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
   const [stream, setStream] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [manualDateSelection, setManualDateSelection] = useState(false);
@@ -175,9 +179,23 @@ function Dashboard() {
                   <Stack direction='row' spacing={2} alignItems='center'>
                     <BackBtn />
                     <Box sx={{ flexGrow: 1 }}>
-                      <CellSelect selectedCells={selectedCells} setSelectedCells={handleCellSelectionChange} />
+                      <CellSelect 
+                        selectedCells={selectedCells} 
+                        setSelectedCells={handleCellSelectionChange}
+                        filteredByTags={selectedTags}
+                        axiosPrivate={axiosPrivate}
+                      />
                     </Box>
                   </Stack>
+
+                  {/* Tag Filter */}
+                  <Box sx={{ mt: 2 }}>
+                    <TagFilter
+                      selectedTags={selectedTags}
+                      onTagsChange={setSelectedTags}
+                      axiosPrivate={axiosPrivate}
+                    />
+                  </Box>
 
                   {/* Second bar */}
                   <Stack direction='row' spacing={2} alignItems='center' justifyContent='space-between'>
@@ -217,20 +235,27 @@ function Dashboard() {
                 </Stack>
               </Box>
             ) : (
-              // Desktop layout - Single bar
-              <Stack direction='row' alignItems='center' justifyContent='space-evenly' sx={{ p: 2 }} spacing={3}>
-                <BackBtn />
-                <Box sx={{ flexGrow: 1, maxWidth: '30%' }}>
-                  <CellSelect selectedCells={selectedCells} setSelectedCells={handleCellSelectionChange} />
-                </Box>
-                <Box display='flex' justifyContent='center' alignItems='center'>
-                  <DateRangeSel
-                    startDate={startDate}
-                    endDate={endDate}
-                    setStartDate={handleStartDateChange}
-                    setEndDate={handleEndDateChange}
-                  />
-                </Box>
+              // Desktop layout - Multiple rows
+              <Box sx={{ p: 2 }}>
+                {/* First row - Controls */}
+                <Stack direction='row' alignItems='center' justifyContent='space-evenly' spacing={3} sx={{ mb: 2 }}>
+                  <BackBtn />
+                  <Box sx={{ flexGrow: 1, maxWidth: '30%' }}>
+                    <CellSelect 
+                      selectedCells={selectedCells} 
+                      setSelectedCells={handleCellSelectionChange}
+                      filteredByTags={selectedTags}
+                      axiosPrivate={axiosPrivate}
+                    />
+                  </Box>
+                  <Box display='flex' justifyContent='center' alignItems='center'>
+                    <DateRangeSel
+                      startDate={startDate}
+                      endDate={endDate}
+                      setStartDate={handleStartDateChange}
+                      setEndDate={handleEndDateChange}
+                    />
+                  </Box>
                 {!cells.isLoading && !cells.isError && <ArchiveModal cells={cells} />}
                 <DownloadBtn
                   disabled={dBtnDisabled}
@@ -242,10 +267,22 @@ function Dashboard() {
                 <Button variant={stream ? 'contained' : 'outlined'} color='primary' onClick={() => setStream(true)}>
                   Streaming
                 </Button>
-                <Button variant={!stream ? 'contained' : 'outlined'} color='primary' onClick={() => setStream(false)}>
-                  Hourly
-                </Button>
-              </Stack>
+                  <Button variant={!stream ? 'contained' : 'outlined'} color='primary' onClick={() => setStream(false)}>
+                    Hourly
+                  </Button>
+                </Stack>
+                
+                {/* Second row - Tag Filter */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Box sx={{ minWidth: '400px', maxWidth: '600px' }}>
+                    <TagFilter
+                      selectedTags={selectedTags}
+                      onTagsChange={setSelectedTags}
+                      axiosPrivate={axiosPrivate}
+                    />
+                  </Box>
+                </Box>
+              </Box>
             )}
           </Box>
         </Stack>
