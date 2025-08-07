@@ -59,14 +59,14 @@ jobs:
       PUBLIC_URL: http://localhost:3000
       CELERY_BROKER_URL: redis://valkey:6379/0
       CELERY_RESULT_BACKEND: redis://valkey:6379/0
-      GOOGLE_CLIENT_ID: ${secrets.GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${secrets.GOOGLE_CLIENT_SECRET}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       OAUTH_REDIRECT_URI: http://localhost:3000/auth/callback
       # keys/secrets are only for client side, fine to be exposed in tests
       SECRET_KEY: eWlAZBMkE86Al_kZ0Uh2pw
       REFRESH_TOKEN_SECRET: ZxgJO5ZMTX9FRvyHLbIjuw
       ACCESS_TOKEN_SECRET: 0dyZbKf-C5ETM_gkBpznHQ
-      TTN_API_KEY: ${secrets.TTN_API_KEY}
+      TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
       TTN_APP_ID: soil-power-sensor
 
     steps:
