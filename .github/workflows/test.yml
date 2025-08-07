@@ -73,13 +73,11 @@ jobs:
 
       - name: Copy .env file
         run: |
-          echo ${{ secrets.TTN_API_KEY }} > .env
+          echo "${{ secrets.ENV_FILE }}" >> $GITHUB_ENV
 
       - name: Source .env file
         run: |
-          set -a
-          source .env
-          set +a
+          echo "TTN_APP_ID=$TTN_APP_ID"
 
       - name: Start services
         run: docker compose up -d
