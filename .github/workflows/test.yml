@@ -73,9 +73,11 @@ jobs:
 
       - name: Copy .env file
         run: |
-          echo "${{ secrets.ENV_FILE }}" >> $GITHUB_ENV
+          while IFS= read -r line; do
+            echo "$line" >> $GITHUB_ENV
+          done <<< "${{ secrets.ENV_FILE }}"
 
-      - name: Source .env file
+      - name: Check app id
         run: |
           echo "TTN_APP_ID=$TTN_APP_ID"
 
