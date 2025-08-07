@@ -2,18 +2,21 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import ArchiveIcon from '@mui/icons-material/Archive';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, TextField } from '@mui/material';
 import PropTypes from 'prop-types';
-import React from 'react';
+import { React, useState } from 'react';
 import { DragItem } from '../DragItem/DragItem';
 
 export const DropList = ({ id, dragItems, columnID }) => {
   const { setNodeRef } = useDroppable({ id });
   const name = columnID === 'archive' ? 'Archive' : 'Active Cells';
+  const [filter, setFilter] = useState('');
 
   if (!Array.isArray(dragItems)) {
     console.error('CellDrags prop is not an array', dragItems);
   }
+
+  const filteredItems = dragItems.filter(cell => cell.title.toLowerCase().includes(filter.toLowerCase()));
 
   return (
     <Box
@@ -49,6 +52,28 @@ export const DropList = ({ id, dragItems, columnID }) => {
           {name}
         </Typography>
       </Box>
+      <TextField
+        fullWidth="true"
+        label="Search cells"
+        variant="outlined"
+        size="small"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        sx={{ 
+          mb: 2,
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: 'divider',
+              borderWidth: '1px',
+              borderRadius: '8px',
+              boxShadow: '0px 2px 8px hsla(0, 0%, 0%, 0.05)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+            }
+          }
+        }}
+      />
       <Box
         sx={{
           width: '100%',
@@ -57,7 +82,7 @@ export const DropList = ({ id, dragItems, columnID }) => {
           borderRadius: '12px',
           border: '1px solid',
           borderColor: 'divider',
-          boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.05)',
+          boxShadow: '0px 2px 8px hsla(0, 0%, 0%, 0.05)',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
@@ -85,9 +110,9 @@ export const DropList = ({ id, dragItems, columnID }) => {
             },
           }}
         >
-          <SortableContext items={dragItems} strategy={verticalListSortingStrategy}>
-            {dragItems.map((dragItem) => (
-              <DragItem key={dragItem.id} id={dragItem.id} title={dragItem.title} columnID={columnID} />
+          <SortableContext items={filteredItems} strategy={verticalListSortingStrategy}>
+            {filteredItems.map((item) => (
+              <DragItem key={item.id} id={item.id} title={item.title} columnID={columnID} />
             ))}
           </SortableContext>
         </Box>
