@@ -2,8 +2,8 @@ import { Box, Button, Divider, Grid, Stack, Typography } from '@mui/material';
 import { DateTime } from 'luxon';
 import { React, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import DateRangeNotification from '../../components/DateRangeNotification';
-import { useSmartDateRange } from '../../hooks/useSmartDateRange';
+// import DateRangeNotification from '../../components/DateRangeNotification';
+// import { useSmartDateRange } from '../../hooks/useSmartDateRange';
 import { useCells } from '../../services/cell';
 import ArchiveModal from './components/ArchiveModal';
 import BackBtn from './components/BackBtn';
@@ -26,20 +26,20 @@ function Dashboard() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [showNoDataMessage, setShowNoDataMessage] = useState(false);
   const [manualDateSelection, setManualDateSelection] = useState(false);
-  const [smartDateRangeApplied, setSmartDateRangeApplied] = useState(false);
+  const [smartDateRangeApplied, setSmartDateRangeApplied] = useState(false); // eslint-disable-line no-unused-vars
   const [powerHasData, setPowerHasData] = useState(false);
   const [terosHasData, setTerosHasData] = useState(false);
   const cells = useCells();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Smart date range functionality
-  const {
-    calculateSmartDateRange,
-    showFallbackNotification,
-    fallbackDates,
-    showFallbackNotificationHandler,
-    hideFallbackNotification,
-  } = useSmartDateRange();
+  // const {
+  //   calculateSmartDateRange,
+  //   showFallbackNotification,
+  //   fallbackDates,
+  //   showFallbackNotificationHandler,
+  //   hideFallbackNotification,
+  // } = useSmartDateRange();
 
   // Initialize state from URL parameters
   useEffect(() => {
@@ -65,8 +65,8 @@ function Dashboard() {
 
       // Check if URL dates are significantly different from defaults (more than 1 hour difference)
       const isManualSelection =
-        Math.abs(parsedStartDate.diff(defaultStart, 'hours').hours) > 1 ||
-        Math.abs(parsedEndDate.diff(defaultEnd, 'hours').hours) > 1;
+        Math.abs(parsedStartDate.diff(defaultStart, 'hours').hours) > 3 ||
+        Math.abs(parsedEndDate.diff(defaultEnd, 'hours').hours) > 3;
 
       setStartDate(parsedStartDate);
       setEndDate(parsedEndDate);
@@ -80,42 +80,35 @@ function Dashboard() {
     setIsInitialized(true);
   }, [searchParams, cells.data]);
 
-  // Apply smart date range when cells are selected (only if not manual selection and not already applied)
-  useEffect(() => {
-    if (!isInitialized || manualDateSelection || smartDateRangeApplied) return;
+  // // Apply smart date range when cells are selected (only if not manual selection and not already applied)
+  // useEffect(() => {
+  //   if (!isInitialized || manualDateSelection || smartDateRangeApplied) return;
 
-    const applySmartDateRange = async () => {
-      if (selectedCells.length > 0) {
-        try {
-          const {
-            startDate: smartStartDate,
-            endDate: smartEndDate,
-            isFallback,
-          } = await calculateSmartDateRange(selectedCells);
+  //   const applySmartDateRange = async () => {
+  //     if (selectedCells.length > 0) {
+  //       try {
+  //         const {
+  //           startDate: smartStartDate,
+  //           endDate: smartEndDate,
+  //           isFallback,
+  //         } = await calculateSmartDateRange(selectedCells);
 
-          setStartDate(smartStartDate);
-          setEndDate(smartEndDate);
-          setSmartDateRangeApplied(true);
+  //         setStartDate(smartStartDate);
+  //         setEndDate(smartEndDate);
+  //         setSmartDateRangeApplied(true);
 
-          if (isFallback) {
-            showFallbackNotificationHandler();
-          }
-        } catch (error) {
-          console.error('Error applying smart date range:', error);
-          // Keep default dates on error
-        }
-      }
-    };
+  //         if (isFallback) {
+  //           showFallbackNotificationHandler();
+  //         }
+  //       } catch (error) {
+  //         console.error('Error applying smart date range:', error);
+  //         // Keep default dates on error
+  //       }
+  //     }
+  //   };
 
-    applySmartDateRange();
-  }, [
-    selectedCells,
-    isInitialized,
-    manualDateSelection,
-    smartDateRangeApplied,
-    calculateSmartDateRange,
-    showFallbackNotificationHandler,
-  ]);
+  //   applySmartDateRange();
+  // }, [selectedCells.map((cell) => cell.id).join(','), isInitialized, manualDateSelection, smartDateRangeApplied]);
 
   // Sync state changes to URL
   useEffect(() => {
@@ -137,13 +130,13 @@ function Dashboard() {
   const handleStartDateChange = (newStartDate) => {
     setStartDate(newStartDate);
     setManualDateSelection(true);
-    setSmartDateRangeApplied(true); // Prevent smart range from overriding manual selection
+    //setSmartDateRangeApplied(true); // Prevent smart range from overriding manual selection
   };
 
   const handleEndDateChange = (newEndDate) => {
     setEndDate(newEndDate);
     setManualDateSelection(true);
-    setSmartDateRangeApplied(true); // Prevent smart range from overriding manual selection
+    // setSmartDateRangeApplied(true); // Prevent smart range from overriding manual selection
   };
 
   // Handle cell selection changes
@@ -151,7 +144,9 @@ function Dashboard() {
     setSelectedCells(newSelectedCells);
     // Reset smart date range state when cells change to allow re-application
     if (!manualDateSelection) {
-      setSmartDateRangeApplied(false);
+      setTimeout(() => {
+        //setSmartDateRangeApplied(false);
+      }, 100);
     }
   };
 
@@ -186,12 +181,12 @@ function Dashboard() {
   return (
     <>
       <Box>
-        <DateRangeNotification
+        {/* <DateRangeNotification
           open={showFallbackNotification}
           onClose={hideFallbackNotification}
           fallbackStartDate={fallbackDates.start}
           fallbackEndDate={fallbackDates.end}
-        />
+        /> */}
         <Stack
           direction='column'
           divider={<Divider orientation='horizontal' flexItem />}

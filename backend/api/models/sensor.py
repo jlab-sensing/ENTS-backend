@@ -9,6 +9,7 @@ class Sensor(db.Model):
     """Table of sensors"""
 
     __tablename__ = "sensor"
+    __table_args__ = (db.Index("idx_sensor_cell_id", "cell_id"),)
 
     id = db.Column(db.Integer, primary_key=True)
     cell_id = db.Column(

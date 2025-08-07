@@ -5,6 +5,7 @@ class Data(db.Model):
     """Table of data"""
 
     __tablename__ = "data"
+    __table_args__ = (db.Index("idx_data_sensor_id_ts", "sensor_id", "ts"),)
 
     id = db.Column(db.Integer, primary_key=True)
     sensor_id = db.Column(

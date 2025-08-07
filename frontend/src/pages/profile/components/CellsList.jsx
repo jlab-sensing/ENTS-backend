@@ -1,10 +1,10 @@
-import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useOutletContext } from 'react-router-dom';
 import AddCellModal from './AddCellModal';
 import DeleteCellModal from './DeleteCellModal';
 import EditCellModal from './EditCellModal';
+import { React, useState } from 'react';
 
 function CellsList() {
   let data = useOutletContext();
@@ -12,6 +12,7 @@ function CellsList() {
   const isError = data[2];
   const user = data[4];
   data = data[0];
+  const [selectedRowId, setSelectedRowId] = useState('');
 
   if (!user) {
     return <></>;
@@ -56,6 +57,10 @@ function CellsList() {
     }));
   }
 
+  const handleRowSelection = (newSelection) => {
+    setSelectedRowId(newSelection[0]);
+  };
+
   return (
     <Box
       sx={{
@@ -91,7 +96,7 @@ function CellsList() {
           Your Cells
         </Typography>
         <AddCellModal />
-        <DeleteCellModal />
+        <DeleteCellModal id={selectedRowId} />
       </Box>
 
       {/* Wrapper to ensure DataGrid does not exceed background */}
@@ -102,7 +107,13 @@ function CellsList() {
           overflowY: 'auto',
         }}
       >
-        <DataGrid rows={rows} columns={columns} pageSize={5} autoHeight />
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          pageSize={5}
+          autoHeight
+          onRowSelectionModelChange={handleRowSelection}
+        />
       </Box>
     </Box>
   );
