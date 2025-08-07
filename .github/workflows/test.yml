@@ -49,6 +49,25 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    env: 
+      CONFIG_TYPE: Production
+      DB_USER: dirtviz
+      DB_PASS: password
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_DATABASE: dirtviz
+      PUBLIC_URL: http://localhost:3000
+      CELERY_BROKER_URL: redis://valkey:6379/0
+      CELERY_RESULT_BACKEND: redis://valkey:6379/0
+      GOOGLE_CLIENT_ID: ${secrets.GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${secrets.GOOGLE_CLIENT_SECRET}
+      OAUTH_REDIRECT_URI: http://localhost:3000/auth/callback
+      # keys/secrets are only for client side, fine to be exposed in tests
+      SECRET_KEY: eWlAZBMkE86Al_kZ0Uh2pw
+      REFRESH_TOKEN_SECRET: ZxgJO5ZMTX9FRvyHLbIjuw
+      ACCESS_TOKEN_SECRET: 0dyZbKf-C5ETM_gkBpznHQ
+      TTN_API_KEY: ${secrets.TTN_API_KEY}
+      TTN_APP_ID: soil-power-sensor
 
     steps:
       - name: Checkout
@@ -71,18 +90,10 @@ jobs:
         run: |
           curl https://github.com/loadimpact/k6/releases/download/v0.26.2/k6-v0.26.2-linux64.tar.gz -L | tar xvz --strip-components 1
 
-      - name: Copy .env file
-        run: |
-          while IFS= read -r line; do
-            echo "$line" >> $GITHUB_ENV
-          done <<< "${{ secrets.ENV_FILE }}"
-
-      - name: Check app id
-        run: |
-          echo "TTN_APP_ID=$TTN_APP_ID"
-
       - name: Start services
-        run: docker compose up -d
+        run: |
+          echo "$ENV_FILE" > .env
+          docker compose up -d
 
       - name: Wait for services to start
         run: sleep 10s
