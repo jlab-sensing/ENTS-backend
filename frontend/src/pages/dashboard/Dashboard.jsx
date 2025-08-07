@@ -4,7 +4,8 @@ import { React, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 // import DateRangeNotification from '../../components/DateRangeNotification';
 // import { useSmartDateRange } from '../../hooks/useSmartDateRange';
-import { useCells } from '../../services/cell';
+import { useCells, useUserCells } from '../../services/cell';
+import useAxiosPrivate from '../../auth/hooks/useAxiosPrivate';
 import ArchiveModal from './components/ArchiveModal';
 import BackBtn from './components/BackBtn';
 import CellSelect from './components/CellSelect';
@@ -18,6 +19,7 @@ import SoilPotCharts from './components/SoilPotChart';
 import TerosCharts from './components/TerosCharts';
 
 function Dashboard() {
+  const axiosPrivate = useAxiosPrivate();
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
   const [endDate, setEndDate] = useState(DateTime.now());
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
@@ -28,7 +30,7 @@ function Dashboard() {
   // const [setSmartDateRangeApplied] = useState(false);
   // const [isInitialized] = useState(false);
   // const [smartDateRangeApplied] = useState(false);
-  const cells = useCells();
+  const cells = useUserCells(axiosPrivate);
   const [searchParams, setSearchParams] = useSearchParams();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
