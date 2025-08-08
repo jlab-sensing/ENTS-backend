@@ -10,7 +10,7 @@ function SoilHumChart({ cells, startDate, endDate, stream }) {
   // CONFIGURATION
   // List out measurements that your chart is going to display
   // MUST MATCH FROM UTIL.PY
-  const sensor_name = 'sen0257';
+  const sensor_name = 'sen03808';
   const measurements = ['voltage', 'humidity'];
   const units = ['V', '%'];
   // Colors of data points. Each color represents the next color
