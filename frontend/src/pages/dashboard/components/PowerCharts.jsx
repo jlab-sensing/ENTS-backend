@@ -162,23 +162,24 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
             foundNewData = true;
             const powerDataRaw = cellChartData[cellid].powerData;
             const pTimestampRaw = powerDataRaw.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
-            const dupIdx = pTimestampRaw.reduce((arr, ts, i) => {
-              return !newVChartData.labels.some((oldTs) => ts.equals(oldTs)) && arr.push(i), arr;
+            const pTimestampMillis = pTimestampRaw.map(dt => dt.toMillis());
+            const dupIdx = pTimestampMillis.reduce((arr, ts, i) => {
+              return !newVChartData.labels.includes(ts) && arr.push(i), arr;
             }, []);
             const powerData = Object.fromEntries(
               Object.entries(powerDataRaw).map(([key, value]) => [key, value.filter((_, idx) => dupIdx.includes(idx))]),
             );
-            const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
+            const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
             newVChartData.labels = newVChartData.labels.concat(pTimestamp);
-            newVChartData.datasets[selectCounter].data = newVChartData.datasets[selectCounter].data.concat(powerData.v);
-            newVChartData.datasets[selectCounter + 1].data = newVChartData.datasets[selectCounter + 1].data.concat(
-              powerData.i,
-            );
+            const vData = createDataset(pTimestamp, powerData.v);
+            const iData = createDataset(pTimestamp, powerData.i);
+            const pData = createDataset(pTimestamp, powerData.p);
+            newVChartData.datasets[selectCounter].data = newVChartData.datasets[selectCounter].data.concat(vData);
+            newVChartData.datasets[selectCounter + 1].data =
+              newVChartData.datasets[selectCounter + 1].data.concat(iData);
             //power data
             newPwrChartData.labels = newPwrChartData.labels.concat(pTimestamp);
-            newPwrChartData.datasets[selectCounter].data = newPwrChartData.datasets[selectCounter].data.concat(
-              powerData.p,
-            );
+            newPwrChartData.datasets[selectCounter].data = newPwrChartData.datasets[selectCounter].data.concat(pData);
             selectCounter += 1;
           }
         }
@@ -187,7 +188,7 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
           const cellid = id;
           const name = cellChartData[cellid].name;
           const powerData = cellChartData[cellid].powerData;
-          const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
+          const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
           newVChartData.labels = pTimestamp;
           newVChartData.datasets.push(
             {
