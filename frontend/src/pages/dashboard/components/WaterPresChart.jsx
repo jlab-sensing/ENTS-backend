@@ -6,7 +6,7 @@ import WaterPressChart from '../../../charts/WaterPressChart/WaterPressChart';
 import useInterval from '../../../hooks/useInterval';
 import { getSensorData, streamSensorData } from '../../../services/sensor';
 
-function SensorChart({ cells, startDate, endDate, stream }) {
+function WaterPressChart({ cells, startDate, endDate, stream }) {
   // CONFIGURATION
   // List out measurements that your chart is going to display
   // MUST MATCH FROM UTIL.PY
@@ -250,11 +250,11 @@ function SensorChart({ cells, startDate, endDate, stream }) {
   );
 }
 
-SensorChart.propTypes = {
+WaterPressChart.propTypes = {
   cells: PropTypes.array,
   startDate: PropTypes.any,
   endDate: PropTypes.any,
   stream: PropTypes.bool,
 };
 
-export default SensorChart;
+export default WaterPressChart;

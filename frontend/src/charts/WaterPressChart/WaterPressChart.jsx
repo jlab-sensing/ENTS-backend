@@ -6,7 +6,7 @@ import ChartWrapper from '../ChartWrapper';
 import { chartPlugins } from '../plugins';
 
 export default function WaterPressChart({ data, startDate, endDate }) {
-  const { leftYMin, leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 8, 0.2);
+  const { leftYMin, leftYMax, leftYStep, rightYMax, rightYMin, rightYStep } = getMaxAxisAndStepValues(data.datasets, [], 8, 0.2);
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -58,10 +58,10 @@ export default function WaterPressChart({ data, startDate, endDate }) {
         },
         ticks: {
           beginAtZero: true,
-          stepSize: leftYStep,
+          stepSize: rightYStep,
         },
-        min: leftYMin,
-        max: leftYMax,
+        min: rightYMin,
+        max: rightYMax,
       },
     },
     plugins: structuredClone(chartPlugins),
