@@ -1,8 +1,12 @@
 from flask_restful import Resource
-from flask import request, jsonify
-from ..auth.auth import authenticate
+from flask import request
 from ..models.cell import Tag as TagModel
-from ..schemas.tag_schema import TagSchema, CreateTagSchema, UpdateTagSchema, TagListSchema
+from ..schemas.tag_schema import (
+    TagSchema,
+    CreateTagSchema,
+    UpdateTagSchema,
+    TagListSchema,
+)
 
 # Initialize schemas
 tags_schema = TagSchema(many=True)
@@ -30,7 +34,7 @@ class Tag(Resource):
     def post(self):
         """Create a new tag"""
         json_data = request.json
-        
+
         if not json_data:
             return {"message": "No data provided"}, 400
 
@@ -52,13 +56,13 @@ class Tag(Resource):
             new_tag = TagModel(
                 name=name,
                 description=description,
-                created_by=None  # No authentication, so no user ID
+                created_by=None,  # No authentication, so no user ID
             )
             new_tag.save()
-            
+
             return {
                 "message": "Tag created successfully",
-                "tag": tag_schema.dump(new_tag)
+                "tag": tag_schema.dump(new_tag),
             }, 201
         except Exception as e:
             return {"message": "Error creating tag", "error": str(e)}, 500
@@ -106,10 +110,7 @@ class TagDetail(Resource):
 
             tag.save()
 
-            return {
-                "message": "Tag updated successfully",
-                "tag": tag_schema.dump(tag)
-            }
+            return {"message": "Tag updated successfully", "tag": tag_schema.dump(tag)}
         except Exception as e:
             return {"message": "Error updating tag", "error": str(e)}, 500
 
@@ -124,5 +125,3 @@ class TagDetail(Resource):
             return {"message": "Tag deleted successfully"}
         except Exception as e:
             return {"message": "Error deleting tag", "error": str(e)}, 500
-
-

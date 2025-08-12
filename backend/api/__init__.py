@@ -132,15 +132,15 @@ def create_app(debug: bool = False) -> Flask:
     api.add_resource(Session_r, "/session")
     api.add_resource(User_Data, "/user")
     api.add_resource(Status, "/status/<string:id>")
-    
+
     # Tag management endpoints
     api.add_resource(Tag, "/tag/")
     api.add_resource(TagDetail, "/tag/<int:tag_id>")
-    
+
     # Cell-Tag relationship endpoints
     api.add_resource(CellTags, "/cell/<int:cell_id>/tags")
     api.add_resource(CellTagDetail, "/cell/<int:cell_id>/tags/<int:tag_id>")
     api.add_resource(CellsByTag, "/tags/<int:tag_id>/cells")
-    
+
     app.register_blueprint(auth, url_prefix="/api")
     return app

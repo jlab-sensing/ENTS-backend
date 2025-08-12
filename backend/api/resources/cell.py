@@ -33,13 +33,21 @@ class Cell(Resource):
             try:
                 tag_id_list = [int(id.strip()) for id in tag_ids.split(",")]
                 # Filter cells that have ANY of the specified tags
-                cells = [cell for cell in cells if any(tag.id in tag_id_list for tag in cell.tags)]
+                cells = [
+                    cell
+                    for cell in cells
+                    if any(tag.id in tag_id_list for tag in cell.tags)
+                ]
             except ValueError:
                 return {"message": "Invalid tag IDs format"}, 400
 
         # Apply category filtering if specified
         if category:
-            cells = [cell for cell in cells if any(tag.category == category for tag in cell.tags)]
+            cells = [
+                cell
+                for cell in cells
+                if any(tag.category == category for tag in cell.tags)
+            ]
 
         return cells_schema.dump(cells)
 
@@ -52,7 +60,7 @@ class Cell(Resource):
         long = cell_data["longitude"]
         userEmail = cell_data["userEmail"]
         tag_ids = cell_data.get("tag_ids", [])
-        
+
         # FIXME:
         # migrate user email to include authenticated user
         # if userEmail["userEmail"] is None:
@@ -61,15 +69,15 @@ class Cell(Resource):
             archive = False
         else:
             archive = cell_data["archive"]
-            
+
         if CellModel.find_by_name(cell_name):
             return {"message": "Duplicate cell name"}, 400
-            
+
         try:
             new_cell = CellModel.add_cell_by_user_email(
                 cell_name, location, lat, long, archive, userEmail
             )
-            
+
             if new_cell and tag_ids:
                 # Assign tags to the new cell
                 tags = []
@@ -79,10 +87,10 @@ class Cell(Resource):
                         tags.append(tag)
                     else:
                         return {"message": f"Tag with ID {tag_id} not found"}, 404
-                
+
                 new_cell.tags = tags
                 new_cell.save()
-            
+
             if new_cell:
                 return {"message": "Successfully added cell"}
             return {"message": "Error adding cell"}, 400
@@ -121,7 +129,7 @@ class Cell(Resource):
                             tags.append(tag)
                         else:
                             return {"message": f"Tag with ID {tag_id} not found"}, 404
-                    
+
                     # Replace current tags with new ones
                     cell.tags = tags
                 else:

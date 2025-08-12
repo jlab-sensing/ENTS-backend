@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from flask import request, jsonify
+from flask import request
 from ..models.cell import Cell as CellModel, Tag as TagModel
 from ..schemas.tag_schema import TagSchema
 
@@ -10,6 +10,7 @@ tag_schema = TagSchema()
 
 class CellTags(Resource):
     """Resource for managing tags associated with a specific cell"""
+
     # No authentication required - following Cell resource pattern
 
     def get(self, cell_id):
@@ -50,7 +51,7 @@ class CellTags(Resource):
 
             return {
                 "message": "Tags assigned successfully",
-                "tags": tags_schema.dump(cell.tags)
+                "tags": tags_schema.dump(cell.tags),
             }
         except Exception as e:
             return {"message": "Error assigning tags", "error": str(e)}, 500
@@ -58,6 +59,7 @@ class CellTags(Resource):
 
 class CellTagDetail(Resource):
     """Resource for managing individual tag assignment to a cell"""
+
     # No authentication required - following Cell resource pattern
 
     def put(self, cell_id, tag_id):
@@ -81,7 +83,7 @@ class CellTagDetail(Resource):
 
             return {
                 "message": "Tag added to cell successfully",
-                "tag": tag_schema.dump(tag)
+                "tag": tag_schema.dump(tag),
             }
         except Exception as e:
             return {"message": "Error adding tag to cell", "error": str(e)}, 500
@@ -112,6 +114,7 @@ class CellTagDetail(Resource):
 
 class CellsByTag(Resource):
     """Resource for getting cells by tag"""
+
     # No authentication required - following Cell resource pattern
 
     def get(self, tag_id):
@@ -121,9 +124,7 @@ class CellsByTag(Resource):
             return {"message": "Tag not found"}, 404
 
         from ..schemas.cell_schema import CellSchema
+
         cells_schema = CellSchema(many=True)
 
-        return {
-            "tag": tag_schema.dump(tag),
-            "cells": cells_schema.dump(tag.cells)
-        }
+        return {"tag": tag_schema.dump(tag), "cells": cells_schema.dump(tag.cells)}

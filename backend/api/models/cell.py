@@ -112,10 +112,9 @@ class Tag(db.Model):
             tag.save()
         return tag
 
-
     @staticmethod
     def search_by_name(pattern):
-        return Tag.query.filter(Tag.name.ilike(f'%{pattern}%')).all()
+        return Tag.query.filter(Tag.name.ilike(f"%{pattern}%")).all()
 
     @staticmethod
     def get_all():
