@@ -125,13 +125,13 @@ jobs:
             dirtviz_short.log
 
       - name: Upload backend coverage reports to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           flags: backend
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload frontend coverage reports to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: ./frontend/coverage/coverage-final.json
           flags: frontend
