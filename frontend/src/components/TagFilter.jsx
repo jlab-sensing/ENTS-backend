@@ -1,25 +1,14 @@
-import React, { useState } from 'react';
-import {
-  Box,
-  Chip,
-  TextField,
-  Autocomplete,
-  Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-} from '@mui/material';
+import React from 'react';
+import { Box, Chip, TextField, Autocomplete, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useTags } from '../services/tag';
 
-function TagFilter({ selectedTags, onTagsChange, disabled = false, axiosPrivate }) {
+function TagFilter({ selectedTags, onTagsChange, disabled = false }) {
   const { data: allTags = [], isLoading: tagsLoading } = useTags();
 
   const handleTagChange = (event, newValue) => {
     onTagsChange(newValue);
   };
-
 
   if (tagsLoading) {
     return <Typography>Loading tags...</Typography>;
@@ -54,18 +43,20 @@ function TagFilter({ selectedTags, onTagsChange, disabled = false, axiosPrivate 
         renderInput={(params) => (
           <TextField
             {...params}
-            label="Filter by Tags"
-            placeholder={selectedTags.length === 0 ? "Select tags to filter cells" : ""}
-            variant="outlined"
-            size="small"
-            helperText={selectedTags.length === 0 ? "No tags selected - showing all cells" : `Filtering by ${selectedTags.length} tag${selectedTags.length > 1 ? 's' : ''}`}
+            label='Filter by Tags'
+            placeholder={selectedTags.length === 0 ? 'Select tags to filter cells' : ''}
+            variant='outlined'
+            size='small'
+            helperText={
+              selectedTags.length === 0
+                ? 'No tags selected - showing all cells'
+                : `Filtering by ${selectedTags.length} tag${selectedTags.length > 1 ? 's' : ''}`
+            }
           />
         )}
         isOptionEqualToValue={(option, value) => option.id === value.id}
         filterOptions={(options, { inputValue }) => {
-          const filtered = options.filter((option) =>
-            option.name.toLowerCase().includes(inputValue.toLowerCase())
-          );
+          const filtered = options.filter((option) => option.name.toLowerCase().includes(inputValue.toLowerCase()));
           return filtered;
         }}
         sx={{ minWidth: 300 }}
@@ -78,7 +69,6 @@ TagFilter.propTypes = {
   selectedTags: PropTypes.array.isRequired,
   onTagsChange: PropTypes.func.isRequired,
   disabled: PropTypes.bool,
-  axiosPrivate: PropTypes.object,
 };
 
 export default TagFilter;

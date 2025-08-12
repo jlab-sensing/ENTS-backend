@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Chip,
@@ -9,17 +9,13 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Typography,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import PropTypes from 'prop-types';
 import { useTags, useCreateTag } from '../services/tag';
 
-function TagSelector({ selectedTags, onTagsChange, axiosPrivate }) {
+function TagSelector({ selectedTags, onTagsChange }) {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newTagName, setNewTagName] = useState('');
   const [newTagDescription, setNewTagDescription] = useState('');
@@ -41,7 +37,7 @@ function TagSelector({ selectedTags, onTagsChange, axiosPrivate }) {
       };
 
       await createTagMutation.mutateAsync(tagData);
-      
+
       setCreateDialogOpen(false);
       setNewTagName('');
       setNewTagDescription('');
@@ -87,16 +83,16 @@ function TagSelector({ selectedTags, onTagsChange, axiosPrivate }) {
         renderInput={(params) => (
           <TextField
             {...params}
-            label="Tags"
-            placeholder="Select or search tags"
-            variant="outlined"
+            label='Tags'
+            placeholder='Select or search tags'
+            variant='outlined'
             InputProps={{
               ...params.InputProps,
               endAdornment: (
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   {params.InputProps.endAdornment}
                   <Button
-                    size="small"
+                    size='small'
                     startIcon={<AddIcon />}
                     onClick={() => setCreateDialogOpen(true)}
                     sx={{
@@ -117,28 +113,21 @@ function TagSelector({ selectedTags, onTagsChange, axiosPrivate }) {
         )}
         isOptionEqualToValue={(option, value) => option.id === value.id}
         filterOptions={(options, { inputValue }) => {
-          const filtered = options.filter((option) =>
-            option.name.toLowerCase().includes(inputValue.toLowerCase())
-          );
+          const filtered = options.filter((option) => option.name.toLowerCase().includes(inputValue.toLowerCase()));
           return filtered;
         }}
       />
 
       {/* Create New Tag Dialog */}
-      <Dialog
-        open={createDialogOpen}
-        onClose={handleCloseCreateDialog}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={createDialogOpen} onClose={handleCloseCreateDialog} maxWidth='sm' fullWidth>
         <DialogTitle>Create New Tag</DialogTitle>
         <DialogContent>
           <TextField
-            autoFocus
-            margin="dense"
-            label="Tag Name"
+            // autoFocus removed for accessibility
+            margin='dense'
+            label='Tag Name'
             fullWidth
-            variant="outlined"
+            variant='outlined'
             value={newTagName}
             onChange={(e) => setNewTagName(e.target.value)}
             required
@@ -146,10 +135,10 @@ function TagSelector({ selectedTags, onTagsChange, axiosPrivate }) {
           />
 
           <TextField
-            margin="dense"
-            label="Description (Optional)"
+            margin='dense'
+            label='Description (Optional)'
             fullWidth
-            variant="outlined"
+            variant='outlined'
             multiline
             rows={3}
             value={newTagDescription}
@@ -157,12 +146,12 @@ function TagSelector({ selectedTags, onTagsChange, axiosPrivate }) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseCreateDialog} color="inherit">
+          <Button onClick={handleCloseCreateDialog} color='inherit'>
             Cancel
           </Button>
           <Button
             onClick={handleCreateTag}
-            variant="contained"
+            variant='contained'
             disabled={!newTagName.trim() || createTagMutation.isLoading}
             sx={{
               backgroundColor: '#588157',
@@ -182,7 +171,6 @@ function TagSelector({ selectedTags, onTagsChange, axiosPrivate }) {
 TagSelector.propTypes = {
   selectedTags: PropTypes.array.isRequired,
   onTagsChange: PropTypes.func.isRequired,
-  axiosPrivate: PropTypes.object,
 };
 
 export default TagSelector;
