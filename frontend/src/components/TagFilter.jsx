@@ -11,26 +11,15 @@ import {
   MenuItem,
 } from '@mui/material';
 import PropTypes from 'prop-types';
-import { useTags, useTagCategories } from '../services/tag';
+import { useTags } from '../services/tag';
 
 function TagFilter({ selectedTags, onTagsChange, disabled = false, axiosPrivate }) {
-  const [selectedCategory, setSelectedCategory] = useState('');
-  
   const { data: allTags = [], isLoading: tagsLoading } = useTags();
-  const { data: categories = [], isLoading: categoriesLoading } = useTagCategories();
 
   const handleTagChange = (event, newValue) => {
     onTagsChange(newValue);
   };
 
-  const handleCategoryChange = (event) => {
-    setSelectedCategory(event.target.value);
-  };
-
-  // Filter tags by selected category
-  const filteredTags = selectedCategory 
-    ? allTags.filter(tag => tag.category === selectedCategory)
-    : allTags;
 
   if (tagsLoading) {
     return <Typography>Loading tags...</Typography>;
@@ -38,30 +27,10 @@ function TagFilter({ selectedTags, onTagsChange, disabled = false, axiosPrivate 
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      {/* Category Filter */}
-      <FormControl sx={{ minWidth: 200 }} size="small">
-        <InputLabel>Filter by Category</InputLabel>
-        <Select
-          value={selectedCategory}
-          onChange={handleCategoryChange}
-          label="Filter by Category"
-          disabled={disabled || categoriesLoading}
-        >
-          <MenuItem value="">
-            <em>All Categories</em>
-          </MenuItem>
-          {!categoriesLoading && categories.categories?.map((category) => (
-            <MenuItem key={category} value={category}>
-              {category.charAt(0).toUpperCase() + category.slice(1)}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
       {/* Tag Selection */}
       <Autocomplete
         multiple
-        options={filteredTags}
+        options={allTags}
         getOptionLabel={(option) => option.name}
         value={selectedTags}
         onChange={handleTagChange}
@@ -101,31 +70,6 @@ function TagFilter({ selectedTags, onTagsChange, disabled = false, axiosPrivate 
         }}
         sx={{ minWidth: 300 }}
       />
-      
-      {/* Show category breakdown of selected tags */}
-      {selectedTags.length > 0 && (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {Object.entries(
-            selectedTags.reduce((acc, tag) => {
-              const category = tag.category || 'uncategorized';
-              acc[category] = (acc[category] || 0) + 1;
-              return acc;
-            }, {})
-          ).map(([category, count]) => (
-            <Chip
-              key={category}
-              label={`${category}: ${count}`}
-              size="small"
-              variant="outlined"
-              sx={{ 
-                fontSize: '0.75rem',
-                color: '#666',
-                borderColor: '#ddd',
-              }}
-            />
-          ))}
-        </Box>
-      )}
     </Box>
   );
 }

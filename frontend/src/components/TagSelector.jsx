@@ -17,16 +17,14 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import PropTypes from 'prop-types';
-import { useTags, useCreateTag, useTagCategories } from '../services/tag';
+import { useTags, useCreateTag } from '../services/tag';
 
 function TagSelector({ selectedTags, onTagsChange, axiosPrivate }) {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newTagName, setNewTagName] = useState('');
-  const [newTagCategory, setNewTagCategory] = useState('');
   const [newTagDescription, setNewTagDescription] = useState('');
 
   const { data: tags = [], isLoading: tagsLoading } = useTags();
-  const { data: categories = [], isLoading: categoriesLoading } = useTagCategories();
   const createTagMutation = useCreateTag();
 
   const handleTagChange = (event, newValue) => {
@@ -39,7 +37,6 @@ function TagSelector({ selectedTags, onTagsChange, axiosPrivate }) {
     try {
       const tagData = {
         name: newTagName.trim(),
-        category: newTagCategory || null,
         description: newTagDescription || null,
       };
 
@@ -47,7 +44,6 @@ function TagSelector({ selectedTags, onTagsChange, axiosPrivate }) {
       
       setCreateDialogOpen(false);
       setNewTagName('');
-      setNewTagCategory('');
       setNewTagDescription('');
     } catch (error) {
       console.error('Error creating tag:', error.response?.data?.message || error.message);
@@ -57,7 +53,6 @@ function TagSelector({ selectedTags, onTagsChange, axiosPrivate }) {
   const handleCloseCreateDialog = () => {
     setCreateDialogOpen(false);
     setNewTagName('');
-    setNewTagCategory('');
     setNewTagDescription('');
   };
 
@@ -149,29 +144,6 @@ function TagSelector({ selectedTags, onTagsChange, axiosPrivate }) {
             required
             sx={{ mb: 2 }}
           />
-          
-          <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
-            <InputLabel>Category</InputLabel>
-            <Select
-              value={newTagCategory}
-              onChange={(e) => setNewTagCategory(e.target.value)}
-              label="Category"
-            >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              {!categoriesLoading && categories.categories?.map((category) => (
-                <MenuItem key={category} value={category}>
-                  {category}
-                </MenuItem>
-              ))}
-              <MenuItem value="institution">Institution</MenuItem>
-              <MenuItem value="department">Department</MenuItem>
-              <MenuItem value="project">Project</MenuItem>
-              <MenuItem value="experiment">Experiment</MenuItem>
-              <MenuItem value="version">Version</MenuItem>
-            </Select>
-          </FormControl>
 
           <TextField
             margin="dense"

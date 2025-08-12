@@ -115,7 +115,7 @@ def create_app(debug: bool = False) -> Flask:
     from .resources.users_data import User_Data
     from .resources.status import Status
     from .resources.data_availability import DataAvailability
-    from .resources.tag import Tag, TagDetail, TagCategories
+    from .resources.tag import Tag, TagDetail
     from .resources.cell_tags import CellTags, CellTagDetail, CellsByTag
 
     from .auth.routes import auth
@@ -136,7 +136,6 @@ def create_app(debug: bool = False) -> Flask:
     # Tag management endpoints
     api.add_resource(Tag, "/tag/")
     api.add_resource(TagDetail, "/tag/<int:tag_id>")
-    api.add_resource(TagCategories, "/tag/categories")
     
     # Cell-Tag relationship endpoints
     api.add_resource(CellTags, "/cell/<int:cell_id>/tags")

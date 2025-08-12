@@ -16,14 +16,11 @@ class Tag(Resource):
     # No authentication required - following Cell resource pattern
 
     def get(self):
-        """Get all tags or filter by category"""
+        """Get all tags or filter by search"""
         json_data = request.args
-        category = json_data.get("category")
         search = json_data.get("search")
 
-        if category:
-            tags = TagModel.get_by_category(category)
-        elif search:
+        if search:
             tags = TagModel.search_by_name(search)
         else:
             tags = TagModel.get_all()
@@ -44,7 +41,6 @@ class Tag(Resource):
             return {"message": "Invalid data", "errors": str(e)}, 400
 
         name = tag_data["name"].strip()
-        category = tag_data.get("category")
         description = tag_data.get("description")
 
         # Check if tag already exists
@@ -55,7 +51,6 @@ class Tag(Resource):
         try:
             new_tag = TagModel(
                 name=name,
-                category=category,
                 description=description,
                 created_by=None  # No authentication, so no user ID
             )
@@ -106,9 +101,6 @@ class TagDetail(Resource):
                         return {"message": "Tag with this name already exists"}, 400
                     tag.name = new_name
 
-            if "category" in tag_data:
-                tag.category = tag_data["category"]
-
             if "description" in tag_data:
                 tag.description = tag_data["description"]
 
@@ -134,12 +126,3 @@ class TagDetail(Resource):
             return {"message": "Error deleting tag", "error": str(e)}, 500
 
 
-class TagCategories(Resource):
-    # No authentication required for reading categories
-
-    def get(self):
-        """Get all unique tag categories"""
-        from ..models import db
-        categories = db.session.query(TagModel.category).filter(TagModel.category.isnot(None)).distinct().all()
-        category_list = [cat[0] for cat in categories if cat[0]]
-        return {"categories": category_list}

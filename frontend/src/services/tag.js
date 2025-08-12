@@ -1,10 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
-// Get all tags or filter by category/search
+// Get all tags or filter by search
 export const getTags = (params = {}) => {
   const queryParams = new URLSearchParams();
-  if (params.category) queryParams.append('category', params.category);
   if (params.search) queryParams.append('search', params.search);
   
   const url = `${process.env.PUBLIC_URL}/api/tag/${queryParams ? `?${queryParams}` : ''}`;
@@ -31,10 +30,6 @@ export const deleteTag = (tagId) => {
   return axios.delete(`${process.env.PUBLIC_URL}/api/tag/${tagId}`).then((res) => res.data);
 };
 
-// Get all unique tag categories
-export const getTagCategories = () => {
-  return axios.get(`${process.env.PUBLIC_URL}/api/tag/categories`).then((res) => res.data);
-};
 
 // Get tags for a specific cell
 export const getCellTags = (cellId) => {
@@ -77,12 +72,6 @@ export const useTag = (tagId) =>
     refetchOnWindowFocus: false,
   });
 
-export const useTagCategories = () =>
-  useQuery({
-    queryKey: ['tag-categories'],
-    queryFn: getTagCategories,
-    refetchOnWindowFocus: false,
-  });
 
 export const useCellTags = (cellId) =>
   useQuery({
@@ -98,7 +87,6 @@ export const useCreateTag = () => {
     mutationFn: createTag,
     onSuccess: () => {
       queryClient.invalidateQueries(['tags']);
-      queryClient.invalidateQueries(['tag-categories']);
     },
   });
 };
@@ -110,7 +98,6 @@ export const useUpdateTag = () => {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries(['tags']);
       queryClient.invalidateQueries(['tag', variables.tagId]);
-      queryClient.invalidateQueries(['tag-categories']);
     },
   });
 };
@@ -121,7 +108,6 @@ export const useDeleteTag = () => {
     mutationFn: deleteTag,
     onSuccess: () => {
       queryClient.invalidateQueries(['tags']);
-      queryClient.invalidateQueries(['tag-categories']);
     },
   });
 };

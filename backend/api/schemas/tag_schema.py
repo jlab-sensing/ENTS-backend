@@ -22,7 +22,6 @@ class CreateTagSchema(ma.Schema):
     """Schema for validating tag creation data"""
     
     name = ma.String(required=True, validate=validate.Length(min=1, max=255))
-    category = ma.String(validate=validate.Length(max=50), allow_none=True)
     description = ma.String(allow_none=True)
 
 
@@ -30,7 +29,6 @@ class UpdateTagSchema(ma.Schema):
     """Schema for validating tag update data"""
     
     name = ma.String(validate=validate.Length(min=1, max=255))
-    category = ma.String(validate=validate.Length(max=50), allow_none=True)
     description = ma.String(allow_none=True)
 
 
@@ -39,7 +37,6 @@ class TagListSchema(ma.Schema):
     
     id = ma.Integer()
     name = ma.String()
-    category = ma.String()
     description = ma.String()
     created_at = ma.DateTime()
     created_by = ma.UUID()

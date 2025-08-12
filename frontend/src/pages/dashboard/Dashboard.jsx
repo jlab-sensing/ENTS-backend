@@ -6,7 +6,6 @@ import { useSearchParams } from 'react-router-dom';
 // import { useSmartDateRange } from '../../hooks/useSmartDateRange';
 import useAxiosPrivate from '../../auth/hooks/useAxiosPrivate';
 import { useCells } from '../../services/cell';
-import TagFilter from '../../components/TagFilter';
 import ArchiveModal from './components/ArchiveModal';
 import BackBtn from './components/BackBtn';
 import CellSelect from './components/CellSelect';
@@ -25,7 +24,6 @@ function Dashboard() {
   const [endDate, setEndDate] = useState(DateTime.now());
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [selectedCells, setSelectedCells] = useState([]);
-  const [selectedTags, setSelectedTags] = useState([]);
   const [stream, setStream] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [manualDateSelection, setManualDateSelection] = useState(false);
@@ -182,20 +180,11 @@ function Dashboard() {
                       <CellSelect 
                         selectedCells={selectedCells} 
                         setSelectedCells={handleCellSelectionChange}
-                        filteredByTags={selectedTags}
-                        axiosPrivate={axiosPrivate}
+                          axiosPrivate={axiosPrivate}
                       />
                     </Box>
                   </Stack>
 
-                  {/* Tag Filter */}
-                  <Box sx={{ mt: 2 }}>
-                    <TagFilter
-                      selectedTags={selectedTags}
-                      onTagsChange={setSelectedTags}
-                      axiosPrivate={axiosPrivate}
-                    />
-                  </Box>
 
                   {/* Second bar */}
                   <Stack direction='row' spacing={2} alignItems='center' justifyContent='space-between'>
@@ -244,7 +233,6 @@ function Dashboard() {
                     <CellSelect 
                       selectedCells={selectedCells} 
                       setSelectedCells={handleCellSelectionChange}
-                      filteredByTags={selectedTags}
                       axiosPrivate={axiosPrivate}
                     />
                   </Box>
@@ -272,16 +260,6 @@ function Dashboard() {
                   </Button>
                 </Stack>
                 
-                {/* Second row - Tag Filter */}
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                  <Box sx={{ minWidth: '400px', maxWidth: '600px' }}>
-                    <TagFilter
-                      selectedTags={selectedTags}
-                      onTagsChange={setSelectedTags}
-                      axiosPrivate={axiosPrivate}
-                    />
-                  </Box>
-                </Box>
               </Box>
             )}
           </Box>
