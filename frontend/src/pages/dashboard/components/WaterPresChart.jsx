@@ -6,20 +6,20 @@ import WaterPressChart from '../../../charts/WaterPressChart/WaterPressChart';
 import useInterval from '../../../hooks/useInterval';
 import { getSensorData, streamSensorData } from '../../../services/sensor';
 
-function WaterPressChart({ cells, startDate, endDate, stream }) {
+function WaterPressCharts({ cells, startDate, endDate, stream }) {
   // CONFIGURATION
   // List out measurements that your chart is going to display
   // MUST MATCH FROM UTIL.PY
   const sensor_name = 'sen0257';
-  const measurements = ['pressure', 'voltage'];
-  const units = ['kPa', 'V'];
+  const measurements = ['pressure'];
+  const units = ['kPa'];
   // Colors of data points. Each color represents the next color
   // of the data points as the user selects more cells to compare.
   // Add more measurements depending on how many different values on the charts
   const meas_colors= ['#26C6DA', '#FF7043', '#A2708A'];
 
     //whatever you want it to say on the side
-  const axisIds = ['pressure', 'voltage'];
+  const axisIds = ['Pressure'];
 
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
@@ -250,11 +250,11 @@ function WaterPressChart({ cells, startDate, endDate, stream }) {
   );
 }
 
-WaterPressChart.propTypes = {
+WaterPressCharts.propTypes = {
   cells: PropTypes.array,
   startDate: PropTypes.any,
   endDate: PropTypes.any,
   stream: PropTypes.bool,
 };
 
-export default WaterPressChart;
+export default WaterPressCharts;

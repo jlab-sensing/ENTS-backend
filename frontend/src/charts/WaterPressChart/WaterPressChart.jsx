@@ -1,12 +1,12 @@
 import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
 import { React } from 'react';
-import { getMaxAxisAndStepValues } from '../alignAxis';
+import { getAxisBoundsAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 import { chartPlugins } from '../plugins';
 
 export default function WaterPressChart({ data, startDate, endDate }) {
-  const { leftYMin, leftYMax, leftYStep, rightYMax, rightYMin, rightYStep } = getMaxAxisAndStepValues(data.datasets, [], 8, 0.2);
+  const { leftYMin, leftYMax, leftYStep, rightYMax, rightYMin, rightYStep } = getAxisBoundsAndStepValues(data.datasets, [], 8, 0.2);
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -37,18 +37,18 @@ export default function WaterPressChart({ data, startDate, endDate }) {
       },
       pressure: {
         position: 'left',
-        beginAtZero: true,
         title: {
           display: true,
           text: 'Water Pressure (kPa)',
         },
         ticks: {
-          beginAtZero: true,
           stepSize: leftYStep,
+          //beginAtZero: true,
         },
         min: leftYMin,
         max: leftYMax,
       },
+      /*
       voltage: {
         position: 'right',
         beginAtZero: true,
@@ -63,6 +63,7 @@ export default function WaterPressChart({ data, startDate, endDate }) {
         min: rightYMin,
         max: rightYMax,
       },
+      */
     },
     plugins: structuredClone(chartPlugins),
   };

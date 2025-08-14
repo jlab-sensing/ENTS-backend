@@ -1,12 +1,12 @@
 import 'chartjs-adapter-luxon';
 import PropTypes from 'prop-types';
 import { React } from 'react';
-import { getMaxAxisAndStepValues } from '../alignAxis';
+import { getAxisBoundsAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 import { chartPlugins } from '../plugins';
 
 export default function WaterFlowChart({ data, startDate, endDate }) {
-  const { leftYMin, leftYMax, leftYStep } = getMaxAxisAndStepValues(data.datasets, [], 8, 0.2);
+  const { leftYMin, leftYMax, leftYStep } = getAxisBoundsAndStepValues(data.datasets, [], 8, 0.2);
   const chartOptions = {
     maintainAspectRatio: false,
     responsive: true,
@@ -35,7 +35,7 @@ export default function WaterFlowChart({ data, startDate, endDate }) {
         min: startDate?.toJSDate(),
         max: endDate?.toJSDate(),
       },
-      leafAxis: {
+      flow: {
         position: 'left',
         title: {
           display: true,

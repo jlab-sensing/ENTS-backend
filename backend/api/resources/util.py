@@ -128,29 +128,34 @@ def process_measurement_dict(meas: dict):
     #sen0257 water pressure measurement
     elif meas["type"] == "sen0257":
 
-        pressure_obj = Sensor.add_data(meas_name="pressure", meas_unit="kPa", meas_dict=meas)
+        pressure_obj = Sensor.add_data(meas_name="pressure", 
+                            meas_unit="kPa", meas_dict=meas)
 
         obj_list.append(pressure_obj)
 
-        voltage_obj = Sensor.add_data(meas_name="voltage", meas_unit="V", meas_dict=meas)
+        voltage_obj = Sensor.add_data(meas_name="voltage", 
+                            meas_unit="V", meas_dict=meas)
 
         obj_list.append(voltage_obj)
 
     #sen0308 soil humidity measurement
     elif meas["type"] == "sen0308":
 
-        voltage_obj = Sensor.add_data(meas_name="voltage", meas_unit="V", meas_dict=meas)
+        voltage_obj = Sensor.add_data(meas_name="voltage", 
+                            meas_unit="V", meas_dict=meas)
 
         obj_list.append(voltage_obj)
 
-        humidity_obj = Sensor.add_data(meas_name="humidity", meas_unit="%", meas_dict=meas)
+        humidity_obj = Sensor.add_data(meas_name="humidity", 
+                            meas_unit="%", meas_dict=meas)
 
         obj_list.append(humidity_obj)
 
     #yfs210c water flow measurement
     elif meas["type"] == "yfs210c":
 
-        flow_obj = Sensor.add_data(meas_name="flow rate", meas_unit="L/Min", meas_dict=meas)
+        flow_obj = Sensor.add_data(meas_name="flow rate", 
+                        meas_unit="L/Min", meas_dict=meas)
 
         obj_list.append(flow_obj)
 

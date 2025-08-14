@@ -6,20 +6,20 @@ import SoilHumChart from '../../../charts/SoilHumChart/SoilHumChart';
 import useInterval from '../../../hooks/useInterval';
 import { getSensorData, streamSensorData } from '../../../services/sensor';
 
-function SoilHumChart({ cells, startDate, endDate, stream }) {
+function SoilHumCharts({ cells, startDate, endDate, stream }) {
   // CONFIGURATION
   // List out measurements that your chart is going to display
   // MUST MATCH FROM UTIL.PY
   const sensor_name = 'sen03808';
-  const measurements = ['voltage', 'humidity'];
-  const units = ['V', '%'];
+  const measurements = ['Humidity'];
+  const units = ['%'];
   // Colors of data points. Each color represents the next color
   // of the data points as the user selects more cells to compare.
   // Add more measurements depending on how many different values on the charts
   const meas_colors= ['#26C6DA', '#FF7043', '#A2708A'];
 
     //whatever you want it to say on the side
-  const axisIds = ['voltage', 'humidity'];
+  const axisIds = ['humidity'];
 
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
@@ -250,11 +250,11 @@ function SoilHumChart({ cells, startDate, endDate, stream }) {
   );
 }
 
-SoilHumChart.propTypes = {
+SoilHumCharts.propTypes = {
   cells: PropTypes.array,
   startDate: PropTypes.any,
   endDate: PropTypes.any,
   stream: PropTypes.bool,
 };
 
-export default SoilHumChart;
+export default SoilHumCharts;

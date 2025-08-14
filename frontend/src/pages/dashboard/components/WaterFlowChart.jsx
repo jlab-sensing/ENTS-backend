@@ -6,7 +6,7 @@ import WaterFlowChart from '../../../charts/WaterFlowChart/WaterFlowChart';
 import useInterval from '../../../hooks/useInterval';
 import { getSensorData, streamSensorData } from '../../../services/sensor';
 
-function WaterFlowChart({ cells, startDate, endDate, stream }) {
+function WaterFlowCharts({ cells, startDate, endDate, stream }) {
   // CONFIGURATION
   // List out measurements that your chart is going to display
   // MUST MATCH FROM UTIL.PY
@@ -250,11 +250,11 @@ function WaterFlowChart({ cells, startDate, endDate, stream }) {
   );
 }
 
-WaterFlowChart.propTypes = {
+WaterFlowCharts.propTypes = {
   cells: PropTypes.array,
   startDate: PropTypes.any,
   endDate: PropTypes.any,
   stream: PropTypes.bool,
 };
 
-export default WaterFlowChart;
+export default WaterFlowCharts;
