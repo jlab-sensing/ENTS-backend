@@ -51,7 +51,7 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
 
   const [decimationSelected, setDecimationSelected] = useState(true);
   const [resampleAnchor, setResampleAnchor] = useState(null);
-  const [selectedResample, setSelectedResample] = useState('none');
+  const [selectedResample, setSelectedResample] = useState('hour');
   const [scaleRef, setScaleRef] = useState({});
   const [prevData, setPrevData] = useState(data);
   const prevScaleRef = usePrevious(scaleRef);
@@ -227,7 +227,7 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
 
     // TODO: refactor for better state management, useCallback for setting scaleRef
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zoomSelected, panSelected, prevScaleRef, scaleRef, decimationSelected]);
+  }, [zoomSelected, panSelected, prevScaleRef, scaleRef, decimationSelected, data]);
 
   //** Maintain zoom and pan when streaming new data */
   useEffect(() => {
