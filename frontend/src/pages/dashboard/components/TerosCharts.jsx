@@ -8,6 +8,7 @@ import useInterval from '../../../hooks/useInterval';
 import { getTerosData, streamTerosData } from '../../../services/teros';
 
 function TerosCharts({ cells, startDate, endDate, stream }) {
+  const [resample, setResample] = useState('hour');
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
   const chartSettings = {
@@ -35,7 +36,7 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
         name: name,
         terosData: await (stream
           ? streamTerosData(id, DateTime.now().minus({ second: 20 }).toHTTP(), DateTime.now().toHTTP(), true)
-          : getTerosData(id, startDate.toHTTP(), endDate.toHTTP())),
+          : getTerosData(id, startDate.toHTTP(), endDate.toHTTP(), resample)),
       };
     }
     return data;
@@ -282,15 +283,19 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
     }
     // TODO: need to memoize updating charts
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cells, stream, startDate, endDate]);
+  }, [cells, stream, startDate, endDate, resample]);
+
+  const handleResampleChange = (newResample) => {
+    setResample(newResample);
+  };
 
   return (
     <>
       <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
-        <VwcChart data={vwcChartData} stream={stream} startDate={startDate} endDate={endDate} />
+        <VwcChart data={vwcChartData} stream={stream} startDate={startDate} endDate={endDate} onResampleChange={handleResampleChange} />
       </Grid>
       <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
-        <TempChart data={tempChartData} stream={stream} startDate={startDate} endDate={endDate} />
+        <TempChart data={tempChartData} stream={stream} startDate={startDate} endDate={endDate} onResampleChange={handleResampleChange} />
       </Grid>
     </>
   );

@@ -669,24 +669,6 @@ describe('testing side button events', () => {
     expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(0.91);
   });
 
-  it('should toggle downsample', async () => {
-    const user = userEvent.setup();
-    render(
-      <MockChartWrapper
-        id='vwc'
-        data={data}
-        streamChartOptions={streamChartOptions}
-        chartOptions={chartOptions}
-        stream={false}
-      />,
-    );
-    const chartElement = await screen.findByTestId(/chart-container/i);
-    const downsampleBtnElement = await screen.findByLabelText(/Downsample/i);
-    expect(ChartJS.getChart(chartElement).config.options.plugins.decimation.enabled).toBe(true);
-    await user.click(downsampleBtnElement);
-    expect(ChartJS.getChart(chartElement).config.options.plugins.decimation.enabled).toBe(false);
-  });
-
   it('should reset chart zoom', async () => {
     const user = userEvent.setup();
     render(

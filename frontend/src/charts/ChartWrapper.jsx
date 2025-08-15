@@ -2,7 +2,7 @@ import { React, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import Modal from '@mui/material/Modal';
 import Fade from '@mui/material/Fade';
-import { Box, ToggleButton, Tooltip } from '@mui/material';
+import { Box, ToggleButton, Tooltip, Menu, MenuItem, ListItemText } from '@mui/material';
 import zoom from '../assets/zoom.svg';
 import reset from '../assets/reset.svg';
 import pan from '../assets/pan.svg';
@@ -41,7 +41,7 @@ ChartJS.register(
 );
 
 //** Wrapper for chart functionality and state */
-function ChartWrapper({ id, data, options, stream }) {
+function ChartWrapper({ id, data, options, stream, onResampleChange }) {
   const [resetSelected] = useState(false);
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
@@ -49,7 +49,9 @@ function ChartWrapper({ id, data, options, stream }) {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const [decimationSelected, setDecimationSelected] = useState(true);
+  const [decimationSelected] = useState(true);
+  const [resampleAnchor, setResampleAnchor] = useState(null);
+  const [selectedResample, setSelectedResample] = useState('hour');
   const [scaleRef, setScaleRef] = useState({});
   const [prevData, setPrevData] = useState(data);
   const prevScaleRef = usePrevious(scaleRef);
@@ -182,11 +184,20 @@ function ChartWrapper({ id, data, options, stream }) {
     }
   };
 
-  const handleDecimation = () => {
-    if (chartRef.current) {
-      chartRef.current.config.options.plugins.decimation = !decimationSelected;
-      chartRef.current.update();
-      setDecimationSelected(!decimationSelected);
+  const handleResampleClick = (event) => {
+    setResampleAnchor(event.currentTarget);
+  };
+
+  const handleResampleClose = () => {
+    setResampleAnchor(null);
+  };
+
+  const handleResampleSelect = (value) => {
+    setSelectedResample(value);
+    handleResampleClose();
+    // Trigger data refresh with new resample value
+    if (onResampleChange) {
+      onResampleChange(value);
     }
   };
 
@@ -208,7 +219,7 @@ function ChartWrapper({ id, data, options, stream }) {
 
     // TODO: refactor for better state management, useCallback for setting scaleRef
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zoomSelected, panSelected, prevScaleRef, scaleRef, decimationSelected]);
+  }, [zoomSelected, panSelected, prevScaleRef, scaleRef, decimationSelected, data]);
 
   //** Maintain zoom and pan when streaming new data */
   useEffect(() => {
@@ -431,12 +442,35 @@ function ChartWrapper({ id, data, options, stream }) {
             variant='contained'
             value={decimationSelected}
             selected={decimationSelected}
-            onClick={handleDecimation}
+            onClick={handleResampleClick}
             sx={{ width: '32px', height: '32px' }}
           >
             <Box component='img' src={downsample} sx={{ width: '16px', height: '16px' }}></Box>
           </ToggleButton>
         </Tooltip>
+        <Menu
+          anchorEl={resampleAnchor}
+          open={Boolean(resampleAnchor)}
+          onClose={handleResampleClose}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+        >
+          <MenuItem onClick={() => handleResampleSelect('none')} selected={selectedResample === 'none'}>
+            <ListItemText>None</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={() => handleResampleSelect('hour')} selected={selectedResample === 'hour'}>
+            <ListItemText>Hourly</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={() => handleResampleSelect('day')} selected={selectedResample === 'day'}>
+            <ListItemText>Daily</ListItemText>
+          </MenuItem>
+        </Menu>
 
         <Tooltip
           title='Export Chart'
@@ -641,11 +675,34 @@ function ChartWrapper({ id, data, options, stream }) {
                     variant='contained'
                     value={decimationSelected}
                     selected={decimationSelected}
-                    onClick={handleDecimation}
+                    onClick={handleResampleClick}
                   >
                     <Box component='img' src={downsample} sx={{ width: '20px', height: '20px' }}></Box>
                   </ToggleButton>
                 </Tooltip>
+                <Menu
+                  anchorEl={resampleAnchor}
+                  open={Boolean(resampleAnchor)}
+                  onClose={handleResampleClose}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                >
+                  <MenuItem onClick={() => handleResampleSelect('none')} selected={selectedResample === 'none'}>
+                    <ListItemText>None</ListItemText>
+                  </MenuItem>
+                  <MenuItem onClick={() => handleResampleSelect('hour')} selected={selectedResample === 'hour'}>
+                    <ListItemText>Hourly</ListItemText>
+                  </MenuItem>
+                  <MenuItem onClick={() => handleResampleSelect('day')} selected={selectedResample === 'day'}>
+                    <ListItemText>Daily</ListItemText>
+                  </MenuItem>
+                </Menu>
 
                 <Tooltip
                   title='Export Chart'
@@ -705,4 +762,5 @@ ChartWrapper.propTypes = {
   data: PropTypes.object,
   options: PropTypes.object,
   stream: PropTypes.bool,
+  onResampleChange: PropTypes.func,
 };

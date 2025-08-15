@@ -202,7 +202,7 @@ function Dashboard() {
                       <Button
                         variant={stream ? 'contained' : 'outlined'}
                         color='primary'
-                        onClick={() => setStream(true)}
+                        onClick={() => setStream(!stream)}
                         size='small'
                       >
                         Stream
@@ -234,6 +234,9 @@ function Dashboard() {
                     setEndDate={handleEndDateChange}
                   />
                 </Box>
+                <Button variant={stream ? 'contained' : 'outlined'} color='primary' onClick={() => setStream(!stream)}>
+                  Streaming
+                </Button>
                 {!cells.isLoading && !cells.isError && <ArchiveModal cells={cells} />}
                 <DownloadBtn
                   disabled={dBtnDisabled}
@@ -242,12 +245,6 @@ function Dashboard() {
                   startDate={startDate}
                   endDate={endDate}
                 />
-                <Button variant={stream ? 'contained' : 'outlined'} color='primary' onClick={() => setStream(true)}>
-                  Streaming
-                </Button>
-                <Button variant={!stream ? 'contained' : 'outlined'} color='primary' onClick={() => setStream(false)}>
-                  Hourly
-                </Button>
               </Stack>
             )}
           </Box>

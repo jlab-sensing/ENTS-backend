@@ -7,6 +7,7 @@ import VChart from '../../../charts/VChart/VChart';
 import useInterval from '../../../hooks/useInterval';
 import { getPowerData, streamPowerData } from '../../../services/power';
 function PowerCharts({ cells, startDate, endDate, stream }) {
+  const [resample, setResample] = useState('hour');
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
   const chartSettings = {
@@ -37,7 +38,7 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
         name: name,
         powerData: await (stream
           ? streamPowerData(id, DateTime.now().minus({ second: 20 }).toHTTP(), DateTime.now().toHTTP(), true)
-          : getPowerData(id, startDate.toHTTP(), endDate.toHTTP())),
+          : getPowerData(id, startDate.toHTTP(), endDate.toHTTP(), resample)),
       };
     }
     return data;
@@ -279,15 +280,19 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
 
     // TODO: need to memoize updating charts
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cells, stream, startDate, endDate]);
+  }, [cells, stream, startDate, endDate, resample]);
+
+  const handleResampleChange = (newResample) => {
+    setResample(newResample);
+  };
 
   return (
     <>
       <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
-        <VChart data={vChartData} stream={stream} startDate={startDate} endDate={endDate} />
+        <VChart data={vChartData} stream={stream} startDate={startDate} endDate={endDate} onResampleChange={handleResampleChange} />
       </Grid>
       <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
-        <PwrChart data={pwrChartData} stream={stream} startDate={startDate} endDate={endDate} />
+        <PwrChart data={pwrChartData} stream={stream} startDate={startDate} endDate={endDate} onResampleChange={handleResampleChange} />
       </Grid>
     </>
   );
