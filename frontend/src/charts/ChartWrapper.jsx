@@ -2,7 +2,7 @@ import { React, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import Modal from '@mui/material/Modal';
 import Fade from '@mui/material/Fade';
-import { Box, ToggleButton, Tooltip, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Box, ToggleButton, Tooltip, Menu, MenuItem, ListItemText } from '@mui/material';
 import zoom from '../assets/zoom.svg';
 import reset from '../assets/reset.svg';
 import pan from '../assets/pan.svg';
@@ -181,14 +181,6 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
     if (chartRef.current) {
       chartRef.current.zoom(0.9);
       setScaleRef(getScaleRef(chartRef.current));
-    }
-  };
-
-  const handleDecimation = () => {
-    if (chartRef.current) {
-      chartRef.current.config.options.plugins.decimation = !decimationSelected;
-      chartRef.current.update();
-      setDecimationSelected(!decimationSelected);
     }
   };
 
