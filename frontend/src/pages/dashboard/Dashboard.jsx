@@ -16,6 +16,9 @@ import PresHumChart from './components/PresHumChart';
 import SensorChart from './components/SensorChart';
 import SoilPotCharts from './components/SoilPotChart';
 import TerosCharts from './components/TerosCharts';
+import WaterPressChart from './components/WaterPresChart';
+import SoilHumCharts from './components/SoilHumChart';
+import WaterFlowCharts from './components/WaterFlowChart';
 
 function Dashboard() {
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
@@ -280,6 +283,15 @@ function Dashboard() {
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
             <CO2Charts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          </Box>
+          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
+            <SoilHumCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          </Box>
+          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
+            <WaterPressChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          </Box>
+          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
+            <WaterFlowCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
         </Stack>
 
