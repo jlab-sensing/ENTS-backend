@@ -123,6 +123,10 @@ def process_measurement_dict(meas: dict):
             meas_name="Photoresistivity", meas_unit="Ohms", meas_dict=meas
         )
 
+    elif meas["type"] == "pcap02":
+        obj = Sensor.add_data(
+            meas_name="Capacitance", meas_unit="Farads", meas_dict=meas
+        )
         obj_list.append(obj)
 
     # format response
