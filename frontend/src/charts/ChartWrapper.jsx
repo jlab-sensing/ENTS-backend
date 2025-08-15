@@ -49,7 +49,7 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const [decimationSelected, setDecimationSelected] = useState(true);
+  const [decimationSelected] = useState(true);
   const [resampleAnchor, setResampleAnchor] = useState(null);
   const [selectedResample, setSelectedResample] = useState('hour');
   const [scaleRef, setScaleRef] = useState({});
