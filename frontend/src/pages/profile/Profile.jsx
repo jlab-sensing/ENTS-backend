@@ -4,6 +4,7 @@ import useAuth from '../../auth/hooks/useAuth';
 import useAxiosPrivate from '../../auth/hooks/useAxiosPrivate';
 import Nav from '../../components/Nav';
 import { useUserCells } from '../../services/cell';
+import { useUserLoggers } from '../../services/logger';
 import SideBar from './components/SideBar';
 
 function Profile() {
@@ -11,6 +12,7 @@ function Profile() {
   const { user, setUser, loggedIn, setLoggedIn } = useAuth();
 
   const { data, isLoading, isError, refetch } = useUserCells(axiosPrivate);
+  const { data: loggerData, isLoading: loggerIsLoading, isError: loggerIsError, refetch: loggerRefetch } = useUserLoggers(axiosPrivate);
 
   return (
     <Box
@@ -36,7 +38,7 @@ function Profile() {
         <Box
           sx={{
             width: '20vw',
-            paddingLeft: '1vw',
+            paddingLeft: '3rem',
           }}
         >
           <SideBar />
@@ -48,7 +50,7 @@ function Profile() {
             overflowY: 'auto',
           }}
         >
-          <Outlet context={[data, isLoading, isError, refetch, user, setUser, axiosPrivate]} />
+          <Outlet context={[data, isLoading, isError, refetch, user, setUser, loggerData, loggerIsLoading, loggerIsError, loggerRefetch, axiosPrivate]} />
         </Box>
       </Box>
     </Box>

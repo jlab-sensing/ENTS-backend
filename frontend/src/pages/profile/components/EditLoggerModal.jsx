@@ -2,22 +2,24 @@ import React, { useState } from 'react';
 import { Modal, Box, Typography, Button, IconButton, TextField } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useOutletContext } from 'react-router-dom';
-import { updateCell } from '../../../services/cell';
+import { updateLogger } from '../../../services/logger';
 import PropTypes from 'prop-types';
 
-function EditCellModal({ cell }) {
+function EditLoggerModal({ logger }) {
   const data = useOutletContext();
-  const refetch = data[3];
+  const refetch = data[9]; // Logger refetch function from outlet context
 
   const [isOpen, setOpen] = useState(false);
-  const [formData, setFormData] = useState({ ...cell });
+  const [formData, setFormData] = useState({ ...logger });
+  const [appKey, setAppKey] = useState(''); // App Key field for UI only
   const [response, setResponse] = useState(null);
   const [isSubmitting, setSubmitting] = useState(false);
 
   const handleOpen = () => {
     setOpen(true);
     setResponse(null);
-    setFormData({ ...cell });
+    setFormData({ ...logger });
+    setAppKey(''); // Reset app key
   };
 
   const handleClose = () => setOpen(false);
@@ -29,35 +31,38 @@ function EditCellModal({ cell }) {
   const handleSubmit = () => {
     setSubmitting(true);
 
-    // simulate a successful request
-    // setTimeout(() => {
-    //   const fakeResponse = { success: true, data: formData };
-    //   setResponse(fakeResponse);
-    //   refetch();
-    //   setSubmitting(false);
-    // }, 1000);
-    
-    // backend request implemented - DONE
-    updateCell(cell.id, formData)
+    // Note: App Key is not sent to backend - saved for future API integration
+    const updateData = {
+      name: formData.name,
+      type: formData.type,
+      device_eui: formData.device_eui,
+      description: formData.description,
+    };
+
+    updateLogger(logger.id, updateData)
       .then((res) => {
         setResponse(res);
         refetch();
       })
       .catch((err) => console.error('Edit failed:', err))
       .finally(() => setSubmitting(false));
-    
   };
 
   return (
     <>
-      {/* copied account edit profile button styling */}
-      <Button variant="contained" onClick={handleOpen} 
-        sx={{ backgroundColor: '#588157', 
-        '&:hover': { backgroundColor: '#3a5a40' } }}>
+      <Button 
+        variant="contained" 
+        onClick={handleOpen} 
+        sx={{ 
+          backgroundColor: '#588157', 
+          '&:hover': { backgroundColor: '#3a5a40' },
+          textTransform: 'none'
+        }}
+      >
         Edit
       </Button>
 
-      <Modal open={isOpen} onClose={handleClose} aria-labelledby="edit-cell-modal-title">
+      <Modal open={isOpen} onClose={handleClose}>
         <Box
           sx={{
             position: 'absolute',
@@ -70,11 +75,6 @@ function EditCellModal({ cell }) {
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
             border: 'none',
             overflow: 'hidden',
-          }}
-          component="form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmit();
           }}
         >
           {!response ? (
@@ -109,7 +109,7 @@ function EditCellModal({ cell }) {
                     fontSize: '1.5rem'
                   }}
                 >
-                  Edit Cell
+                  Edit Logger
                 </Typography>
                 <Typography 
                   variant='body2' 
@@ -118,7 +118,7 @@ function EditCellModal({ cell }) {
                     mt: 0.5
                   }}
                 >
-                  Update your environmental monitoring cell settings
+                  Update your environmental sensor logger settings
                 </Typography>
               </Box>
 
@@ -126,13 +126,11 @@ function EditCellModal({ cell }) {
               <Box sx={{ padding: '2rem' }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                   <TextField
-                    label="Cell Name"
+                    label='Logger Name'
                     value={formData.name || ''}
                     onChange={handleChange('name')}
                     fullWidth
                     required
-                    error={!formData.name?.trim()}
-                    helperText={!formData.name?.trim() ? 'Cell name is required' : ''}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
@@ -140,14 +138,11 @@ function EditCellModal({ cell }) {
                     }}
                   />
                   <TextField
-                    label="Location"
-                    value={formData.location || ''}
-                    onChange={handleChange('location')}
+                    label='Type'
+                    value={formData.type || ''}
+                    onChange={handleChange('type')}
                     fullWidth
-                    required
-                    error={!formData.location?.trim()}
-                    helperText={!formData.location?.trim() ? 'Location is required' : ''}
-                    placeholder='e.g., North Campus Field'
+                    placeholder='e.g., Multi-Sensor Device, IoT Device'
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
@@ -155,14 +150,11 @@ function EditCellModal({ cell }) {
                     }}
                   />
                   <TextField
-                    label="Latitude"
-                    value={formData.lat || ''}
-                    onChange={handleChange('lat')}
+                    label='Device EUI'
+                    value={formData.device_eui || ''}
+                    onChange={handleChange('device_eui')}
                     fullWidth
-                    required
-                    error={!formData.lat?.toString().trim() || isNaN(Number(formData.lat))}
-                    helperText={!formData.lat?.toString().trim() ? 'Latitude is required' : isNaN(Number(formData.lat)) ? 'Please enter a valid number' : ''}
-                    placeholder='e.g., 36.9741'
+                    placeholder='e.g., AA-11-BB-22-CC-33'
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
@@ -170,14 +162,25 @@ function EditCellModal({ cell }) {
                     }}
                   />
                   <TextField
-                    label="Longitude"
-                    value={formData.long || ''}
-                    onChange={handleChange('long')}
+                    label='Description'
+                    value={formData.description || ''}
+                    onChange={handleChange('description')}
                     fullWidth
-                    required
-                    error={!formData.long?.toString().trim() || isNaN(Number(formData.long))}
-                    helperText={!formData.long?.toString().trim() ? 'Longitude is required' : isNaN(Number(formData.long)) ? 'Please enter a valid number' : ''}
-                    placeholder='e.g., -122.0308'
+                    multiline
+                    rows={3}
+                    placeholder='Describe the logger location and purpose'
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                      }
+                    }}
+                  />
+                  <TextField
+                    label='App Key'
+                    value={appKey}
+                    onChange={(e) => setAppKey(e.target.value)}
+                    fullWidth
+                    helperText='App Key for future API integration (optional)'
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
@@ -198,7 +201,6 @@ function EditCellModal({ cell }) {
                   <Button
                     variant='outlined'
                     onClick={handleClose}
-                    disabled={isSubmitting}
                     sx={{
                       borderColor: '#ddd',
                       color: '#666',
@@ -211,9 +213,9 @@ function EditCellModal({ cell }) {
                     Cancel
                   </Button>
                   <Button
-                    type="submit"
                     variant='contained'
-                    disabled={isSubmitting || !formData.name?.trim() || !formData.location?.trim() || !formData.lat?.toString().trim() || !formData.long?.toString().trim() || isNaN(Number(formData.lat)) || isNaN(Number(formData.long))}
+                    onClick={handleSubmit}
+                    disabled={isSubmitting || !formData.name?.trim()}
                     sx={{
                       backgroundColor: '#588157',
                       '&:hover': { backgroundColor: '#3a5a40' },
@@ -225,7 +227,7 @@ function EditCellModal({ cell }) {
                       px: '1.5rem'
                     }}
                   >
-                    {isSubmitting ? 'Updating...' : 'Update Cell'}
+                    {isSubmitting ? 'Updating...' : 'Update Logger'}
                   </Button>
                 </Box>
               </Box>
@@ -248,7 +250,7 @@ function EditCellModal({ cell }) {
                     fontSize: '1.5rem'
                   }}
                 >
-                  Cell Updated Successfully!
+                  Logger Updated Successfully!
                 </Typography>
                 <Typography 
                   variant='body2' 
@@ -257,7 +259,7 @@ function EditCellModal({ cell }) {
                     mt: 0.5
                   }}
                 >
-                  Your cell settings have been saved
+                  Your logger settings have been saved
                 </Typography>
               </Box>
 
@@ -287,15 +289,8 @@ function EditCellModal({ cell }) {
   );
 }
 
-export default EditCellModal;
-
-// expected prop types for EditCellModal - prop validation
-EditCellModal.propTypes = {
-  cell: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    name: PropTypes.string.isRequired,
-    location: PropTypes.string.isRequired,
-    long: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    lat: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  }).isRequired,
+EditLoggerModal.propTypes = {
+  logger: PropTypes.object.isRequired,
 };
+
+export default EditLoggerModal;
