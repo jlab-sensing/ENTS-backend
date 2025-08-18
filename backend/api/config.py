@@ -24,6 +24,8 @@ class Config(object):
     SESSION_PERMANENT = False
     SESSION_USE_SIGNER = True
     SESSION_REDIS = redis.from_url("redis://redis:6379")
+    TTN_API_KEY = os.getenv("TTN_API_KEY")
+    TTN_APP_ID = os.getenv("TTN_APP_ID")
 
 
 class ProductionConfig(Config):
