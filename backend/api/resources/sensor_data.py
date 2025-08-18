@@ -51,8 +51,9 @@ class SensorData(Resource):
         sensor_data_obj = Sensor.get_sensor_data_obj(
             name=v_args["name"],
             cell_id=v_args["cellId"],
-            start_time=v_args["startTime"],
             measurement=v_args["measurement"],
+            resample=v_args["resample"],
+            start_time=v_args["startTime"],
             end_time=v_args["endTime"],
             stream=stream,
         )
