@@ -33,16 +33,16 @@ function LoggersList() {
   }
 
   const columns = [
-    { field: 'id', headerName: 'Logger ID', width: 90 },
-    { field: 'name', headerName: 'Name', width: 150 },
-    { field: 'type', headerName: 'Type', width: 150 },
-    { field: 'device_eui', headerName: 'Device EUI', width: 150 },
-    { field: 'description', headerName: 'Description', width: 200 },
-    { field: 'date_created', headerName: 'Date Created', width: 150 },
+    { field: 'id', headerName: 'Logger ID', width: 80 },
+    { field: 'name', headerName: 'Name', width: 130 },
+    { field: 'type', headerName: 'Type', width: 120 },
+    { field: 'device_eui', headerName: 'Device EUI', width: 130 },
+    { field: 'description', headerName: 'Description', width: 180 },
+    { field: 'date_created', headerName: 'Date Created', width: 110 },
     {
       field: 'edit',
       headerName: '',
-      width: 85,
+      width: 70,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,

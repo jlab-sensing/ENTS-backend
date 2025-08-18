@@ -75,153 +75,343 @@ function AddLoggerModal() {
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            width: 400,
-            bgcolor: 'background.paper',
-            border: '2px solid #000',
-            boxShadow: 24,
-            p: 4,
+            width: 450,
+            bgcolor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+            border: 'none',
+            overflow: 'hidden',
           }}
           component='form'
         >
           {error == null && response == null && (
             <>
-              <IconButton
-                sx={{ position: 'absolute', top: 5, right: 5 }}
-                aria-label='delete'
-                size='small'
-                onClick={handleClose}
-              >
-                <CloseIcon fontSize='small' />
-              </IconButton>
-              <Typography variant='h6' component='h2'>
-                Logger Info
-              </Typography>
-              <Typography sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <TextField
-                  id='outlined-basic'
-                  label='Name'
-                  variant='outlined'
-                  error={name.length === 0}
-                  helperText={!name.length ? 'name is required' : ''}
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
+              {/* Header Section */}
+              <Box sx={{ 
+                backgroundColor: '#588157', 
+                padding: '1.5rem 2rem',
+                position: 'relative',
+                mb: 0
+              }}>
+                <IconButton
+                  sx={{ 
+                    position: 'absolute', 
+                    top: '0.75rem', 
+                    right: '0.75rem',
+                    color: 'white',
+                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
                   }}
-                />
-                <TextField
-                  id='outlined-basic'
-                  label='Type'
-                  variant='outlined'
-                  value={type}
-                  onChange={(e) => {
-                    setType(e.target.value);
+                  aria-label='close'
+                  size='small'
+                  onClick={handleClose}
+                >
+                  <CloseIcon fontSize='small' />
+                </IconButton>
+                <Typography 
+                  variant='h5' 
+                  component='h2'
+                  sx={{ 
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: '1.5rem'
                   }}
-                />
-                <TextField
-                  id='outlined-basic'
-                  label='Device EUI'
-                  variant='outlined'
-                  value={deviceEui}
-                  onChange={(e) => {
-                    setDeviceEui(e.target.value);
+                >
+                  Add New Logger
+                </Typography>
+                <Typography 
+                  variant='body2' 
+                  sx={{ 
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    mt: 0.5
                   }}
-                />
-                <TextField
-                  id='outlined-basic'
-                  label='Description'
-                  variant='outlined'
-                  multiline
-                  rows={2}
-                  value={description}
-                  onChange={(e) => {
-                    setDescription(e.target.value);
-                  }}
-                />
-                <TextField
-                  id='outlined-basic'
-                  label='App Key'
-                  variant='outlined'
-                  value={appKey}
-                  onChange={(e) => {
-                    setAppKey(e.target.value);
-                  }}
-                  helperText='App Key for future API integration'
-                />
-              </Typography>
-              <Button
-                onClick={() => {
-                  // Note: App Key is not sent to backend - saved for future API integration
-                  addLogger(name, type, deviceEui, description, user.email)
-                    .then((res) => {
-                      setResponse({ ...res, name, type, deviceEui, description });
-                      refetch();
-                    })
-                    .catch((error) => {
-                      setError(error);
-                      console.error(error);
-                    });
-                }}
-              >
-                Add Logger
-              </Button>
+                >
+                  Configure your environmental sensor logger
+                </Typography>
+              </Box>
+
+              {/* Form Section */}
+              <Box sx={{ padding: '2rem' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  <TextField
+                    label='Logger Name'
+                    variant='outlined'
+                    fullWidth
+                    required
+                    error={name.length === 0}
+                    helperText={!name.length ? 'Logger name is required' : ''}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                      }
+                    }}
+                  />
+                  <TextField
+                    label='Type'
+                    variant='outlined'
+                    fullWidth
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    placeholder='e.g., Multi-Sensor Device, IoT Device'
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                      }
+                    }}
+                  />
+                  <TextField
+                    label='Device EUI'
+                    variant='outlined'
+                    fullWidth
+                    value={deviceEui}
+                    onChange={(e) => setDeviceEui(e.target.value)}
+                    placeholder='e.g., AA-11-BB-22-CC-33'
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                      }
+                    }}
+                  />
+                  <TextField
+                    label='Description'
+                    variant='outlined'
+                    fullWidth
+                    multiline
+                    rows={3}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder='Describe the logger location and purpose'
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                      }
+                    }}
+                  />
+                  <TextField
+                    label='App Key'
+                    variant='outlined'
+                    fullWidth
+                    value={appKey}
+                    onChange={(e) => setAppKey(e.target.value)}
+                    helperText='App Key for future API integration (optional)'
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                      }
+                    }}
+                  />
+                </Box>
+
+                {/* Action Buttons */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: '0.75rem', 
+                  justifyContent: 'flex-end',
+                  mt: '2rem',
+                  pt: '1.5rem',
+                  borderTop: '1px solid #f0f0f0'
+                }}>
+                  <Button
+                    variant='outlined'
+                    onClick={handleClose}
+                    sx={{
+                      borderColor: '#ddd',
+                      color: '#666',
+                      '&:hover': {
+                        borderColor: '#bbb',
+                        backgroundColor: '#f5f5f5'
+                      }
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant='contained'
+                    onClick={() => {
+                      addLogger(name, type, deviceEui, description, user.email)
+                        .then((res) => {
+                          setResponse({ ...res, name, type, deviceEui, description });
+                          refetch();
+                        })
+                        .catch((error) => {
+                          setError(error);
+                          console.error(error);
+                        });
+                    }}
+                    disabled={!name.trim()}
+                    sx={{
+                      backgroundColor: '#588157',
+                      '&:hover': { backgroundColor: '#3a5a40' },
+                      '&:disabled': { 
+                        backgroundColor: '#ccc',
+                        color: '#888'
+                      },
+                      borderRadius: '8px',
+                      px: '1.5rem'
+                    }}
+                  >
+                    Add Logger
+                  </Button>
+                </Box>
+              </Box>
             </>
           )}
           {error ? (
             <>
-              <IconButton
-                sx={{ position: 'absolute', top: 5, right: 5 }}
-                aria-label='delete'
-                size='small'
-                onClick={handleClose}
-              >
-                <CloseIcon fontSize='small' />
-              </IconButton>
-              <h1>Error</h1>
-              <p>Duplicate logger names or other error occurred.</p>
-              <Button onClick={handleClose}>Done</Button>
+              {/* Error Header */}
+              <Box sx={{ 
+                backgroundColor: '#d32f2f', 
+                padding: '1.5rem 2rem',
+                position: 'relative',
+                mb: 0
+              }}>
+                <IconButton
+                  sx={{ 
+                    position: 'absolute', 
+                    top: '0.75rem', 
+                    right: '0.75rem',
+                    color: 'white',
+                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                  }}
+                  aria-label='close'
+                  size='small'
+                  onClick={handleClose}
+                >
+                  <CloseIcon fontSize='small' />
+                </IconButton>
+                <Typography 
+                  variant='h5' 
+                  component='h2'
+                  sx={{ 
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: '1.5rem'
+                  }}
+                >
+                  Error Creating Logger
+                </Typography>
+              </Box>
+
+              {/* Error Content */}
+              <Box sx={{ padding: '2rem' }}>
+                <Typography variant='body1' sx={{ mb: 3, color: '#666', lineHeight: 1.6 }}>
+                  Duplicate logger names or other error occurred. Please try again with a different name.
+                </Typography>
+                <Button 
+                  variant='contained'
+                  onClick={handleClose}
+                  sx={{
+                    backgroundColor: '#d32f2f',
+                    '&:hover': { backgroundColor: '#b71c1c' },
+                    borderRadius: '8px',
+                    width: '100%',
+                    py: '0.75rem'
+                  }}
+                >
+                  Close
+                </Button>
+              </Box>
             </>
           ) : (
             response && (
               <>
                 {/* Success Header */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                  <CheckCircleIcon sx={{ color: 'success.main', fontSize: 28 }} />
-                  <Typography variant='h5' component='h2' sx={{ color: 'success.main', fontWeight: 'bold' }}>
+                <Box sx={{ 
+                  backgroundColor: '#2e7d32', 
+                  padding: '1.5rem 2rem',
+                  position: 'relative',
+                  mb: 0
+                }}>
+                  <Typography 
+                    variant='h5' 
+                    component='h2'
+                    sx={{ 
+                      color: 'white',
+                      fontWeight: 600,
+                      fontSize: '1.5rem'
+                    }}
+                  >
                     Logger Created Successfully!
+                  </Typography>
+                  <Typography 
+                    variant='body2' 
+                    sx={{ 
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      mt: 0.5
+                    }}
+                  >
+                    Your environmental sensor logger has been configured
                   </Typography>
                 </Box>
 
-                {/* Logger Details */}
-                <Typography variant='h6' sx={{ mb: 2, color: 'text.primary' }}>
-                  Logger Name: <strong>{response.name}</strong>
-                </Typography>
-                
-                <Typography variant='body1' sx={{ mb: 1, color: 'text.secondary' }}>
-                  Type: {response.type || 'Not specified'}
-                </Typography>
-                
-                <Typography variant='body1' sx={{ mb: 1, color: 'text.secondary' }}>
-                  Device EUI: {response.deviceEui || 'Not specified'}
-                </Typography>
-                
-                <Typography variant='body1' sx={{ mb: 3, color: 'text.secondary' }}>
-                  Description: {response.description || 'No description provided'}
-                </Typography>
+                {/* Success Content */}
+                <Box sx={{ padding: '2rem' }}>
+                  <Box sx={{ 
+                    backgroundColor: '#f8f9fa', 
+                    borderRadius: '8px', 
+                    padding: '1.5rem',
+                    mb: '1.5rem'
+                  }}>
+                    <Typography variant='h6' sx={{ mb: 2, color: '#2e7d32', fontWeight: 600 }}>
+                      Logger Details
+                    </Typography>
+                    
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      <Box>
+                        <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
+                          Name
+                        </Typography>
+                        <Typography variant='body1' sx={{ color: '#333' }}>
+                          {response.name}
+                        </Typography>
+                      </Box>
+                      
+                      <Box>
+                        <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
+                          Type
+                        </Typography>
+                        <Typography variant='body1' sx={{ color: '#333' }}>
+                          {response.type || 'Not specified'}
+                        </Typography>
+                      </Box>
+                      
+                      <Box>
+                        <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
+                          Device EUI
+                        </Typography>
+                        <Typography variant='body1' sx={{ color: '#333' }}>
+                          {response.deviceEui || 'Not specified'}
+                        </Typography>
+                      </Box>
+                      
+                      <Box>
+                        <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
+                          Description
+                        </Typography>
+                        <Typography variant='body1' sx={{ color: '#333' }}>
+                          {response.description || 'No description provided'}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
 
-                {/* Done Button */}
-                <Button
-                  variant='contained'
-                  color='success'
-                  onClick={DoneButtonClose}
-                  sx={{
-                    width: '100%',
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    fontWeight: 'bold',
-                  }}
-                >
-                  Done
-                </Button>
+                  <Button
+                    variant='contained'
+                    onClick={DoneButtonClose}
+                    sx={{
+                      backgroundColor: '#2e7d32',
+                      '&:hover': { backgroundColor: '#1b5e20' },
+                      borderRadius: '8px',
+                      width: '100%',
+                      py: '0.75rem',
+                      fontSize: '1rem',
+                      fontWeight: 500,
+                    }}
+                  >
+                    Done
+                  </Button>
+                </Box>
               </>
             )
           )}

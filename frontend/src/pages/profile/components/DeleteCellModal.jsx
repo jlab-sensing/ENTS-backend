@@ -1,4 +1,3 @@
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, Button, IconButton, Modal, Typography } from '@mui/material';
@@ -56,80 +55,171 @@ function DeleteCellModal({ id }) {
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            width: 400,
-            bgcolor: 'background.paper',
-            border: '2px solid #000',
-            boxShadow: 24,
-            p: 4,
+            width: 450,
+            bgcolor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+            border: 'none',
+            overflow: 'hidden',
           }}
           component='form'
         >
           {response == null && (
             <>
-              <IconButton
-                sx={{ position: 'absolute', top: 5, right: 5 }}
-                aria-label='close'
-                size='small'
-                onClick={handleClose}
-              >
-                <CloseIcon fontSize='small' />
-              </IconButton>
-              <Typography variant='h6' component='h2'>
-                Delete Cell?
-              </Typography>
-              <Button
-                onClick={() => {
-                  deleteCell(cellId)
-                    .then((res) => {
-                      setResponse(res);
-                      refetch();
-                    })
-                    .catch((error) => console.error(error));
-                }}
-                color='error'
-              >
-                Confirm
-              </Button>
+              {/* Header Section */}
+              <Box sx={{ 
+                backgroundColor: '#d32f2f', 
+                padding: '1.5rem 2rem',
+                position: 'relative',
+                mb: 0
+              }}>
+                <IconButton
+                  sx={{ 
+                    position: 'absolute', 
+                    top: '0.75rem', 
+                    right: '0.75rem',
+                    color: 'white',
+                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                  }}
+                  aria-label='close'
+                  size='small'
+                  onClick={handleClose}
+                >
+                  <CloseIcon fontSize='small' />
+                </IconButton>
+                <Typography 
+                  variant='h5' 
+                  component='h2'
+                  sx={{ 
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: '1.5rem'
+                  }}
+                >
+                  Delete Cell
+                </Typography>
+                <Typography 
+                  variant='body2' 
+                  sx={{ 
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    mt: 0.5
+                  }}
+                >
+                  This action cannot be undone
+                </Typography>
+              </Box>
+
+              {/* Content Section */}
+              <Box sx={{ padding: '2rem' }}>
+                <Typography variant='body1' sx={{ mb: 3, color: '#666', lineHeight: 1.6 }}>
+                  Are you sure you want to delete this cell? All associated data and configurations will be permanently removed.
+                </Typography>
+
+                {/* Action Buttons */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: '0.75rem', 
+                  justifyContent: 'flex-end',
+                  pt: '1.5rem',
+                  borderTop: '1px solid #f0f0f0'
+                }}>
+                  <Button
+                    variant='outlined'
+                    onClick={handleClose}
+                    sx={{
+                      borderColor: '#ddd',
+                      color: '#666',
+                      '&:hover': {
+                        borderColor: '#bbb',
+                        backgroundColor: '#f5f5f5'
+                      }
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant='contained'
+                    onClick={() => {
+                      deleteCell(cellId)
+                        .then((res) => {
+                          setResponse(res);
+                          refetch();
+                        })
+                        .catch((error) => console.error(error));
+                    }}
+                    sx={{
+                      backgroundColor: '#d32f2f',
+                      '&:hover': { backgroundColor: '#b71c1c' },
+                      borderRadius: '8px',
+                      px: '1.5rem'
+                    }}
+                  >
+                    Delete Cell
+                  </Button>
+                </Box>
+              </Box>
             </>
           )}
           {response && (
             <>
-              <IconButton
-                sx={{ position: 'absolute', top: 5, right: 5 }}
-                aria-label='close'
-                size='small'
-                onClick={handleClose}
-              >
-                <CloseIcon fontSize='small' />
-              </IconButton>
-
               {/* Success Header */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                <CheckCircleIcon sx={{ color: 'success.main', fontSize: 28 }} />
-                <Typography variant='h5' component='h2' sx={{ color: 'success.main', fontWeight: 'bold' }}>
+              <Box sx={{ 
+                backgroundColor: '#2e7d32', 
+                padding: '1.5rem 2rem',
+                position: 'relative',
+                mb: 0
+              }}>
+                <Typography 
+                  variant='h5' 
+                  component='h2'
+                  sx={{ 
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: '1.5rem'
+                  }}
+                >
                   Cell Deleted Successfully!
+                </Typography>
+                <Typography 
+                  variant='body2' 
+                  sx={{ 
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    mt: 0.5
+                  }}
+                >
+                  The cell has been removed from your system
                 </Typography>
               </Box>
 
-              {/* Deletion Confirmation */}
-              <Typography variant='h6' sx={{ mb: 2, color: 'text.primary' }}>
-                The cell with ID <strong>{cellId}</strong> has been successfully deleted.
-              </Typography>
+              {/* Success Content */}
+              <Box sx={{ padding: '2rem' }}>
+                <Box sx={{ 
+                  backgroundColor: '#f8f9fa', 
+                  borderRadius: '8px', 
+                  padding: '1.5rem',
+                  mb: '1.5rem'
+                }}>
+                  <Typography variant='body1' sx={{ color: '#666', lineHeight: 1.6 }}>
+                    The cell with ID <strong>{cellId}</strong> has been successfully deleted.
+                  </Typography>
+                </Box>
 
-              {/* Done Button */}
-              <Button
-                variant='contained'
-                color='success'
-                onClick={handleClose}
-                sx={{
-                  width: '100%',
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                  fontWeight: 'bold',
-                }}
-              >
-                Done
-              </Button>
+                <Button
+                  variant='contained'
+                  onClick={handleClose}
+                  sx={{
+                    backgroundColor: '#2e7d32',
+                    '&:hover': { backgroundColor: '#1b5e20' },
+                    borderRadius: '8px',
+                    width: '100%',
+                    py: '0.75rem',
+                    fontSize: '1rem',
+                    fontWeight: 500,
+                  }}
+                >
+                  Done
+                </Button>
+              </Box>
             </>
           )}
         </Box>

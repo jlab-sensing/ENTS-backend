@@ -38,7 +38,7 @@ function Profile() {
         <Box
           sx={{
             width: '20vw',
-            paddingLeft: '1vw',
+            paddingLeft: '3rem',
           }}
         >
           <SideBar />

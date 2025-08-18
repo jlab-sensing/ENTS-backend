@@ -56,87 +56,205 @@ function DeleteLoggerModal({ id }) {
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            width: 400,
-            bgcolor: 'background.paper',
-            border: '2px solid #000',
-            boxShadow: 24,
-            p: 4,
+            width: 450,
+            bgcolor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+            border: 'none',
+            overflow: 'hidden',
           }}
         >
           {!response ? (
             <>
-              <IconButton
-                sx={{ position: 'absolute', top: 5, right: 5 }}
-                aria-label='close'
-                size='small'
-                onClick={handleClose}
-              >
-                <CloseIcon fontSize='small' />
-              </IconButton>
-              <Typography variant='h6' component='h2' sx={{ mb: 3 }}>
-                Delete Logger
-              </Typography>
-              <Typography sx={{ mb: 3 }}>
-                Are you sure you want to delete this logger? This action cannot be undone.
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                <Button onClick={handleClose} color='secondary'>
-                  Cancel
-                </Button>
-                <Button
-                  variant='contained'
-                  color='error'
-                  onClick={() => {
-                    deleteLogger(loggerId)
-                      .then((res) => {
-                        setResponse(res);
-                        refetch();
-                      })
-                      .catch((error) => {
-                        console.error('Delete failed:', error);
-                        setResponse({ error: true, message: 'Failed to delete logger' });
-                      });
+              {/* Header Section */}
+              <Box sx={{ 
+                backgroundColor: '#d32f2f', 
+                padding: '1.5rem 2rem',
+                position: 'relative',
+                mb: 0
+              }}>
+                <IconButton
+                  sx={{ 
+                    position: 'absolute', 
+                    top: '0.75rem', 
+                    right: '0.75rem',
+                    color: 'white',
+                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                  }}
+                  aria-label='close'
+                  size='small'
+                  onClick={handleClose}
+                >
+                  <CloseIcon fontSize='small' />
+                </IconButton>
+                <Typography 
+                  variant='h5' 
+                  component='h2'
+                  sx={{ 
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: '1.5rem'
                   }}
                 >
                   Delete Logger
-                </Button>
+                </Typography>
+                <Typography 
+                  variant='body2' 
+                  sx={{ 
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    mt: 0.5
+                  }}
+                >
+                  This action cannot be undone
+                </Typography>
+              </Box>
+
+              {/* Content Section */}
+              <Box sx={{ padding: '2rem' }}>
+                <Typography variant='body1' sx={{ mb: 3, color: '#666', lineHeight: 1.6 }}>
+                  Are you sure you want to delete this logger? All associated data and configurations will be permanently removed.
+                </Typography>
+
+                {/* Action Buttons */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: '0.75rem', 
+                  justifyContent: 'flex-end',
+                  pt: '1.5rem',
+                  borderTop: '1px solid #f0f0f0'
+                }}>
+                  <Button
+                    variant='outlined'
+                    onClick={handleClose}
+                    sx={{
+                      borderColor: '#ddd',
+                      color: '#666',
+                      '&:hover': {
+                        borderColor: '#bbb',
+                        backgroundColor: '#f5f5f5'
+                      }
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant='contained'
+                    onClick={() => {
+                      deleteLogger(loggerId)
+                        .then((res) => {
+                          setResponse(res);
+                          refetch();
+                        })
+                        .catch((error) => {
+                          console.error('Delete failed:', error);
+                          setResponse({ error: true, message: 'Failed to delete logger' });
+                        });
+                    }}
+                    sx={{
+                      backgroundColor: '#d32f2f',
+                      '&:hover': { backgroundColor: '#b71c1c' },
+                      borderRadius: '8px',
+                      px: '1.5rem'
+                    }}
+                  >
+                    Delete Logger
+                  </Button>
+                </Box>
               </Box>
             </>
           ) : (
             <>
               {response.error ? (
                 <>
-                  <Typography variant='h6' sx={{ color: 'error.main', mb: 2 }}>
-                    Error Deleting Logger
-                  </Typography>
-                  <Typography sx={{ mb: 3 }}>
-                    {response.message || 'An error occurred while deleting the logger.'}
-                  </Typography>
-                  <Button onClick={handleClose} variant='contained' color='primary' fullWidth>
-                    Done
-                  </Button>
+                  {/* Error Header */}
+                  <Box sx={{ 
+                    backgroundColor: '#d32f2f', 
+                    padding: '1.5rem 2rem',
+                    position: 'relative',
+                    mb: 0
+                  }}>
+                    <Typography 
+                      variant='h5' 
+                      component='h2'
+                      sx={{ 
+                        color: 'white',
+                        fontWeight: 600,
+                        fontSize: '1.5rem'
+                      }}
+                    >
+                      Error Deleting Logger
+                    </Typography>
+                  </Box>
+
+                  {/* Error Content */}
+                  <Box sx={{ padding: '2rem' }}>
+                    <Typography variant='body1' sx={{ mb: 3, color: '#666', lineHeight: 1.6 }}>
+                      {response.message || 'An error occurred while deleting the logger.'}
+                    </Typography>
+                    <Button 
+                      variant='contained'
+                      onClick={handleClose}
+                      sx={{
+                        backgroundColor: '#d32f2f',
+                        '&:hover': { backgroundColor: '#b71c1c' },
+                        borderRadius: '8px',
+                        width: '100%',
+                        py: '0.75rem'
+                      }}
+                    >
+                      Close
+                    </Button>
+                  </Box>
                 </>
               ) : (
                 <>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                    <CheckCircleIcon sx={{ color: 'success.main', fontSize: 28 }} />
-                    <Typography variant='h5' component='h2' sx={{ color: 'success.main', fontWeight: 'bold' }}>
+                  {/* Success Header */}
+                  <Box sx={{ 
+                    backgroundColor: '#2e7d32', 
+                    padding: '1.5rem 2rem',
+                    position: 'relative',
+                    mb: 0
+                  }}>
+                    <Typography 
+                      variant='h5' 
+                      component='h2'
+                      sx={{ 
+                        color: 'white',
+                        fontWeight: 600,
+                        fontSize: '1.5rem'
+                      }}
+                    >
                       Logger Deleted Successfully!
                     </Typography>
+                    <Typography 
+                      variant='body2' 
+                      sx={{ 
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        mt: 0.5
+                      }}
+                    >
+                      The logger has been removed from your system
+                    </Typography>
                   </Box>
-                  <Button
-                    variant='contained'
-                    color='success'
-                    onClick={handleClose}
-                    sx={{
-                      width: '100%',
-                      py: 1.5,
-                      fontSize: '1.1rem',
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    Done
-                  </Button>
+
+                  {/* Success Content */}
+                  <Box sx={{ padding: '2rem' }}>
+                    <Button
+                      variant='contained'
+                      onClick={handleClose}
+                      sx={{
+                        backgroundColor: '#2e7d32',
+                        '&:hover': { backgroundColor: '#1b5e20' },
+                        borderRadius: '8px',
+                        width: '100%',
+                        py: '0.75rem',
+                        fontSize: '1rem',
+                        fontWeight: 500,
+                      }}
+                    >
+                      Done
+                    </Button>
+                  </Box>
                 </>
               )}
             </>
