@@ -11,6 +11,7 @@ import AuthContextProvider from './auth/AuthContextProvider';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import AccountInfo from './pages/profile/components/AccountInfo';
 import CellsList from './pages/profile/components/CellsList';
+import LoggersList from './pages/profile/components/LoggersList';
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ function App() {
               <Route path='/profile' exact element={<Profile />}>
                 <Route path='account' element={<AccountInfo />} />
                 <Route path='cells' element={<CellsList />} />
+                <Route path='loggers' element={<LoggersList />} />
               </Route>
               <Route path='/dashboard' exact element={<Dashboard />} />
               <Route path='/map' exact element={<Map />} />

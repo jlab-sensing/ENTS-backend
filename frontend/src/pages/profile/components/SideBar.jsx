@@ -1,6 +1,7 @@
 import { MenuItem, MenuList, ListItemIcon, ListItemText, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import cube from '../../../assets/box.svg';
+import logger from '../../../assets/logger.svg';
 import user from '../../../assets/user.svg';
 function SideBar() {
   const navigate = useNavigate();
@@ -35,6 +36,27 @@ function SideBar() {
                 <Box component='img' src={cube} />
               </ListItemIcon>
               <ListItemText primaryTypographyProps={{ fontSize: '20px' }}>Cells</ListItemText>
+            </MenuItem>
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            backgroundColor: '#588157',
+            mb: 1,
+            borderRadius: '8px',
+          }}
+        >
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: '8px',
+            }}
+          >
+            <MenuItem onClick={() => navigate('/profile/loggers')} sx={{ color: 'white' }}>
+              <ListItemIcon>
+                <Box component='img' src={logger} />
+              </ListItemIcon>
+              <ListItemText primaryTypographyProps={{ fontSize: '20px' }}>Loggers</ListItemText>
             </MenuItem>
           </Box>
         </Box>
