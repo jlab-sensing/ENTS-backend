@@ -7,6 +7,7 @@ class GetSensorDataSchema(ma.SQLAlchemySchema):
     cellId = ma.Int()
     name = ma.String()
     measurement = ma.String()
+    resample = ma.String(required=False)
     startTime = ma.DateTime("rfc", required=False)
     endTime = ma.DateTime("rfc", required=False)
     stream = ma.Bool(required=False)
