@@ -8,8 +8,6 @@ import { React, useState } from 'react';
 
 function LoggersList() {
   let data = useOutletContext();
-  const isLoading = data[1];
-  const isError = data[2];
   const user = data[4];
   
   // Logger data will be at index 6 in the outlet context (after cell data)
@@ -33,16 +31,16 @@ function LoggersList() {
   }
 
   const columns = [
-    { field: 'id', headerName: 'Logger ID', width: 80 },
-    { field: 'name', headerName: 'Name', width: 130 },
-    { field: 'type', headerName: 'Type', width: 120 },
-    { field: 'device_eui', headerName: 'Device EUI', width: 130 },
-    { field: 'description', headerName: 'Description', width: 180 },
-    { field: 'date_created', headerName: 'Date Created', width: 110 },
+    { field: 'id', headerName: 'Logger ID', width: 85 },
+    { field: 'name', headerName: 'Name', width: 145 },
+    { field: 'type', headerName: 'Type', width: 125 },
+    { field: 'device_eui', headerName: 'Device EUI', width: 135 },
+    { field: 'description', headerName: 'Description', width: 190 },
+    { field: 'date_created', headerName: 'Date Created', width: 120 },
     {
       field: 'edit',
       headerName: '',
-      width: 70,
+      width: 85,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
