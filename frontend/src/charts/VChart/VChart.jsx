@@ -39,8 +39,6 @@ export default function VChart({ data, stream, startDate, endDate, onResampleCha
             day: 'MM/dd',
           },
         },
-        min: stream ? undefined : startDate?.toJSDate(),
-        max: stream ? undefined : endDate?.toJSDate(),
       },
       vAxis: {
         position: 'left',

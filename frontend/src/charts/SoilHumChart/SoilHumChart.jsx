@@ -32,8 +32,6 @@ export default function SoilHumChart({ data, startDate, endDate }) {
             day: 'D',
           },
         },
-        min: startDate?.toJSDate(),
-        max: endDate?.toJSDate(),
       },
       /*
       voltage: {

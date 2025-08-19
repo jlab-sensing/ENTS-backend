@@ -38,8 +38,6 @@ export default function PresHumChart({ data, startDate, endDate }) {
             day: 'D',
           },
         },
-        min: startDate?.toJSDate(),
-        max: endDate?.toJSDate(),
       },
       pressureAxis: {
         position: 'left',

@@ -34,8 +34,6 @@ export default function TempChart({ data, stream, startDate, endDate, onResample
             day: 'MM/dd',
           },
         },
-        min: stream ? undefined : startDate?.toJSDate(),
-        max: stream ? undefined : endDate?.toJSDate(),
       },
       y: {
         type: 'linear',

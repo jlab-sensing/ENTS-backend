@@ -38,8 +38,6 @@ export default function CO2Chart({ data, startDate, endDate }) {
             day: 'D',
           },
         },
-        min: startDate?.toJSDate(),
-        max: endDate?.toJSDate(),
       },
       CO2Axis: {
         position: 'left',

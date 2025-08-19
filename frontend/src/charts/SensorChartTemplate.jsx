@@ -33,8 +33,6 @@ export default function SensorChartTemplate({ data, startDate, endDate }) {
             day: 'D',
           },
         },
-        min: startDate?.toJSDate(),
-        max: endDate?.toJSDate(),
       },
       leafAxis: {
         position: 'left',

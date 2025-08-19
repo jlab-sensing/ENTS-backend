@@ -37,8 +37,6 @@ export default function SoilPotChart({ data, startDate, endDate }) {
             day: 'D',
           },
         },
-        min: startDate?.toJSDate(),
-        max: endDate?.toJSDate(),
       },
       leafAxis: {
         position: 'left',

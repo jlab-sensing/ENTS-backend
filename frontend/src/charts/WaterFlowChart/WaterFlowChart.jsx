@@ -32,8 +32,6 @@ export default function WaterFlowChart({ data, startDate, endDate }) {
             day: 'D',
           },
         },
-        min: startDate?.toJSDate(),
-        max: endDate?.toJSDate(),
       },
       flow: {
         position: 'left',

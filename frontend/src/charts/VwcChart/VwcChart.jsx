@@ -39,8 +39,6 @@ export default function VwcChart({ data, stream, startDate, endDate, onResampleC
             day: 'MM/dd',
           },
         },
-        min: stream ? undefined : startDate?.toJSDate(),
-        max: stream ? undefined : endDate?.toJSDate(),
       },
       ecAxis: {
         type: 'linear',
