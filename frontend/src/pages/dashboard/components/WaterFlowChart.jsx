@@ -32,6 +32,7 @@ function WaterFlowCharts({ cells, startDate, endDate, stream }) {
   };
   const [sensorChartData, setSensorChartData] = useState(chartSettings);
   const [loadedCells, setLoadedCells] = useState([]);
+  const [hasData, setHasData] = useState(false);
 
   // Initialize the combined chart data with empty datasets
   const newSensorChartData = {
@@ -110,6 +111,7 @@ function WaterFlowCharts({ cells, startDate, endDate, stream }) {
     getCellChartData().then((cellChartData) => {
       let selectCounter = 0;
       let loadCells = cells;
+      let hasAnyData = false;
       if (!stream) {
         loadCells = cells.filter((c) => !(c.id in loadedCells));
       }
@@ -118,24 +120,29 @@ function WaterFlowCharts({ cells, startDate, endDate, stream }) {
         const name = cellChartData[cellid].name;
         const measurements = Object.keys(cellChartData[cellid]).filter((k) => k != 'name');
         for (const [idx, meas] of measurements.entries()) {
-          const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime));
-          const measData = createDataset(timestamp, cellChartData[cellid][meas]['data']);
-          newSensorChartData.labels = timestamp;
-          newSensorChartData.datasets.push({
-            label: name + ` ${meas} (${units[idx]})`,
-            data: measData,
-            borderColor: meas_colors[idx][selectCounter],
-            borderWidth: 2,
-            fill: false,
-            yAxisID: axisIds[idx],
-            radius: 2,
-            pointRadius: 1,
-          });
+          const measDataArray = cellChartData[cellid][meas]['data'];
+          if (Array.isArray(measDataArray) && measDataArray.length > 0) {
+            hasAnyData = true;
+            const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime));
+            const measData = createDataset(timestamp, measDataArray);
+            newSensorChartData.labels = timestamp;
+            newSensorChartData.datasets.push({
+              label: name + ` ${meas} (${units[idx]})`,
+              data: measData,
+              borderColor: meas_colors[idx][selectCounter],
+              borderWidth: 2,
+              fill: false,
+              yAxisID: axisIds[idx],
+              radius: 2,
+              pointRadius: 1,
+            });
+          }
         }
         selectCounter += 1;
       }
       setSensorChartData(newSensorChartData);
       setLoadedCells(loadCells);
+      setHasData(hasAnyData);
     });
   }
 
@@ -240,6 +247,10 @@ function WaterFlowCharts({ cells, startDate, endDate, stream }) {
     // TODO: need to memoize updating charts
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cells, stream, startDate, endDate]);
+
+  if (!hasData) {
+    return <></>;
+  }
 
   return (
     <>

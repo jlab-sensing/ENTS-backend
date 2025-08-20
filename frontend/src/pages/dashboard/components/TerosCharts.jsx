@@ -7,7 +7,7 @@ import VwcChart from '../../../charts/VwcChart/VwcChart';
 import useInterval from '../../../hooks/useInterval';
 import { getTerosData, streamTerosData } from '../../../services/teros';
 
-function TerosCharts({ cells, startDate, endDate, stream }) {
+function TerosCharts({ cells, startDate, endDate, stream, onDataStatusChange }) {
   const [resample, setResample] = useState('hour');
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
@@ -17,6 +17,7 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
   const [vwcChartData, setVwcChartData] = useState(chartSettings);
   const [tempChartData, setTempChartData] = useState(chartSettings);
   const [loadedCells, setLoadedCells] = useState([]);
+  const [hasData, setHasData] = useState(false);
 
   // Access data for each cell and update the combined charts accordingly
 
@@ -85,6 +86,7 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
     getTerosChartData().then((cellChartData) => {
       let selectCounter = 0;
       let loadCells = cells;
+      let hasAnyData = false;
       if (!stream) {
         loadCells = cells.filter((c) => !(c.id in loadedCells));
       }
@@ -92,54 +94,58 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
         const cellid = id;
         const name = cellChartData[cellid].name;
         const terosData = cellChartData[cellid].terosData;
-        const tTimestamp = terosData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
-        // newVwcChartData.labels = tTimestamp;
 
-        /** creating dataset so chartjs doesn't have to parse data itself for decimation*/
-        const tempData = createDataset(tTimestamp, terosData.temp);
-        const vwcData = createDataset(tTimestamp, terosData.vwc);
-        const ecData = createDataset(tTimestamp, terosData.ec);
-        newVwcChartData.datasets.push(
-          {
-            label: name + ' Volumetric Water Content (%)',
-            data: vwcData,
-            borderColor: vwcColors[selectCounter],
+        if (
+          (Array.isArray(terosData.temp) && terosData.temp.length > 0) ||
+          (Array.isArray(terosData.vwc) && terosData.vwc.length > 0) ||
+          (Array.isArray(terosData.ec) && terosData.ec.length > 0)
+        ) {
+          hasAnyData = true;
+
+          const tTimestamp = terosData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
+          const tempData = createDataset(tTimestamp, terosData.temp);
+          const vwcData = createDataset(tTimestamp, terosData.vwc);
+          const ecData = createDataset(tTimestamp, terosData.ec);
+          newVwcChartData.datasets.push(
+            {
+              label: name + ' Volumetric Water Content (%)',
+              data: vwcData,
+              borderColor: vwcColors[selectCounter],
+              borderWidth: 2,
+              fill: false,
+              yAxisID: 'vwcAxis',
+              radius: 2,
+              pointRadius: 1,
+            },
+            {
+              label: name + ' Electrical Conductivity (µS/cm)',
+              data: ecData,
+              borderColor: ecColors[selectCounter],
+              borderWidth: 2,
+              fill: false,
+              yAxisID: 'ecAxis',
+              radius: 2,
+              pointRadius: 0,
+              borderDash: [5, 5],
+            },
+          );
+
+          newTempChartData.datasets.push({
+            label: name + ' Temperature (°C)',
+            data: tempData,
+            borderColor: tempColors[selectCounter],
             borderWidth: 2,
             fill: false,
-            yAxisID: 'vwcAxis',
             radius: 2,
             pointRadius: 1,
-          },
-          {
-            label: name + ' Electrical Conductivity (µS/cm)',
-            data: ecData,
-            borderColor: ecColors[selectCounter],
-            borderWidth: 2,
-            fill: false,
-            yAxisID: 'ecAxis',
-            radius: 2,
-            pointRadius: 0,
-            borderDash: [5, 5],
-          },
-        );
-
-        // Update the combined Temperature Chart data for the specific cell
-        // newTempChartData.labels = tTimestamp;
-        newTempChartData.datasets.push({
-          label: name + ' Temperature (°C)',
-          data: tempData,
-          borderColor: tempColors[selectCounter],
-          borderWidth: 2,
-          fill: false,
-          radius: 2,
-          pointRadius: 1,
-        });
+          });
+        }
         selectCounter += 1;
       }
-      console.log(newVwcChartData);
       setVwcChartData(newVwcChartData);
       setTempChartData(newTempChartData);
       setLoadedCells(loadCells);
+      setHasData(hasAnyData);
     });
   }
 
@@ -217,7 +223,6 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
             },
           );
 
-          // Update the combined Temperature Chart data for the specific cell
           newTempChartData.labels = tTimestamp;
           newTempChartData.datasets.push({
             label: name + ' Temperature (°C)',
@@ -252,6 +257,7 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
     };
     setVwcChartData(Object.assign({}, newVwcChartData));
     setTempChartData(Object.assign({}, newTempChartData));
+    setHasData(false);
   }
 
   //** clearning chart data points and labels */
@@ -278,16 +284,25 @@ function TerosCharts({ cells, startDate, endDate, stream }) {
       setVwcChartData(clearChartDatasets(Object.assign({}, vwcChartData)));
       setTempChartData(clearChartDatasets(Object.assign({}, tempChartData)));
     } else {
-      //no selected cells
       clearCharts();
     }
-    // TODO: need to memoize updating charts
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cells, stream, startDate, endDate, resample]);
 
   const handleResampleChange = (newResample) => {
     setResample(newResample);
   };
+
+  // Notify parent component when data status changes
+  useEffect(() => {
+    if (onDataStatusChange) {
+      onDataStatusChange(hasData);
+    }
+  }, [hasData, onDataStatusChange]);
+
+  if (!hasData) {
+    return <></>;
+  }
 
   return (
     <>
@@ -306,6 +321,7 @@ TerosCharts.propTypes = {
   startDate: PropTypes.any,
   endDate: PropTypes.any,
   stream: PropTypes.bool,
+  onDataStatusChange: PropTypes.func,
 };
 
 export default TerosCharts;
