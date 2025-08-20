@@ -2,32 +2,24 @@ import { Grid } from '@mui/material';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import { React, useEffect, useState } from 'react';
-import CO2Chart from '../../../charts/CO2Chart/CO2Chart';
+import SoilHumChart from '../../../charts/SoilHumChart/SoilHumChart';
 import useInterval from '../../../hooks/useInterval';
 import { getSensorData, streamSensorData } from '../../../services/sensor';
 
-function CO2Charts({ cells, startDate, endDate, stream }) {
+function SoilHumCharts({ cells, startDate, endDate, stream }) {
   // CONFIGURATION
   // List out measurements that your chart is going to display
-  const sensor_name = 'co2';
-  const measurements = ['CO2', 'Photoresistivity'];
-  const units = ['PPM', 'Ohms'];
+  // MUST MATCH FROM UTIL.PY
+  const sensor_name = 'sen03808';
+  const measurements = ['Humidity'];
+  const units = ['%'];
   // Colors of data points. Each color represents the next color
   // of the data points as the user selects more cells to compare.
   // Add more measurements depending on how many different values on the charts
-  const meas_colors = [
-    '#26C6DA',
-    '#FF7043',
-    '#A2708A',
-    '#FF5722',
-    '#607D8B',
-    '#4CAF50',
-    '#FF9800',
-    '#9C27B0',
-    '#2196F3',
-    '#E91E63',
-  ];
-  const axisIds = ['CO2Axis', 'PhotoresistivityAxis'];
+  const meas_colors= ['#26C6DA', '#FF7043', '#A2708A'];
+
+    //whatever you want it to say on the side
+  const axisIds = ['humidity'];
 
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
@@ -131,13 +123,13 @@ function CO2Charts({ cells, startDate, endDate, stream }) {
           const measDataArray = cellChartData[cellid][meas]['data'];
           if (Array.isArray(measDataArray) && measDataArray.length > 0) {
             hasAnyData = true;
-            const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
+            const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime));
             const measData = createDataset(timestamp, measDataArray);
             newSensorChartData.labels = timestamp;
             newSensorChartData.datasets.push({
               label: name + ` ${meas} (${units[idx]})`,
               data: measData,
-              borderColor: meas_colors[(selectCounter * measurements.length + idx) % meas_colors.length],
+              borderColor: meas_colors[idx][selectCounter],
               borderWidth: 2,
               fill: false,
               yAxisID: axisIds[idx],
@@ -180,11 +172,9 @@ function CO2Charts({ cells, startDate, endDate, stream }) {
               const sTimestamp = sTimestampRaw.filter((_, i) => dupIdx.includes(i));
               const measData = createDataset(sTimestamp, sensorData);
               newSensorChartData.labels = newSensorChartData.labels.concat(sTimestamp);
-              const datasetIndex = selectCounter * measurements.length + idx;
-              if (newSensorChartData.datasets[datasetIndex]) {
-                newSensorChartData.datasets[datasetIndex].data =
-                  newSensorChartData.datasets[datasetIndex].data.concat(measData);
-              }
+              const step = selectCounter === 0 ? 0 : 1;
+              newSensorChartData.datasets[selectCounter + idx + step].data =
+                newSensorChartData.datasets[selectCounter + idx + step].data.concat(measData);
             }
           }
           selectCounter += 1;
@@ -195,12 +185,12 @@ function CO2Charts({ cells, startDate, endDate, stream }) {
           const name = sensorChartData[cellid].name;
           const measurements = Object.keys(sensorChartData[cellid]).filter((k) => k != 'name');
           for (const [idx, meas] of measurements.entries()) {
-            const timestamp = sensorChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
+            const timestamp = sensorChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime));
             newSensorChartData.labels = timestamp;
             newSensorChartData.datasets.push({
               label: name + ` ${meas} (${units[idx]})`,
               data: sensorChartData[cellid][meas]['data'],
-              borderColor: meas_colors[(selectCounter * measurements.length + idx) % meas_colors.length],
+              borderColor: meas_colors[idx][selectCounter],
               borderWidth: 2,
               fill: false,
               yAxisID: axisIds[idx],
@@ -225,7 +215,6 @@ function CO2Charts({ cells, startDate, endDate, stream }) {
       datasets: [],
     };
     setSensorChartData(Object.assign({}, newSensorChartData));
-    setHasData(false);
   }
 
   //** clearning chart data points and labels */
@@ -251,9 +240,11 @@ function CO2Charts({ cells, startDate, endDate, stream }) {
       // updating react state for object requires new object
       setSensorChartData(clearChartDatasets(Object.assign({}, sensorChartData)));
     } else {
+      // no selected cells
       clearCharts();
     }
 
+    // TODO: need to memoize updating charts
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cells, stream, startDate, endDate]);
 
@@ -262,17 +253,19 @@ function CO2Charts({ cells, startDate, endDate, stream }) {
   }
 
   return (
-    <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-      <CO2Chart data={sensorChartData} startDate={startDate} endDate={endDate} />
-    </Grid>
+    <>
+      <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+        <SoilHumChart data={sensorChartData} startDate={startDate} endDate={endDate} />
+      </Grid>
+    </>
   );
 }
 
-CO2Charts.propTypes = {
+SoilHumCharts.propTypes = {
   cells: PropTypes.array,
   startDate: PropTypes.any,
   endDate: PropTypes.any,
   stream: PropTypes.bool,
 };
 
-export default CO2Charts;
+export default SoilHumCharts;

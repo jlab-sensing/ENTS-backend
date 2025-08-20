@@ -131,7 +131,7 @@ function SoilPotCharts({ cells, startDate, endDate, stream }) {
           const measDataArray = cellChartData[cellid][meas]['data'];
           if (Array.isArray(measDataArray) && measDataArray.length > 0) {
             hasAnyData = true;
-            const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime));
+            const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
             const measData = createDataset(timestamp, measDataArray);
             newSensorChartData.labels = timestamp;
             newSensorChartData.datasets.push({
@@ -180,9 +180,11 @@ function SoilPotCharts({ cells, startDate, endDate, stream }) {
               const sTimestamp = sTimestampRaw.filter((_, i) => dupIdx.includes(i));
               const measData = createDataset(sTimestamp, sensorData);
               newSensorChartData.labels = newSensorChartData.labels.concat(sTimestamp);
-              const step = selectCounter === 0 ? 0 : 1;
-              newSensorChartData.datasets[selectCounter + idx + step].data =
-                newSensorChartData.datasets[selectCounter + idx + step].data.concat(measData);
+              const datasetIndex = selectCounter * measurements.length + idx;
+              if (newSensorChartData.datasets[datasetIndex]) {
+                newSensorChartData.datasets[datasetIndex].data =
+                  newSensorChartData.datasets[datasetIndex].data.concat(measData);
+              }
             }
           }
           selectCounter += 1;
@@ -193,7 +195,7 @@ function SoilPotCharts({ cells, startDate, endDate, stream }) {
           const name = sensorChartData[cellid].name;
           const measurements = Object.keys(sensorChartData[cellid]).filter((k) => k != 'name');
           for (const [idx, meas] of measurements.entries()) {
-            const timestamp = sensorChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime));
+            const timestamp = sensorChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
             newSensorChartData.labels = timestamp;
             newSensorChartData.datasets.push({
               label: name + ` ${meas} (${units[idx]})`,

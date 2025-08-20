@@ -7,6 +7,7 @@ import VChart from '../../../charts/VChart/VChart';
 import useInterval from '../../../hooks/useInterval';
 import { getPowerData, streamPowerData } from '../../../services/power';
 function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) {
+  const [resample, setResample] = useState('hour');
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
   const chartSettings = {
@@ -38,7 +39,7 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
         name: name,
         powerData: await (stream
           ? streamPowerData(id, DateTime.now().minus({ second: 20 }).toHTTP(), DateTime.now().toHTTP(), true)
-          : getPowerData(id, startDate.toHTTP(), endDate.toHTTP())),
+          : getPowerData(id, startDate.toHTTP(), endDate.toHTTP(), resample)),
       };
     }
     return data;
@@ -174,23 +175,24 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
             foundNewData = true;
             const powerDataRaw = cellChartData[cellid].powerData;
             const pTimestampRaw = powerDataRaw.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
-            const dupIdx = pTimestampRaw.reduce((arr, ts, i) => {
-              return !newVChartData.labels.some((oldTs) => ts.equals(oldTs)) && arr.push(i), arr;
+            const pTimestampMillis = pTimestampRaw.map(dt => dt.toMillis());
+            const dupIdx = pTimestampMillis.reduce((arr, ts, i) => {
+              return !newVChartData.labels.includes(ts) && arr.push(i), arr;
             }, []);
             const powerData = Object.fromEntries(
               Object.entries(powerDataRaw).map(([key, value]) => [key, value.filter((_, idx) => dupIdx.includes(idx))]),
             );
-            const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
+            const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
             newVChartData.labels = newVChartData.labels.concat(pTimestamp);
-            newVChartData.datasets[selectCounter].data = newVChartData.datasets[selectCounter].data.concat(powerData.v);
-            newVChartData.datasets[selectCounter + 1].data = newVChartData.datasets[selectCounter + 1].data.concat(
-              powerData.i,
-            );
+            const vData = createDataset(pTimestamp, powerData.v);
+            const iData = createDataset(pTimestamp, powerData.i);
+            const pData = createDataset(pTimestamp, powerData.p);
+            newVChartData.datasets[selectCounter].data = newVChartData.datasets[selectCounter].data.concat(vData);
+            newVChartData.datasets[selectCounter + 1].data =
+              newVChartData.datasets[selectCounter + 1].data.concat(iData);
             //power data
             newPwrChartData.labels = newPwrChartData.labels.concat(pTimestamp);
-            newPwrChartData.datasets[selectCounter].data = newPwrChartData.datasets[selectCounter].data.concat(
-              powerData.p,
-            );
+            newPwrChartData.datasets[selectCounter].data = newPwrChartData.datasets[selectCounter].data.concat(pData);
             selectCounter += 1;
           }
         }
@@ -199,7 +201,7 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
           const cellid = id;
           const name = cellChartData[cellid].name;
           const powerData = cellChartData[cellid].powerData;
-          const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
+          const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
           newVChartData.labels = pTimestamp;
           newVChartData.datasets.push(
             {
@@ -289,7 +291,11 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cells, stream, startDate, endDate]);
+  }, [cells, stream, startDate, endDate, resample]);
+
+  const handleResampleChange = (newResample) => {
+    setResample(newResample);
+  };
 
   // Notify parent component when data status changes
   useEffect(() => {
@@ -305,10 +311,10 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
   return (
     <>
       <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
-        <VChart data={vChartData} stream={stream} startDate={startDate} endDate={endDate} />
+        <VChart data={vChartData} stream={stream} startDate={startDate} endDate={endDate} onResampleChange={handleResampleChange} />
       </Grid>
       <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
-        <PwrChart data={pwrChartData} stream={stream} startDate={startDate} endDate={endDate} />
+        <PwrChart data={pwrChartData} stream={stream} startDate={startDate} endDate={endDate} onResampleChange={handleResampleChange} />
       </Grid>
     </>
   );

@@ -16,6 +16,9 @@ import PresHumChart from './components/PresHumChart';
 import SensorChart from './components/SensorChart';
 import SoilPotCharts from './components/SoilPotChart';
 import TerosCharts from './components/TerosCharts';
+import WaterPressChart from './components/WaterPresChart';
+import SoilHumCharts from './components/SoilHumChart';
+import WaterFlowCharts from './components/WaterFlowChart';
 
 function Dashboard() {
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
@@ -193,6 +196,89 @@ function Dashboard() {
           justifyContent='spaced-evently'
           sx={{ minHeight: '100vh', boxSizing: 'border-box' }}
         >
+          {/* 
+          TODO: Mobile responsive layout from main branch - currently commented out
+          to preserve conditional rendering functionality. Add isMobile logic later.
+          
+          <Box>
+            {isMobile ? (
+              // Mobile layout - Two bars
+              <Box sx={{ px: 3, py: 2 }}>
+                <Stack spacing={2}>
+                  <Stack direction='row' spacing={2} alignItems='center'>
+                    <BackBtn />
+                    <Box sx={{ flexGrow: 1 }}>
+                      <CellSelect selectedCells={selectedCells} setSelectedCells={handleCellSelectionChange} />
+                    </Box>
+                  </Stack>
+                  <Stack direction='row' spacing={2} alignItems='center' justifyContent='space-between'>
+                    <DateRangeSel
+                      startDate={startDate}
+                      endDate={endDate}
+                      setStartDate={handleStartDateChange}
+                      setEndDate={handleEndDateChange}
+                    />
+                    <Stack direction='row' spacing={1}>
+                      {!cells.isLoading && !cells.isError && <ArchiveModal cells={cells} />}
+                      <DownloadBtn
+                        disabled={dBtnDisabled}
+                        setDBtnDisabled={setDBtnDisabled}
+                        cells={selectedCells}
+                        startDate={startDate}
+                        endDate={endDate}
+                      />
+                      <Button
+                        variant={stream ? 'contained' : 'outlined'}
+                        color='primary'
+                        onClick={() => setStream(!stream)}
+                        size='small'
+                      >
+                        Stream
+                      </Button>
+                      <Button
+                        variant={!stream ? 'contained' : 'outlined'}
+                        color='primary'
+                        onClick={() => setStream(false)}
+                        size='small'
+                      >
+                        Hourly
+                      </Button>
+                    </Stack>
+                  </Stack>
+                </Stack>
+              </Box>
+            ) : (
+              // Desktop layout - Single bar
+              <Stack direction='row' alignItems='center' justifyContent='space-evenly' sx={{ p: 2 }} spacing={3}>
+                <BackBtn />
+                <Box sx={{ flexGrow: 1, maxWidth: '30%' }}>
+                  <CellSelect selectedCells={selectedCells} setSelectedCells={handleCellSelectionChange} />
+                </Box>
+                <Box display='flex' justifyContent='center' alignItems='center'>
+                  <DateRangeSel
+                    startDate={startDate}
+                    endDate={endDate}
+                    setStartDate={handleStartDateChange}
+                    setEndDate={handleEndDateChange}
+                  />
+                </Box>
+                <Button variant={stream ? 'contained' : 'outlined'} color='primary' onClick={() => setStream(!stream)}>
+                  Streaming
+                </Button>
+                {!cells.isLoading && !cells.isError && <ArchiveModal cells={cells} />}
+                <DownloadBtn
+                  disabled={dBtnDisabled}
+                  setDBtnDisabled={setDBtnDisabled}
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                />
+              </Stack>
+            )}
+          </Box>
+          */}
+          
+          {/* Current conditional rendering layout - preserving original functionality */}
           <Stack direction='row' alignItems='center' justifyContent={'space-evenly'} sx={{ p: 2 }} spacing={3}>
             <BackBtn />
             <Box sx={{ flexGrow: 1, maxWidth: '30%' }}>
@@ -283,10 +369,65 @@ function Dashboard() {
                 <PresHumChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
                 <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
                 <CO2Charts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                {/* New charts from main branch */}
+                <SoilHumCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <WaterPressChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <WaterFlowCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
               </Stack>
             </>
           )}
         </Stack>
+        
+        {/* 
+        TODO: Alternative layout structure from main branch - currently commented out
+        to preserve conditional rendering functionality. This structure has better spacing
+        and responsive design but doesn't include conditional rendering callbacks.
+        
+        <Divider sx={{ backgroundColor: '#e0e0e0' }} />
+
+        <Stack
+          direction='column'
+          divider={<Divider orientation='horizontal' flexItem />}
+          justifyContent='space-evenly'
+          spacing={4}
+          sx={{
+            width: '100%',
+            boxSizing: 'border-box',
+            py: 3,
+            px: { xs: 2, sm: 3, md: 4 },
+          }}
+        >
+          <Box sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
+            <Grid container spacing={3} columns={{ xs: 4, sm: 8, md: 12 }}>
+              <PowerCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+              <TerosCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            </Grid>
+          </Box>
+          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
+            <SoilPotCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          </Box>
+          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
+            <PresHumChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          </Box>
+          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
+            <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          </Box>
+          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
+            <CO2Charts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          </Box>
+          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
+            <SoilHumCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          </Box>
+          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
+            <WaterPressChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          </Box>
+          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
+            <WaterFlowCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+          </Box>
+        </Stack>
+
+        <Box sx={{ height: { xs: '60px', sm: '80px', md: '100px' } }} />
+        */}
       </Box>
     </>
   );
