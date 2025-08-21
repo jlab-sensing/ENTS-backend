@@ -5,7 +5,7 @@ import { React } from 'react';
 import { getAxisBoundsAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 
-export default function TempChart({ data, stream, startDate, endDate, onResampleChange }) {
+export default function TempChart({ data, stream, onResampleChange }) {
   const { leftYMin, leftYMax, leftYStep } = getAxisBoundsAndStepValues(data.datasets, [], 10, 5);
 
   const chartOptions = {
@@ -97,7 +97,15 @@ export default function TempChart({ data, stream, startDate, endDate, onResample
     },
   };
 
-  return <ChartWrapper id='temp' data={data} options={stream ? streamChartOptions : chartOptions} stream={stream} onResampleChange={onResampleChange} />;
+  return (
+    <ChartWrapper
+      id='temp'
+      data={data}
+      options={stream ? streamChartOptions : chartOptions}
+      stream={stream}
+      onResampleChange={onResampleChange}
+    />
+  );
 }
 TempChart.propTypes = {
   data: PropTypes.object,

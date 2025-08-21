@@ -5,7 +5,7 @@ import { React } from 'react';
 import { getAxisBoundsAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 
-export default function PwrChart({ data, stream, startDate, endDate, onResampleChange }) {
+export default function PwrChart({ data, stream, onResampleChange }) {
   const { leftYMin, leftYMax, leftYStep } = getAxisBoundsAndStepValues(data.datasets, [], 10, 5);
 
   const chartOptions = {
@@ -95,7 +95,15 @@ export default function PwrChart({ data, stream, startDate, endDate, onResampleC
     },
   };
 
-  return <ChartWrapper id='pwr' data={data} options={stream ? streamChartOptions : chartOptions} stream={stream} onResampleChange={onResampleChange} />;
+  return (
+    <ChartWrapper
+      id='pwr'
+      data={data}
+      options={stream ? streamChartOptions : chartOptions}
+      stream={stream}
+      onResampleChange={onResampleChange}
+    />
+  );
 }
 
 PwrChart.propTypes = {

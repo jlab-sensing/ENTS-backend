@@ -5,7 +5,7 @@ import { getAxisBoundsAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 import { chartPlugins } from '../plugins';
 
-export default function PresHumChart({ data, startDate, endDate }) {
+export default function PresHumChart({ data }) {
   const { leftYMin, leftYMax, leftYStep, rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
     data.datasets.filter((d) => d.yAxisID === 'pressureAxis'),
     data.datasets.filter((d) => d.yAxisID === 'humidityAxis'),
