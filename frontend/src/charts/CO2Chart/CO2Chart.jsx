@@ -5,7 +5,7 @@ import { getAxisBoundsAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 import { chartPlugins } from '../plugins';
 
-export default function CO2Chart({ data, startDate, endDate }) {
+export default function CO2Chart({ data }) {
   const { leftYMin, leftYMax, leftYStep, rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
     data.datasets.filter((d) => d.yAxisID === 'CO2Axis'),
     data.datasets.filter((d) => d.yAxisID === 'PhotoresistivityAxis'),
@@ -38,8 +38,6 @@ export default function CO2Chart({ data, startDate, endDate }) {
             day: 'D',
           },
         },
-        min: startDate?.toJSDate(),
-        max: endDate?.toJSDate(),
       },
       CO2Axis: {
         position: 'left',
