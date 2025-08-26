@@ -46,14 +46,12 @@ class Logger(Resource):
             logger = LoggerModel.get(logger_id)
             if not logger:
                 return {"message": "Logger not found"}, 404
-            
+
             # Check if this logger has TTN integration (type "ents")
             if logger.type and logger.type.lower() == "ents":
                 try:
-                    ed = EndDevice({
-                        "ids": {"device_id": f"dirtviz-{logger_id}"}
-                    })
-                    
+                    ed = EndDevice({"ids": {"device_id": f"dirtviz-{logger_id}"}})
+
                     ttn_device = self.ttn_api.get_end_device(ed)
                     if ttn_device:
                         # Return combined database + TTN info
@@ -62,7 +60,7 @@ class Logger(Resource):
                         return logger_data, 200
                 except Exception as e:
                     warnings.warn(f"Failed to get TTN device info: {str(e)}")
-            
+
             # Return database info only
             return loggers_schema.dump(logger), 200
 
@@ -82,7 +80,7 @@ class Logger(Resource):
         }
         """
         json_data = request.json
-        
+
         # Validate required fields
         required_fields = ["name", "userEmail"]
         for field in required_fields:
@@ -95,19 +93,19 @@ class Logger(Resource):
         device_eui = json_data.get("device_eui", "")
         description = json_data.get("description", "")
         userEmail = json_data["userEmail"]
-        
+
         # Check for duplicate logger name
         if LoggerModel.find_by_name(logger_name):
             return {"message": "Duplicate logger name"}, 400
-        
+
         # Create database entry first to get logger_id
         new_logger = LoggerModel.add_logger_by_user_email(
             logger_name, type_val, device_eui, description, userEmail
         )
-        
+
         if not new_logger:
             return {"message": "Error adding logger to database"}, 400
-        
+
         # If type is "ents", register with TTN
         if type_val and type_val.lower() == "ents":
             try:
@@ -116,15 +114,17 @@ class Logger(Resource):
                 dev_eui = json_data.get("dev_eui", device_eui)
                 join_eui = json_data.get("join_eui")
                 app_key = json_data.get("app_key")
-                
+
                 if not all([dev_eui, join_eui, app_key]):
                     # Rollback database entry if TTN fields missing
                     new_logger.delete()
                     return {
-                        "message": ("Missing TTN fields: dev_eui, join_eui, app_key "
-                                   "required for ents type")
+                        "message": (
+                            "Missing TTN fields: dev_eui, join_eui, app_key "
+                            "required for ents type"
+                        )
                     }, 400
-                
+
                 # Create TTN end device
                 ed = EntsEndDevice(
                     name=logger_name,
@@ -133,19 +133,19 @@ class Logger(Resource):
                     join_eui=join_eui,
                     app_key=app_key,
                 )
-                
+
                 ttn_device = self.ttn_api.register_end_device(ed)
                 if not ttn_device:
                     # Rollback database entry if TTN registration fails
                     new_logger.delete()
                     return {"message": "Failed to register end device with TTN"}, 400
-                
+
                 return {
                     "message": "Successfully added logger with TTN registration",
                     "logger_id": new_logger.id,
-                    "ttn_device_id": f"dirtviz-{new_logger.id}"
+                    "ttn_device_id": f"dirtviz-{new_logger.id}",
                 }, 201
-                
+
             except Exception as e:
                 # Rollback database entry on TTN error
                 new_logger.delete()
@@ -154,7 +154,7 @@ class Logger(Resource):
             # Non-ents logger, database only
             return {
                 "message": "Successfully added logger",
-                "logger_id": new_logger.id
+                "logger_id": new_logger.id,
             }, 201
 
     def put(self, logger_id: int):
@@ -180,27 +180,29 @@ class Logger(Resource):
         if "description" in json_data:
             logger.description = json_data.get("description")
             updated = True
-            
+
         if not updated:
             return {"message": "No valid fields to update"}, 400
 
         # Save to database
         logger.save()
-        
+
         # Update TTN if it's an ents device and name was changed
         if logger.type and logger.type.lower() == "ents" and "name" in json_data:
             try:
-                ed = EndDevice({
-                    "ids": {"device_id": f"dirtviz-{logger_id}"},
-                    "name": json_data["name"]
-                })
-                
+                ed = EndDevice(
+                    {
+                        "ids": {"device_id": f"dirtviz-{logger_id}"},
+                        "name": json_data["name"],
+                    }
+                )
+
                 ttn_updated = self.ttn_api.update_end_device(ed)
                 if not ttn_updated:
                     warnings.warn(
                         f"Failed to update TTN device name for logger {logger_id}"
                     )
-                
+
             except Exception as e:
                 warnings.warn(f"TTN update failed for logger {logger_id}: {str(e)}")
 
@@ -222,14 +224,12 @@ class Logger(Resource):
         # If it's an ents device, delete from TTN first
         if logger.type and logger.type.lower() == "ents":
             try:
-                ed = EndDevice({
-                    "ids": {"device_id": f"dirtviz-{logger_id}"}
-                })
-                
+                ed = EndDevice({"ids": {"device_id": f"dirtviz-{logger_id}"}})
+
                 ttn_deleted = self.ttn_api.delete_end_device(ed)
                 if not ttn_deleted:
                     warnings.warn(f"Failed to delete TTN device for logger {logger_id}")
-                
+
             except Exception as e:
                 warnings.warn(f"TTN deletion failed for logger {logger_id}: {str(e)}")
                 # Continue with database deletion even if TTN fails
