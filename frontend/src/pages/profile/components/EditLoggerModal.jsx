@@ -18,7 +18,6 @@ function EditLoggerModal({ logger }) {
     setOpen(true);
     setResponse(null);
     setFormData({ ...logger });
-    setAppKey(''); // Reset app key
   };
 
   const handleClose = () => setOpen(false);

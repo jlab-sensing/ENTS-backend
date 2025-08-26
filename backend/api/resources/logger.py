@@ -112,14 +112,18 @@ class Logger(Resource):
         if type_val and type_val.lower() == "ents":
             try:
                 # Extract TTN-specific fields (not stored in database)
-                dev_eui = json_data.get("dev_eui", device_eui)  # Use device_eui if dev_eui not provided
+                # Use device_eui if dev_eui not provided
+                dev_eui = json_data.get("dev_eui", device_eui)
                 join_eui = json_data.get("join_eui")
                 app_key = json_data.get("app_key")
                 
                 if not all([dev_eui, join_eui, app_key]):
                     # Rollback database entry if TTN fields missing
                     new_logger.delete()
-                    return {"message": "Missing TTN fields: dev_eui, join_eui, app_key required for ents type"}, 400
+                    return {
+                        "message": ("Missing TTN fields: dev_eui, join_eui, app_key "
+                                   "required for ents type")
+                    }, 400
                 
                 # Create TTN end device
                 ed = EntsEndDevice(
@@ -193,7 +197,9 @@ class Logger(Resource):
                 
                 ttn_updated = self.ttn_api.update_end_device(ed)
                 if not ttn_updated:
-                    warnings.warn(f"Failed to update TTN device name for logger {logger_id}")
+                    warnings.warn(
+                        f"Failed to update TTN device name for logger {logger_id}"
+                    )
                 
             except Exception as e:
                 warnings.warn(f"TTN update failed for logger {logger_id}: {str(e)}")
