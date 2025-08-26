@@ -133,13 +133,13 @@ def process_measurement_dict(meas: dict):
     elif meas["type"] == "sen0257":
 
         pressure_obj = Sensor.add_data(
-            meas_name="Pressure", meas_unit="kPa", meas_dict=meas
+            meas_name="pressure", meas_unit="kPa", meas_dict=meas
         )
 
         obj_list.append(pressure_obj)
 
         voltage_obj = Sensor.add_data(
-            meas_name="Voltage", meas_unit="V", meas_dict=meas
+            meas_name="voltage", meas_unit="V", meas_dict=meas
         )
 
         obj_list.append(voltage_obj)
@@ -148,13 +148,13 @@ def process_measurement_dict(meas: dict):
     elif meas["type"] == "sen03808":
 
         voltage_obj = Sensor.add_data(
-            meas_name="Voltage", meas_unit="V", meas_dict=meas
+            meas_name="voltage", meas_unit="V", meas_dict=meas
         )
 
         obj_list.append(voltage_obj)
 
         humidity_obj = Sensor.add_data(
-            meas_name="Humidity", meas_unit="%", meas_dict=meas
+            meas_name="humidity", meas_unit="%", meas_dict=meas
         )
 
         obj_list.append(humidity_obj)
@@ -163,7 +163,7 @@ def process_measurement_dict(meas: dict):
     elif meas["type"] == "yfs210c":
 
         flow_obj = Sensor.add_data(
-            meas_name="Flow Rate", meas_unit="L/Min", meas_dict=meas
+            meas_name="flow", meas_unit="L/Min", meas_dict=meas
         )
 
         obj_list.append(flow_obj)
