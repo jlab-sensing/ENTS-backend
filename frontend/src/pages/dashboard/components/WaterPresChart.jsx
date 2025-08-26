@@ -11,7 +11,7 @@ function WaterPressCharts({ cells, startDate, endDate, stream }) {
   // List out measurements that your chart is going to display
   // MUST MATCH FROM UTIL.PY
   const sensor_name = 'sen0257';
-  const measurements = ['pressure'];
+  const measurements = ['Pressure'];
   const units = ['kPa'];
   // Colors of data points. Each color represents the next color
   // of the data points as the user selects more cells to compare.
