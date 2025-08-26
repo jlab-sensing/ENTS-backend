@@ -11,7 +11,7 @@ function WaterFlowCharts({ cells, startDate, endDate, stream }) {
   // List out measurements that your chart is going to display
   // MUST MATCH FROM UTIL.PY
   const sensor_name = 'yfs210c';
-  const measurements = ['flow rate'];
+  const measurements = ['flow'];
   const units = ['L/Min'];
   // Colors of data points. Each color represents the next color
   // of the data points as the user selects more cells to compare.
