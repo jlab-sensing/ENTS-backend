@@ -1,6 +1,6 @@
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, Button, IconButton, Modal, TextField, Typography } from '@mui/material';
+import { Box, Button, IconButton, Modal, TextField, Typography, Select, MenuItem, FormControl, InputLabel} from '@mui/material';
 import { React, useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { addLogger } from '../../../services/logger';
@@ -149,20 +149,27 @@ function AddLoggerModal() {
                       }
                     }}
                   />
-                  <TextField
-                    label='Type'
+                  <FormControl required fullWidth>
+                    <InputLabel id='type-label'>Logger Type</InputLabel>
+                  <Select
+                    label='Logger Type'
                     variant='outlined'
                     fullWidth
+                    required
                     value={type}
                     onChange={(e) => setType(e.target.value)}
-                    placeholder='e.g., Multi-Sensor Device, IoT Device'
+                    placeholder='Select a logger type'
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
                       }
                     }}
-                  />
-                  <TextField
+                  >
+                      <MenuItem value='ents'>EnTS</MenuItem>
+                      <MenuItem value='other'>Other</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <TextField 
                     label='Device EUI'
                     variant='outlined'
                     fullWidth
@@ -192,7 +199,6 @@ function AddLoggerModal() {
                   />
                   <TextField
                     label='App Key'
-                    type='password'
                     variant='outlined'
                     fullWidth
                     required
