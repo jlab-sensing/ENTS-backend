@@ -11,7 +11,6 @@ function EditLoggerModal({ logger }) {
 
   const [isOpen, setOpen] = useState(false);
   const [formData, setFormData] = useState({ ...logger });
-  const [appKey, setAppKey] = useState(''); // App Key field for UI only
   const [response, setResponse] = useState(null);
   const [isSubmitting, setSubmitting] = useState(false);
 
@@ -31,11 +30,9 @@ function EditLoggerModal({ logger }) {
   const handleSubmit = () => {
     setSubmitting(true);
 
-    // Note: App Key is not sent to backend - saved for future API integration
+    // Only name and description can be updated (TTN fields are immutable)
     const updateData = {
       name: formData.name,
-      type: formData.type,
-      device_eui: formData.device_eui,
       description: formData.description,
     };
 
@@ -137,12 +134,13 @@ function EditLoggerModal({ logger }) {
                       }
                     }}
                   />
+                  {/* Read-only fields for reference */}
                   <TextField
                     label='Type'
                     value={formData.type || ''}
-                    onChange={handleChange('type')}
                     fullWidth
-                    placeholder='e.g., Multi-Sensor Device, IoT Device'
+                    disabled
+                    helperText='Logger type cannot be changed after creation'
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
@@ -152,9 +150,9 @@ function EditLoggerModal({ logger }) {
                   <TextField
                     label='Device EUI'
                     value={formData.device_eui || ''}
-                    onChange={handleChange('device_eui')}
                     fullWidth
-                    placeholder='e.g., AA-11-BB-22-CC-33'
+                    disabled
+                    helperText='Device EUI cannot be changed after TTN registration'
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
@@ -169,18 +167,6 @@ function EditLoggerModal({ logger }) {
                     multiline
                     rows={3}
                     placeholder='Describe the logger location and purpose'
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: '8px',
-                      }
-                    }}
-                  />
-                  <TextField
-                    label='App Key'
-                    value={appKey}
-                    onChange={(e) => setAppKey(e.target.value)}
-                    fullWidth
-                    helperText='App Key for future API integration (optional)'
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',

@@ -14,9 +14,10 @@ function AddLoggerModal() {
   const [isOpen, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [type, setType] = useState('');
-  const [deviceEui, setDeviceEui] = useState('');
+  const [devEui, setDevEui] = useState('');  // Changed to match TTN API
+  const [joinEui, setJoinEui] = useState('');  // Added for TTN integration
+  const [appKey, setAppKey] = useState('');  // TTN App Key (sensitive)
   const [description, setDescription] = useState('');
-  const [appKey, setAppKey] = useState(''); // App Key field for UI only
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
 
@@ -33,9 +34,10 @@ function AddLoggerModal() {
     setError(null);
     setName('');
     setType('');
-    setDeviceEui('');
-    setDescription('');
+    setDevEui('');
+    setJoinEui('');
     setAppKey('');
+    setDescription('');
   };
 
   const handleClose = () => {
@@ -45,9 +47,10 @@ function AddLoggerModal() {
     setError(null);
     setName('');
     setType('');
-    setDeviceEui('');
-    setDescription('');
+    setDevEui('');
+    setJoinEui('');
     setAppKey('');
+    setDescription('');
   };
 
   useEffect(() => {
@@ -164,9 +167,39 @@ function AddLoggerModal() {
                     label='Device EUI'
                     variant='outlined'
                     fullWidth
-                    value={deviceEui}
-                    onChange={(e) => setDeviceEui(e.target.value)}
-                    placeholder='e.g., AA-11-BB-22-CC-33'
+                    required
+                    value={devEui}
+                    onChange={(e) => setDevEui(e.target.value)}
+                    placeholder='e.g., 0080E1150546D093'
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                      }
+                    }}
+                  />
+                  <TextField
+                    label='Join EUI'
+                    variant='outlined'
+                    fullWidth
+                    required
+                    value={joinEui}
+                    onChange={(e) => setJoinEui(e.target.value)}
+                    placeholder='e.g., 0101010101010101'
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                      }
+                    }}
+                  />
+                  <TextField
+                    label='App Key'
+                    type='password'
+                    variant='outlined'
+                    fullWidth
+                    required
+                    value={appKey}
+                    onChange={(e) => setAppKey(e.target.value)}
+                    placeholder='Application Key'
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
@@ -182,19 +215,6 @@ function AddLoggerModal() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder='Describe the logger location and purpose'
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: '8px',
-                      }
-                    }}
-                  />
-                  <TextField
-                    label='App Key'
-                    variant='outlined'
-                    fullWidth
-                    value={appKey}
-                    onChange={(e) => setAppKey(e.target.value)}
-                    helperText='App Key for future API integration (optional)'
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
@@ -229,9 +249,9 @@ function AddLoggerModal() {
                   <Button
                     variant='contained'
                     onClick={() => {
-                      addLogger(name, type, deviceEui, description, user.email)
+                      addLogger(name, type, devEui, joinEui, appKey, description, user.email)
                         .then((res) => {
-                          setResponse({ ...res, name, type, deviceEui, description });
+                          setResponse({ ...res, name, type, devEui, description });
                           refetch();
                         })
                         .catch((error) => {
@@ -239,7 +259,7 @@ function AddLoggerModal() {
                           console.error(error);
                         });
                     }}
-                    disabled={!name.trim()}
+                    disabled={!name.trim() || !devEui.trim() || !joinEui.trim() || !appKey.trim()}
                     sx={{
                       backgroundColor: '#588157',
                       '&:hover': { backgroundColor: '#3a5a40' },

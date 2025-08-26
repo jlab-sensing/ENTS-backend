@@ -123,6 +123,7 @@ def create_app(debug: bool = False) -> Flask:
     api.add_resource(Cell, "/cell/", "/cell/<int:cellId>")
     api.add_resource(Cell_Data, "/cell/datas", endpoint="cell_data_ep")
     api.add_resource(Cell_Id, "/cell/id")
+    api.add_resource(Logger, "/logger/", "/logger/<int:logger_id>")
     api.add_resource(Power_Data, "/power/", "/power/<int:cell_id>")
     api.add_resource(Teros_Data, "/teros/", "/teros/<int:cell_id>")
     api.add_resource(SensorData, "/sensor/")
@@ -131,6 +132,5 @@ def create_app(debug: bool = False) -> Flask:
     api.add_resource(Session_r, "/session")
     api.add_resource(User_Data, "/user")
     api.add_resource(Status, "/status/<string:id>")
-    api.add_resource(Logger, "/logger/", "/logger/<int:loggerId>")
     app.register_blueprint(auth, url_prefix="/api")
     return app

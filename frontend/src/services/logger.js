@@ -10,12 +10,15 @@ export const getLoggers = () => {
     });
 };
 
-export const addLogger = (name, type, deviceEui, description, email) => {
+export const addLogger = (name, type, devEui, joinEui, appKey, description, email) => {
   return axios
     .post(`${process.env.PUBLIC_URL}/api/logger/`, {
       name: name,
       type: type,
-      device_eui: deviceEui,
+      device_eui: devEui,     // for database
+      dev_eui: devEui,        // for TTN API
+      join_eui: joinEui,      // for TTN only
+      app_key: appKey,        // for TTN only
       description: description,
       userEmail: email,
     })
