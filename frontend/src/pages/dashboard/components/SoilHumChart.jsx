@@ -19,7 +19,7 @@ function SoilHumCharts({ cells, startDate, endDate, stream }) {
   const meas_colors= ['#26C6DA', '#FF7043', '#A2708A'];
 
     //whatever you want it to say on the side
-  const axisIds = ['humidity'];
+  const axisIds = ['Humidity'];
 
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
