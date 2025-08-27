@@ -3,22 +3,22 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, Button, IconButton, Modal, Typography } from '@mui/material';
 import { React, useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { deleteCell } from '../../../services/cell';
+import { deleteLogger } from '../../../services/logger';
 import PropTypes from 'prop-types';
 
-function DeleteCellModal({ id }) {
+function DeleteLoggerModal({ id }) {
   let data = useOutletContext();
-  const refetch = data[3];
+  const refetch = data[9]; // Logger refetch function from outlet context
   const user = data[4];
-  data = data[0];
+  
   const [isOpen, setOpen] = useState(false);
   const [response, setResponse] = useState(null);
-  const [cellId, setCellId] = useState('');
+  const [loggerId, setLoggerId] = useState('');
 
   const handleOpen = () => {
     if (id != '') {
       setOpen(true);
-      setCellId(id);
+      setLoggerId(id);
     }
     setResponse(null);
   };
@@ -26,7 +26,7 @@ function DeleteCellModal({ id }) {
   const handleClose = () => {
     setOpen(false);
     setResponse(null);
-    setCellId('');
+    setLoggerId('');
   };
 
   useEffect(() => {
@@ -62,9 +62,8 @@ function DeleteCellModal({ id }) {
             border: 'none',
             overflow: 'hidden',
           }}
-          component='form'
         >
-          {response == null && (
+          {!response ? (
             <>
               {/* Header Section */}
               <Box sx={{ 
@@ -96,7 +95,7 @@ function DeleteCellModal({ id }) {
                     fontSize: '1.5rem'
                   }}
                 >
-                  Delete Cell
+                  Delete Logger
                 </Typography>
                 <Typography 
                   variant='body2' 
@@ -112,7 +111,7 @@ function DeleteCellModal({ id }) {
               {/* Content Section */}
               <Box sx={{ padding: '2rem' }}>
                 <Typography variant='body1' sx={{ mb: 3, color: '#666', lineHeight: 1.6 }}>
-                  Are you sure you want to delete this cell? All associated data and configurations will be permanently removed.
+                  Are you sure you want to delete this logger? All associated data and configurations will be permanently removed.
                 </Typography>
 
                 {/* Action Buttons */}
@@ -140,12 +139,15 @@ function DeleteCellModal({ id }) {
                   <Button
                     variant='contained'
                     onClick={() => {
-                      deleteCell(cellId)
+                      deleteLogger(loggerId)
                         .then((res) => {
                           setResponse(res);
                           refetch();
                         })
-                        .catch((error) => console.error(error));
+                        .catch((error) => {
+                          console.error('Delete failed:', error);
+                          setResponse({ error: true, message: 'Failed to delete logger' });
+                        });
                     }}
                     sx={{
                       backgroundColor: '#d32f2f',
@@ -154,72 +156,106 @@ function DeleteCellModal({ id }) {
                       px: '1.5rem'
                     }}
                   >
-                    Delete Cell
+                    Delete Logger
                   </Button>
                 </Box>
               </Box>
             </>
-          )}
-          {response && (
+          ) : (
             <>
-              {/* Success Header */}
-              <Box sx={{ 
-                backgroundColor: '#2e7d32', 
-                padding: '1.5rem 2rem',
-                position: 'relative',
-                mb: 0
-              }}>
-                <Typography 
-                  variant='h5' 
-                  component='h2'
-                  sx={{ 
-                    color: 'white',
-                    fontWeight: 600,
-                    fontSize: '1.5rem'
-                  }}
-                >
-                  Cell Deleted Successfully!
-                </Typography>
-                <Typography 
-                  variant='body2' 
-                  sx={{ 
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    mt: 0.5
-                  }}
-                >
-                  The cell has been removed from your system
-                </Typography>
-              </Box>
+              {response.error ? (
+                <>
+                  {/* Error Header */}
+                  <Box sx={{ 
+                    backgroundColor: '#d32f2f', 
+                    padding: '1.5rem 2rem',
+                    position: 'relative',
+                    mb: 0
+                  }}>
+                    <Typography 
+                      variant='h5' 
+                      component='h2'
+                      sx={{ 
+                        color: 'white',
+                        fontWeight: 600,
+                        fontSize: '1.5rem'
+                      }}
+                    >
+                      Error Deleting Logger
+                    </Typography>
+                  </Box>
 
-              {/* Success Content */}
-              <Box sx={{ padding: '2rem' }}>
-                <Box sx={{ 
-                  backgroundColor: '#f8f9fa', 
-                  borderRadius: '8px', 
-                  padding: '1.5rem',
-                  mb: '1.5rem'
-                }}>
-                  <Typography variant='body1' sx={{ color: '#666', lineHeight: 1.6 }}>
-                    The cell with ID <strong>{cellId}</strong> has been successfully deleted.
-                  </Typography>
-                </Box>
+                  {/* Error Content */}
+                  <Box sx={{ padding: '2rem' }}>
+                    <Typography variant='body1' sx={{ mb: 3, color: '#666', lineHeight: 1.6 }}>
+                      {response.message || 'An error occurred while deleting the logger.'}
+                    </Typography>
+                    <Button 
+                      variant='contained'
+                      onClick={handleClose}
+                      sx={{
+                        backgroundColor: '#d32f2f',
+                        '&:hover': { backgroundColor: '#b71c1c' },
+                        borderRadius: '8px',
+                        width: '100%',
+                        py: '0.75rem'
+                      }}
+                    >
+                      Close
+                    </Button>
+                  </Box>
+                </>
+              ) : (
+                <>
+                  {/* Success Header */}
+                  <Box sx={{ 
+                    backgroundColor: '#2e7d32', 
+                    padding: '1.5rem 2rem',
+                    position: 'relative',
+                    mb: 0
+                  }}>
+                    <Typography 
+                      variant='h5' 
+                      component='h2'
+                      sx={{ 
+                        color: 'white',
+                        fontWeight: 600,
+                        fontSize: '1.5rem'
+                      }}
+                    >
+                      Logger Deleted Successfully!
+                    </Typography>
+                    <Typography 
+                      variant='body2' 
+                      sx={{ 
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        mt: 0.5
+                      }}
+                    >
+                      The logger has been removed from your system
+                    </Typography>
+                  </Box>
 
-                <Button
-                  variant='contained'
-                  onClick={handleClose}
-                  sx={{
-                    backgroundColor: '#2e7d32',
-                    '&:hover': { backgroundColor: '#1b5e20' },
-                    borderRadius: '8px',
-                    width: '100%',
-                    py: '0.75rem',
-                    fontSize: '1rem',
-                    fontWeight: 500,
-                  }}
-                >
-                  Done
-                </Button>
-              </Box>
+                  {/* Success Content */}
+                  <Box sx={{ padding: '2rem' }}>
+                    <Button
+                      variant='contained'
+                      onClick={handleClose}
+                      sx={{
+                        backgroundColor: '#2e7d32',
+                        '&:hover': { backgroundColor: '#1b5e20' },
+                        borderRadius: '8px',
+                        width: '100%',
+                        py: '0.75rem',
+                        fontSize: '1rem',
+                        fontWeight: 500,
+                      }}
+                    >
+                      Done
+                    </Button>
+                  </Box>
+                </>
+              )}
             </>
           )}
         </Box>
@@ -228,8 +264,8 @@ function DeleteCellModal({ id }) {
   );
 }
 
-export default DeleteCellModal;
-
-DeleteCellModal.propTypes = {
-  id: PropTypes.oneOfType(PropTypes.number).isRequired,
+DeleteLoggerModal.propTypes = {
+  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
+
+export default DeleteLoggerModal;
