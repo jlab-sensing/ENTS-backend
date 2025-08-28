@@ -145,7 +145,7 @@ def process_measurement_dict(meas: dict):
         obj_list.append(voltage_obj)
 
     # sen0308 soil humidity measurement
-    elif meas["type"] == "sen0308":
+    elif meas["type"] == "sen03808":
 
         voltage_obj = Sensor.add_data(
             meas_name="voltage", meas_unit="V", meas_dict=meas
@@ -162,9 +162,7 @@ def process_measurement_dict(meas: dict):
     # yfs210c water flow measurement
     elif meas["type"] == "yfs210c":
 
-        flow_obj = Sensor.add_data(
-            meas_name="flow rate", meas_unit="L/Min", meas_dict=meas
-        )
+        flow_obj = Sensor.add_data(meas_name="flow", meas_unit="L/Min", meas_dict=meas)
 
         obj_list.append(flow_obj)
 

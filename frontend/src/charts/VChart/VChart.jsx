@@ -5,7 +5,7 @@ import { React } from 'react';
 import { getAxisBoundsAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 
-export default function VChart({ data, stream, startDate, endDate, onResampleChange }) {
+export default function VChart({ data, stream, onResampleChange }) {
   const { leftYMin, leftYMax, leftYStep, rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
     data.datasets.filter((_, i) => i % 2 == 0),
     data.datasets.filter((_, i) => i % 2 == 1),
@@ -39,8 +39,6 @@ export default function VChart({ data, stream, startDate, endDate, onResampleCha
             day: 'MM/dd',
           },
         },
-        min: stream ? undefined : startDate?.toJSDate(),
-        max: stream ? undefined : endDate?.toJSDate(),
       },
       vAxis: {
         position: 'left',
@@ -130,7 +128,15 @@ export default function VChart({ data, stream, startDate, endDate, onResampleCha
     },
   };
 
-  return <ChartWrapper id='v' data={data} options={stream ? streamChartOptions : chartOptions} stream={stream} onResampleChange={onResampleChange} />;
+  return (
+    <ChartWrapper
+      id='v'
+      data={data}
+      options={stream ? streamChartOptions : chartOptions}
+      stream={stream}
+      onResampleChange={onResampleChange}
+    />
+  );
 }
 
 VChart.propTypes = {

@@ -1,21 +1,22 @@
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, Button, Chip, IconButton, Modal, TextField, Typography } from '@mui/material';
+import { Box, Button, IconButton, Modal, TextField, Typography, Select, MenuItem, FormControl, InputLabel} from '@mui/material';
 import { React, useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { addCell } from '../../../services/cell';
+import { addLogger } from '../../../services/logger';
 
-function AddCellModal() {
+function AddLoggerModal() {
   let data = useOutletContext();
-  const refetch = data[3];
+  const refetch = data[9]; // Logger refetch function from outlet context
   const user = data[4];
-  data = data[0];
+  
   const [isOpen, setOpen] = useState(false);
   const [name, setName] = useState('');
-  const [location, setLocation] = useState('');
-  const [long, setLong] = useState('');
-  const [lat, setLat] = useState('');
-  const archive = false;
+  const [type, setType] = useState('');
+  const [devEui, setDevEui] = useState('');  // Changed to match TTN API
+  const [joinEui, setJoinEui] = useState('');  // Added for TTN integration
+  const [appKey, setAppKey] = useState('');  // TTN App Key (sensitive)
+  const [description, setDescription] = useState('');
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
 
@@ -31,9 +32,11 @@ function AddCellModal() {
     setResponse(null);
     setError(null);
     setName('');
-    setLocation('');
-    setLong('');
-    setLat('');
+    setType('');
+    setDevEui('');
+    setJoinEui('');
+    setAppKey('');
+    setDescription('');
   };
 
   const handleClose = () => {
@@ -42,9 +45,11 @@ function AddCellModal() {
     setResponse(null);
     setError(null);
     setName('');
-    setLocation('');
-    setLong('');
-    setLat('');
+    setType('');
+    setDevEui('');
+    setJoinEui('');
+    setAppKey('');
+    setDescription('');
   };
 
   useEffect(() => {
@@ -113,7 +118,7 @@ function AddCellModal() {
                     fontSize: '1.5rem'
                   }}
                 >
-                  Add New Cell
+                  Add New Logger
                 </Typography>
                 <Typography 
                   variant='body2' 
@@ -122,7 +127,7 @@ function AddCellModal() {
                     mt: 0.5
                   }}
                 >
-                  Configure your environmental monitoring cell
+                  Configure your environmental sensor logger
                 </Typography>
               </Box>
 
@@ -130,15 +135,48 @@ function AddCellModal() {
               <Box sx={{ padding: '2rem' }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                   <TextField
-                    label='Cell Name'
+                    label='Logger Name'
                     variant='outlined'
                     fullWidth
                     required
                     error={name.length === 0}
-                    helperText={!name.length ? 'Cell name is required' : ''}
+                    helperText={!name.length ? 'Logger name is required' : ''}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder='e.g., Forest Station A'
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                      }
+                    }}
+                  />
+                  <FormControl required fullWidth>
+                    <InputLabel id='type-label'>Logger Type</InputLabel>
+                  <Select
+                    label='Logger Type'
+                    variant='outlined'
+                    fullWidth
+                    required
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    placeholder='Select a logger type'
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                      }
+                    }}
+                  >
+                      <MenuItem value='ents'>EnTS</MenuItem>
+                      <MenuItem value='other'>Other</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <TextField 
+                    label='Device EUI'
+                    variant='outlined'
+                    fullWidth
+                    required
+                    value={devEui}
+                    onChange={(e) => setDevEui(e.target.value)}
+                    placeholder='e.g., 0080E1150546D093'
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
@@ -146,15 +184,13 @@ function AddCellModal() {
                     }}
                   />
                   <TextField
-                    label='Location'
+                    label='Join EUI'
                     variant='outlined'
                     fullWidth
                     required
-                    error={location.length === 0}
-                    helperText={!location.length ? 'Location is required' : ''}
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder='e.g., North Campus Field'
+                    value={joinEui}
+                    onChange={(e) => setJoinEui(e.target.value)}
+                    placeholder='e.g., 0101010101010101'
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
@@ -162,15 +198,13 @@ function AddCellModal() {
                     }}
                   />
                   <TextField
-                    label='Latitude'
+                    label='App Key'
                     variant='outlined'
                     fullWidth
                     required
-                    error={lat.length === 0 || isNaN(Number(lat))}
-                    helperText={!lat.length ? 'Latitude is required' : isNaN(Number(lat)) ? 'Please enter a valid number' : ''}
-                    value={lat}
-                    onChange={(e) => setLat(e.target.value)}
-                    placeholder='e.g., 36.9741'
+                    value={appKey}
+                    onChange={(e) => setAppKey(e.target.value)}
+                    placeholder='Application Key'
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
@@ -178,15 +212,14 @@ function AddCellModal() {
                     }}
                   />
                   <TextField
-                    label='Longitude'
+                    label='Description'
                     variant='outlined'
                     fullWidth
-                    required
-                    error={long.length === 0 || isNaN(Number(long))}
-                    helperText={!long.length ? 'Longitude is required' : isNaN(Number(long)) ? 'Please enter a valid number' : ''}
-                    value={long}
-                    onChange={(e) => setLong(e.target.value)}
-                    placeholder='e.g., -122.0308'
+                    multiline
+                    rows={3}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder='Describe the logger location and purpose'
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
@@ -221,9 +254,9 @@ function AddCellModal() {
                   <Button
                     variant='contained'
                     onClick={() => {
-                      addCell(name, location, long, lat, archive, user.email)
+                      addLogger(name, type, devEui, joinEui, appKey, description, user.email)
                         .then((res) => {
-                          setResponse(res);
+                          setResponse({ ...res, name, type, devEui, description });
                           refetch();
                         })
                         .catch((error) => {
@@ -231,7 +264,7 @@ function AddCellModal() {
                           console.error(error);
                         });
                     }}
-                    disabled={!name.trim() || !location.trim() || !lat.trim() || !long.trim() || isNaN(Number(lat)) || isNaN(Number(long))}
+                    disabled={!name.trim() || !devEui.trim() || !joinEui.trim() || !appKey.trim()}
                     sx={{
                       backgroundColor: '#588157',
                       '&:hover': { backgroundColor: '#3a5a40' },
@@ -243,7 +276,7 @@ function AddCellModal() {
                       px: '1.5rem'
                     }}
                   >
-                    Add Cell
+                    Add Logger
                   </Button>
                 </Box>
               </Box>
@@ -281,14 +314,14 @@ function AddCellModal() {
                     fontSize: '1.5rem'
                   }}
                 >
-                  Error Creating Cell
+                  Error Creating Logger
                 </Typography>
               </Box>
 
               {/* Error Content */}
               <Box sx={{ padding: '2rem' }}>
                 <Typography variant='body1' sx={{ mb: 3, color: '#666', lineHeight: 1.6 }}>
-                  Duplicate cell names are not allowed. Please try again with a different name.
+                  Duplicate logger names or other error occurred. Please try again with a different name.
                 </Typography>
                 <Button 
                   variant='contained'
@@ -324,7 +357,7 @@ function AddCellModal() {
                       fontSize: '1.5rem'
                     }}
                   >
-                    Cell Created Successfully!
+                    Logger Created Successfully!
                   </Typography>
                   <Typography 
                     variant='body2' 
@@ -333,13 +366,12 @@ function AddCellModal() {
                       mt: 0.5
                     }}
                   >
-                    Your environmental monitoring cell is ready
+                    Your environmental sensor logger has been configured
                   </Typography>
                 </Box>
 
                 {/* Success Content */}
                 <Box sx={{ padding: '2rem' }}>
-                  {/* Cell Details */}
                   <Box sx={{ 
                     backgroundColor: '#f8f9fa', 
                     borderRadius: '8px', 
@@ -347,58 +379,43 @@ function AddCellModal() {
                     mb: '1.5rem'
                   }}>
                     <Typography variant='h6' sx={{ mb: 2, color: '#2e7d32', fontWeight: 600 }}>
-                      Cell: {response.name}
+                      Logger Details
                     </Typography>
                     
-                    {/* API Endpoints Section */}
-                    <Typography variant='h6' sx={{ mb: 2, color: '#333', fontSize: '1.1rem' }}>
-                      API Endpoints
-                    </Typography>
-
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      {/* Power Data Endpoint */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       <Box>
-                        <Chip label='Power Data' color='primary' variant='outlined' size='small' sx={{ mb: 1 }} />
-                        <Typography variant='body2' sx={{ mb: 1, color: '#666' }}>
-                          Endpoint for uploading power data:
+                        <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
+                          Name
                         </Typography>
-                        <Typography
-                          variant='body2'
-                          sx={{
-                            fontFamily: 'monospace',
-                            backgroundColor: '#e8f5e8',
-                            color: '#2e7d32',
-                            p: 1,
-                            borderRadius: '4px',
-                            wordBreak: 'break-all',
-                            userSelect: 'all',
-                            fontSize: '0.75rem'
-                          }}
-                        >
-                          https://dirtviz.jlab.ucsc.edu/api/sensor/{response.id}
+                        <Typography variant='body1' sx={{ color: '#333' }}>
+                          {response.name}
                         </Typography>
                       </Box>
-
-                      {/* TEROS Data Endpoint */}
+                      
                       <Box>
-                        <Chip label='TEROS Data' color='secondary' variant='outlined' size='small' sx={{ mb: 1 }} />
-                        <Typography variant='body2' sx={{ mb: 1, color: '#666' }}>
-                          Endpoint for uploading TEROS data:
+                        <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
+                          Type
                         </Typography>
-                        <Typography
-                          variant='body2'
-                          sx={{
-                            fontFamily: 'monospace',
-                            backgroundColor: '#e8f5e8',
-                            color: '#2e7d32',
-                            p: 1,
-                            borderRadius: '4px',
-                            wordBreak: 'break-all',
-                            userSelect: 'all',
-                            fontSize: '0.75rem'
-                          }}
-                        >
-                          https://dirtviz.jlab.ucsc.edu/api/sensor/{response.id}
+                        <Typography variant='body1' sx={{ color: '#333' }}>
+                          {response.type || 'Not specified'}
+                        </Typography>
+                      </Box>
+                      
+                      <Box>
+                        <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
+                          Device EUI
+                        </Typography>
+                        <Typography variant='body1' sx={{ color: '#333' }}>
+                          {response.deviceEui || 'Not specified'}
+                        </Typography>
+                      </Box>
+                      
+                      <Box>
+                        <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
+                          Description
+                        </Typography>
+                        <Typography variant='body1' sx={{ color: '#333' }}>
+                          {response.description || 'No description provided'}
                         </Typography>
                       </Box>
                     </Box>
@@ -429,4 +446,4 @@ function AddCellModal() {
   );
 }
 
-export default AddCellModal;
+export default AddLoggerModal;

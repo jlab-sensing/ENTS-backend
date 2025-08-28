@@ -5,7 +5,7 @@ import { getAxisBoundsAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 import { chartPlugins } from '../plugins';
 
-export default function WaterFlowChart({ data, startDate, endDate }) {
+export default function WaterFlowChart({ data }) {
   const { leftYMin, leftYMax, leftYStep } = getAxisBoundsAndStepValues(data.datasets, [], 8, 0.2);
   const chartOptions = {
     maintainAspectRatio: false,
@@ -32,8 +32,6 @@ export default function WaterFlowChart({ data, startDate, endDate }) {
             day: 'D',
           },
         },
-        min: startDate?.toJSDate(),
-        max: endDate?.toJSDate(),
       },
       flow: {
         position: 'left',

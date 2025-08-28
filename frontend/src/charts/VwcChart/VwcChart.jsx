@@ -5,7 +5,7 @@ import { React } from 'react';
 import { getAxisBoundsAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 
-export default function VwcChart({ data, stream, startDate, endDate, onResampleChange }) {
+export default function VwcChart({ data, stream, onResampleChange }) {
   const { leftYMin, leftYMax, leftYStep, rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
     data.datasets.filter((_, i) => i % 2 == 0),
     data.datasets.filter((_, i) => i % 2 == 1),
@@ -39,8 +39,6 @@ export default function VwcChart({ data, stream, startDate, endDate, onResampleC
             day: 'MM/dd',
           },
         },
-        min: stream ? undefined : startDate?.toJSDate(),
-        max: stream ? undefined : endDate?.toJSDate(),
       },
       ecAxis: {
         type: 'linear',
@@ -132,7 +130,15 @@ export default function VwcChart({ data, stream, startDate, endDate, onResampleC
     },
   };
 
-  return <ChartWrapper id='vwc' data={data} options={stream ? streamChartOptions : chartOptions} stream={stream} onResampleChange={onResampleChange} />;
+  return (
+    <ChartWrapper
+      id='vwc'
+      data={data}
+      options={stream ? streamChartOptions : chartOptions}
+      stream={stream}
+      onResampleChange={onResampleChange}
+    />
+  );
 }
 
 VwcChart.propTypes = {

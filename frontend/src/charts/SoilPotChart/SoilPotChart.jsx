@@ -5,7 +5,7 @@ import { getAxisBoundsAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 import { chartPlugins } from '../plugins';
 
-export default function SoilPotChart({ data, startDate, endDate }) {
+export default function SoilPotChart({ data }) {
   const { leftYMin, leftYMax, leftYStep } = getAxisBoundsAndStepValues(
     data.datasets.filter((d) => d.yAxisID === 'leafAxis'),
     [],
@@ -37,8 +37,6 @@ export default function SoilPotChart({ data, startDate, endDate }) {
             day: 'D',
           },
         },
-        min: startDate?.toJSDate(),
-        max: endDate?.toJSDate(),
       },
       leafAxis: {
         position: 'left',
