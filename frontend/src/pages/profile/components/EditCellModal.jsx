@@ -36,7 +36,7 @@ function EditCellModal({ cell }) {
     //   refetch();
     //   setSubmitting(false);
     // }, 1000);
-    
+
     // backend request implemented - DONE
     updateCell(cell.id, formData)
       .then((res) => {
@@ -45,19 +45,20 @@ function EditCellModal({ cell }) {
       })
       .catch((err) => console.error('Edit failed:', err))
       .finally(() => setSubmitting(false));
-    
   };
 
   return (
     <>
       {/* copied account edit profile button styling */}
-      <Button variant="contained" onClick={handleOpen} 
-        sx={{ backgroundColor: '#588157', 
-        '&:hover': { backgroundColor: '#3a5a40' } }}>
+      <Button
+        variant='contained'
+        onClick={handleOpen}
+        sx={{ backgroundColor: '#588157', '&:hover': { backgroundColor: '#3a5a40' } }}
+      >
         Edit
       </Button>
 
-      <Modal open={isOpen} onClose={handleClose} aria-labelledby="edit-cell-modal-title">
+      <Modal open={isOpen} onClose={handleClose} aria-labelledby='edit-cell-modal-title'>
         <Box
           sx={{
             position: 'absolute',
@@ -71,7 +72,7 @@ function EditCellModal({ cell }) {
             border: 'none',
             overflow: 'hidden',
           }}
-          component="form"
+          component='form'
           onSubmit={(e) => {
             e.preventDefault();
             handleSubmit();
