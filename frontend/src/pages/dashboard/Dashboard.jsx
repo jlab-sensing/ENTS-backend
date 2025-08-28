@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Grid, Stack, Typography } from '@mui/material';
+import { Box, Button, Divider, Grid, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { DateTime } from 'luxon';
 import { React, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -32,6 +32,11 @@ function Dashboard() {
   const [smartDateRangeApplied, setSmartDateRangeApplied] = useState(false); // eslint-disable-line no-unused-vars
   const [powerHasData, setPowerHasData] = useState(false);
   const [terosHasData, setTerosHasData] = useState(false);
+  
+  // Mobile responsive detection
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md')); // <768px = mobile
+  
   const cells = useCells();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -196,117 +201,87 @@ function Dashboard() {
           justifyContent='spaced-evently'
           sx={{ minHeight: '100vh', boxSizing: 'border-box' }}
         >
-          {/* 
-          TODO: Mobile responsive layout from main branch - currently commented out
-          to preserve conditional rendering functionality. Add isMobile logic later.
-          
-          <Box>
-            {isMobile ? (
-              // Mobile layout - Two bars
-              <Box sx={{ px: 3, py: 2 }}>
-                <Stack spacing={2}>
-                  <Stack direction='row' spacing={2} alignItems='center'>
-                    <BackBtn />
-                    <Box sx={{ flexGrow: 1 }}>
-                      <CellSelect selectedCells={selectedCells} setSelectedCells={handleCellSelectionChange} />
-                    </Box>
-                  </Stack>
-                  <Stack direction='row' spacing={2} alignItems='center' justifyContent='space-between'>
-                    <DateRangeSel
-                      startDate={startDate}
-                      endDate={endDate}
-                      setStartDate={handleStartDateChange}
-                      setEndDate={handleEndDateChange}
-                    />
-                    <Stack direction='row' spacing={1}>
-                      {!cells.isLoading && !cells.isError && <ArchiveModal cells={cells} />}
-                      <DownloadBtn
-                        disabled={dBtnDisabled}
-                        setDBtnDisabled={setDBtnDisabled}
-                        cells={selectedCells}
-                        startDate={startDate}
-                        endDate={endDate}
-                      />
-                      <Button
-                        variant={stream ? 'contained' : 'outlined'}
-                        color='primary'
-                        onClick={() => setStream(!stream)}
-                        size='small'
-                      >
-                        Stream
-                      </Button>
-                      <Button
-                        variant={!stream ? 'contained' : 'outlined'}
-                        color='primary'
-                        onClick={() => setStream(false)}
-                        size='small'
-                      >
-                        Hourly
-                      </Button>
-                    </Stack>
-                  </Stack>
+          {/* Responsive Header - Mobile vs Desktop Layout */}
+          {isMobile ? (
+            // Mobile layout - Two bars for better mobile UX
+            <Box sx={{ px: 3, py: 2 }}>
+              <Stack spacing={2}>
+                {/* First bar: Navigation + Cell Selection */}
+                <Stack direction='row' spacing={2} alignItems='center'>
+                  <BackBtn />
+                  <Box sx={{ flexGrow: 1 }}>
+                    <CellSelect selectedCells={selectedCells} setSelectedCells={handleCellSelectionChange} />
+                  </Box>
                 </Stack>
-              </Box>
-            ) : (
-              // Desktop layout - Single bar
-              <Stack direction='row' alignItems='center' justifyContent='space-evenly' sx={{ p: 2 }} spacing={3}>
-                <BackBtn />
-                <Box sx={{ flexGrow: 1, maxWidth: '30%' }}>
-                  <CellSelect selectedCells={selectedCells} setSelectedCells={handleCellSelectionChange} />
-                </Box>
-                <Box display='flex' justifyContent='center' alignItems='center'>
+                
+                {/* Second bar: Date Range + Controls */}
+                <Stack direction='row' spacing={2} alignItems='center' justifyContent='space-between'>
                   <DateRangeSel
                     startDate={startDate}
                     endDate={endDate}
                     setStartDate={handleStartDateChange}
                     setEndDate={handleEndDateChange}
                   />
-                </Box>
-                <Button variant={stream ? 'contained' : 'outlined'} color='primary' onClick={() => setStream(!stream)}>
-                  Streaming
-                </Button>
-                {!cells.isLoading && !cells.isError && <ArchiveModal cells={cells} />}
-                <DownloadBtn
-                  disabled={dBtnDisabled}
-                  setDBtnDisabled={setDBtnDisabled}
-                  cells={selectedCells}
+                  <Stack direction='row' spacing={1}>
+                    {!cells.isLoading && !cells.isError && <ArchiveModal cells={cells} />}
+                    <DownloadBtn
+                      disabled={dBtnDisabled}
+                      setDBtnDisabled={setDBtnDisabled}
+                      cells={selectedCells}
+                      startDate={startDate}
+                      endDate={endDate}
+                    />
+                    <Button
+                      variant={stream ? 'contained' : 'outlined'}
+                      color='primary'
+                      onClick={() => setStream(true)}
+                      size='small'
+                    >
+                      Stream
+                    </Button>
+                    <Button
+                      variant={!stream ? 'contained' : 'outlined'}
+                      color='primary'
+                      onClick={() => setStream(false)}
+                      size='small'
+                    >
+                      Hourly
+                    </Button>
+                  </Stack>
+                </Stack>
+              </Stack>
+            </Box>
+          ) : (
+            // Desktop layout - Single bar (original layout preserved)
+            <Stack direction='row' alignItems='center' justifyContent='space-evenly' sx={{ p: 2 }} spacing={3}>
+              <BackBtn />
+              <Box sx={{ flexGrow: 1, maxWidth: '30%' }}>
+                <CellSelect selectedCells={selectedCells} setSelectedCells={handleCellSelectionChange} />
+              </Box>
+              <Box display='flex' justifyContent='center' alignItems='center'>
+                <DateRangeSel
                   startDate={startDate}
                   endDate={endDate}
+                  setStartDate={handleStartDateChange}
+                  setEndDate={handleEndDateChange}
                 />
-              </Stack>
-            )}
-          </Box>
-          */}
-          
-          {/* Current conditional rendering layout - preserving original functionality */}
-          <Stack direction='row' alignItems='center' justifyContent={'space-evenly'} sx={{ p: 2 }} spacing={3}>
-            <BackBtn />
-            <Box sx={{ flexGrow: 1, maxWidth: '30%' }}>
-              <CellSelect selectedCells={selectedCells} setSelectedCells={handleCellSelectionChange} />
-            </Box>
-            <Box display='flex' justifyContent='center' alignItems='center'>
-              <DateRangeSel
+              </Box>
+              {!cells.isLoading && !cells.isError ? <ArchiveModal cells={cells} /> : <span>Loading...</span>}
+              <DownloadBtn
+                disabled={dBtnDisabled}
+                setDBtnDisabled={setDBtnDisabled}
+                cells={selectedCells}
                 startDate={startDate}
                 endDate={endDate}
-                setStartDate={handleStartDateChange}
-                setEndDate={handleEndDateChange}
-              ></DateRangeSel>
-            </Box>
-            {!cells.isLoading && !cells.isError ? <ArchiveModal cells={cells} /> : <span>Loading...</span>}
-            <DownloadBtn
-              disabled={dBtnDisabled}
-              setDBtnDisabled={setDBtnDisabled}
-              cells={selectedCells}
-              startDate={startDate}
-              endDate={endDate}
-            />
-            <Button variant={stream ? 'contained' : 'outlined'} color='primary' onClick={() => setStream(true)}>
-              Streaming
-            </Button>
-            <Button variant={!stream ? 'contained' : 'outlined'} color='primary' onClick={() => setStream(false)}>
-              Hourly
-            </Button>
-          </Stack>
+              />
+              <Button variant={stream ? 'contained' : 'outlined'} color='primary' onClick={() => setStream(true)}>
+                Streaming
+              </Button>
+              <Button variant={!stream ? 'contained' : 'outlined'} color='primary' onClick={() => setStream(false)}>
+                Hourly
+              </Button>
+            </Stack>
+          )}
           {selectedCells.length === 0 ? (
             <Box display='flex' justifyContent='center' alignItems='center' sx={{ minHeight: 'calc(100vh - 120px)' }}>
               <Box textAlign='center'>
