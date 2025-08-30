@@ -2,14 +2,18 @@ import {
   Alert,
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
+  Card,
+  CardContent,
   Fade,
+  IconButton,
+  Modal,
   TextField,
   Typography,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import EmailIcon from '@mui/icons-material/Email';
+import PersonIcon from '@mui/icons-material/Person';
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import useAxiosPrivate from '../../../auth/hooks/useAxiosPrivate';
@@ -109,32 +113,56 @@ function AccountInfo() {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        bgcolor: '#A0A0A0',
-        width: '30vw',
-        p: 2,
-        borderRadius: '10px',
+        width: '100%',
+        maxWidth: '650px',
+        margin: '0 auto',
+        ml: { xs: 3, sm: 4, md: 6 }, // Better spacing from sidebar
+        mr: 3,
+        p: 3,
         position: 'relative',
       }}
     >
+      {/* Fixed position notification to avoid overlap */}
       <Fade in={showSuccess} timeout={700}>
         <Alert
           severity='success'
           sx={{
-            position: 'absolute',
-            top: 16,
-            right: 16,
-            left: 16,
-            zIndex: 1,
+            position: 'fixed',
+            top: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1300,
+            borderRadius: '12px',
+            minWidth: '300px',
+            maxWidth: '500px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
           }}
         >
           Profile updated successfully!
         </Alert>
       </Fade>
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant='h5' sx={{ color: '#588157', fontWeight: 'bold' }}>
-          Account Info
-        </Typography>
+      {/* Header Section */}
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        mb: 4,
+        mt: 1 // Add some top margin for better spacing
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <AccountCircleIcon sx={{ fontSize: '2.5rem', color: '#588157' }} />
+          <Typography 
+            variant='h4' 
+            sx={{ 
+              color: '#588157', 
+              fontWeight: 'bold',
+              fontSize: '1.75rem'
+            }}
+          >
+            Account Information
+          </Typography>
+        </Box>
         <Button
           variant='contained'
           onClick={handleEdit}
@@ -143,107 +171,260 @@ function AccountInfo() {
             '&:hover': {
               backgroundColor: '#3a5a40',
             },
+            borderRadius: '8px',
+            px: 3,
+            py: 1,
+            fontSize: '1rem',
+            fontWeight: 500,
           }}
         >
           Edit Profile
         </Button>
       </Box>
 
-      <Box
-        sx={{
-          backgroundColor: 'Gray',
-          mb: 1,
-          borderRadius: '8px',
-          marginTop: '2%',
-        }}
-      >
-        <Typography variant='h6' sx={{ marginLeft: '5%', p: 1 }}>
-          Email: {user.email}
-        </Typography>
-      </Box>
-
-      <Box
-        sx={{
-          backgroundColor: 'Gray',
-          mb: 1,
-          borderRadius: '8px',
-          marginTop: '2%',
-        }}
-      >
-        <Typography variant='h6' sx={{ marginLeft: '5%', p: 1 }}>
-          Name: {user.first_name} {user.last_name}
-        </Typography>
-      </Box>
-
-      <Dialog
-        open={isEditing}
-        onClose={handleCancel}
-        PaperProps={{
-          sx: {
-            width: '400px',
-            maxWidth: '90vw',
-            borderRadius: '12px',
-          },
-        }}
-      >
-        <DialogTitle
+      {/* Profile Cards */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        {/* Email Card */}
+        <Card 
           sx={{
-            borderBottom: '1px solid #E9ECEF',
-            px: 3,
-            py: 2,
+            borderRadius: '12px',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+            border: '1px solid #e9ecef',
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              boxShadow: '0 6px 20px rgba(0, 0, 0, 0.12)',
+              transform: 'translateY(-2px)'
+            }
           }}
         >
-          Edit Profile
-        </DialogTitle>
-        <DialogContent sx={{ p: 3 }}>
-          <TextField
-            fullWidth
-            label='First Name'
-            value={formData.first_name}
-            onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-            sx={{ mb: 2, mt: 1 }}
-            error={error && error.includes('First name')}
-            required
-          />
-          <TextField
-            fullWidth
-            label='Last Name'
-            value={formData.last_name}
-            onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-            error={error && error.includes('Last name')}
-            required
-          />
-          {error && (
-            <Typography color='error' sx={{ mt: 2, fontSize: '0.875rem' }}>
-              {error}
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <EmailIcon sx={{ fontSize: '1.5rem', color: '#588157' }} />
+              <Box>
+                <Typography 
+                  variant='body2' 
+                  sx={{ 
+                    color: '#666', 
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    mb: 0.5
+                  }}
+                >
+                  Email Address
+                </Typography>
+                <Typography 
+                  variant='h6' 
+                  sx={{ 
+                    color: '#333',
+                    fontWeight: 500,
+                    fontSize: '1.1rem'
+                  }}
+                >
+                  {user.email}
+                </Typography>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+
+        {/* Name Card */}
+        <Card 
+          sx={{
+            borderRadius: '12px',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+            border: '1px solid #e9ecef',
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              boxShadow: '0 6px 20px rgba(0, 0, 0, 0.12)',
+              transform: 'translateY(-2px)'
+            }
+          }}
+        >
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <PersonIcon sx={{ fontSize: '1.5rem', color: '#588157' }} />
+              <Box>
+                <Typography 
+                  variant='body2' 
+                  sx={{ 
+                    color: '#666', 
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    mb: 0.5
+                  }}
+                >
+                  Full Name
+                </Typography>
+                <Typography 
+                  variant='h6' 
+                  sx={{ 
+                    color: '#333',
+                    fontWeight: 500,
+                    fontSize: '1.1rem'
+                  }}
+                >
+                  {user.first_name} {user.last_name}
+                </Typography>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
+
+      <Modal
+        open={isEditing}
+        onClose={handleCancel}
+        aria-labelledby='edit-profile-modal-title'
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 450,
+            bgcolor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+            border: 'none',
+            overflow: 'hidden',
+          }}
+          component='form'
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSave();
+          }}
+        >
+          {/* Header Section */}
+          <Box sx={{ 
+            backgroundColor: '#588157', 
+            padding: '1.5rem 2rem',
+            position: 'relative',
+            mb: 0
+          }}>
+            <IconButton
+              sx={{ 
+                position: 'absolute', 
+                top: '0.75rem', 
+                right: '0.75rem',
+                color: 'white',
+                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+              }}
+              aria-label='close'
+              size='small'
+              onClick={handleCancel}
+            >
+              <CloseIcon fontSize='small' />
+            </IconButton>
+            <Typography 
+              variant='h5' 
+              component='h2'
+              sx={{ 
+                color: 'white',
+                fontWeight: 600,
+                fontSize: '1.5rem'
+              }}
+            >
+              Edit Profile
             </Typography>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ p: 2, borderTop: '1px solid #E9ECEF' }}>
-          <Button
-            onClick={handleCancel}
-            sx={{
-              color: '#6C757D',
-            }}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant='contained'
-            onClick={handleSave}
-            disabled={isSubmitting}
-            sx={{
-              backgroundColor: '#588157',
-              '&:hover': {
-                backgroundColor: '#3a5a40',
-              },
-            }}
-          >
-            {isSubmitting ? 'Saving...' : 'Save Changes'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <Typography 
+              variant='body2' 
+              sx={{ 
+                color: 'rgba(255, 255, 255, 0.8)',
+                mt: 0.5
+              }}
+            >
+              Update your account information
+            </Typography>
+          </Box>
+
+          {/* Form Section */}
+          <Box sx={{ padding: '2rem' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <TextField
+                fullWidth
+                label='First Name'
+                value={formData.first_name}
+                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                error={error && error.includes('First name')}
+                helperText={error && error.includes('First name') ? error : ''}
+                required
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                  }
+                }}
+              />
+              <TextField
+                fullWidth
+                label='Last Name'
+                value={formData.last_name}
+                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                error={error && error.includes('Last name')}
+                helperText={error && error.includes('Last name') ? error : ''}
+                required
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                  }
+                }}
+              />
+              {error && !error.includes('First name') && !error.includes('Last name') && (
+                <Typography color='error' sx={{ fontSize: '0.875rem' }}>
+                  {error}
+                </Typography>
+              )}
+            </Box>
+
+            {/* Action Buttons */}
+            <Box sx={{ 
+              display: 'flex', 
+              gap: '0.75rem', 
+              justifyContent: 'flex-end',
+              mt: '2rem',
+              pt: '1.5rem',
+              borderTop: '1px solid #f0f0f0'
+            }}>
+              <Button
+                variant='outlined'
+                onClick={handleCancel}
+                disabled={isSubmitting}
+                sx={{
+                  borderColor: '#ddd',
+                  color: '#666',
+                  '&:hover': {
+                    borderColor: '#bbb',
+                    backgroundColor: '#f5f5f5'
+                  }
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type='submit'
+                variant='contained'
+                disabled={isSubmitting || !formData.first_name?.trim() || !formData.last_name?.trim()}
+                sx={{
+                  backgroundColor: '#588157',
+                  '&:hover': { backgroundColor: '#3a5a40' },
+                  '&:disabled': { 
+                    backgroundColor: '#ccc',
+                    color: '#888'
+                  },
+                  borderRadius: '8px',
+                  px: '1.5rem'
+                }}
+              >
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      </Modal>
     </Box>
   );
 }

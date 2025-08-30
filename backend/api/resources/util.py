@@ -123,7 +123,48 @@ def process_measurement_dict(meas: dict):
             meas_name="Photoresistivity", meas_unit="Ohms", meas_dict=meas
         )
 
+    elif meas["type"] == "pcap02":
+        obj = Sensor.add_data(
+            meas_name="Capacitance", meas_unit="Farads", meas_dict=meas
+        )
         obj_list.append(obj)
+
+    # sen0257 water pressure measurement
+    elif meas["type"] == "sen0257":
+
+        pressure_obj = Sensor.add_data(
+            meas_name="pressure", meas_unit="kPa", meas_dict=meas
+        )
+
+        obj_list.append(pressure_obj)
+
+        voltage_obj = Sensor.add_data(
+            meas_name="voltage", meas_unit="V", meas_dict=meas
+        )
+
+        obj_list.append(voltage_obj)
+
+    # sen0308 soil humidity measurement
+    elif meas["type"] == "sen03808":
+
+        voltage_obj = Sensor.add_data(
+            meas_name="voltage", meas_unit="V", meas_dict=meas
+        )
+
+        obj_list.append(voltage_obj)
+
+        humidity_obj = Sensor.add_data(
+            meas_name="humidity", meas_unit="%", meas_dict=meas
+        )
+
+        obj_list.append(humidity_obj)
+
+    # yfs210c water flow measurement
+    elif meas["type"] == "yfs210c":
+
+        flow_obj = Sensor.add_data(meas_name="flow", meas_unit="L/Min", meas_dict=meas)
+
+        obj_list.append(flow_obj)
 
     # format response
     resp = Response()

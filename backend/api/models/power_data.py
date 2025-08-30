@@ -10,6 +10,7 @@ class PowerData(db.Model):
     """Table for power measurements"""
 
     __tablename__ = "power_data"
+    __table_args__ = (db.Index("idx_power_data_cell_id_ts", "cell_id", "ts"),)
 
     id = db.Column(db.Integer, primary_key=True)
     logger_id = db.Column(db.Integer, db.ForeignKey("logger.id"))

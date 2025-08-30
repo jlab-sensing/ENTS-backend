@@ -5,7 +5,7 @@ import { React } from 'react';
 import { getAxisBoundsAndStepValues } from '../alignAxis';
 import ChartWrapper from '../ChartWrapper';
 
-export default function PwrChart({ data, stream, startDate, endDate }) {
+export default function PwrChart({ data, stream, onResampleChange }) {
   const { leftYMin, leftYMax, leftYStep } = getAxisBoundsAndStepValues(data.datasets, [], 10, 5);
 
   const chartOptions = {
@@ -34,8 +34,6 @@ export default function PwrChart({ data, stream, startDate, endDate }) {
             day: 'MM/dd',
           },
         },
-        min: stream ? undefined : startDate?.toJSDate(),
-        max: stream ? undefined : endDate?.toJSDate(),
       },
       y: {
         type: 'linear',
@@ -97,7 +95,15 @@ export default function PwrChart({ data, stream, startDate, endDate }) {
     },
   };
 
-  return <ChartWrapper id='pwr' data={data} options={stream ? streamChartOptions : chartOptions} stream={stream} />;
+  return (
+    <ChartWrapper
+      id='pwr'
+      data={data}
+      options={stream ? streamChartOptions : chartOptions}
+      stream={stream}
+      onResampleChange={onResampleChange}
+    />
+  );
 }
 
 PwrChart.propTypes = {
@@ -105,4 +111,5 @@ PwrChart.propTypes = {
   stream: PropTypes.bool,
   startDate: PropTypes.object,
   endDate: PropTypes.object,
+  onResampleChange: PropTypes.func,
 };

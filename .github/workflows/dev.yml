@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
@@ -67,7 +67,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
@@ -105,7 +105,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup SSH
         run: |
@@ -120,7 +120,7 @@ jobs:
         shell: bash
 
       - name: Generate frontend.yaml
-        uses: cuchi/jinja2-action@v1.2.2
+        uses: cuchi/jinja2-action@v1.3.0
         with:
           template: k8s/frontend.yaml.j2
           output_file: k8s/frontend.yaml
@@ -128,7 +128,7 @@ jobs:
             hostname=${{ secrets.HOSTNAME }}
 
       - name: Generate backend.yaml
-        uses: cuchi/jinja2-action@v1.2.2
+        uses: cuchi/jinja2-action@v1.3.0
         with:
           template: k8s/backend.yaml.j2
           output_file: k8s/backend.yaml
@@ -136,19 +136,19 @@ jobs:
             hostname=${{ secrets.HOSTNAME }}
 
       - name: Generate http-api.yaml
-        uses: cuchi/jinja2-action@v1.2.2
+        uses: cuchi/jinja2-action@v1.3.0
         with:
           template: k8s/http-api.yaml.j2
           output_file: k8s/http-api.yaml
 
       - name: Generate cs-http.yaml
-        uses: cuchi/jinja2-action@v1.2.2
+        uses: cuchi/jinja2-action@v1.3.0
         with:
           template: k8s/cs-http.yaml.j2
           output_file: k8s/cs-http.yaml
 
       - name: Generate dburl-secret.yaml
-        uses: cuchi/jinja2-action@v1.2.2
+        uses: cuchi/jinja2-action@v1.3.0
         with:
           template: k8s/dburl-secret.yaml.j2
           output_file: k8s/dburl-secret.yaml
@@ -177,7 +177,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup python
         uses: actions/setup-python@v5

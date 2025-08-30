@@ -266,7 +266,7 @@ describe('updateCell', () => {
     expect(axios.put).toHaveBeenCalledWith(
       expect.stringContaining(`/api/cell/${mockCellId}`),
       mockUpdatedData,
-      expect.any(Object)
+      expect.any(Object),
     );
     expect(result).toEqual(mockResponse);
   });
@@ -286,8 +286,6 @@ describe('updateCell', () => {
     expect(axios.put).toHaveBeenCalled();
   });
 });
-
-
 
 describe('Cell Service API Functions', () => {
   afterEach(() => {

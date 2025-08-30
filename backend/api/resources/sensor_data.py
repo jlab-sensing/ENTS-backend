@@ -45,14 +45,16 @@ class SensorData(Resource):
 
         # get args
         v_args = self.get_sensor_data_schema.load(request.args)
-        stream = v_args["stream"] if "stream" in v_args else False
+        stream = v_args.get("stream", False)
+        resample = v_args.get("resample", "hour")
 
         # get data
         sensor_data_obj = Sensor.get_sensor_data_obj(
             name=v_args["name"],
             cell_id=v_args["cellId"],
-            start_time=v_args["startTime"],
             measurement=v_args["measurement"],
+            resample=resample,
+            start_time=v_args["startTime"],
             end_time=v_args["endTime"],
             stream=stream,
         )

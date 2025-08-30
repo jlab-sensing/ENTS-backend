@@ -6,7 +6,8 @@ import PwrChart from '../../../charts/PwrChart/PwrChart';
 import VChart from '../../../charts/VChart/VChart';
 import useInterval from '../../../hooks/useInterval';
 import { getPowerData, streamPowerData } from '../../../services/power';
-function PowerCharts({ cells, startDate, endDate, stream }) {
+function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) {
+  const [resample, setResample] = useState('hour');
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
   const chartSettings = {
@@ -19,6 +20,7 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
   const [vChartData, setVChartData] = useState(chartSettings);
   const [pwrChartData, setPwrChartData] = useState(chartSettings);
   const [loadedCells, setLoadedCells] = useState([]);
+  const [hasData, setHasData] = useState(false);
   // Initialize the combined chart data with empty datasets
 
   const pColors = ['#26C6DA', '#FF7043', '#A2708A'];
@@ -37,7 +39,7 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
         name: name,
         powerData: await (stream
           ? streamPowerData(id, DateTime.now().minus({ second: 20 }).toHTTP(), DateTime.now().toHTTP(), true)
-          : getPowerData(id, startDate.toHTTP(), endDate.toHTTP())),
+          : getPowerData(id, startDate.toHTTP(), endDate.toHTTP(), resample)),
       };
     }
     return data;
@@ -86,6 +88,7 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
     getPowerChartData().then((cellChartData) => {
       let selectCounter = 0;
       let loadCells = cells;
+      let hasAnyData = false;
       if (!stream) {
         loadCells = cells.filter((c) => !(c.id in loadedCells));
       }
@@ -93,49 +96,59 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
         const cellid = id;
         const name = cellChartData[cellid].name;
         const powerData = cellChartData[cellid].powerData;
-        const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
-        newVChartData.labels = pTimestamp;
-        const vData = createDataset(pTimestamp, powerData.v);
-        const iData = createDataset(pTimestamp, powerData.i);
-        const pData = createDataset(pTimestamp, powerData.p);
-        newVChartData.datasets.push(
-          {
-            label: name + ' Voltage (mV)',
-            data: vData,
-            borderColor: vColors[selectCounter],
+
+        if (
+          (Array.isArray(powerData.v) && powerData.v.length > 0) ||
+          (Array.isArray(powerData.i) && powerData.i.length > 0) ||
+          (Array.isArray(powerData.p) && powerData.p.length > 0)
+        ) {
+          hasAnyData = true;
+
+          const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
+          newVChartData.labels = pTimestamp;
+          const vData = createDataset(pTimestamp, powerData.v);
+          const iData = createDataset(pTimestamp, powerData.i);
+          const pData = createDataset(pTimestamp, powerData.p);
+          newVChartData.datasets.push(
+            {
+              label: name + ' Voltage (mV)',
+              data: vData,
+              borderColor: vColors[selectCounter],
+              borderWidth: 2,
+              fill: false,
+              yAxisID: 'vAxis',
+              radius: 2,
+              pointRadius: 1,
+            },
+            {
+              label: name + ' Current (µA)',
+              data: iData,
+              borderColor: iColors[selectCounter],
+              borderWidth: 2,
+              fill: false,
+              yAxisID: 'cAxis',
+              radius: 2,
+              pointRadius: 1,
+            },
+          );
+          //power data
+          newPwrChartData.labels = pTimestamp;
+          newPwrChartData.datasets.push({
+            label: name + ' Power (µW)',
+            data: pData,
+            borderColor: pColors[selectCounter],
             borderWidth: 2,
             fill: false,
-            yAxisID: 'vAxis',
             radius: 2,
             pointRadius: 1,
-          },
-          {
-            label: name + ' Current (µA)',
-            data: iData,
-            borderColor: iColors[selectCounter],
-            borderWidth: 2,
-            fill: false,
-            yAxisID: 'cAxis',
-            radius: 2,
-            pointRadius: 1,
-          },
-        );
-        //power data
-        newPwrChartData.labels = pTimestamp;
-        newPwrChartData.datasets.push({
-          label: name + ' Power (µW)',
-          data: pData,
-          borderColor: pColors[selectCounter],
-          borderWidth: 2,
-          fill: false,
-          radius: 2,
-          pointRadius: 1,
-        });
+          });
+        }
         selectCounter += 1;
       }
       setVChartData(newVChartData);
       setPwrChartData(newPwrChartData);
       setLoadedCells(loadCells);
+      setHasData(hasAnyData);
     });
   }
 
@@ -162,23 +175,24 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
             foundNewData = true;
             const powerDataRaw = cellChartData[cellid].powerData;
             const pTimestampRaw = powerDataRaw.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
-            const dupIdx = pTimestampRaw.reduce((arr, ts, i) => {
-              return !newVChartData.labels.some((oldTs) => ts.equals(oldTs)) && arr.push(i), arr;
+            const pTimestampMillis = pTimestampRaw.map(dt => dt.toMillis());
+            const dupIdx = pTimestampMillis.reduce((arr, ts, i) => {
+              return !newVChartData.labels.includes(ts) && arr.push(i), arr;
             }, []);
             const powerData = Object.fromEntries(
               Object.entries(powerDataRaw).map(([key, value]) => [key, value.filter((_, idx) => dupIdx.includes(idx))]),
             );
-            const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
+            const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
             newVChartData.labels = newVChartData.labels.concat(pTimestamp);
-            newVChartData.datasets[selectCounter].data = newVChartData.datasets[selectCounter].data.concat(powerData.v);
-            newVChartData.datasets[selectCounter + 1].data = newVChartData.datasets[selectCounter + 1].data.concat(
-              powerData.i,
-            );
+            const vData = createDataset(pTimestamp, powerData.v);
+            const iData = createDataset(pTimestamp, powerData.i);
+            const pData = createDataset(pTimestamp, powerData.p);
+            newVChartData.datasets[selectCounter].data = newVChartData.datasets[selectCounter].data.concat(vData);
+            newVChartData.datasets[selectCounter + 1].data =
+              newVChartData.datasets[selectCounter + 1].data.concat(iData);
             //power data
             newPwrChartData.labels = newPwrChartData.labels.concat(pTimestamp);
-            newPwrChartData.datasets[selectCounter].data = newPwrChartData.datasets[selectCounter].data.concat(
-              powerData.p,
-            );
+            newPwrChartData.datasets[selectCounter].data = newPwrChartData.datasets[selectCounter].data.concat(pData);
             selectCounter += 1;
           }
         }
@@ -187,7 +201,7 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
           const cellid = id;
           const name = cellChartData[cellid].name;
           const powerData = cellChartData[cellid].powerData;
-          const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
+          const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
           newVChartData.labels = pTimestamp;
           newVChartData.datasets.push(
             {
@@ -246,6 +260,7 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
     };
     setVChartData(Object.assign({}, newVChartData));
     setPwrChartData(Object.assign({}, newPwrChartData));
+    setHasData(false);
   }
 
   //** clearning chart data points and labels */
@@ -272,21 +287,34 @@ function PowerCharts({ cells, startDate, endDate, stream }) {
       setVChartData(clearChartDatasets(Object.assign({}, vChartData)));
       setPwrChartData(clearChartDatasets(Object.assign({}, pwrChartData)));
     } else {
-      // no selected cells
       clearCharts();
     }
 
-    // TODO: need to memoize updating charts
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cells, stream, startDate, endDate]);
+  }, [cells, stream, startDate, endDate, resample]);
+
+  const handleResampleChange = (newResample) => {
+    setResample(newResample);
+  };
+
+  // Notify parent component when data status changes
+  useEffect(() => {
+    if (onDataStatusChange) {
+      onDataStatusChange(hasData);
+    }
+  }, [hasData, onDataStatusChange]);
+
+  if (!hasData) {
+    return <></>;
+  }
 
   return (
     <>
       <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
-        <VChart data={vChartData} stream={stream} startDate={startDate} endDate={endDate} />
+        <VChart data={vChartData} stream={stream} startDate={startDate} endDate={endDate} onResampleChange={handleResampleChange} />
       </Grid>
       <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
-        <PwrChart data={pwrChartData} stream={stream} startDate={startDate} endDate={endDate} />
+        <PwrChart data={pwrChartData} stream={stream} startDate={startDate} endDate={endDate} onResampleChange={handleResampleChange} />
       </Grid>
     </>
   );
@@ -297,6 +325,7 @@ PowerCharts.propTypes = {
   startDate: PropTypes.any,
   endDate: PropTypes.any,
   stream: PropTypes.bool,
+  onDataStatusChange: PropTypes.func,
 };
 
 export default PowerCharts;
