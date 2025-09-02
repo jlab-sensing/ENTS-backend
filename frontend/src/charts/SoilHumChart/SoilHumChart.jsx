@@ -35,6 +35,19 @@ export default function SoilHumChart({ data, startDate, endDate }) {
         min: startDate?.toJSDate(),
         max: endDate?.toJSDate(),
       },
+      humidity: {
+        position: 'left',
+        title: {
+          display: true,
+          text: 'Humidity (%)',
+        },
+        ticks: {
+          stepSize: leftYStep,
+          //beginAtZero: true,
+        },
+        min: leftYMin,
+        max: leftYMax,
+      },
       /*
       voltage: {
         position: 'left',
@@ -51,19 +64,6 @@ export default function SoilHumChart({ data, startDate, endDate }) {
         max: leftYMax,
       },
       */
-      humidity: {
-        position: 'left',
-        title: {
-          display: true,
-          text: 'Humidity (%)',
-        },
-        ticks: {
-          stepSize: leftYStep,
-          //beginAtZero: true,
-        },
-        min: leftYMin,
-        max: leftYMax,
-      },
     },
     plugins: structuredClone(chartPlugins),
   };
