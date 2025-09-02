@@ -33,6 +33,19 @@ export default function SoilHumChart({ data }) {
           },
         },
       },
+      humidity: {
+        position: 'left',
+        title: {
+          display: true,
+          text: 'Humidity (%)',
+        },
+        ticks: {
+          stepSize: leftYStep,
+          //beginAtZero: true,
+        },
+        min: leftYMin,
+        max: leftYMax,
+      },
       /*
       voltage: {
         position: 'left',
@@ -49,19 +62,6 @@ export default function SoilHumChart({ data }) {
         max: leftYMax,
       },
       */
-      humidity: {
-        position: 'left',
-        title: {
-          display: true,
-          text: 'Humidity (%)',
-        },
-        ticks: {
-          stepSize: leftYStep,
-          //beginAtZero: true,
-        },
-        min: leftYMin,
-        max: leftYMax,
-      },
     },
     plugins: structuredClone(chartPlugins),
   };
