@@ -20,6 +20,16 @@ export const getCells = () => {
     });
 };
 
+// Get cells with their tags included
+export const getCellsWithTags = () => {
+  return axios
+    .get(`${process.env.PUBLIC_URL}/api/cell/`)
+    .then((res) => res.data)
+    .catch((error) => {
+      console.log('Error getting cells with tags:', error.response ? error.response.data : error.message);
+    });
+};
+
 export const addCell = (cellName, location, longitude, latitude, archive, email) => {
   return axios
     .post(`${process.env.PUBLIC_URL}/api/cell/`, {
@@ -79,6 +89,13 @@ export const useCells = () =>
   useQuery({
     queryKey: ['cell info'],
     queryFn: () => getCells(),
+    refetchOnWindowFocus: true,
+  });
+
+export const useCellsWithTags = () =>
+  useQuery({
+    queryKey: ['cells with tags'],
+    queryFn: getCellsWithTags,
     refetchOnWindowFocus: true,
   });
 

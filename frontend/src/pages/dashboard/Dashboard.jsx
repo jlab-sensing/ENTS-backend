@@ -4,6 +4,7 @@ import { React, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 // import DateRangeNotification from '../../components/DateRangeNotification';
 // import { useSmartDateRange } from '../../hooks/useSmartDateRange';
+import useAxiosPrivate from '../../auth/hooks/useAxiosPrivate';
 import { useCells } from '../../services/cell';
 import ArchiveModal from './components/ArchiveModal';
 import BackBtn from './components/BackBtn';
@@ -21,6 +22,7 @@ import SoilHumCharts from './components/SoilHumChart';
 import WaterFlowCharts from './components/WaterFlowChart';
 
 function Dashboard() {
+  const axiosPrivate = useAxiosPrivate();
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
   const [endDate, setEndDate] = useState(DateTime.now());
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
@@ -210,7 +212,11 @@ function Dashboard() {
                 <Stack direction='row' spacing={2} alignItems='center'>
                   <BackBtn />
                   <Box sx={{ flexGrow: 1 }}>
-                    <CellSelect selectedCells={selectedCells} setSelectedCells={handleCellSelectionChange} />
+                    <CellSelect 
+                      selectedCells={selectedCells} 
+                      setSelectedCells={handleCellSelectionChange}
+                      axiosPrivate={axiosPrivate}
+                    />
                   </Box>
                 </Stack>
                 
@@ -256,7 +262,11 @@ function Dashboard() {
             <Stack direction='row' alignItems='center' justifyContent='space-evenly' sx={{ p: 2 }} spacing={3}>
               <BackBtn />
               <Box sx={{ flexGrow: 1, maxWidth: '30%' }}>
-                <CellSelect selectedCells={selectedCells} setSelectedCells={handleCellSelectionChange} />
+                <CellSelect 
+                  selectedCells={selectedCells} 
+                  setSelectedCells={handleCellSelectionChange}
+                  axiosPrivate={axiosPrivate}
+                />
               </Box>
               <Box display='flex' justifyContent='center' alignItems='center'>
                 <DateRangeSel
