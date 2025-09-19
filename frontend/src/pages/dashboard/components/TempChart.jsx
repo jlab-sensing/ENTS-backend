@@ -2,17 +2,16 @@ import { Grid } from '@mui/material';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import { React, useEffect, useState } from 'react';
-import WaterFlowChart from '../../../charts/WaterFlowChart/WaterFlowChart';
+import TempChart from '../../../charts/TempChart/TempChart';
 import useInterval from '../../../hooks/useInterval';
 import { getSensorData, streamSensorData } from '../../../services/sensor';
 
-function WaterFlowCharts({ cells, startDate, endDate, stream }) {
+function TempGraph({ cells, startDate, endDate, stream }) {
   // CONFIGURATION
   // List out measurements that your chart is going to display
-  // MUST MATCH FROM UTIL.PY
-  const sensor_name = 'yfs210c';
-  const measurements = ['flow'];
-  const units = ['L/Min'];
+  const sensor_name = 'bme280';
+  const measurements = ['temperature'];
+  const units = ['C'];
   // Colors of data points. Each color represents the next color
   // of the data points as the user selects more cells to compare.
   // Add more measurements depending on how many different values on the charts
@@ -29,8 +28,7 @@ function WaterFlowCharts({ cells, startDate, endDate, stream }) {
     '#E91E63',
   ];
 
-    //whatever you want it to say on the side
-  const axisIds = ['L/Min'];
+  const axisIds = ['tempAxis'];
 
   //** QUICK WAY to change stream time in seconds */
   const interval = 1000;
@@ -266,16 +264,16 @@ function WaterFlowCharts({ cells, startDate, endDate, stream }) {
 
   return (
     <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-      <WaterFlowChart data={sensorChartData} startDate={startDate} endDate={endDate} />
+      <TempChart data={sensorChartData} startDate={startDate} endDate={endDate} />
     </Grid>
   );
 }
 
-WaterFlowCharts.propTypes = {
+TempGraph.propTypes = {
   cells: PropTypes.array,
   startDate: PropTypes.any,
   endDate: PropTypes.any,
   stream: PropTypes.bool,
 };
 
-export default WaterFlowCharts;
+export default TempGraph;
