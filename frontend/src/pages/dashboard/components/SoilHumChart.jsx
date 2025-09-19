@@ -16,7 +16,18 @@ function SoilHumCharts({ cells, startDate, endDate, stream }) {
   // Colors of data points. Each color represents the next color
   // of the data points as the user selects more cells to compare.
   // Add more measurements depending on how many different values on the charts
-  const meas_colors= ['#26C6DA', '#FF7043', '#A2708A'];
+  const meas_colors = [
+    '#26C6DA',
+    '#FF7043',
+    '#A2708A',
+    '#FF5722',
+    '#607D8B',
+    '#4CAF50',
+    '#FF9800',
+    '#9C27B0',
+    '#2196F3',
+    '#E91E63',
+  ];
 
     //whatever you want it to say on the side
   const axisIds = ['Humidity'];
@@ -123,13 +134,13 @@ function SoilHumCharts({ cells, startDate, endDate, stream }) {
           const measDataArray = cellChartData[cellid][meas]['data'];
           if (Array.isArray(measDataArray) && measDataArray.length > 0) {
             hasAnyData = true;
-            const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime));
+            const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
             const measData = createDataset(timestamp, measDataArray);
             newSensorChartData.labels = timestamp;
             newSensorChartData.datasets.push({
               label: name + ` ${meas} (${units[idx]})`,
               data: measData,
-              borderColor: meas_colors[idx][selectCounter],
+              borderColor: meas_colors[(selectCounter * measurements.length + idx) % meas_colors.length],
               borderWidth: 2,
               fill: false,
               yAxisID: axisIds[idx],
@@ -172,9 +183,11 @@ function SoilHumCharts({ cells, startDate, endDate, stream }) {
               const sTimestamp = sTimestampRaw.filter((_, i) => dupIdx.includes(i));
               const measData = createDataset(sTimestamp, sensorData);
               newSensorChartData.labels = newSensorChartData.labels.concat(sTimestamp);
-              const step = selectCounter === 0 ? 0 : 1;
-              newSensorChartData.datasets[selectCounter + idx + step].data =
-                newSensorChartData.datasets[selectCounter + idx + step].data.concat(measData);
+              const datasetIndex = selectCounter * measurements.length + idx;
+              if (newSensorChartData.datasets[datasetIndex]) {
+                newSensorChartData.datasets[datasetIndex].data =
+                  newSensorChartData.datasets[datasetIndex].data.concat(measData);
+              }
             }
           }
           selectCounter += 1;
@@ -185,12 +198,12 @@ function SoilHumCharts({ cells, startDate, endDate, stream }) {
           const name = sensorChartData[cellid].name;
           const measurements = Object.keys(sensorChartData[cellid]).filter((k) => k != 'name');
           for (const [idx, meas] of measurements.entries()) {
-            const timestamp = sensorChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime));
+            const timestamp = sensorChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
             newSensorChartData.labels = timestamp;
             newSensorChartData.datasets.push({
               label: name + ` ${meas} (${units[idx]})`,
               data: sensorChartData[cellid][meas]['data'],
-              borderColor: meas_colors[idx][selectCounter],
+              borderColor: meas_colors[(selectCounter * measurements.length + idx) % meas_colors.length],
               borderWidth: 2,
               fill: false,
               yAxisID: axisIds[idx],
@@ -215,6 +228,7 @@ function SoilHumCharts({ cells, startDate, endDate, stream }) {
       datasets: [],
     };
     setSensorChartData(Object.assign({}, newSensorChartData));
+    setHasData(false);
   }
 
   //** clearning chart data points and labels */
@@ -240,11 +254,9 @@ function SoilHumCharts({ cells, startDate, endDate, stream }) {
       // updating react state for object requires new object
       setSensorChartData(clearChartDatasets(Object.assign({}, sensorChartData)));
     } else {
-      // no selected cells
       clearCharts();
     }
 
-    // TODO: need to memoize updating charts
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cells, stream, startDate, endDate]);
 
@@ -253,11 +265,9 @@ function SoilHumCharts({ cells, startDate, endDate, stream }) {
   }
 
   return (
-    <>
-      <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
-        <SoilHumChart data={sensorChartData} startDate={startDate} endDate={endDate} />
-      </Grid>
-    </>
+    <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+      <SoilHumChart data={sensorChartData} startDate={startDate} endDate={endDate} />
+    </Grid>
   );
 }
 

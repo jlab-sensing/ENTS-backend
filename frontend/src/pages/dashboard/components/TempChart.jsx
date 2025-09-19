@@ -6,7 +6,7 @@ import TempChart from '../../../charts/TempChart/TempChart';
 import useInterval from '../../../hooks/useInterval';
 import { getSensorData, streamSensorData } from '../../../services/sensor';
 
-function TempChart({ cells, startDate, endDate, stream }) {
+function TempGraph({ cells, startDate, endDate, stream }) {
   // CONFIGURATION
   // List out measurements that your chart is going to display
   const sensor_name = 'bme280';
@@ -269,11 +269,11 @@ function TempChart({ cells, startDate, endDate, stream }) {
   );
 }
 
-TempChart.propTypes = {
+TempGraph.propTypes = {
   cells: PropTypes.array,
   startDate: PropTypes.any,
   endDate: PropTypes.any,
   stream: PropTypes.bool,
 };
 
-export default TempChart;
+export default TempGraph;

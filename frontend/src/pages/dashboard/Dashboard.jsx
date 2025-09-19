@@ -20,7 +20,7 @@ import TerosCharts from './components/TerosCharts';
 import WaterPressChart from './components/WaterPresChart';
 import SoilHumCharts from './components/SoilHumChart';
 import WaterFlowCharts from './components/WaterFlowChart';
-import TempChart from './components/TempChart';
+import TempGraph from './components/TempChart';
 
 function Dashboard() {
   const axiosPrivate = useAxiosPrivate();
@@ -355,7 +355,7 @@ function Dashboard() {
                 <PresHumChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
                 <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
                 <CO2Charts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <TempChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <TempGraph cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
                 
                 {/* New charts from main branch */}
                 <SoilHumCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
