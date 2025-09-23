@@ -56,7 +56,7 @@ function WaterPressCharts({ cells, startDate, endDate, stream }) {
     const data = {};
     let loadCells = cells;
     if (!stream) {
-      loadCells = cells.filter((c) => !(c.id in loadedCells));
+      loadCells = cells.filter((c) => !loadedCells.some((loaded) => loaded.id === c.id));
     }
     for (const { id, name } of loadCells) {
       data[id] = {
@@ -124,7 +124,7 @@ function WaterPressCharts({ cells, startDate, endDate, stream }) {
       let loadCells = cells;
       let hasAnyData = false;
       if (!stream) {
-        loadCells = cells.filter((c) => !(c.id in loadedCells));
+        loadCells = cells.filter((c) => !loadedCells.some((loaded) => loaded.id === c.id));
       }
       for (const { id } of loadCells) {
         const cellid = id;
@@ -195,14 +195,14 @@ function WaterPressCharts({ cells, startDate, endDate, stream }) {
       } else {
         for (const { id } of cells) {
           const cellid = id;
-          const name = sensorChartData[cellid].name;
-          const measurements = Object.keys(sensorChartData[cellid]).filter((k) => k != 'name');
+          const name = cellChartData[cellid].name;
+          const measurements = Object.keys(cellChartData[cellid]).filter((k) => k != 'name');
           for (const [idx, meas] of measurements.entries()) {
-            const timestamp = sensorChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
+            const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
             newSensorChartData.labels = timestamp;
             newSensorChartData.datasets.push({
               label: name + ` ${meas} (${units[idx]})`,
-              data: sensorChartData[cellid][meas]['data'],
+              data: cellChartData[cellid][meas]['data'],
               borderColor: meas_colors[(selectCounter * measurements.length + idx) % meas_colors.length],
               borderWidth: 2,
               fill: false,

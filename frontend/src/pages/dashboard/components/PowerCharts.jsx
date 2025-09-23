@@ -32,7 +32,7 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
     const data = {};
     let loadCells = cells;
     if (!stream) {
-      loadCells = cells.filter((c) => !(c.id in loadedCells));
+      loadCells = cells.filter((c) => !loadedCells.some((loaded) => loaded.id === c.id));
     }
     for (const { id, name } of loadCells) {
       data[id] = {
@@ -90,7 +90,7 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
       let loadCells = cells;
       let hasAnyData = false;
       if (!stream) {
-        loadCells = cells.filter((c) => !(c.id in loadedCells));
+        loadCells = cells.filter((c) => !loadedCells.some((loaded) => loaded.id === c.id));
       }
       for (const { id } of loadCells) {
         const cellid = id;

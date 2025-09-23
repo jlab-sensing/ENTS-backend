@@ -35,11 +35,11 @@ function Dashboard() {
   const [smartDateRangeApplied, setSmartDateRangeApplied] = useState(false); // eslint-disable-line no-unused-vars
   const [powerHasData, setPowerHasData] = useState(false);
   const [terosHasData, setTerosHasData] = useState(false);
-  
+
   // Mobile responsive detection
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md')); // <768px = mobile
-  
+
   const cells = useCells();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -213,14 +213,14 @@ function Dashboard() {
                 <Stack direction='row' spacing={2} alignItems='center'>
                   <BackBtn />
                   <Box sx={{ flexGrow: 1 }}>
-                    <CellSelect 
-                      selectedCells={selectedCells} 
+                    <CellSelect
+                      selectedCells={selectedCells}
                       setSelectedCells={handleCellSelectionChange}
                       axiosPrivate={axiosPrivate}
                     />
                   </Box>
                 </Stack>
-                
+
                 {/* Second bar: Date Range + Controls */}
                 <Stack direction='row' spacing={2} alignItems='center' justifyContent='space-between'>
                   <DateRangeSel
@@ -263,8 +263,8 @@ function Dashboard() {
             <Stack direction='row' alignItems='center' justifyContent='space-evenly' sx={{ p: 2 }} spacing={3}>
               <BackBtn />
               <Box sx={{ flexGrow: 1, maxWidth: '30%' }}>
-                <CellSelect 
-                  selectedCells={selectedCells} 
+                <CellSelect
+                  selectedCells={selectedCells}
                   setSelectedCells={handleCellSelectionChange}
                   axiosPrivate={axiosPrivate}
                 />
@@ -356,7 +356,7 @@ function Dashboard() {
                 <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
                 <CO2Charts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
                 <TempGraph cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                
+
                 {/* New charts from main branch */}
                 <SoilHumCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
                 <WaterPressChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
@@ -365,7 +365,7 @@ function Dashboard() {
             </>
           )}
         </Stack>
-        
+
         {/* 
         TODO: Alternative layout structure from main branch - currently commented out
         to preserve conditional rendering functionality. This structure has better spacing
