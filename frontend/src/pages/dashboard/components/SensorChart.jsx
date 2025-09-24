@@ -42,6 +42,7 @@ function SensorChart({ cells, startDate, endDate, stream }) {
   const [sensorChartData, setSensorChartData] = useState(chartSettings);
   const [loadedCells, setLoadedCells] = useState([]);
   const [hasData, setHasData] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Initialize the combined chart data with empty datasets
   const newSensorChartData = {
@@ -117,6 +118,7 @@ function SensorChart({ cells, startDate, endDate, stream }) {
 
   /** updates chart data state */
   function updateCharts() {
+    setIsLoading(true);
     getCellChartData().then((cellChartData) => {
       let selectCounter = 0;
       let loadCells = cells;
@@ -152,6 +154,10 @@ function SensorChart({ cells, startDate, endDate, stream }) {
       setSensorChartData(newSensorChartData);
       setLoadedCells(loadCells);
       setHasData(hasAnyData);
+      setIsLoading(false);
+    }).catch((error) => {
+      console.error('Error updating charts:', error);
+      setIsLoading(false);
     });
   }
 
@@ -258,8 +264,10 @@ function SensorChart({ cells, startDate, endDate, stream }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cells, stream, startDate, endDate]);
 
-  if (!hasData) {
-    return <></>;
+  // Only hide chart if there's no data AND not loading
+  // This keeps existing charts visible while loading new data
+  if (!hasData && !isLoading) {
+    return null;
   }
 
   return (
