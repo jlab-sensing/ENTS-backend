@@ -28,10 +28,8 @@ function TerosCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
   //** gets teros data from backend */
   async function getTerosChartData() {
     const data = {};
+    // Always fetch data for all selected cells when cells change
     let loadCells = cells;
-    if (!stream) {
-      loadCells = cells.filter((c) => !loadedCells.some((loaded) => loaded.id === c.id));
-    }
     for (const { id, name } of loadCells) {
       data[id] = {
         name: name,
@@ -85,11 +83,9 @@ function TerosCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
     };
     getTerosChartData().then((cellChartData) => {
       let selectCounter = 0;
+      // Always process all selected cells
       let loadCells = cells;
       let hasAnyData = false;
-      if (!stream) {
-        loadCells = cells.filter((c) => !loadedCells.some((loaded) => loaded.id === c.id));
-      }
       for (const { id } of loadCells) {
         const cellid = id;
         const name = cellChartData[cellid].name;
@@ -144,7 +140,8 @@ function TerosCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
       }
       setVwcChartData(newVwcChartData);
       setTempChartData(newTempChartData);
-      setLoadedCells(loadCells);
+      // Update loaded cells to track current selection
+      setLoadedCells(cells);
       setHasData(hasAnyData);
     });
   }
@@ -277,6 +274,9 @@ function TerosCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
   );
 
   useEffect(() => {
+    // Reset loadedCells when cells change to force refetch of all data
+    setLoadedCells([]);
+
     if (Array.isArray(cells) && cells.length && !stream) {
       updateCharts();
     } else if (Array.isArray(cells) && cells.length && stream) {
