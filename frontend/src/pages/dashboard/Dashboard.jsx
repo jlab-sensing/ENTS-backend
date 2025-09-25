@@ -9,18 +9,11 @@ import { useCells } from '../../services/cell';
 import ArchiveModal from './components/ArchiveModal';
 import BackBtn from './components/BackBtn';
 import CellSelect from './components/CellSelect';
-import CO2Charts from './components/CO2Charts';
 import DateRangeSel from './components/DateRangeSel';
 import DownloadBtn from './components/DownloadBtn';
 import PowerCharts from './components/PowerCharts';
-import PresHumChart from './components/PresHumChart';
-import SensorChart from './components/SensorChart';
-import SoilPotCharts from './components/SoilPotChart';
 import TerosCharts from './components/TerosCharts';
-import WaterPressChart from './components/WaterPresChart';
-import SoilHumCharts from './components/SoilHumChart';
-import WaterFlowCharts from './components/WaterFlowChart';
-import TempGraph from './components/TempChart';
+import UnifiedChart from './components/UnifiedChart';
 
 function Dashboard() {
   const axiosPrivate = useAxiosPrivate();
@@ -351,16 +344,16 @@ function Dashboard() {
                 justifyContent='spaced-evently'
                 sx={{ width: '95%', boxSizing: 'border-box' }}
               >
-                <SoilPotCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <PresHumChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <CO2Charts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <TempGraph cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <UnifiedChart type="soilPot" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <UnifiedChart type="presHum" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <UnifiedChart type="sensor" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <UnifiedChart type="co2" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <UnifiedChart type="temperature" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
 
                 {/* New charts from main branch */}
-                <SoilHumCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <WaterPressChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <WaterFlowCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <UnifiedChart type="soilHum" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <UnifiedChart type="waterPress" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <UnifiedChart type="waterFlow" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
               </Stack>
             </>
           )}
@@ -392,25 +385,25 @@ function Dashboard() {
             </Grid>
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <SoilPotCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="soilPot" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <PresHumChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="presHum" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="sensor" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <CO2Charts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="co2" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <SoilHumCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="soilHum" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <WaterPressChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="waterPress" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <WaterFlowCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="waterFlow" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
         </Stack>
 
