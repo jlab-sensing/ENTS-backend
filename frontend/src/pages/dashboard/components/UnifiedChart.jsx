@@ -94,7 +94,6 @@ function UnifiedChart({ type, cells, startDate, endDate, stream }) {
     datasets: [],
   };
   const [sensorChartData, setSensorChartData] = useState(chartSettings);
-  const [loadedCells, setLoadedCells] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const debounceTimer = useRef(null);
 
@@ -167,7 +166,6 @@ function UnifiedChart({ type, cells, startDate, endDate, stream }) {
         let selectCounter = 0;
         // Always process all selected cells
         let loadCells = cells;
-        let hasAnyData = false;
         for (const { id } of loadCells) {
           const cellid = id;
           const name = cellChartData[cellid].name;
@@ -175,7 +173,6 @@ function UnifiedChart({ type, cells, startDate, endDate, stream }) {
           for (const [idx, meas] of measurements.entries()) {
             const measDataArray = cellChartData[cellid][meas]['data'];
             if (Array.isArray(measDataArray) && measDataArray.length > 0) {
-              hasAnyData = true;
               const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) =>
                 DateTime.fromHTTP(dateTime).toMillis(),
               );
@@ -197,7 +194,6 @@ function UnifiedChart({ type, cells, startDate, endDate, stream }) {
         }
         setSensorChartData(newSensorChartData);
         // Update loaded cells to track current selection
-        setLoadedCells(cells);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -301,10 +297,6 @@ function UnifiedChart({ type, cells, startDate, endDate, stream }) {
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
-
-    // Reset loadedCells when cells change to force refetch of all data
-    setLoadedCells([]);
-
     debounceTimer.current = setTimeout(() => {
       if (Array.isArray(cells) && cells.length && !stream) {
         updateCharts();

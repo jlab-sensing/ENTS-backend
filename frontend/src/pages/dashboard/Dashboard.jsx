@@ -344,16 +344,64 @@ function Dashboard() {
                 justifyContent='spaced-evently'
                 sx={{ width: '95%', boxSizing: 'border-box' }}
               >
-                <UnifiedChart type="soilPot" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <UnifiedChart type="presHum" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <UnifiedChart type="sensor" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <UnifiedChart type="co2" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <UnifiedChart type="temperature" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <UnifiedChart
+                  type='soilPot'
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                />
+                <UnifiedChart
+                  type='presHum'
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                />
+                <UnifiedChart
+                  type='sensor'
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                />
+                <UnifiedChart
+                  type='co2'
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                />
+                <UnifiedChart
+                  type='temperature'
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                />
 
                 {/* New charts from main branch */}
-                <UnifiedChart type="soilHum" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <UnifiedChart type="waterPress" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <UnifiedChart type="waterFlow" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <UnifiedChart
+                  type='soilHum'
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                />
+                <UnifiedChart
+                  type='waterPress'
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                />
+                <UnifiedChart
+                  type='waterFlow'
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                />
               </Stack>
             </>
           )}

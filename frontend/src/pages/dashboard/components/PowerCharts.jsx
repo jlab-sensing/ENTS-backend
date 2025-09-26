@@ -19,7 +19,6 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
   // })
   const [vChartData, setVChartData] = useState(chartSettings);
   const [pwrChartData, setPwrChartData] = useState(chartSettings);
-  const [loadedCells, setLoadedCells] = useState([]);
   const [hasData, setHasData] = useState(false);
   // Initialize the combined chart data with empty datasets
 
@@ -144,7 +143,6 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
       setVChartData(newVChartData);
       setPwrChartData(newPwrChartData);
       // Update loaded cells to track current selection
-      setLoadedCells(cells);
       setHasData(hasAnyData);
     });
   }
@@ -172,7 +170,7 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
             foundNewData = true;
             const powerDataRaw = cellChartData[cellid].powerData;
             const pTimestampRaw = powerDataRaw.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
-            const pTimestampMillis = pTimestampRaw.map(dt => dt.toMillis());
+            const pTimestampMillis = pTimestampRaw.map((dt) => dt.toMillis());
             const dupIdx = pTimestampMillis.reduce((arr, ts, i) => {
               return !newVChartData.labels.includes(ts) && arr.push(i), arr;
             }, []);
@@ -277,9 +275,6 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
   );
 
   useEffect(() => {
-    // Reset loadedCells when cells change to force refetch of all data
-    setLoadedCells([]);
-
     if (Array.isArray(cells) && cells.length && !stream) {
       updateCharts();
     } else if (Array.isArray(cells) && cells.length && stream) {
@@ -311,10 +306,22 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
   return (
     <>
       <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
-        <VChart data={vChartData} stream={stream} startDate={startDate} endDate={endDate} onResampleChange={handleResampleChange} />
+        <VChart
+          data={vChartData}
+          stream={stream}
+          startDate={startDate}
+          endDate={endDate}
+          onResampleChange={handleResampleChange}
+        />
       </Grid>
       <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
-        <PwrChart data={pwrChartData} stream={stream} startDate={startDate} endDate={endDate} onResampleChange={handleResampleChange} />
+        <PwrChart
+          data={pwrChartData}
+          stream={stream}
+          startDate={startDate}
+          endDate={endDate}
+          onResampleChange={handleResampleChange}
+        />
       </Grid>
     </>
   );

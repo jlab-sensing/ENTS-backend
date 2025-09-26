@@ -16,7 +16,6 @@ function TerosCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
   };
   const [vwcChartData, setVwcChartData] = useState(chartSettings);
   const [tempChartData, setTempChartData] = useState(chartSettings);
-  const [loadedCells, setLoadedCells] = useState([]);
   const [hasData, setHasData] = useState(false);
 
   // Access data for each cell and update the combined charts accordingly
@@ -141,7 +140,6 @@ function TerosCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
       setVwcChartData(newVwcChartData);
       setTempChartData(newTempChartData);
       // Update loaded cells to track current selection
-      setLoadedCells(cells);
       setHasData(hasAnyData);
     });
   }
@@ -169,7 +167,7 @@ function TerosCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
             foundNewData = true;
             const terosDataRaw = cellChartData[cellid].terosData;
             const tTimestampRaw = terosDataRaw.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
-            const tTimestampMillis = tTimestampRaw.map(dt => dt.toMillis());
+            const tTimestampMillis = tTimestampRaw.map((dt) => dt.toMillis());
             const dupIdx = tTimestampMillis.reduce((arr, ts, i) => {
               return !vwcChartData.labels.includes(ts) && arr.push(i), arr;
             }, []);
@@ -183,10 +181,12 @@ function TerosCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
             const ecData = createDataset(tTimestamp, terosData.ec);
             const tempData = createDataset(tTimestamp, terosData.temp);
             newVwcChartData.datasets[selectCounter].data = newVwcChartData.datasets[selectCounter].data.concat(vwcData);
-            newVwcChartData.datasets[selectCounter + 1].data = newVwcChartData.datasets[selectCounter + 1].data.concat(ecData);
+            newVwcChartData.datasets[selectCounter + 1].data =
+              newVwcChartData.datasets[selectCounter + 1].data.concat(ecData);
             // set temp chart
             newTempChartData.labels = newTempChartData.labels.concat(tTimestamp);
-            newTempChartData.datasets[selectCounter].data = newTempChartData.datasets[selectCounter].data.concat(tempData);
+            newTempChartData.datasets[selectCounter].data =
+              newTempChartData.datasets[selectCounter].data.concat(tempData);
             selectCounter += 1;
           }
         }
@@ -274,9 +274,6 @@ function TerosCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
   );
 
   useEffect(() => {
-    // Reset loadedCells when cells change to force refetch of all data
-    setLoadedCells([]);
-
     if (Array.isArray(cells) && cells.length && !stream) {
       updateCharts();
     } else if (Array.isArray(cells) && cells.length && stream) {
@@ -307,10 +304,22 @@ function TerosCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
   return (
     <>
       <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
-        <VwcChart data={vwcChartData} stream={stream} startDate={startDate} endDate={endDate} onResampleChange={handleResampleChange} />
+        <VwcChart
+          data={vwcChartData}
+          stream={stream}
+          startDate={startDate}
+          endDate={endDate}
+          onResampleChange={handleResampleChange}
+        />
       </Grid>
       <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
-        <TempChart data={tempChartData} stream={stream} startDate={startDate} endDate={endDate} onResampleChange={handleResampleChange} />
+        <TempChart
+          data={tempChartData}
+          stream={stream}
+          startDate={startDate}
+          endDate={endDate}
+          onResampleChange={handleResampleChange}
+        />
       </Grid>
     </>
   );
