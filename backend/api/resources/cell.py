@@ -18,6 +18,8 @@ class Cell(Resource):
 
     def get(self, user):
         json_data = request.args
+        cellId = json_data.get("cell_id")
+        cellName = json_data.get("cell_name")
         userCells = json_data.get("user")
         tag_ids = json_data.get("tags")  # Comma-separated tag IDs: "1,2,3"
         category = json_data.get("category")  # Filter by tag category
@@ -27,6 +29,14 @@ class Cell(Resource):
             cells = CellModel.get_cells_by_user_id(user.id)
         else:
             cells = CellModel.get_all()
+
+        # filter based on cell id
+        if cellId:
+            cells = [cell for cell in cells if cell.id == cellId]
+
+        # filter based on cell id
+        if cellName:
+            cells = [cell for cell in cells if cell.name == cellName]
 
         # Apply tag filtering if specified
         if tag_ids:
