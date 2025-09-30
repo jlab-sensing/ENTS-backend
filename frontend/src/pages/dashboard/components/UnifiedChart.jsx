@@ -66,13 +66,16 @@ const CHART_CONFIGS = {
 };
 
 function UnifiedChart({ type, cells, startDate, endDate, stream }) {
-  const config = CHART_CONFIGS[type];
-  if (!config) {
-    console.error(`Unknown chart type: ${type}`);
-    return null;
-  }
+  const chartSettings = {
+    label: [],
+    datasets: [],
+  };
+  const [sensorChartData, setSensorChartData] = useState(chartSettings);
+  const [isLoading, setIsLoading] = useState(false);
+  const debounceTimer = useRef(null);
 
-  const { sensor_name, measurements, units, axisIds, chartId } = config;
+  const config = CHART_CONFIGS[type];
+  const { sensor_name, measurements, units, axisIds, chartId } = config || {};
 
   const meas_colors = [
     '#26C6DA',
@@ -88,14 +91,6 @@ function UnifiedChart({ type, cells, startDate, endDate, stream }) {
   ];
 
   const interval = 1000;
-
-  const chartSettings = {
-    label: [],
-    datasets: [],
-  };
-  const [sensorChartData, setSensorChartData] = useState(chartSettings);
-  const [isLoading, setIsLoading] = useState(false);
-  const debounceTimer = useRef(null);
 
   async function getCellChartData() {
     const data = {};
@@ -315,6 +310,11 @@ function UnifiedChart({ type, cells, startDate, endDate, stream }) {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cells, stream, startDate, endDate]);
+
+  if (!config) {
+    console.error(`Unknown chart type: ${type}`);
+    return null;
+  }
 
   const hasRenderableData = sensorChartData.datasets.some((ds) => Array.isArray(ds.data) && ds.data.length > 0);
 
