@@ -32,9 +32,13 @@ class Cell(Resource):
 
         # filter based on cell id
         if cellId:
-            cells = [cell for cell in cells if cell.id == cellId]
+            try:
+                cellId = int(cellId)
+                cells = [cell for cell in cells if cell.id == cellId]
+            except ValueError:
+                return {"message": "Invalid cell_id format, must be an integer"}, 400
 
-        # filter based on cell id
+        # filter based on cell name
         if cellName:
             cells = [cell for cell in cells if cell.name == cellName]
 
