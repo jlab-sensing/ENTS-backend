@@ -9,17 +9,11 @@ import { useCells } from '../../services/cell';
 import ArchiveModal from './components/ArchiveModal';
 import BackBtn from './components/BackBtn';
 import CellSelect from './components/CellSelect';
-import CO2Charts from './components/CO2Charts';
 import DateRangeSel from './components/DateRangeSel';
 import DownloadBtn from './components/DownloadBtn';
 import PowerCharts from './components/PowerCharts';
-import PresHumChart from './components/PresHumChart';
-import SensorChart from './components/SensorChart';
-import SoilPotCharts from './components/SoilPotChart';
 import TerosCharts from './components/TerosCharts';
-import WaterPressChart from './components/WaterPresChart';
-import SoilHumCharts from './components/SoilHumChart';
-import WaterFlowCharts from './components/WaterFlowChart';
+import UnifiedChart from './components/UnifiedChart';
 
 function Dashboard() {
   const axiosPrivate = useAxiosPrivate();
@@ -34,11 +28,11 @@ function Dashboard() {
   const [smartDateRangeApplied, setSmartDateRangeApplied] = useState(false); // eslint-disable-line no-unused-vars
   const [powerHasData, setPowerHasData] = useState(false);
   const [terosHasData, setTerosHasData] = useState(false);
-  
+
   // Mobile responsive detection
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md')); // <768px = mobile
-  
+
   const cells = useCells();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -212,14 +206,14 @@ function Dashboard() {
                 <Stack direction='row' spacing={2} alignItems='center'>
                   <BackBtn />
                   <Box sx={{ flexGrow: 1 }}>
-                    <CellSelect 
-                      selectedCells={selectedCells} 
+                    <CellSelect
+                      selectedCells={selectedCells}
                       setSelectedCells={handleCellSelectionChange}
                       axiosPrivate={axiosPrivate}
                     />
                   </Box>
                 </Stack>
-                
+
                 {/* Second bar: Date Range + Controls */}
                 <Stack direction='row' spacing={2} alignItems='center' justifyContent='space-between'>
                   <DateRangeSel
@@ -262,8 +256,8 @@ function Dashboard() {
             <Stack direction='row' alignItems='center' justifyContent='space-evenly' sx={{ p: 2 }} spacing={3}>
               <BackBtn />
               <Box sx={{ flexGrow: 1, maxWidth: '30%' }}>
-                <CellSelect 
-                  selectedCells={selectedCells} 
+                <CellSelect
+                  selectedCells={selectedCells}
                   setSelectedCells={handleCellSelectionChange}
                   axiosPrivate={axiosPrivate}
                 />
@@ -350,19 +344,69 @@ function Dashboard() {
                 justifyContent='spaced-evently'
                 sx={{ width: '95%', boxSizing: 'border-box' }}
               >
-                <SoilPotCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <PresHumChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <CO2Charts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <UnifiedChart
+                  type='soilPot'
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                />
+                <UnifiedChart
+                  type='presHum'
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                />
+                <UnifiedChart
+                  type='sensor'
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                />
+                <UnifiedChart
+                  type='co2'
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                />
+                <UnifiedChart
+                  type='temperature'
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                />
+
                 {/* New charts from main branch */}
-                <SoilHumCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <WaterPressChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-                <WaterFlowCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+                <UnifiedChart
+                  type='soilHum'
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                />
+                <UnifiedChart
+                  type='waterPress'
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                />
+                <UnifiedChart
+                  type='waterFlow'
+                  cells={selectedCells}
+                  startDate={startDate}
+                  endDate={endDate}
+                  stream={stream}
+                />
               </Stack>
             </>
           )}
         </Stack>
-        
+
         {/* 
         TODO: Alternative layout structure from main branch - currently commented out
         to preserve conditional rendering functionality. This structure has better spacing
@@ -389,25 +433,25 @@ function Dashboard() {
             </Grid>
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <SoilPotCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="soilPot" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <PresHumChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="presHum" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <SensorChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="sensor" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <CO2Charts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="co2" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <SoilHumCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="soilHum" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <WaterPressChart cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="waterPress" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <WaterFlowCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="waterFlow" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
           </Box>
         </Stack>
 

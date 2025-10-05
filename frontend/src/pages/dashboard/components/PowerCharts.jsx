@@ -19,7 +19,6 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
   // })
   const [vChartData, setVChartData] = useState(chartSettings);
   const [pwrChartData, setPwrChartData] = useState(chartSettings);
-  const [loadedCells, setLoadedCells] = useState([]);
   const [hasData, setHasData] = useState(false);
   // Initialize the combined chart data with empty datasets
 
@@ -30,10 +29,8 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
   //** gets power data from backend */
   async function getPowerChartData() {
     const data = {};
+    // Always fetch data for all selected cells when cells change
     let loadCells = cells;
-    if (!stream) {
-      loadCells = cells.filter((c) => !(c.id in loadedCells));
-    }
     for (const { id, name } of loadCells) {
       data[id] = {
         name: name,
@@ -87,11 +84,9 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
     };
     getPowerChartData().then((cellChartData) => {
       let selectCounter = 0;
+      // Always process all selected cells
       let loadCells = cells;
       let hasAnyData = false;
-      if (!stream) {
-        loadCells = cells.filter((c) => !(c.id in loadedCells));
-      }
       for (const { id } of loadCells) {
         const cellid = id;
         const name = cellChartData[cellid].name;
@@ -147,7 +142,7 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
       }
       setVChartData(newVChartData);
       setPwrChartData(newPwrChartData);
-      setLoadedCells(loadCells);
+      // Update loaded cells to track current selection
       setHasData(hasAnyData);
     });
   }
@@ -175,7 +170,7 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
             foundNewData = true;
             const powerDataRaw = cellChartData[cellid].powerData;
             const pTimestampRaw = powerDataRaw.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime));
-            const pTimestampMillis = pTimestampRaw.map(dt => dt.toMillis());
+            const pTimestampMillis = pTimestampRaw.map((dt) => dt.toMillis());
             const dupIdx = pTimestampMillis.reduce((arr, ts, i) => {
               return !newVChartData.labels.includes(ts) && arr.push(i), arr;
             }, []);
@@ -311,10 +306,22 @@ function PowerCharts({ cells, startDate, endDate, stream, onDataStatusChange }) 
   return (
     <>
       <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
-        <VChart data={vChartData} stream={stream} startDate={startDate} endDate={endDate} onResampleChange={handleResampleChange} />
+        <VChart
+          data={vChartData}
+          stream={stream}
+          startDate={startDate}
+          endDate={endDate}
+          onResampleChange={handleResampleChange}
+        />
       </Grid>
       <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={4} sm={4} md={6} p={3}>
-        <PwrChart data={pwrChartData} stream={stream} startDate={startDate} endDate={endDate} onResampleChange={handleResampleChange} />
+        <PwrChart
+          data={pwrChartData}
+          stream={stream}
+          startDate={startDate}
+          endDate={endDate}
+          onResampleChange={handleResampleChange}
+        />
       </Grid>
     </>
   );
