@@ -231,6 +231,11 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     });
   }
 
+  }
+  */
+
+  // Removed unused clearChartDatasets function
+
   function clearCharts() {
     const newSensorChartData = {
       ...sensorChartData,
@@ -239,9 +244,6 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     };
     setSensorChartData(Object.assign({}, newSensorChartData));
   }
-  */
-
-  // Removed unused clearChartDatasets function
 
   useEffect(() => {
     if (stream && liveData && liveData.length > 0) {
