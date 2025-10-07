@@ -1,4 +1,4 @@
-import { React, useEffect, useRef, useState, useMemo } from 'react';
+import { React, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import Modal from '@mui/material/Modal';
 import Fade from '@mui/material/Fade';
