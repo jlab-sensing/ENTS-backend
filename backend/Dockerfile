@@ -23,7 +23,7 @@ ENTRYPOINT ["/app/entrypoint.sh", "-d"]
 # The base image contains the necessary dependencies to run the backend code.
 # It installs the necessary apt packages and installs the python dependencies. A new
 # user, "app", is created to run the code unprivileged.
-FROM python:3 AS base
+FROM python:3.11-slim AS base
 # set environment variables to have python print to stdout
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
