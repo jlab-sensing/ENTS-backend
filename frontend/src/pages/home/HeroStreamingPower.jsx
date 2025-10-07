@@ -1,4 +1,5 @@
 import { React, useEffect, useMemo, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import { Line } from 'react-chartjs-2';
 import { Box, Typography } from '@mui/material';
 import Chip from '@mui/material/Chip';
@@ -19,13 +20,6 @@ ChartJS.register(LineController, LineElement, PointElement, LinearScale, TimeSca
 // Fixed cycle: draw 30 points per run. Seed first 8, then add 22 more.
 const CYCLE_POINTS = 30;
 const PRESEED_POINTS = 8; // how many points to show immediately on load/restart
-
-function generateNextPoint(prevY) {
-  // Simple bounded random walk around previous y
-  const delta = (Math.random() - 0.5) * 0.06; // small jitter
-  const next = (prevY ?? -0.12) + delta;
-  return Math.max(-0.25, Math.min(0.25, next));
-}
 
 export default function HeroStreamingPower({ height = 360, intervalMs = 2500 }) {
   const chartRef = useRef(null);
@@ -348,7 +342,7 @@ export default function HeroStreamingPower({ height = 360, intervalMs = 2500 }) 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [intervalMs]);
+  }, [intervalMs, nextPower]);
 
   // Stats for header chips
   const stats = useMemo(() => {
@@ -367,7 +361,6 @@ export default function HeroStreamingPower({ height = 360, intervalMs = 2500 }) 
   }, [data]);
 
   const fmt = (v, digits = 3) => (v == null ? '-' : `${v.toFixed(digits)} µW`);
-  const fmtDelta = (v, digits = 3) => (v == null ? '-' : `${v > 0 ? '+' : ''}${v.toFixed(digits)} µW`);
 
   return (
     <Box ref={containerRef} sx={{ width: '100%' }}>
@@ -386,3 +379,8 @@ export default function HeroStreamingPower({ height = 360, intervalMs = 2500 }) 
     </Box>
   );
 }
+
+HeroStreamingPower.propTypes = {
+  height: PropTypes.number,
+  intervalMs: PropTypes.number,
+};

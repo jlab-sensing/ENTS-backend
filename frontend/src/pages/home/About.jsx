@@ -4,10 +4,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import chart from '../../assets/chart.svg';
 import { useNavigate } from 'react-router-dom';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import useAuth from '../../auth/hooks/useAuth';
 
 function About() {
-  const { user, setUser, loggedIn, setLoggedIn } = useAuth();
   const navigate = useNavigate();
   return (
     <Box

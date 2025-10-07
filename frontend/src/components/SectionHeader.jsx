@@ -1,4 +1,5 @@
 import { React } from 'react';
+import PropTypes from 'prop-types';
 
 function SectionHeader({ title, subtitle }) {
   return (
@@ -26,6 +27,11 @@ function SectionHeader({ title, subtitle }) {
     </div>
   );
 }
+
+SectionHeader.propTypes = {
+  title: PropTypes.string.isRequired,
+  subtitle: PropTypes.string,
+};
 
 export default SectionHeader;
 

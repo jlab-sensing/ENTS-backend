@@ -1,4 +1,5 @@
 import { React } from 'react';
+import PropTypes from 'prop-types';
 
 function FeatureCard({
   accentColor = '#3A5A40',
@@ -62,6 +63,15 @@ function FeatureCard({
     </div>
   );
 }
+
+FeatureCard.propTypes = {
+  accentColor: PropTypes.string,
+  title: PropTypes.string,
+  description: PropTypes.string,
+  bullets: PropTypes.arrayOf(PropTypes.string),
+  ctaText: PropTypes.string,
+  ctaHref: PropTypes.string,
+};
 
 export default FeatureCard;
 

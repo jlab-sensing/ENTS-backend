@@ -1,4 +1,5 @@
 import { React } from 'react';
+import PropTypes from 'prop-types';
 import { Box, Button, Container, Divider, Grid, Stack, Typography } from '@mui/material';
 import TopNav from '../../components/TopNav.jsx';
 import LandingFooter from '../../components/LandingFooter.jsx';
@@ -19,6 +20,11 @@ function AnchorLink({ href, children }) {
     </Button>
   );
 }
+
+AnchorLink.propTypes = {
+  href: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired,
+};
 
 function Docs() {
   return (
