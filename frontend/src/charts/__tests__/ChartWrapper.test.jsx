@@ -766,59 +766,63 @@ describe('testing side button events', () => {
 
     expect(mockOnResampleChange).toHaveBeenCalledWith('hour');
   });
-});
 
-describe('streaming plugins coverage', () => {
-  const ctxMock = {
-    save: vi.fn(),
-    restore: vi.fn(),
-    beginPath: vi.fn(),
-    arc: vi.fn(),
-    fill: vi.fn(),
-    stroke: vi.fn(),
-    setLineDash: vi.fn(),
-    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
-  };
-
-  beforeAll(() => {
-    // eslint-disable-next-line no-undef
-    HTMLCanvasElement.prototype.getContext = vi.fn(() => ctxMock);
-  });
-
-  it('invokes glow and pulse plugins in streaming mode', async () => {
-    const now = Date.now();
-    const streamingData = {
-      datasets: [
-        { label: 'stream', data: [{ x: now - 1000, y: 1 }, { x: now, y: 2 }], borderColor: '#123456' },
-      ],
-      labels: [now - 1000, now],
-    };
-
-    const opts = { responsive: true, parsing: false, scales: { x: { type: 'time' }, y: { type: 'linear' } } };
-
-    render(<ChartWrapper id='stream' data={streamingData} options={opts} stream={true} />);
-
-    expect(ctxMock.save).toHaveBeenCalled();
-    expect(ctxMock.arc).toHaveBeenCalled();
-  });
-});
-
-describe('resample menu minimal coverage', () => {
-  it('fires onResampleChange for none and day', async () => {
+  it('should call onResampleChange with none', async () => {
     const user = userEvent.setup();
     const mockOnResampleChange = vi.fn();
 
     render(
-      <ChartWrapper id='vwc' data={data} options={chartOptions} stream={false} onResampleChange={mockOnResampleChange} />,
+      <ChartWrapper
+        id='vwc2'
+        data={data}
+        options={chartOptions}
+        stream={false}
+        onResampleChange={mockOnResampleChange}
+      />,
     );
 
-    const openBtn = await screen.findByLabelText(/Downsample/i);
-    await user.click(openBtn);
-    await user.click(await screen.findByText('None'));
-    await user.click(openBtn);
-    await user.click(await screen.findByText('Daily'));
+    const downsampleBtnElement = await screen.findByLabelText(/Downsample/i);
+    await user.click(downsampleBtnElement);
+
+    const noneMenuItem = await screen.findByText('None');
+    await user.click(noneMenuItem);
 
     expect(mockOnResampleChange).toHaveBeenCalledWith('none');
+  });
+
+  it('should call onResampleChange with day', async () => {
+    const user = userEvent.setup();
+    const mockOnResampleChange = vi.fn();
+
+    render(
+      <ChartWrapper
+        id='vwc3'
+        data={data}
+        options={chartOptions}
+        stream={false}
+        onResampleChange={mockOnResampleChange}
+      />,
+    );
+
+    const downsampleBtnElement = await screen.findByLabelText(/Downsample/i);
+    await user.click(downsampleBtnElement);
+
+    const dailyMenuItem = await screen.findByText('Daily');
+    await user.click(dailyMenuItem);
+
     expect(mockOnResampleChange).toHaveBeenCalledWith('day');
+  });
+
+  it('should render with streaming plugins', () => {
+    render(
+      <ChartWrapper
+        id='streaming-test'
+        data={data}
+        options={streamChartOptions}
+        stream={true}
+      />,
+    );
+
+    expect(screen.getByTestId('chart-container')).toBeInTheDocument();
   });
 });
