@@ -1,14 +1,20 @@
 from api.resources.util import process_measurement_dict
 from datetime import datetime
-from unittest.mock import patch, MagicMock
-import pytest
+from unittest.mock import patch
+from api.models.logger import Logger
+from api.models.cell import Cell
 
 
 def test_process_measurement_dict_power_success(init_database):
+    logger = Logger("test_logger_ws", None, "")
+    logger.save()
+    cell = Cell("test_cell_ws", "", 1, 1, False, None)
+    cell.save()
+    
     measurement = {
         "type": "power",
-        "loggerId": "test_logger",
-        "cellId": "test_cell",
+        "loggerId": logger.id,
+        "cellId": cell.id,
         "ts": datetime.now().timestamp(),
         "data": {
             "voltage": 3.3,
@@ -27,17 +33,20 @@ def test_process_measurement_dict_power_success(init_database):
         
         emitted_data = call_args[0][1]
         assert emitted_data["type"] == "power"
-        assert emitted_data["cellId"] == "test_cell"
-        assert emitted_data["loggerId"] == "test_logger"
+        assert emitted_data["cellId"] == cell.id
+        assert emitted_data["loggerId"] == logger.id
         assert "obj_count" in emitted_data
         assert emitted_data["obj_count"] == 1
 
 
 def test_process_measurement_dict_teros12_success(init_database):
+    cell = Cell("test_cell_teros", "", 1, 1, False, None)
+    cell.save()
+    
     measurement = {
         "type": "teros12",
-        "loggerId": "test_logger",
-        "cellId": "test_cell_teros",
+        "loggerId": 1,
+        "cellId": cell.id,
         "ts": datetime.now().timestamp(),
         "data": {
             "vwcAdj": 0.35,
@@ -57,14 +66,19 @@ def test_process_measurement_dict_teros12_success(init_database):
         
         emitted_data = call_args[0][1]
         assert emitted_data["type"] == "teros12"
-        assert emitted_data["cellId"] == "test_cell_teros"
+        assert emitted_data["cellId"] == cell.id
 
 
 def test_process_measurement_dict_websocket_error_handling(init_database):
+    logger = Logger("test_logger_err", None, "")
+    logger.save()
+    cell = Cell("test_cell_err", "", 1, 1, False, None)
+    cell.save()
+    
     measurement = {
         "type": "power",
-        "loggerId": "test_logger_ws",
-        "cellId": "test_cell_ws",
+        "loggerId": logger.id,
+        "cellId": cell.id,
         "ts": datetime.now().timestamp(),
         "data": {
             "voltage": 3.3,
@@ -80,10 +94,13 @@ def test_process_measurement_dict_websocket_error_handling(init_database):
 
 
 def test_process_measurement_dict_bme280_multi_sensor(init_database):
+    cell = Cell("test_cell_bme", "", 1, 1, False, None)
+    cell.save()
+    
     measurement = {
         "type": "bme280",
-        "loggerId": "test_logger_bme",
-        "cellId": "test_cell_bme",
+        "loggerId": 1,
+        "cellId": cell.id,
         "ts": datetime.now().timestamp(),
         "data": {
             "pressure": 101.3,
@@ -107,23 +124,26 @@ def test_process_measurement_dict_bme280_multi_sensor(init_database):
 def test_process_measurement_dict_unknown_type(init_database):
     measurement = {
         "type": "unknown_sensor_type",
-        "loggerId": "test_logger_unknown",
-        "cellId": "test_cell_unknown",
+        "loggerId": 1,
+        "cellId": 1,
         "ts": datetime.now().timestamp(),
         "data": {}
     }
     
-    with patch('api.resources.util.socketio') as mock_socketio:
+    with patch('api.resources.util.socketio'):
         response = process_measurement_dict(measurement)
         
         assert response.status_code == 501
 
 
 def test_process_measurement_dict_teros21(init_database):
+    cell = Cell("test_cell_t21", "", 1, 1, False, None)
+    cell.save()
+    
     measurement = {
         "type": "teros21",
-        "loggerId": "test_logger_t21",
-        "cellId": "test_cell_t21",
+        "loggerId": 1,
+        "cellId": cell.id,
         "ts": datetime.now().timestamp(),
         "data": {
             "matricPot": -10.5,
@@ -142,10 +162,13 @@ def test_process_measurement_dict_teros21(init_database):
 
 
 def test_process_measurement_dict_co2(init_database):
+    cell = Cell("test_cell_co2", "", 1, 1, False, None)
+    cell.save()
+    
     measurement = {
         "type": "co2",
-        "loggerId": "test_logger_co2",
-        "cellId": "test_cell_co2",
+        "loggerId": 1,
+        "cellId": cell.id,
         "ts": datetime.now().timestamp(),
         "data": {
             "CO2": 420,
