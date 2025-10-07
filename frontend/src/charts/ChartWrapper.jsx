@@ -1,4 +1,4 @@
-import { React, useEffect, useRef, useState } from 'react';
+import { React, useEffect, useRef, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import Modal from '@mui/material/Modal';
 import Fade from '@mui/material/Fade';
@@ -31,6 +31,89 @@ ChartJS.register(LineController, LineElement, PointElement, LinearScale, chartTo
 
 //** Wrapper for chart functionality and state */
 function ChartWrapper({ id, data, options, stream, onResampleChange }) {
+  // Glow plugin to highlight the newest point
+  const glowPlugin = useMemo(
+    () => ({
+      id: 'dashboardGlow',
+      afterDatasetsDraw: (chart) => {
+        if (!stream) return;
+        
+        const { ctx } = chart;
+        const datasets = chart.data.datasets;
+        
+        // Apply glow effect to all datasets
+        datasets.forEach((dataset, datasetIndex) => {
+          const meta = chart.getDatasetMeta(datasetIndex);
+          if (!meta || !meta.dataset) return;
+          
+          // Draw line with soft shadow
+          ctx.save();
+          ctx.shadowBlur = 1;
+          ctx.shadowColor = dataset.borderColor || 'rgba(0, 0, 0, 0.06)';
+          meta.dataset.draw(ctx);
+          ctx.restore();
+
+          // Highlight the last point with radial gradient
+          const lastEl = meta.data && meta.data[meta.data.length - 1];
+          if (!lastEl) return;
+          
+          const { x, y } = lastEl.getProps(['x', 'y'], true);
+          const radGrad = ctx.createRadialGradient(x, y, 0, x, y, 18);
+          radGrad.addColorStop(0, `${dataset.borderColor || '#000000'}45`);
+          radGrad.addColorStop(1, `${dataset.borderColor || '#000000'}00`);
+          
+          ctx.save();
+          ctx.fillStyle = radGrad;
+          ctx.beginPath();
+          ctx.arc(x, y, 18, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+
+          // Draw the actual point
+          ctx.save();
+          ctx.fillStyle = dataset.borderColor || '#000000';
+          ctx.beginPath();
+          ctx.arc(x, y, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+      },
+    }),
+    [stream],
+  );
+
+  // Pulse ring around latest point
+  const pulsePlugin = useMemo(
+    () => ({
+      id: 'dashboardPulse',
+      afterDatasetsDraw: (chart) => {
+        if (!stream) return;
+        
+        const datasets = chart.data.datasets;
+        
+        // Apply pulse effect to all datasets
+        datasets.forEach((dataset, datasetIndex) => {
+          const meta = chart.getDatasetMeta(datasetIndex);
+          if (!meta || !meta.data || !meta.data.length) return;
+          
+          const { ctx } = chart;
+          const el = meta.data[meta.data.length - 1];
+          const { x, y } = el.getProps(['x', 'y'], true);
+          const t = Date.now();
+          const r = 7 + 3 * (0.5 + 0.5 * Math.sin((t % 2000) / 2000 * Math.PI * 2));
+          
+          ctx.save();
+          ctx.strokeStyle = `${dataset.borderColor || '#000000'}45`;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        });
+      },
+    }),
+    [stream],
+  );
   const [resetSelected] = useState(false);
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
@@ -79,6 +162,9 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
   function Options() {
     return {
       ...options,
+      // Disable animations when streaming
+      animation: stream ? false : options.animation,
+      animations: stream ? { x: { duration: 0 }, y: { duration: 0 } } : options.animations,
       plugins: {
         zoom: {
           zoom: {
@@ -95,6 +181,8 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
             onPanComplete,
           },
         },
+        // Add streaming plugins when streaming is ON
+        ...(stream && { dashboardGlow: glowPlugin, dashboardPulse: pulsePlugin }),
       },
     };
   }
@@ -269,6 +357,7 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
         ref={chartRef}
         data={data}
         options={{ ...optionsWithPlugins, ...globalChartOpts }}
+        plugins={stream ? [glowPlugin, pulsePlugin] : []}
       ></Line>
       <Box
         sx={{
@@ -303,171 +392,176 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
             <Box component='img' src={reset} sx={{ width: '16px', height: '16px' }}></Box>
           </ToggleButton>
         </Tooltip>
-        <Tooltip
-          title='Zoom'
-          placement='bottom'
-          disableInteractive
-          slotProps={{
-            popper: {
-              modifiers: [
-                {
-                  name: 'offset',
-                  options: {
-                    offset: [0, -11],
-                  },
+        
+        {/* Show additional controls only when not streaming */}
+        {!stream && (
+          <>
+            <Tooltip
+              title='Zoom'
+              placement='bottom'
+              disableInteractive
+              slotProps={{
+                popper: {
+                  modifiers: [
+                    {
+                      name: 'offset',
+                      options: {
+                        offset: [0, -11],
+                      },
+                    },
+                  ],
                 },
-              ],
-            },
-          }}
-        >
-          <ToggleButton
-            value={zoomSelected}
-            selected={zoomSelected}
-            onClick={handleToggleZoom}
-            sx={{ width: '32px', height: '32px' }}
-          >
-            <Box component='img' src={zoom} sx={{ width: '16px', height: '16px' }}></Box>
-          </ToggleButton>
-        </Tooltip>
-        <Tooltip
-          title='Pan'
-          placement='bottom'
-          disableInteractive
-          slotProps={{
-            popper: {
-              modifiers: [
-                {
-                  name: 'offset',
-                  options: {
-                    offset: [0, -11],
-                  },
+              }}
+            >
+              <ToggleButton
+                value={zoomSelected}
+                selected={zoomSelected}
+                onClick={handleToggleZoom}
+                sx={{ width: '32px', height: '32px' }}
+              >
+                <Box component='img' src={zoom} sx={{ width: '16px', height: '16px' }}></Box>
+              </ToggleButton>
+            </Tooltip>
+            <Tooltip
+              title='Pan'
+              placement='bottom'
+              disableInteractive
+              slotProps={{
+                popper: {
+                  modifiers: [
+                    {
+                      name: 'offset',
+                      options: {
+                        offset: [0, -11],
+                      },
+                    },
+                  ],
                 },
-              ],
-            },
-          }}
-        >
-          <ToggleButton
-            value={panSelected}
-            selected={panSelected}
-            onClick={handleTogglePan}
-            sx={{ width: '32px', height: '32px' }}
-          >
-            <Box component='img' src={pan} sx={{ width: '16px', height: '16px' }}></Box>
-          </ToggleButton>
-        </Tooltip>
-        <Tooltip
-          title='Zoom In'
-          placement='bottom'
-          disableInteractive
-          slotProps={{
-            popper: {
-              modifiers: [
-                {
-                  name: 'offset',
-                  options: {
-                    offset: [0, -11],
-                  },
+              }}
+            >
+              <ToggleButton
+                value={panSelected}
+                selected={panSelected}
+                onClick={handleTogglePan}
+                sx={{ width: '32px', height: '32px' }}
+              >
+                <Box component='img' src={pan} sx={{ width: '16px', height: '16px' }}></Box>
+              </ToggleButton>
+            </Tooltip>
+            <Tooltip
+              title='Zoom In'
+              placement='bottom'
+              disableInteractive
+              slotProps={{
+                popper: {
+                  modifiers: [
+                    {
+                      name: 'offset',
+                      options: {
+                        offset: [0, -11],
+                      },
+                    },
+                  ],
                 },
-              ],
-            },
-          }}
-        >
-          <ToggleButton value={false} onClick={handleZoomIn} sx={{ width: '32px', height: '32px' }}>
-            <Box component='img' src={zoomIn} sx={{ width: '16px', height: '16px' }}></Box>
-          </ToggleButton>
-        </Tooltip>
-        <Tooltip
-          title='Zoom Out'
-          placement='bottom'
-          disableInteractive
-          slotProps={{
-            popper: {
-              modifiers: [
-                {
-                  name: 'offset',
-                  options: {
-                    offset: [0, -11],
-                  },
+              }}
+            >
+              <ToggleButton value={false} onClick={handleZoomIn} sx={{ width: '32px', height: '32px' }}>
+                <Box component='img' src={zoomIn} sx={{ width: '16px', height: '16px' }}></Box>
+              </ToggleButton>
+            </Tooltip>
+            <Tooltip
+              title='Zoom Out'
+              placement='bottom'
+              disableInteractive
+              slotProps={{
+                popper: {
+                  modifiers: [
+                    {
+                      name: 'offset',
+                      options: {
+                        offset: [0, -11],
+                      },
+                    },
+                  ],
                 },
-              ],
-            },
-          }}
-        >
-          <ToggleButton
-            value={false}
-            variant='contained'
-            onClick={handleZoomOut}
-            sx={{ width: '32px', height: '32px' }}
-          >
-            <Box component='img' src={zoomOut} sx={{ width: '16px', height: '16px' }}></Box>
-          </ToggleButton>
-        </Tooltip>
-        <Tooltip
-          title='Downsample'
-          placement='bottom'
-          disableInteractive
-          slotProps={{
-            popper: {
-              modifiers: [
-                {
-                  name: 'offset',
-                  options: {
-                    offset: [0, -11],
-                  },
+              }}
+            >
+              <ToggleButton
+                value={false}
+                variant='contained'
+                onClick={handleZoomOut}
+                sx={{ width: '32px', height: '32px' }}
+              >
+                <Box component='img' src={zoomOut} sx={{ width: '16px', height: '16px' }}></Box>
+              </ToggleButton>
+            </Tooltip>
+            <Tooltip
+              title='Downsample'
+              placement='bottom'
+              disableInteractive
+              slotProps={{
+                popper: {
+                  modifiers: [
+                    {
+                      name: 'offset',
+                      options: {
+                        offset: [0, -11],
+                      },
+                    },
+                  ],
                 },
-              ],
-            },
-          }}
-        >
-          <ToggleButton variant='contained' onClick={handleResampleClick} sx={{ width: '32px', height: '32px' }}>
-            <Box component='img' src={downsample} sx={{ width: '16px', height: '16px' }}></Box>
-          </ToggleButton>
-        </Tooltip>
-        <Menu
-          anchorEl={resampleAnchor}
-          open={Boolean(resampleAnchor)}
-          onClose={handleResampleClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-        >
-          <MenuItem onClick={() => handleResampleSelect('none')} selected={selectedResample === 'none'}>
-            <ListItemText>None</ListItemText>
-          </MenuItem>
-          <MenuItem onClick={() => handleResampleSelect('hour')} selected={selectedResample === 'hour'}>
-            <ListItemText>Hourly</ListItemText>
-          </MenuItem>
-          <MenuItem onClick={() => handleResampleSelect('day')} selected={selectedResample === 'day'}>
-            <ListItemText>Daily</ListItemText>
-          </MenuItem>
-        </Menu>
-
-        <Tooltip
-          title='Export Chart'
-          placement='bottom'
-          disableInteractive
-          slotProps={{
-            popper: {
-              modifiers: [
-                {
-                  name: 'offset',
-                  options: {
-                    offset: [0, -11],
-                  },
+              }}
+            >
+              <ToggleButton value={false} variant='contained' onClick={handleResampleClick} sx={{ width: '32px', height: '32px' }}>
+                <Box component='img' src={downsample} sx={{ width: '16px', height: '16px' }}></Box>
+              </ToggleButton>
+            </Tooltip>
+            <Menu
+              anchorEl={resampleAnchor}
+              open={Boolean(resampleAnchor)}
+              onClose={handleResampleClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+            >
+              <MenuItem onClick={() => handleResampleSelect('none')} selected={selectedResample === 'none'}>
+                <ListItemText>None</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={() => handleResampleSelect('hour')} selected={selectedResample === 'hour'}>
+                <ListItemText>Hourly</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={() => handleResampleSelect('day')} selected={selectedResample === 'day'}>
+                <ListItemText>Daily</ListItemText>
+              </MenuItem>
+            </Menu>
+            <Tooltip
+              title='Export Chart'
+              placement='bottom'
+              disableInteractive
+              slotProps={{
+                popper: {
+                  modifiers: [
+                    {
+                      name: 'offset',
+                      options: {
+                        offset: [0, -11],
+                      },
+                    },
+                  ],
                 },
-              ],
-            },
-          }}
-        >
-          <ToggleButton value={false} onClick={handleExportChart} sx={{ width: '32px', height: '32px' }}>
-            <Box component='img' src={downloadIcon} sx={{ width: '20px', height: '20px' }}></Box>
-          </ToggleButton>
-        </Tooltip>
+              }}
+            >
+              <ToggleButton value={false} onClick={handleExportChart} sx={{ width: '32px', height: '32px' }}>
+                <Box component='img' src={downloadIcon} sx={{ width: '20px', height: '20px' }}></Box>
+              </ToggleButton>
+            </Tooltip>
+          </>
+        )}
 
         <Tooltip
           title='Fullscreen'
@@ -514,6 +608,7 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
                   ref={chartRef}
                   data={data}
                   options={{ ...optionsWithPlugins, ...globalChartOpts }}
+                  plugins={stream ? [glowPlugin, pulsePlugin] : []}
                 ></Line>
               </Box>
               <Box
@@ -545,156 +640,162 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
                     <Box component='img' src={reset} sx={{ width: '20px', height: '20px' }}></Box>
                   </ToggleButton>
                 </Tooltip>
-                <Tooltip
-                  title='Zoom'
-                  placement='bottom'
-                  disableInteractive
-                  slotProps={{
-                    popper: {
-                      modifiers: [
-                        {
-                          name: 'offset',
-                          options: {
-                            offset: [0, -11],
+                {/* Show additional controls only when not streaming */}
+                {!stream && (
+                  <Tooltip
+                    title='Zoom'
+                    placement='bottom'
+                    disableInteractive
+                    slotProps={{
+                      popper: {
+                        modifiers: [
+                          {
+                            name: 'offset',
+                            options: {
+                              offset: [0, -11],
+                            },
                           },
+                        ],
+                      },
+                    }}
+                  >
+                    <ToggleButton value={zoomSelected} selected={zoomSelected} onClick={handleToggleZoom}>
+                      <Box component='img' src={zoom} sx={{ width: '20px', height: '20px' }}></Box>
+                    </ToggleButton>
+                  </Tooltip>
+                )}
+                {!stream && (
+                  <>
+                    <Tooltip
+                      title='Pan'
+                      placement='bottom'
+                      disableInteractive
+                      slotProps={{
+                        popper: {
+                          modifiers: [
+                            {
+                              name: 'offset',
+                              options: {
+                                offset: [0, -11],
+                              },
+                            },
+                          ],
                         },
-                      ],
-                    },
-                  }}
-                >
-                  <ToggleButton value={zoomSelected} selected={zoomSelected} onClick={handleToggleZoom}>
-                    <Box component='img' src={zoom} sx={{ width: '20px', height: '20px' }}></Box>
-                  </ToggleButton>
-                </Tooltip>
-                <Tooltip
-                  title='Pan'
-                  placement='bottom'
-                  disableInteractive
-                  slotProps={{
-                    popper: {
-                      modifiers: [
-                        {
-                          name: 'offset',
-                          options: {
-                            offset: [0, -11],
-                          },
+                      }}
+                    >
+                      <ToggleButton value={panSelected} selected={panSelected} onClick={handleTogglePan}>
+                        <Box component='img' src={pan} sx={{ width: '20px', height: '20px' }}></Box>
+                      </ToggleButton>
+                    </Tooltip>
+                    <Tooltip
+                      title='Zoom In'
+                      placement='bottom'
+                      disableInteractive
+                      slotProps={{
+                        popper: {
+                          modifiers: [
+                            {
+                              name: 'offset',
+                              options: {
+                                offset: [0, -11],
+                              },
+                            },
+                          ],
                         },
-                      ],
-                    },
-                  }}
-                >
-                  <ToggleButton value={panSelected} selected={panSelected} onClick={handleTogglePan}>
-                    <Box component='img' src={pan} sx={{ width: '20px', height: '20px' }}></Box>
-                  </ToggleButton>
-                </Tooltip>
-                <Tooltip
-                  title='Zoom In'
-                  placement='bottom'
-                  disableInteractive
-                  slotProps={{
-                    popper: {
-                      modifiers: [
-                        {
-                          name: 'offset',
-                          options: {
-                            offset: [0, -11],
-                          },
+                      }}
+                    >
+                      <ToggleButton value={false} onClick={handleZoomIn}>
+                        <Box component='img' src={zoomIn} sx={{ width: '20px', height: '20px' }}></Box>
+                      </ToggleButton>
+                    </Tooltip>
+                    <Tooltip
+                      title='Zoom Out'
+                      placement='bottom'
+                      disableInteractive
+                      slotProps={{
+                        popper: {
+                          modifiers: [
+                            {
+                              name: 'offset',
+                              options: {
+                                offset: [0, -11],
+                              },
+                            },
+                          ],
                         },
-                      ],
-                    },
-                  }}
-                >
-                  <ToggleButton value={false} onClick={handleZoomIn}>
-                    <Box component='img' src={zoomIn} sx={{ width: '20px', height: '20px' }}></Box>
-                  </ToggleButton>
-                </Tooltip>
-                <Tooltip
-                  title='Zoom Out'
-                  placement='bottom'
-                  disableInteractive
-                  slotProps={{
-                    popper: {
-                      modifiers: [
-                        {
-                          name: 'offset',
-                          options: {
-                            offset: [0, -11],
-                          },
+                      }}
+                    >
+                      <ToggleButton value={false} variant='contained' onClick={handleZoomOut}>
+                        <Box component='img' src={zoomOut} sx={{ width: '20px', height: '20px' }}></Box>
+                      </ToggleButton>
+                    </Tooltip>
+                    <Tooltip
+                      title='Downsample'
+                      placement='bottom'
+                      disableInteractive
+                      slotProps={{
+                        popper: {
+                          modifiers: [
+                            {
+                              name: 'offset',
+                              options: {
+                                offset: [0, -11],
+                              },
+                            },
+                          ],
                         },
-                      ],
-                    },
-                  }}
-                >
-                  <ToggleButton value={false} variant='contained' onClick={handleZoomOut}>
-                    <Box component='img' src={zoomOut} sx={{ width: '20px', height: '20px' }}></Box>
-                  </ToggleButton>
-                </Tooltip>
-                <Tooltip
-                  title='Downsample'
-                  placement='bottom'
-                  disableInteractive
-                  slotProps={{
-                    popper: {
-                      modifiers: [
-                        {
-                          name: 'offset',
-                          options: {
-                            offset: [0, -11],
-                          },
+                      }}
+                    >
+                      <ToggleButton value={false} variant='contained' onClick={handleResampleClick}>
+                        <Box component='img' src={downsample} sx={{ width: '20px', height: '20px' }}></Box>
+                      </ToggleButton>
+                    </Tooltip>
+                    <Menu
+                      anchorEl={resampleAnchor}
+                      open={Boolean(resampleAnchor)}
+                      onClose={handleResampleClose}
+                      anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'right',
+                      }}
+                      transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                      }}
+                    >
+                      <MenuItem onClick={() => handleResampleSelect('none')} selected={selectedResample === 'none'}>
+                        <ListItemText>None</ListItemText>
+                      </MenuItem>
+                      <MenuItem onClick={() => handleResampleSelect('hour')} selected={selectedResample === 'hour'}>
+                        <ListItemText>Hourly</ListItemText>
+                      </MenuItem>
+                      <MenuItem onClick={() => handleResampleSelect('day')} selected={selectedResample === 'day'}>
+                        <ListItemText>Daily</ListItemText>
+                      </MenuItem>
+                    </Menu>
+                    <Tooltip
+                      title='Export Chart'
+                      placement='bottom'
+                      disableInteractive
+                      slotProps={{
+                        popper: {
+                          modifiers: [
+                            {
+                              name: 'offset',
+                              options: {
+                                offset: [0, -11],
+                              },
+                            },
+                          ],
                         },
-                      ],
-                    },
-                  }}
-                >
-                  <ToggleButton variant='contained' onClick={handleResampleClick}>
-                    <Box component='img' src={downsample} sx={{ width: '20px', height: '20px' }}></Box>
-                  </ToggleButton>
-                </Tooltip>
-                <Menu
-                  anchorEl={resampleAnchor}
-                  open={Boolean(resampleAnchor)}
-                  onClose={handleResampleClose}
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'right',
-                  }}
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                >
-                  <MenuItem onClick={() => handleResampleSelect('none')} selected={selectedResample === 'none'}>
-                    <ListItemText>None</ListItemText>
-                  </MenuItem>
-                  <MenuItem onClick={() => handleResampleSelect('hour')} selected={selectedResample === 'hour'}>
-                    <ListItemText>Hourly</ListItemText>
-                  </MenuItem>
-                  <MenuItem onClick={() => handleResampleSelect('day')} selected={selectedResample === 'day'}>
-                    <ListItemText>Daily</ListItemText>
-                  </MenuItem>
-                </Menu>
-
-                <Tooltip
-                  title='Export Chart'
-                  placement='bottom'
-                  disableInteractive
-                  slotProps={{
-                    popper: {
-                      modifiers: [
-                        {
-                          name: 'offset',
-                          options: {
-                            offset: [0, -11],
-                          },
-                        },
-                      ],
-                    },
-                  }}
-                >
-                  <ToggleButton value={false} onClick={handleExportChart}>
-                    <Box component='img' src={downloadIcon} sx={{ width: '20px', height: '20px' }}></Box>
-                  </ToggleButton>
-                </Tooltip>
+                      }}
+                    >
+                      <ToggleButton value={false} onClick={handleExportChart}>
+                        <Box component='img' src={downloadIcon} sx={{ width: '20px', height: '20px' }}></Box>
+                      </ToggleButton>
+                    </Tooltip>
+                  </>
+                )}
 
                 <Tooltip
                   title='Windowed'

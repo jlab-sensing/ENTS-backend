@@ -18,6 +18,7 @@ from celery import Celery, Task
 from datetime import timedelta
 from .config import DevelopmentConfig, ProductionConfig, TestingConfig
 from .conn import dburl
+from flask_socketio import SocketIO
 
 db = SQLAlchemy()
 ma = Marshmallow()
@@ -25,7 +26,7 @@ migrate = Migrate()
 bcrypt = Bcrypt()
 server_session = Session()
 oauth = OAuth()
-
+socketio = SocketIO()
 
 def celery_init_app(app: Flask) -> Celery:
     class FlaskTask(Task):
@@ -66,6 +67,7 @@ def create_app(debug: bool = False) -> Flask:
     oauth.init_app(app)
     bcrypt.init_app(app)
     CORS(app, resources={r"/*": {"methods": "*"}})
+    socketio.init_app(app, cors_allowed_origins="*")
     api = Api(app, prefix="/api")
     server_session.init_app(app)
 
