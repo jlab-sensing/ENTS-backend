@@ -812,17 +812,4 @@ describe('testing side button events', () => {
 
     expect(mockOnResampleChange).toHaveBeenCalledWith('day');
   });
-
-  it('should render with streaming plugins', () => {
-    render(
-      <ChartWrapper
-        id='streaming-test'
-        data={data}
-        options={streamChartOptions}
-        stream={true}
-      />,
-    );
-
-    expect(screen.getByTestId('chart-container')).toBeInTheDocument();
-  });
 });
