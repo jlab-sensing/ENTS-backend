@@ -235,18 +235,15 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
           setVwcChartData({ ...newVwcChartData });
           setTempChartData({ ...newTempChartData });
           setHasData(true);
-          setIsFrozen(false);
         }
       }
     } else if (stream && (!liveData || liveData.length === 0)) {
       // Check if this is due to streaming pause (frozen data)
       if (processedData && Object.keys(processedData.byCell || {}).length > 0) {
        // console.log('TEROS charts frozen - preserving existing data');
-        setIsFrozen(true);
         // Don't clear charts, keep existing data
       } else {
         //console.log('TEROS charts will be cleared by Dashboard timeout');
-        setIsFrozen(false);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

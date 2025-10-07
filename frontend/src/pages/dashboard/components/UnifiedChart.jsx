@@ -342,16 +342,13 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
 
         if (hasAnyData) {
           setSensorChartData({ ...newSensorChartData });
-          setIsFrozen(false);
         }
       }
     } else if (stream && (!liveData || liveData.length === 0)) {
       if (processedData && processedData.byType && processedData.byType[sensor_name]) {
         console.log(`${type} charts frozen - preserving existing data`);
-        setIsFrozen(true);
       } else {
         console.log(`${type} charts will be cleared by Dashboard timeout`);
-        setIsFrozen(false);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
