@@ -1,7 +1,7 @@
 import { Grid } from '@mui/material';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
-import { React, useEffect, useState, useMemo } from 'react';
+import { React, useEffect, useState } from 'react';
 import TempChart from '../../../charts/TempChart/TempChart';
 import VwcChart from '../../../charts/VwcChart/VwcChart';
 import { getTerosData } from '../../../services/teros';
@@ -14,7 +14,6 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
   const [vwcChartData, setVwcChartData] = useState(chartSettings);
   const [tempChartData, setTempChartData] = useState(chartSettings);
   const [hasData, setHasData] = useState(false);
-  const [isFrozen, setIsFrozen] = useState(false); // Track if charts are frozen
 
   // Access data for each cell and update the combined charts accordingly
 
@@ -139,14 +138,7 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
     setHasData(false);
   }
 
-  //** clearning chart data points and labels */
-  function clearChartDatasets(chartData) {
-    for (const dataset of chartData.datasets) {
-      dataset.data = [];
-    }
-    chartData.labels = [];
-    return chartData;
-  }
+  // Removed unused clearChartDatasets function
 
   useEffect(() => {
     if (stream && liveData && liveData.length > 0) {
@@ -257,6 +249,7 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
         setIsFrozen(false);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stream, liveData, cells, processedData]);
 
   // Handle historical data loading (non-streaming mode)

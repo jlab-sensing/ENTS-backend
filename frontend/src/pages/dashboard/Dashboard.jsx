@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Grid, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Divider, Grid, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { DateTime } from 'luxon';
 import { React, useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -34,19 +34,10 @@ function Dashboard() {
   
   // Background streaming data - always collecting in background
   const backgroundStreamDataRef = useRef([]);
-  const isBackgroundStreamingRef = useRef(false);
   
   // Timeout
-  const [lastDataReceived, setLastDataReceived] = useState(null);
   const timeoutIdRef = useRef(null);
   const clearTimeoutIdRef = useRef(null);
-  
-  // data processing
-  const processedDataRef = useRef({
-    power: { byCell: {}, allMeasurements: [] },
-    teros: { byCell: {}, allMeasurements: [] },
-    sensors: { byType: {}, allMeasurements: [] }
-  });
   
   const processingRef = useRef(false);
   
@@ -57,7 +48,6 @@ function Dashboard() {
     teros: { byCell: {}, allMeasurements: [] },
     sensors: { byType: {}, allMeasurements: [] }
   });
-  const lastStreamingDataRef = useRef([]);
   
   const [hourlyStartDate, setHourlyStartDate] = useState(DateTime.now().minus({ days: 14 }));
   const [hourlyEndDate, setHourlyEndDate] = useState(DateTime.now());
@@ -82,7 +72,7 @@ function Dashboard() {
 
     // Process measurements
     measurements.forEach(measurement => {
-      const { type, cellId, data, timestamp } = measurement;
+      const { type, cellId } = measurement;
       
       // Group by sensor type and cell
       if (type === 'power') {
@@ -196,9 +186,6 @@ function Dashboard() {
           return newData.slice(-100);
         });
 
-        // Update last data received timestamp
-        setLastDataReceived(new Date());
-
         // Clear existing timeouts
         if (timeoutIdRef.current) {
           clearTimeout(timeoutIdRef.current);
@@ -222,8 +209,6 @@ function Dashboard() {
           }];
           return newData.slice(-200);
         });
-        
-        setLastDataReceived(new Date());
       }
     } finally {
       processingRef.current = false;
@@ -251,8 +236,8 @@ function Dashboard() {
       processImmediateUpdate(data);
     });
 
-    socket.on('connect_error', (error) => {
-      // console.log('WebSocket connection error:', error);
+    socket.on('connect_error', () => {
+      // console.log('WebSocket connection error');
     });
 
     // Cleanup function to disconnect socket when component unmounts

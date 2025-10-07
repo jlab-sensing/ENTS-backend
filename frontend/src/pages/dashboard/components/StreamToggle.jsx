@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { ToggleButtonGroup, ToggleButton } from '@mui/material';
 
 const StreamToggle = ({ isStreaming, onToggle }) => {
@@ -62,6 +63,11 @@ const StreamToggle = ({ isStreaming, onToggle }) => {
       <ToggleButton value="stream">Live</ToggleButton>
     </ToggleButtonGroup>
   );
+};
+
+StreamToggle.propTypes = {
+  isStreaming: PropTypes.bool.isRequired,
+  onToggle: PropTypes.func.isRequired,
 };
 
 export default StreamToggle;

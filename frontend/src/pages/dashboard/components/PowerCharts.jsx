@@ -1,7 +1,7 @@
 import { Grid } from '@mui/material';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
-import { React, useEffect, useState, useMemo } from 'react';
+import { React, useEffect, useState } from 'react';
 import PwrChart from '../../../charts/PwrChart/PwrChart';
 import VChart from '../../../charts/VChart/VChart';
 import { getPowerData } from '../../../services/power';
@@ -17,7 +17,6 @@ function PowerCharts({ cells, startDate, endDate, stream, liveData, processedDat
   const [vChartData, setVChartData] = useState(chartSettings);
   const [pwrChartData, setPwrChartData] = useState(chartSettings);
   const [hasData, setHasData] = useState(false);
-  const [isFrozen, setIsFrozen] = useState(false); // Track if charts are frozen
   
   // Initialize the combined chart data with empty datasets
 
@@ -142,14 +141,7 @@ function PowerCharts({ cells, startDate, endDate, stream, liveData, processedDat
     setHasData(false);
   }
 
-  //** clearning chart data points and labels */
-  function clearChartDatasets(chartData) {
-    for (const dataset of chartData.datasets) {
-      dataset.data = [];
-    }
-    chartData.labels = [];
-    return chartData;
-  }
+  // Removed unused clearChartDatasets function
 
   // Process live WebSocket data when it changes - DIRECT PROCESSING FOR REAL-TIME
   useEffect(() => {
@@ -261,6 +253,7 @@ function PowerCharts({ cells, startDate, endDate, stream, liveData, processedDat
         setIsFrozen(false);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stream, liveData, cells, processedData]);
 
   // Handle historical data loading (non-streaming mode)

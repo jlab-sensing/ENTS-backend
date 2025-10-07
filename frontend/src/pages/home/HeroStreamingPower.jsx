@@ -342,7 +342,8 @@ export default function HeroStreamingPower({ height = 360, intervalMs = 2500 }) 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [intervalMs, nextPower]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [intervalMs]);
 
   // Stats for header chips
   const stats = useMemo(() => {

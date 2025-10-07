@@ -1,7 +1,7 @@
 import { Grid } from '@mui/material';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
-import { React, useEffect, useState, useRef, useMemo } from 'react';
+import { React, useEffect, useState, useRef } from 'react';
 import { getSensorData } from '../../../services/sensor';
 import UniversalChart from '../../../charts/UniversalChart';
 
@@ -71,7 +71,6 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
   };
   const [sensorChartData, setSensorChartData] = useState(chartSettings);
   const [isLoading, setIsLoading] = useState(false);
-  const [isFrozen, setIsFrozen] = useState(false); // Track if charts are frozen
   const debounceTimer = useRef(null);
 
   const config = CHART_CONFIGS[type];
@@ -161,6 +160,10 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
       });
   }
 
+  // Removed unused streamCharts function
+
+  /*
+  // Commented out unused streamSensorChartData-dependent code
   function streamCharts() {
     const newSensorChartData = {
       ...sensorChartData,
@@ -168,7 +171,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
       labels: [...sensorChartData.labels],
     };
 
-    streamSensorChartData().then((cellChartData) => {
+    // streamSensorChartData().then((cellChartData) => {
       let selectCounter = 0;
       let foundNewData = false;
       if (newSensorChartData.datasets.length) {
@@ -236,14 +239,9 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     };
     setSensorChartData(Object.assign({}, newSensorChartData));
   }
+  */
 
-  function clearChartDatasets(chartData) {
-    for (const dataset of chartData.datasets) {
-      dataset.data = [];
-    }
-    chartData.labels = [];
-    return chartData;
-  }
+  // Removed unused clearChartDatasets function
 
   useEffect(() => {
     if (stream && liveData && liveData.length > 0) {
@@ -356,7 +354,8 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
         setIsFrozen(false);
       }
     }
-  }, [stream, liveData, cells, processedData, type, sensor_name, measurements, units, axisIds, meas_colors]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stream, liveData, cells, processedData, type, sensor_name, measurements, units, axisIds]);
 
   useEffect(() => {
     if (debounceTimer.current) {
