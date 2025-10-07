@@ -812,4 +812,24 @@ describe('testing side button events', () => {
 
     expect(mockOnResampleChange).toHaveBeenCalledWith('day');
   });
+
+  it('should show all resample menu items', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ChartWrapper
+        id='vwc4'
+        data={data}
+        options={chartOptions}
+        stream={false}
+      />,
+    );
+
+    const downsampleBtnElement = await screen.findByLabelText(/Downsample/i);
+    await user.click(downsampleBtnElement);
+
+    expect(screen.getByText('None')).toBeInTheDocument();
+    expect(screen.getByText('Hourly')).toBeInTheDocument();
+    expect(screen.getByText('Daily')).toBeInTheDocument();
+  });
 });
