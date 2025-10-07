@@ -192,11 +192,11 @@ def process_measurement_dict(meas: dict):
                 "loggerId": meas.get("loggerId"),
                 "timestamp": meas.get("ts"),
                 "data": meas.get("data", {}),
-                "obj_count": len([obj for obj in obj_list if obj is not None])
+                "obj_count": len([obj for obj in obj_list if obj is not None]),
             }
             socketio.emit("measurement_received", measurement_data)
             # print(f"Emitted measurement data: {measurement_data}")
         except Exception as e:
             print(f"Error emitting WebSocket data: {e}")
- 
+
     return resp
