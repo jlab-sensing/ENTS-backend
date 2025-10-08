@@ -12,4 +12,3 @@ celery_app = handler.extensions["celery"]
 
 if __name__ == "__main__":
     api.socketio.run(handler, host="0.0.0.0", port=8000, debug=True)
-    # handler.run(host="0.0.0.0", port=8000, debug=True)

@@ -32,9 +32,6 @@ def process_measurement(data: bytes):
 
     # decode binary protobuf data
     meas = decode_measurement(data, raw=False)
-    # print("=======================")
-    # print(meas)
-    # print("=======================")
     return process_measurement_dict(meas)
 
 
@@ -169,23 +166,15 @@ def process_measurement_dict(meas: dict):
 
         obj_list.append(flow_obj)
 
-    # format response
     resp = Response()
     resp.content_type = "application/octet-stream"
-    # indicate an error with 501
     if None in obj_list:
         resp.status_code = 501
         resp.data = encode_response(False)
-    # indicate a success with 200
     else:
         resp.status_code = 200
         resp.data = encode_response(True)
-        # print("=======================")
-        # print(resp)
-        # print("=======================")
-        # Emit measurement data to frontend via WebSocket
         try:
-            # Convert obj_list to serializable format for transmission
             measurement_data = {
                 "type": meas.get("type", "unknown"),
                 "cellId": meas.get("cellId"),
@@ -195,7 +184,6 @@ def process_measurement_dict(meas: dict):
                 "obj_count": len([obj for obj in obj_list if obj is not None]),
             }
             socketio.emit("measurement_received", measurement_data)
-            # print(f"Emitted measurement data: {measurement_data}")
         except Exception as e:
             print(f"Error emitting WebSocket data: {e}")
 
