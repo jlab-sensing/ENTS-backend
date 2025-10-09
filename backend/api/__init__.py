@@ -77,16 +77,16 @@ def create_app(debug: bool = False) -> Flask:
     bcrypt.init_app(app)
     CORS(app, resources={r"/*": {"methods": "*"}})
     socketio.init_app(app)
-    
+
     # Register Socket.IO event handlers
-    @socketio.on('connect')
+    @socketio.on("connect")
     def handle_connect():
-        print('Client connected')
-    
-    @socketio.on('disconnect')
+        print("Client connected")
+
+    @socketio.on("disconnect")
     def handle_disconnect():
-        print('Client disconnected')
-    
+        print("Client disconnected")
+
     api = Api(app, prefix="/api")
     server_session.init_app(app)
 
