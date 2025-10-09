@@ -109,7 +109,6 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
   //** Modifies chart ref with new scales object */
   function setScales(scaleRef) {
     if (chartRef.current) {
-      console.log(chartRef.current);
       for (const { axis, axisMin, axisMax } of axesWithScaleKeys) {
         if (chartRef.current.scales[axis]) {
           chartRef.current.scales[axis].options.min = scaleRef[axisMin];
@@ -240,7 +239,6 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
   useEffect(() => {
     if (scaleRef != undefined) {
       setScales(scaleRef);
-      console.log('zoom');
     }
     return;
     // TODO: refactor for better state management, useCallback for setting scaleRef

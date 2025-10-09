@@ -36,18 +36,11 @@ function Dashboard() {
   const backgroundStreamDataRef = useRef([]);
   
   // Timeout
-  const timeoutIdRef = useRef(null);
   const clearTimeoutIdRef = useRef(null);
   
   const processingRef = useRef(false);
   
   // Streaming
-  const [isStreamingPaused, setIsStreamingPaused] = useState(false);
-  const frozenDataRef = useRef({
-    power: { byCell: {}, allMeasurements: [] },
-    teros: { byCell: {}, allMeasurements: [] },
-    sensors: { byType: {}, allMeasurements: [] }
-  });
   
   const [hourlyStartDate, setHourlyStartDate] = useState(DateTime.now().minus({ days: 14 }));
   const [hourlyEndDate, setHourlyEndDate] = useState(DateTime.now());
@@ -117,43 +110,23 @@ function Dashboard() {
 
   // Initialize timeouts when streaming starts
   const initializeStreamingTimeouts = useCallback(() => {
-    //console.log('Initializing streaming timeouts');
-    
     // Clear existing timeouts
-    if (timeoutIdRef.current) {
-      clearTimeout(timeoutIdRef.current);
-    }
     if (clearTimeoutIdRef.current) {
       clearTimeout(clearTimeoutIdRef.current);
     }
 
-    // Set timeout to clear charts after 5 minutes of no data
+    // Set timeout to clear charts after 30 minutes of no data
     const clearTimeoutId = setTimeout(() => {
-      console.log('No data received for 5 minutes - clearing charts');
       setLiveData([]);
       backgroundStreamDataRef.current = [];
       setPowerHasData(false);
       setTerosHasData(false);
-      setIsStreamingPaused(false);
-    }, 5 * 60 * 1000);
+    }, 30 * 60 * 1000);
     clearTimeoutIdRef.current = clearTimeoutId;
-
-    // Set timeout to pause streaming after 10 minutes of no data
-    const pauseTimeoutId = setTimeout(() => {
-      console.log('No data received for 10 minutes - pausing streaming');
-      setIsStreamingPaused(true);
-    }, 10 * 60 * 1000);
-    timeoutIdRef.current = pauseTimeoutId;
   }, []);
 
   // Memoized processed data
   const processedLiveData = useMemo(() => {
-    // If streaming is paused, return frozen data
-    if (stream && isStreamingPaused) {
-      console.log('Using frozen data while streaming is paused');
-      return frozenDataRef.current;
-    }
-    
     if (!liveData || liveData.length === 0) {
       return {
         power: { byCell: {}, allMeasurements: [] },
@@ -162,7 +135,7 @@ function Dashboard() {
       };
     }
     return processLiveData(liveData);
-  }, [liveData, processLiveData, stream, isStreamingPaused]);
+  }, [liveData, processLiveData]);
 
   // processing for WebSocket updates
   const processImmediateUpdate = useCallback((data) => {
@@ -176,8 +149,8 @@ function Dashboard() {
         { ...data, receivedAt: new Date().toISOString() }
       ].slice(-200);
 
-      // Update live data if streaming and not paused
-      if (stream && !isStreamingPaused) {
+      // Update live data if streaming
+      if (stream) {
         setLiveData(prevData => {
           const newData = [...prevData, {
             ...data,
@@ -186,67 +159,39 @@ function Dashboard() {
           return newData.slice(-100);
         });
 
-        // Clear existing timeouts
-        if (timeoutIdRef.current) {
-          clearTimeout(timeoutIdRef.current);
-        }
+        // Clear existing timeout
         if (clearTimeoutIdRef.current) {
           clearTimeout(clearTimeoutIdRef.current);
         }
 
-        // Reset timeouts when new data arrives
+        // Reset timeout when new data arrives
         initializeStreamingTimeouts();
-      } else if (stream && isStreamingPaused) {
-        // Resume streaming when new data arrives after pause
-        console.log('Resuming streaming after pause');
-        setIsStreamingPaused(false);
-        
-        // Process resume
-        setLiveData(prevData => {
-          const newData = [...prevData, {
-            ...data,
-            receivedAt: new Date().toISOString()
-          }];
-          return newData.slice(-200);
-        });
       }
     } finally {
       processingRef.current = false;
     }
-  }, [stream, isStreamingPaused, initializeStreamingTimeouts]);
+  }, [stream, initializeStreamingTimeouts]);
 
   // Socket.IO connection setup
   useEffect(() => {
-    // Get the backend URL
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+    // Get the backend URL from environment variable (S3 .env) or fallback to localhost for development
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
     const socket = io(backendUrl);
 
-    socket.on('connect', () => {
-      // console.log('Connected to WebSocket server');
-    });
+    socket.on('connect', () => {});
 
-    socket.on('disconnect', () => {
-      // console.log('Disconnected from WebSocket server');
-    });
+    socket.on('disconnect', () => {});
 
     socket.on('measurement_received', (data) => {
-      // console.log('Received measurement data:', data);
-
-      // Process
       processImmediateUpdate(data);
     });
 
-    socket.on('connect_error', () => {
-      // console.log('WebSocket connection error');
-    });
+    socket.on('connect_error', () => {});
 
     // Cleanup function to disconnect socket when component unmounts
     return () => {
       socket.disconnect();
-      // Clear timeouts on unmount
-      if (timeoutIdRef.current) {
-        clearTimeout(timeoutIdRef.current);
-      }
+      // Clear timeout on unmount
       if (clearTimeoutIdRef.current) {
         clearTimeout(clearTimeoutIdRef.current);
       }
@@ -261,9 +206,6 @@ function Dashboard() {
   //   showFallbackNotificationHandler,
   //   hideFallbackNotification,
   // } = useSmartDateRange();
-  // console.log("liveData", liveData);
-  // console.log("stream", stream);
-  // console.log("data", data);
   // Initialize state from URL parameters
   useEffect(() => {
     if (!cells.data) return;
@@ -373,10 +315,6 @@ function Dashboard() {
   const handleStreamToggle = (newStreamMode) => {
     setStream(newStreamMode);
     if (newStreamMode) {
-      //console.log('Switching to streaming mode with', backgroundStreamDataRef.current.length, 'background data points');
-      
-      setIsStreamingPaused(false);
-      
       setLiveData([...backgroundStreamDataRef.current]);
       
       // Initialize timeouts when streaming starts
@@ -386,12 +324,7 @@ function Dashboard() {
       setEndDate(hourlyEndDate);
     } else {
       setLiveData([]);
-      setIsStreamingPaused(false); // Reset pause state
       
-      if (timeoutIdRef.current) {
-        clearTimeout(timeoutIdRef.current);
-        timeoutIdRef.current = null;
-      }
       if (clearTimeoutIdRef.current) {
         clearTimeout(clearTimeoutIdRef.current);
         clearTimeoutIdRef.current = null;
@@ -489,10 +422,10 @@ function Dashboard() {
                           width: 8, 
                           height: 8, 
                           borderRadius: '50%',
-                          backgroundColor: isStreamingPaused ? 'warning.main' : 'success.main',
+                          backgroundColor: 'success.main',
                         }} />
                       <Typography variant="body2" color="text.secondary">
-                        {isStreamingPaused ? 'Paused' : 'Live'}
+                        Live
                         </Typography>
                     </Box>
                   )}
@@ -537,15 +470,15 @@ function Dashboard() {
                     />
                 ) : (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box sx={{ 
-                        width: 8, 
-                        height: 8, 
-                        borderRadius: '50%',
-                        backgroundColor: isStreamingPaused ? 'warning.main' : 'success.main',
-                      }} />
-                    <Typography variant="body2" color="text.secondary">
-                      {isStreamingPaused ? 'Paused' : 'Live'}
-                      </Typography>
+                    <Box sx={{ 
+                      width: 8, 
+                      height: 8, 
+                      borderRadius: '50%',
+                      backgroundColor: 'success.main',
+                    }} />
+                  <Typography variant="body2" color="text.secondary">
+                    Live
+                    </Typography>
                   </Box>
                 )}
               </Box>

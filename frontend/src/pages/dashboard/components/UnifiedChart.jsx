@@ -247,8 +247,6 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
 
   useEffect(() => {
     if (stream && liveData && liveData.length > 0) {
-      console.log(`Processing ${type} data directly for real-time rendering:`, liveData.length, 'measurements');
-      
       const sensorMeasurements = liveData.filter(measurement => {
         const expectedType = sensor_name;
         return measurement.type === expectedType && 
@@ -348,9 +346,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
       }
     } else if (stream && (!liveData || liveData.length === 0)) {
       if (processedData && processedData.byType && processedData.byType[sensor_name]) {
-        console.log(`${type} charts frozen - preserving existing data`);
       } else {
-        console.log(`${type} charts will be cleared by Dashboard timeout`);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -362,7 +358,6 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     }
     debounceTimer.current = setTimeout(() => {
       if (Array.isArray(cells) && cells.length && !stream) {
-        console.log(`Loading historical ${type} data`);
         updateCharts();
       } else if (!stream) {
         clearCharts();

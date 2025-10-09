@@ -142,8 +142,6 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
 
   useEffect(() => {
     if (stream && liveData && liveData.length > 0) {
-      console.log('Processing TEROS data directly for real-time rendering:', liveData.length, 'measurements');
-      
       const terosMeasurements = liveData.filter(measurement => 
         measurement.type === 'teros12' && 
         cells.some(cell => cell.id === measurement.cellId)
@@ -240,10 +238,7 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
     } else if (stream && (!liveData || liveData.length === 0)) {
       // Check if this is due to streaming pause (frozen data)
       if (processedData && Object.keys(processedData.byCell || {}).length > 0) {
-       // console.log('TEROS charts frozen - preserving existing data');
-        // Don't clear charts, keep existing data
       } else {
-        //console.log('TEROS charts will be cleared by Dashboard timeout');
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -252,20 +247,12 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
   // Handle historical data loading (non-streaming mode)
   useEffect(() => {
     if (Array.isArray(cells) && cells.length && !stream) {
-      console.log('Loading historical TEROS data');
       updateCharts();
     } else if (!stream) {
       clearCharts();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cells, stream, resample, startDate, endDate]); // Added back startDate, endDate dependencies
-
-  // useEffect(() => {
-  //   if (stream) {
-  //     console.log('Streaming started - clearing historical TEROS data');
-  //     clearCharts();
-  //   }
-  // }, [stream]);
 
   const handleResampleChange = (newResample) => {
     setResample(newResample);

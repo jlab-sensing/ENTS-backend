@@ -146,8 +146,6 @@ function PowerCharts({ cells, startDate, endDate, stream, liveData, processedDat
   // Process live WebSocket data when it changes - DIRECT PROCESSING FOR REAL-TIME
   useEffect(() => {
     if (stream && liveData && liveData.length > 0) {
-      //console.log('Processing power data :', liveData.length, 'measurements');
-      
       const powerMeasurements = liveData.filter(measurement => 
         measurement.type === 'power' && 
         cells.some(cell => cell.id === measurement.cellId)
@@ -245,9 +243,7 @@ function PowerCharts({ cells, startDate, endDate, stream, liveData, processedDat
     } else if (stream && (!liveData || liveData.length === 0)) {
       // Check if this is due to streaming pause (frozen data)
       if (processedData && Object.keys(processedData.byCell || {}).length > 0) {
-        console.log('Power charts frozen - preserving existing data');
       } else {
-        console.log('Power charts will be cleared by Dashboard timeout');
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -256,7 +252,6 @@ function PowerCharts({ cells, startDate, endDate, stream, liveData, processedDat
   // Handle historical data loading (non-streaming mode)
   useEffect(() => {
     if (Array.isArray(cells) && cells.length && !stream) {
-      //console.log('Loading historical power data');
       updateCharts();
     } else if (!stream) {
       clearCharts();
@@ -264,13 +259,6 @@ function PowerCharts({ cells, startDate, endDate, stream, liveData, processedDat
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cells, stream, resample, startDate, endDate]); // Added back startDate, endDate dependencies
 
-  // Clear historical data when streaming starts - REMOVED to prevent delay
-  // useEffect(() => {
-  //   if (stream) {
-  //     console.log('Streaming started - clearing historical data');
-  //     clearCharts();
-  //   }
-  // }, [stream]);
 
   const handleResampleChange = (newResample) => {
     setResample(newResample);
