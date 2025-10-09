@@ -344,10 +344,6 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
           setSensorChartData({ ...newSensorChartData });
         }
       }
-    } else if (stream && (!liveData || liveData.length === 0)) {
-      if (processedData && processedData.byType && processedData.byType[sensor_name]) {
-      } else {
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stream, liveData, cells, processedData, type, sensor_name, measurements, units, axisIds]);

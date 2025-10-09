@@ -240,11 +240,6 @@ function PowerCharts({ cells, startDate, endDate, stream, liveData, processedDat
           setHasData(true);
         }
       }
-    } else if (stream && (!liveData || liveData.length === 0)) {
-      // Check if this is due to streaming pause (frozen data)
-      if (processedData && Object.keys(processedData.byCell || {}).length > 0) {
-      } else {
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stream, liveData, cells, processedData]);
