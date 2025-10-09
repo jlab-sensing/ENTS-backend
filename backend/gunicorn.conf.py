@@ -13,11 +13,12 @@ worker_connections = 1000
 
 # Socket.IO specific configuration
 # Use eventlet for better Socket.IO support in production
-try:
-    import eventlet
+import importlib.util
+
+if importlib.util.find_spec("eventlet") is not None:
     worker_class = "eventlet"
     worker_connections = 1000
-except ImportError:
+else:
     # Fallback to gevent if eventlet is not available
     worker_class = "gevent"
     worker_connections = 1000

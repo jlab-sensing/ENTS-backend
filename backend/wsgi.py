@@ -5,7 +5,6 @@ Deploys on gunicorn with Socket.IO support
 """
 
 import api
-import os
 
 # Create the Flask app
 app = api.create_app()
