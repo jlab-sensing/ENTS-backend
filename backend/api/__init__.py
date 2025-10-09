@@ -28,12 +28,12 @@ server_session = Session()
 oauth = OAuth()
 # Allow websocket transport and disable ping timeout for streaming
 socketio = SocketIO(
-    async_mode='eventlet', 
+    async_mode="eventlet",
     cors_allowed_origins="*",
     ping_timeout=60,
     ping_interval=25,
     logger=True,
-    engineio_logger=True
+    engineio_logger=True,
 )
 
 
