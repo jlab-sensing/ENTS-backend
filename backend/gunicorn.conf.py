@@ -4,6 +4,7 @@ try:
     gevent.monkey.patch_all()
 except ImportError:
     pass
+import importlib.util
 import multiprocessing
 
 bind = "0.0.0.0:8000"
@@ -13,8 +14,6 @@ worker_connections = 1000
 
 # Socket.IO specific configuration
 # Use eventlet for better Socket.IO support in production
-import importlib.util
-
 if importlib.util.find_spec("eventlet") is not None:
     worker_class = "eventlet"
     worker_connections = 1000
