@@ -175,7 +175,7 @@ function Dashboard() {
   // Socket.IO connection setup
   useEffect(() => {
     // Get the backend URL from environment variable (S3 .env) or fallback to localhost for development
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://dirtviz.jlab.ucsc.edu';
     const socket = io(backendUrl, {
       transports: ['websocket'], // Only WebSocket transport
       upgrade: false, // No transport upgrades
