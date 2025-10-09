@@ -26,7 +26,15 @@ migrate = Migrate()
 bcrypt = Bcrypt()
 server_session = Session()
 oauth = OAuth()
-socketio = SocketIO()
+# Allow websocket transport and disable ping timeout for streaming
+socketio = SocketIO(
+    async_mode="eventlet",
+    cors_allowed_origins="*",
+    ping_timeout=60,
+    ping_interval=25,
+    logger=True,
+    engineio_logger=True,
+)
 
 
 def celery_init_app(app: Flask) -> Celery:
@@ -68,7 +76,17 @@ def create_app(debug: bool = False) -> Flask:
     oauth.init_app(app)
     bcrypt.init_app(app)
     CORS(app, resources={r"/*": {"methods": "*"}})
-    socketio.init_app(app, cors_allowed_origins="*")
+    socketio.init_app(app)
+
+    # Register Socket.IO event handlers
+    @socketio.on("connect")
+    def handle_connect():
+        print("Client connected")
+
+    @socketio.on("disconnect")
+    def handle_disconnect():
+        print("Client disconnected")
+
     api = Api(app, prefix="/api")
     server_session.init_app(app)
 

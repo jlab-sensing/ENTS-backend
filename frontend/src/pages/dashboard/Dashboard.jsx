@@ -175,8 +175,13 @@ function Dashboard() {
   // Socket.IO connection setup
   useEffect(() => {
     // Get the backend URL from environment variable (S3 .env) or fallback to localhost for development
-    const backendUrl = import.meta.env.VITE_BACKEND_URL;
-    const socket = io(backendUrl);
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+    const socket = io(backendUrl, {
+      transports: ['websocket'], // Only WebSocket transport
+      upgrade: false, // No transport upgrades
+      timeout: 20000, // Connection timeout
+      forceNew: true // Force new connection
+    });
 
     socket.on('connect', () => {});
 

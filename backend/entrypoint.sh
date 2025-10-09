@@ -6,10 +6,11 @@ do
     case "$FLAG" in
         d)
             echo "Running Flask in debug mode" 
-            flask --app wsgi --debug run -h 0.0.0.0 -p 8000;;
+            gunicorn -k eventlet -w 1 -b 0.0.0.0:8000 wsgi:handler;; 
+            # Gunicorn with -k eventlet makes an async event loop supporting WebSockets.
         p) 
             echo "Running Gunicorn"
-            gunicorn -c gunicorn.conf.py wsgi:handler;;
+            gunicorn -k eventlet -w 1 -b 0.0.0.0:8000 wsgi:handler;;
         w) 
             case "$OPTARG" in
                 dev)

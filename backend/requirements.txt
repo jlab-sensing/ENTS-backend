@@ -23,4 +23,5 @@ Requests
 google-auth
 ents
 gevent
+eventlet
 celery[redis,gevent,sqlalchemy,sqs]
