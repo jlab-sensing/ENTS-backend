@@ -24,6 +24,10 @@ def test_process_measurement_dict_power_with_websocket(init_database):
 
         assert response.status_code == 200
         assert mock_socketio.emit.called
+        # Verify room-based emission
+        call_args = mock_socketio.emit.call_args
+        assert call_args[0][0] == "measurement_received"  # Event name
+        assert call_args[1]["room"] == f"cell_{cell.id}"  # Room parameter
 
 
 def test_process_measurement_dict_websocket_exception(init_database):
