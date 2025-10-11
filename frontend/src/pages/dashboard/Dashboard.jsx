@@ -207,7 +207,7 @@ function Dashboard() {
         clearTimeout(clearTimeoutIdRef.current);
       }
     };
-  }, [stream, processImmediateUpdate]);
+  }, [stream, processImmediateUpdate, selectedCells]);
 
   useEffect(() => {
     const socket = socketRef.current;
