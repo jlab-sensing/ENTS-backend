@@ -39,6 +39,7 @@ function Dashboard() {
   const clearTimeoutIdRef = useRef(null);
   
   const processingRef = useRef(false);
+  const socketRef = useRef(null);
   
   // Streaming
   
@@ -172,36 +173,51 @@ function Dashboard() {
     }
   }, [stream, initializeStreamingTimeouts]);
 
-  // Socket.IO connection setup
   useEffect(() => {
-    // Get the backend URL from environment variable (S3 .env) or fallback to localhost for development
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://dirtviz.jlab.ucsc.edu';
+    // Auto-detect local development: uses localhost if running on localhost, otherwise production
+    const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const backendUrl = isLocalDev ? 'http://localhost:8000' : 'https://dirtviz.jlab.ucsc.edu';
+    
     const socket = io(backendUrl, {
-      transports: ['websocket'], // Only WebSocket transport
-      upgrade: false, // No transport upgrades
-      timeout: 20000, // Connection timeout
-      forceNew: true // Force new connection
+      transports: ['websocket'],
+      upgrade: false,
+      timeout: 20000,
+      forceNew: true
     });
 
-    socket.on('connect', () => {});
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      if (selectedCells.length > 0) {
+        const cellIds = selectedCells.map(cell => cell.id);
+        socket.emit('subscribe_cells', { cellIds });
+      }
+    });
 
     socket.on('disconnect', () => {});
-
     socket.on('measurement_received', (data) => {
       processImmediateUpdate(data);
     });
-
     socket.on('connect_error', () => {});
 
-    // Cleanup function to disconnect socket when component unmounts
     return () => {
       socket.disconnect();
-      // Clear timeout on unmount
+      socketRef.current = null;
       if (clearTimeoutIdRef.current) {
         clearTimeout(clearTimeoutIdRef.current);
       }
     };
-  }, [stream, processImmediateUpdate]);
+  }, [stream, processImmediateUpdate, selectedCells]);
+
+  useEffect(() => {
+    const socket = socketRef.current;
+    if (!socket || !socket.connected) return;
+
+    if (selectedCells.length > 0) {
+      const cellIds = selectedCells.map(cell => cell.id);
+      socket.emit('subscribe_cells', { cellIds });
+    }
+  }, [selectedCells]);
 
   // Smart date range functionality
   // const {

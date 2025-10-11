@@ -78,7 +78,6 @@ def create_app(debug: bool = False) -> Flask:
     CORS(app, resources={r"/*": {"methods": "*"}})
     socketio.init_app(app)
 
-    # Register Socket.IO event handlers
     @socketio.on("connect")
     def handle_connect():
         print("Client connected")
@@ -86,6 +85,22 @@ def create_app(debug: bool = False) -> Flask:
     @socketio.on("disconnect")
     def handle_disconnect():
         print("Client disconnected")
+
+    @socketio.on("subscribe_cells")
+    def handle_subscribe_cells(data):
+        from flask_socketio import join_room
+
+        cell_ids = data.get("cellIds", [])
+        for cell_id in cell_ids:
+            join_room(f"cell_{cell_id}")
+
+    @socketio.on("unsubscribe_cells")
+    def handle_unsubscribe_cells(data):
+        from flask_socketio import leave_room
+
+        cell_ids = data.get("cellIds", [])
+        for cell_id in cell_ids:
+            leave_room(f"cell_{cell_id}")
 
     api = Api(app, prefix="/api")
     server_session.init_app(app)

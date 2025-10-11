@@ -174,17 +174,22 @@ def process_measurement_dict(meas: dict):
     else:
         resp.status_code = 200
         resp.data = encode_response(True)
-        try:
-            measurement_data = {
-                "type": meas.get("type", "unknown"),
-                "cellId": meas.get("cellId"),
-                "loggerId": meas.get("loggerId"),
-                "timestamp": meas.get("ts"),
-                "data": meas.get("data", {}),
-                "obj_count": len([obj for obj in obj_list if obj is not None]),
-            }
-            socketio.emit("measurement_received", measurement_data)
-        except Exception as e:
-            print(f"Error emitting WebSocket data: {e}")
+
+        cell_id = meas.get("cellId")
+        if cell_id:
+            try:
+                measurement_data = {
+                    "type": meas.get("type", "unknown"),
+                    "cellId": cell_id,
+                    "loggerId": meas.get("loggerId"),
+                    "timestamp": meas.get("ts"),
+                    "data": meas.get("data", {}),
+                    "obj_count": len([obj for obj in obj_list if obj is not None]),
+                }
+                socketio.emit(
+                    "measurement_received", measurement_data, room=f"cell_{cell_id}"
+                )
+            except Exception as e:
+                print(f"Error emitting WebSocket data: {e}")
 
     return resp
