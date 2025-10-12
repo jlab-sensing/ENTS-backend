@@ -66,9 +66,9 @@ def test_socketio_connection_no_debug_logging(capsys):
         },
     ):
         from api import create_app
-        
+
         create_app()
-        
+
         captured = capsys.readouterr()
         assert "[socketio]" not in captured.out.lower()
 

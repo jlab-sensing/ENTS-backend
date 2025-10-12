@@ -190,9 +190,9 @@ def process_measurement_dict(meas: dict):
                     "obj_count": len([obj for obj in obj_list if obj is not None]),
                 }
                 room_name = f"cell_{cell_id}"
-                
+
                 socketio.emit("measurement_received", measurement_data, room=room_name)
-                
+
                 if DEBUG_SOCKETIO:
                     has_subscribers = socketio.server.manager.rooms.get("/", {}).get(
                         room_name
