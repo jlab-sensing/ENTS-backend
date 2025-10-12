@@ -14,7 +14,6 @@ from ..models.teros_data import TEROSData
 from ..models.sensor import Sensor
 from .. import socketio
 
-# Environment variable to control debug logging (reduces CloudWatch costs)
 DEBUG_SOCKETIO = os.getenv("DEBUG_SOCKETIO", "False").lower() == "true"
 
 
@@ -191,11 +190,9 @@ def process_measurement_dict(meas: dict):
                     "obj_count": len([obj for obj in obj_list if obj is not None]),
                 }
                 room_name = f"cell_{cell_id}"
-
-                # Emit to room (zero cost if empty, message dropped silently)
+                
                 socketio.emit("measurement_received", measurement_data, room=room_name)
-
-                # Only log in debug mode to reduce CloudWatch costs
+                
                 if DEBUG_SOCKETIO:
                     has_subscribers = socketio.server.manager.rooms.get("/", {}).get(
                         room_name
@@ -204,7 +201,6 @@ def process_measurement_dict(meas: dict):
                         count = len(has_subscribers)
                         print(f"[socketio] emitted to {room_name}: {count} subscribers")
             except Exception as e:
-                # Always log errors
                 print(f"[socketio] error emitting measurement: {e}")
 
     return resp

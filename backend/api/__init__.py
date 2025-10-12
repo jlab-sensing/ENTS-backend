@@ -26,8 +26,6 @@ migrate = Migrate()
 bcrypt = Bcrypt()
 server_session = Session()
 oauth = OAuth()
-# Allow websocket transport and disable ping timeout for streaming
-# Only enable verbose logging in development
 socketio = SocketIO(
     async_mode="eventlet",
     cors_allowed_origins="*",
@@ -79,7 +77,6 @@ def create_app(debug: bool = False) -> Flask:
     CORS(app, resources={r"/*": {"methods": "*"}})
     socketio.init_app(app)
 
-    # Environment variable to control Socket.IO debug logging
     DEBUG_SOCKETIO = os.getenv("DEBUG_SOCKETIO", "False").lower() == "true"
 
     @socketio.on("connect")
