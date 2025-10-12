@@ -201,9 +201,8 @@ def process_measurement_dict(meas: dict):
                         room_name
                     )
                     if has_subscribers:
-                        print(
-                            f"[socketio] emitted to {room_name}: {len(has_subscribers)} subscribers"
-                        )
+                        count = len(has_subscribers)
+                        print(f"[socketio] emitted to {room_name}: {count} subscribers")
             except Exception as e:
                 # Always log errors
                 print(f"[socketio] error emitting measurement: {e}")

@@ -54,8 +54,6 @@ def test_process_measurement_dict_websocket_exception(init_database):
 def test_debug_socketio_flag_default():
     """Test DEBUG_SOCKETIO defaults to False"""
     with patch.dict(os.environ, {}, clear=True):
-        import api.resources.util as util
-
         result = os.getenv("DEBUG_SOCKETIO", "False").lower() == "true"
         assert result is False
 
