@@ -6,6 +6,12 @@ from .user import User
 https://stackoverflow.com/questions/5756559/how-to-build-many-to-many-relations-using-sqlalchemy-a-good-example"""
 
 
+class Cell_User(db.Model):
+    __tablename__ = "cell_tag"
+    cell_id = db.Column(db.Integer, db.ForeignKey("cell.id"), primary_key=True)
+    user_d = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+
+
 class Cell_Tag(db.Model):
     __tablename__ = "cell_tag"
     cell_id = db.Column(db.Integer, db.ForeignKey("cell.id"), primary_key=True)
@@ -23,7 +29,9 @@ class Cell(db.Model):
     archive = db.Column(db.Boolean(), default=False, nullable=False)
     user_id = db.Column(db.Uuid(), db.ForeignKey("user.id"))
 
-    user = db.relationship("User", backref="cells")
+    user = db.relationship(
+        "User", secondary=Cell_User.__table__, back_populates="cells"
+    )
 
     tags = db.relationship("Tag", secondary=Cell_Tag.__table__, back_populates="cells")
 
