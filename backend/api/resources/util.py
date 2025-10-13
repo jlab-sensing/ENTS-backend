@@ -3,6 +3,7 @@
 author: John Madden <jmadden173@pm.me>
 """
 
+import os
 from datetime import datetime
 
 from flask import Response
@@ -12,6 +13,8 @@ from ..models.power_data import PowerData
 from ..models.teros_data import TEROSData
 from ..models.sensor import Sensor
 from .. import socketio
+
+DEBUG_SOCKETIO = os.getenv("DEBUG_SOCKETIO", "False").lower() == "true"
 
 
 def process_measurement(data: bytes):
@@ -186,10 +189,18 @@ def process_measurement_dict(meas: dict):
                     "data": meas.get("data", {}),
                     "obj_count": len([obj for obj in obj_list if obj is not None]),
                 }
-                socketio.emit(
-                    "measurement_received", measurement_data, room=f"cell_{cell_id}"
-                )
+                room_name = f"cell_{cell_id}"
+
+                socketio.emit("measurement_received", measurement_data, room=room_name)
+
+                if DEBUG_SOCKETIO:
+                    has_subscribers = socketio.server.manager.rooms.get("/", {}).get(
+                        room_name
+                    )
+                    if has_subscribers:
+                        count = len(has_subscribers)
+                        print(f"[socketio] emitted to {room_name}: {count} subscribers")
             except Exception as e:
-                print(f"Error emitting WebSocket data: {e}")
+                print(f"[socketio] error emitting measurement: {e}")
 
     return resp
