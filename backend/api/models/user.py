@@ -4,6 +4,12 @@ from .oauth_token import OAuthToken
 import uuid
 
 
+class Cell_User(db.Model):
+    __tablename__ = "cell_tag"
+    cell_id = db.Column(db.Integer, db.ForeignKey("cell.id"), primary_key=True)
+    user_d = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+
+
 class User(db.Model):
     __tablename__ = "user"
 
