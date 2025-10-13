@@ -26,13 +26,14 @@ migrate = Migrate()
 bcrypt = Bcrypt()
 server_session = Session()
 oauth = OAuth()
+# Allow websocket transport and disable ping timeout for streaming
 socketio = SocketIO(
     async_mode="eventlet",
     cors_allowed_origins="*",
     ping_timeout=60,
     ping_interval=25,
-    logger=os.getenv("SOCKETIO_LOGGER", "False").lower() == "true",
-    engineio_logger=os.getenv("SOCKETIO_LOGGER", "False").lower() == "true",
+    logger=True,
+    engineio_logger=True,
 )
 
 
@@ -77,31 +78,19 @@ def create_app(debug: bool = False) -> Flask:
     CORS(app, resources={r"/*": {"methods": "*"}})
     socketio.init_app(app)
 
-    DEBUG_SOCKETIO = os.getenv("DEBUG_SOCKETIO", "False").lower() == "true"
-
     @socketio.on("connect")
     def handle_connect():
-        if DEBUG_SOCKETIO:
-            from flask import request
-
-            print(f"[socketio] client connected: {request.sid}")
+        print("Client connected")
 
     @socketio.on("disconnect")
     def handle_disconnect():
-        if DEBUG_SOCKETIO:
-            from flask import request
-
-            print(f"[socketio] client disconnected: {request.sid}")
+        print("Client disconnected")
 
     @socketio.on("subscribe_cells")
     def handle_subscribe_cells(data):
         from flask_socketio import join_room
 
         cell_ids = data.get("cellIds", [])
-        if DEBUG_SOCKETIO:
-            from flask import request
-
-            print(f"[socketio] {request.sid} subscribed to {len(cell_ids)} cells")
         for cell_id in cell_ids:
             join_room(f"cell_{cell_id}")
 
@@ -110,10 +99,6 @@ def create_app(debug: bool = False) -> Flask:
         from flask_socketio import leave_room
 
         cell_ids = data.get("cellIds", [])
-        if DEBUG_SOCKETIO:
-            from flask import request
-
-            print(f"[socketio] {request.sid} unsubscribed from {len(cell_ids)} cells")
         for cell_id in cell_ids:
             leave_room(f"cell_{cell_id}")
 
