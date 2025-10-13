@@ -18,7 +18,6 @@ from celery import Celery, Task
 from datetime import timedelta
 from .config import DevelopmentConfig, ProductionConfig, TestingConfig
 from .conn import dburl
-from flask_socketio import SocketIO
 
 db = SQLAlchemy()
 ma = Marshmallow()
@@ -26,15 +25,6 @@ migrate = Migrate()
 bcrypt = Bcrypt()
 server_session = Session()
 oauth = OAuth()
-# Allow websocket transport and disable ping timeout for streaming
-socketio = SocketIO(
-    async_mode="eventlet",
-    cors_allowed_origins="*",
-    ping_timeout=60,
-    ping_interval=25,
-    logger=True,
-    engineio_logger=True,
-)
 
 
 def celery_init_app(app: Flask) -> Celery:
@@ -76,32 +66,6 @@ def create_app(debug: bool = False) -> Flask:
     oauth.init_app(app)
     bcrypt.init_app(app)
     CORS(app, resources={r"/*": {"methods": "*"}})
-    socketio.init_app(app)
-
-    @socketio.on("connect")
-    def handle_connect():
-        print("Client connected")
-
-    @socketio.on("disconnect")
-    def handle_disconnect():
-        print("Client disconnected")
-
-    @socketio.on("subscribe_cells")
-    def handle_subscribe_cells(data):
-        from flask_socketio import join_room
-
-        cell_ids = data.get("cellIds", [])
-        for cell_id in cell_ids:
-            join_room(f"cell_{cell_id}")
-
-    @socketio.on("unsubscribe_cells")
-    def handle_unsubscribe_cells(data):
-        from flask_socketio import leave_room
-
-        cell_ids = data.get("cellIds", [])
-        for cell_id in cell_ids:
-            leave_room(f"cell_{cell_id}")
-
     api = Api(app, prefix="/api")
     server_session.init_app(app)
 

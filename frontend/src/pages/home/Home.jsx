@@ -8,13 +8,15 @@ function Home() {
       disableGutters={true}
       maxWidth={false}
       sx={{
+        height: '100vh',
         width: '100vw',
-        overflowX: 'hidden',
-        p: 0,
+        overflowY: 'auto',
+        overscrollBehaviorY: 'contain',
+        scrollSnapType: 'y mandatory',
       }}
     >
+      <About />
       <Intro />
-      <About /> 
     </Container>
   );
 }
