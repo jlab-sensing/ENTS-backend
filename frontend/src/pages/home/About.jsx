@@ -1,11 +1,14 @@
 import { React } from 'react';
+import Nav from '../../components/Nav';
 import { Box, Button, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import chart from '../../assets/chart.svg';
 import { useNavigate } from 'react-router-dom';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import useAuth from '../../auth/hooks/useAuth';
 
 function About() {
+  const { user, setUser, loggedIn, setLoggedIn } = useAuth();
   const navigate = useNavigate();
   return (
     <Box
@@ -13,11 +16,14 @@ function About() {
         height: '100vh',
         width: '100vw',
         position: 'relative',
-        display: 'none',
+        scrollSnapAlign: 'center',
+        scrollSnapStop: 'always',
+        display: 'flex',
         flexDirection: 'column',
         backgroundColor: '#DAD7CD',
       }}
     >
+      <Nav user={user} setUser={setUser} loggedIn={loggedIn} setLoggedIn={setLoggedIn} />
       <Box
         sx={{
           display: 'flex',

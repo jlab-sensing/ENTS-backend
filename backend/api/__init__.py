@@ -18,7 +18,6 @@ from celery import Celery, Task
 from datetime import timedelta
 from .config import DevelopmentConfig, ProductionConfig, TestingConfig
 from .conn import dburl
-from flask_socketio import SocketIO
 
 db = SQLAlchemy()
 ma = Marshmallow()
@@ -26,14 +25,6 @@ migrate = Migrate()
 bcrypt = Bcrypt()
 server_session = Session()
 oauth = OAuth()
-socketio = SocketIO(
-    async_mode="eventlet",
-    cors_allowed_origins="*",
-    ping_timeout=60,
-    ping_interval=25,
-    logger=os.getenv("SOCKETIO_LOGGER", "False").lower() == "true",
-    engineio_logger=os.getenv("SOCKETIO_LOGGER", "False").lower() == "true",
-)
 
 
 def celery_init_app(app: Flask) -> Celery:
@@ -75,48 +66,6 @@ def create_app(debug: bool = False) -> Flask:
     oauth.init_app(app)
     bcrypt.init_app(app)
     CORS(app, resources={r"/*": {"methods": "*"}})
-    socketio.init_app(app)
-
-    DEBUG_SOCKETIO = os.getenv("DEBUG_SOCKETIO", "False").lower() == "true"
-
-    @socketio.on("connect")
-    def handle_connect():
-        if DEBUG_SOCKETIO:
-            from flask import request
-
-            print(f"[socketio] client connected: {request.sid}")
-
-    @socketio.on("disconnect")
-    def handle_disconnect():
-        if DEBUG_SOCKETIO:
-            from flask import request
-
-            print(f"[socketio] client disconnected: {request.sid}")
-
-    @socketio.on("subscribe_cells")
-    def handle_subscribe_cells(data):
-        from flask_socketio import join_room
-
-        cell_ids = data.get("cellIds", [])
-        if DEBUG_SOCKETIO:
-            from flask import request
-
-            print(f"[socketio] {request.sid} subscribed to {len(cell_ids)} cells")
-        for cell_id in cell_ids:
-            join_room(f"cell_{cell_id}")
-
-    @socketio.on("unsubscribe_cells")
-    def handle_unsubscribe_cells(data):
-        from flask_socketio import leave_room
-
-        cell_ids = data.get("cellIds", [])
-        if DEBUG_SOCKETIO:
-            from flask import request
-
-            print(f"[socketio] {request.sid} unsubscribed from {len(cell_ids)} cells")
-        for cell_id in cell_ids:
-            leave_room(f"cell_{cell_id}")
-
     api = Api(app, prefix="/api")
     server_session.init_app(app)
 

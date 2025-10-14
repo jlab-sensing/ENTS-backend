@@ -2,7 +2,8 @@ import { Grid } from '@mui/material';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import { React, useEffect, useState, useRef } from 'react';
-import { getSensorData } from '../../../services/sensor';
+import useInterval from '../../../hooks/useInterval';
+import { getSensorData, streamSensorData } from '../../../services/sensor';
 import UniversalChart from '../../../charts/UniversalChart';
 
 const CHART_CONFIGS = {
@@ -64,7 +65,7 @@ const CHART_CONFIGS = {
   },
 };
 
-function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, processedData }) {
+function UnifiedChart({ type, cells, startDate, endDate, stream }) {
   const chartSettings = {
     label: [],
     datasets: [],
@@ -89,6 +90,8 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     '#E91E63',
   ];
 
+  const interval = 1000;
+
   async function getCellChartData() {
     const data = {};
     // Always fetch data for all selected cells when cells change
@@ -100,7 +103,41 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
       for (const meas of measurements) {
         data[id] = {
           ...data[id],
-          [meas]: await getSensorData(sensor_name, id, meas, startDate.toHTTP(), endDate.toHTTP()),
+          [meas]: await (stream
+            ? streamSensorData(
+                sensor_name,
+                id,
+                meas,
+                DateTime.now().minus({ second: 20 }).toHTTP(),
+                DateTime.now().toHTTP(),
+                true,
+              )
+            : getSensorData(sensor_name, id, meas, startDate.toHTTP(), endDate.toHTTP())),
+        };
+      }
+    }
+    return data;
+  }
+
+  async function streamSensorChartData() {
+    const data = {};
+    for (const { id, name } of cells) {
+      data[id] = {
+        name: name,
+      };
+      for (const meas of measurements) {
+        data[id] = {
+          ...data[id],
+          [meas]: await streamSensorData(
+            sensor_name,
+            id,
+            meas,
+            DateTime.now()
+              .minus({ millisecond: interval + 29000 })
+              .toHTTP(),
+            DateTime.now().toHTTP(),
+            true,
+          ),
         };
       }
     }
@@ -160,10 +197,6 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
       });
   }
 
-  // Removed unused streamCharts function
-
-  /*
-  // Commented out unused streamSensorChartData-dependent code
   function streamCharts() {
     const newSensorChartData = {
       ...sensorChartData,
@@ -171,7 +204,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
       labels: [...sensorChartData.labels],
     };
 
-    // streamSensorChartData().then((cellChartData) => {
+    streamSensorChartData().then((cellChartData) => {
       let selectCounter = 0;
       let foundNewData = false;
       if (newSensorChartData.datasets.length) {
@@ -231,11 +264,6 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     });
   }
 
-  }
-  */
-
-  // Removed unused clearChartDatasets function
-
   function clearCharts() {
     const newSensorChartData = {
       ...sensorChartData,
@@ -245,108 +273,20 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     setSensorChartData(Object.assign({}, newSensorChartData));
   }
 
-  useEffect(() => {
-    if (stream && liveData && liveData.length > 0) {
-      const sensorMeasurements = liveData.filter(measurement => {
-        const expectedType = sensor_name;
-        return measurement.type === expectedType && 
-               cells.some(cell => cell.id === measurement.cellId);
-      });
-
-      if (sensorMeasurements.length > 0) {
-        const cellData = {};
-        sensorMeasurements.forEach(measurement => {
-          if (!cellData[measurement.cellId]) {
-            cellData[measurement.cellId] = [];
-          }
-          cellData[measurement.cellId].push(measurement);
-        });
-
-        const newSensorChartData = {
-          labels: [],
-          datasets: []
-        };
-
-        let selectCounter = 0;
-        let hasAnyData = false;
-
-        for (const { id, name } of cells) {
-          const cellMeasurements = cellData[id];
-          if (!cellMeasurements || cellMeasurements.length === 0) continue;
-
-          hasAnyData = true;
-          
-          const sortedMeasurements = cellMeasurements.sort((a, b) => a.timestamp - b.timestamp);
-          
-          const timestamps = sortedMeasurements.map(m => m.timestamp * 1000);
-          
-          measurements.forEach((meas, measIndex) => {
-            let dataValues = [];
-            
-            // Extract data based on measurement type and sensor
-            if (sensor_name === 'bme280') {
-              if (meas === 'temperature') {
-                dataValues = sortedMeasurements.map(m => m.data.temperature);
-              } else if (meas === 'pressure') {
-                dataValues = sortedMeasurements.map(m => m.data.pressure);
-              } else if (meas === 'humidity') {
-                dataValues = sortedMeasurements.map(m => m.data.humidity);
-              }
-            } else if (sensor_name === 'co2') {
-              if (meas === 'co2') {
-                dataValues = sortedMeasurements.map(m => m.data.CO2);
-              }
-            } else if (sensor_name === 'phytos31') {
-              if (meas === 'dielectric_permittivity') {
-                dataValues = sortedMeasurements.map(m => m.data.voltage);
-              }
-            } else if (sensor_name === 'teros21') {
-              if (meas === 'soil_water_potential') {
-                dataValues = sortedMeasurements.map(m => m.data.matricPot);
-              }
-            } else if (sensor_name === 'sen0308') {
-              if (meas === 'humidity') {
-                dataValues = sortedMeasurements.map(m => m.data.humidity);
-              }
-            } else if (sensor_name === 'sen0257') {
-              if (meas === 'pressure') {
-                dataValues = sortedMeasurements.map(m => m.data.pressure);
-              }
-            } else if (sensor_name === 'yfs210c') {
-              if (meas === 'flow') {
-                dataValues = sortedMeasurements.map(m => m.data.flow);
-              }
-            }
-
-            if (dataValues.length > 0) {
-              // Create dataset
-              const measDataset = createDataset(timestamps, dataValues);
-              
-              // Add dataset to chart
-              newSensorChartData.labels = timestamps;
-              newSensorChartData.datasets.push({
-                label: `${name} ${meas} (${units[measIndex]})`,
-                data: measDataset,
-                borderColor: meas_colors[selectCounter % meas_colors.length],
-                borderWidth: 2,
-                fill: false,
-                yAxisID: axisIds[measIndex] || 'y',
-                radius: 2,
-                pointRadius: 1,
-              });
-            }
-          });
-
-          selectCounter++;
-        }
-
-        if (hasAnyData) {
-          setSensorChartData({ ...newSensorChartData });
-        }
-      }
+  function clearChartDatasets(chartData) {
+    for (const dataset of chartData.datasets) {
+      dataset.data = [];
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stream, liveData, cells, processedData, type, sensor_name, measurements, units, axisIds]);
+    chartData.labels = [];
+    return chartData;
+  }
+
+  useInterval(
+    () => {
+      streamCharts();
+    },
+    stream ? interval : null,
+  );
 
   useEffect(() => {
     if (debounceTimer.current) {
@@ -355,7 +295,9 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     debounceTimer.current = setTimeout(() => {
       if (Array.isArray(cells) && cells.length && !stream) {
         updateCharts();
-      } else if (!stream) {
+      } else if (Array.isArray(cells) && cells.length && stream) {
+        setSensorChartData(clearChartDatasets(Object.assign({}, sensorChartData)));
+      } else {
         clearCharts();
       }
     }, 300);
@@ -367,7 +309,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cells, stream]); // Removed startDate, endDate dependencies
+  }, [cells, stream, startDate, endDate]);
 
   if (!config) {
     console.error(`Unknown chart type: ${type}`);
@@ -389,7 +331,8 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
         measurements={measurements}
         units={units}
         axisIds={axisIds}
-        {...(!stream && { startDate, endDate })}
+        startDate={startDate}
+        endDate={endDate}
       />
     </Grid>
   );
@@ -401,8 +344,6 @@ UnifiedChart.propTypes = {
   startDate: PropTypes.any,
   endDate: PropTypes.any,
   stream: PropTypes.bool,
-  liveData: PropTypes.array,
-  processedData: PropTypes.object,
 };
 
 export default UnifiedChart;
