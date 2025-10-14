@@ -5,12 +5,11 @@ while getopts 'dpw:' FLAG
 do
     case "$FLAG" in
         d)
-            echo "Running Flask in debug mode" 
-            gunicorn -k eventlet -w 1 -b 0.0.0.0:8000 wsgi:handler;; 
-            # Gunicorn with -k eventlet makes an async event loop supporting WebSockets.
+            echo "Running Flask in debug mode"
+            flask --app wsgi --debug run -h 0.0.0.0 -p 8000;;
         p) 
-            echo "Running Gunicorn"
-            gunicorn -k eventlet -w 1 -b 0.0.0.0:8000 wsgi:handler;;
+            echo "Running Gunicorn with gevent"
+            exec gunicorn -c gunicorn.conf.py wsgi:handler;;
         w) 
             case "$OPTARG" in
                 dev)
@@ -27,6 +26,5 @@ do
            echo "Invalid flag specified" 
         ;;
     esac
+
 done
-
-
