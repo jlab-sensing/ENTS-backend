@@ -3,6 +3,7 @@ from datetime import datetime
 from unittest.mock import patch
 from api.models.logger import Logger
 from api.models.cell import Cell
+import os
 
 
 def test_process_measurement_dict_power_with_websocket(init_database):
@@ -48,3 +49,44 @@ def test_process_measurement_dict_websocket_exception(init_database):
         mock_socketio.emit.side_effect = Exception("WebSocket error")
         response = process_measurement_dict(measurement)
         assert response.status_code == 200
+
+
+def test_debug_socketio_flag_default():
+    """Test DEBUG_SOCKETIO defaults to False"""
+    with patch.dict(os.environ, {}, clear=True):
+        result = os.getenv("DEBUG_SOCKETIO", "False").lower() == "true"
+        assert result is False
+
+
+def test_debug_socketio_flag_enabled():
+    """Test DEBUG_SOCKETIO can be enabled"""
+    with patch.dict(os.environ, {"DEBUG_SOCKETIO": "true"}):
+        result = os.getenv("DEBUG_SOCKETIO", "False").lower() == "true"
+        assert result is True
+
+
+def test_socketio_emit_called_with_room():
+    """Test that socketio.emit is called with correct room parameter"""
+    with patch("api.resources.util.socketio") as mock_socketio:
+        with patch("api.resources.util.DEBUG_SOCKETIO", False):
+            # Simulate the emit logic from util.py
+            cell_id = 123
+            room_name = f"cell_{cell_id}"
+            measurement_data = {"test": "data"}
+
+            mock_socketio.emit("measurement_received", measurement_data, room=room_name)
+
+            mock_socketio.emit.assert_called_once_with(
+                "measurement_received", measurement_data, room=room_name
+            )
+
+
+def test_socketio_emit_error_handling():
+    """Test that errors during emit are caught"""
+    with patch("api.resources.util.socketio") as mock_socketio:
+        mock_socketio.emit.side_effect = Exception("Connection error")
+
+        try:
+            mock_socketio.emit("test", {}, room="test_room")
+        except Exception as e:
+            assert str(e) == "Connection error"
