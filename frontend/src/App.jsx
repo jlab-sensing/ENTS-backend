@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Map from './pages/map/Map';
 import Contact from './pages/contact/Contact';
 import Home from './pages/home/Home';
-import Docs from './pages/docs/Docs';
 import Callback from './auth/Callback';
 import AuthContextProvider from './auth/AuthContextProvider';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -43,7 +42,7 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className='App container-fluid px-0'>
+      <div className='App'>
         <AuthContextProvider>
           <ThemeProvider theme={theme}>
             <Routes>
@@ -57,7 +56,6 @@ function App() {
               <Route path='/dashboard' exact element={<Dashboard />} />
               <Route path='/map' exact element={<Map />} />
               <Route path='/contact' exact element={<Contact />} />
-              <Route path='/docs' exact element={<Docs />} />
               <Route path='/' exact element={<Home />} />
               <Route path='*' element={<Navigate replace to='/' />} />
             </Routes>

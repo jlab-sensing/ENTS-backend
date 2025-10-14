@@ -5,10 +5,10 @@ while getopts 'dpw:' FLAG
 do
     case "$FLAG" in
         d)
-            echo "Running Flask in debug mode"
+            echo "Running Flask in debug mode" 
             flask --app wsgi --debug run -h 0.0.0.0 -p 8000;;
         p) 
-            echo "Running Gunicorn with gevent"
+            echo "Running Gunicorn"
             exec gunicorn -c gunicorn.conf.py wsgi:handler;;
         w) 
             case "$OPTARG" in
