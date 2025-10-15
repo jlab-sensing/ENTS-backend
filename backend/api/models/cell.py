@@ -7,9 +7,9 @@ https://stackoverflow.com/questions/5756559/how-to-build-many-to-many-relations-
 
 
 class Cell_User(db.Model):
-    __tablename__ = "cell_tag"
+    __tablename__ = "cell_user"
     cell_id = db.Column(db.Integer, db.ForeignKey("cell.id"), primary_key=True)
-    user_d = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
 
 
 class Cell_Tag(db.Model):
@@ -28,8 +28,7 @@ class Cell(db.Model):
     longitude = db.Column(db.Float())
     archive = db.Column(db.Boolean(), default=False, nullable=False)
     user_id = db.Column(db.Uuid(), db.ForeignKey("user.id"))
-
-    user = db.relationship(
+    users = db.relationship(
         "User", secondary=Cell_User.__table__, back_populates="cells"
     )
 
