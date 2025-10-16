@@ -9,7 +9,7 @@ do
             flask --app wsgi --debug run -h 0.0.0.0 -p 8000;;
         p) 
             echo "Running Gunicorn with gevent"
-            exec gunicorn -c gunicorn.conf.py wsgi:handler;;
+            exec gunicorn -c gunicorn.conf.py -w 1 wsgi:handler;;
         w) 
             case "$OPTARG" in
                 dev)
