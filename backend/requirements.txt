@@ -5,6 +5,7 @@ tqdm
 Flask
 Flask-RESTful
 flask_cors
+Flask-SocketIO
 gunicorn
 marshmallow
 flask_marshmallow
@@ -22,4 +23,5 @@ Requests
 google-auth
 ents
 gevent
+eventlet
 celery[redis,gevent,sqlalchemy,sqs]

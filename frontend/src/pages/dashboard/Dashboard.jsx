@@ -1,6 +1,6 @@
-import { Box, Button, Divider, Grid, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Divider, Grid, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { DateTime } from 'luxon';
-import { React, useEffect, useState } from 'react';
+import { React, useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 // import DateRangeNotification from '../../components/DateRangeNotification';
 // import { useSmartDateRange } from '../../hooks/useSmartDateRange';
@@ -12,8 +12,10 @@ import CellSelect from './components/CellSelect';
 import DateRangeSel from './components/DateRangeSel';
 import DownloadBtn from './components/DownloadBtn';
 import PowerCharts from './components/PowerCharts';
+import StreamToggle from './components/StreamToggle';
 import TerosCharts from './components/TerosCharts';
 import UnifiedChart from './components/UnifiedChart';
+import { io } from 'socket.io-client';
 
 function Dashboard() {
   const axiosPrivate = useAxiosPrivate();
@@ -28,6 +30,22 @@ function Dashboard() {
   const [smartDateRangeApplied, setSmartDateRangeApplied] = useState(false); // eslint-disable-line no-unused-vars
   const [powerHasData, setPowerHasData] = useState(false);
   const [terosHasData, setTerosHasData] = useState(false);
+  const [liveData, setLiveData] = useState([]);
+  
+  // Background streaming data - always collecting in background
+  const backgroundStreamDataRef = useRef([]);
+  
+  // Timeout
+  const clearTimeoutIdRef = useRef(null);
+  
+  const processingRef = useRef(false);
+  const socketRef = useRef(null);
+  
+  // Streaming
+  
+  const [hourlyStartDate, setHourlyStartDate] = useState(DateTime.now().minus({ days: 14 }));
+  const [hourlyEndDate, setHourlyEndDate] = useState(DateTime.now());
+
 
   // Mobile responsive detection
   const theme = useTheme();
@@ -35,6 +53,171 @@ function Dashboard() {
 
   const cells = useCells();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // data processing
+  const processLiveData = useCallback((measurements) => {
+    if (!measurements || measurements.length === 0) return;
+
+    const processed = {
+      power: { byCell: {}, allMeasurements: [] },
+      teros: { byCell: {}, allMeasurements: [] },
+      sensors: { byType: {}, allMeasurements: [] }
+    };
+
+    // Process measurements
+    measurements.forEach(measurement => {
+      const { type, cellId } = measurement;
+      
+      // Group by sensor type and cell
+      if (type === 'power') {
+        if (!processed.power.byCell[cellId]) {
+          processed.power.byCell[cellId] = [];
+        }
+        processed.power.byCell[cellId].push(measurement);
+        processed.power.allMeasurements.push(measurement);
+      } else if (type === 'teros12') {
+        if (!processed.teros.byCell[cellId]) {
+          processed.teros.byCell[cellId] = [];
+        }
+        processed.teros.byCell[cellId].push(measurement);
+        processed.teros.allMeasurements.push(measurement);
+      } else {
+        if (!processed.sensors.byType[type]) {
+          processed.sensors.byType[type] = { byCell: {} };
+        }
+        if (!processed.sensors.byType[type].byCell[cellId]) {
+          processed.sensors.byType[type].byCell[cellId] = [];
+        }
+        processed.sensors.byType[type].byCell[cellId].push(measurement);
+        processed.sensors.allMeasurements.push(measurement);
+      }
+    });
+
+    // Sort measurements by timestamp for each group
+    Object.keys(processed.power.byCell).forEach(cellId => {
+      processed.power.byCell[cellId].sort((a, b) => a.timestamp - b.timestamp);
+    });
+    Object.keys(processed.teros.byCell).forEach(cellId => {
+      processed.teros.byCell[cellId].sort((a, b) => a.timestamp - b.timestamp);
+    });
+    Object.keys(processed.sensors.byType).forEach(type => {
+      Object.keys(processed.sensors.byType[type].byCell).forEach(cellId => {
+        processed.sensors.byType[type].byCell[cellId].sort((a, b) => a.timestamp - b.timestamp);
+      });
+    });
+
+    return processed;
+  }, []);
+
+  // Initialize timeouts when streaming starts
+  const initializeStreamingTimeouts = useCallback(() => {
+    // Clear existing timeouts
+    if (clearTimeoutIdRef.current) {
+      clearTimeout(clearTimeoutIdRef.current);
+    }
+
+    // Set timeout to clear charts after 30 minutes of no data
+    const clearTimeoutId = setTimeout(() => {
+      setLiveData([]);
+      backgroundStreamDataRef.current = [];
+      setPowerHasData(false);
+      setTerosHasData(false);
+    }, 30 * 60 * 1000);
+    clearTimeoutIdRef.current = clearTimeoutId;
+  }, []);
+
+  // Memoized processed data
+  const processedLiveData = useMemo(() => {
+    if (!liveData || liveData.length === 0) {
+      return {
+        power: { byCell: {}, allMeasurements: [] },
+        teros: { byCell: {}, allMeasurements: [] },
+        sensors: { byType: {}, allMeasurements: [] }
+      };
+    }
+    return processLiveData(liveData);
+  }, [liveData, processLiveData]);
+
+  // processing for WebSocket updates
+  const processImmediateUpdate = useCallback((data) => {
+    if (processingRef.current) return;
+    processingRef.current = true;
+
+    try {
+      // Always collect data in background
+      backgroundStreamDataRef.current = [
+        ...backgroundStreamDataRef.current,
+        { ...data, receivedAt: new Date().toISOString() }
+      ].slice(-200);
+
+      // Update live data if streaming
+      if (stream) {
+        setLiveData(prevData => {
+          const newData = [...prevData, {
+            ...data,
+            receivedAt: new Date().toISOString()
+          }];
+          return newData.slice(-100);
+        });
+
+        // Clear existing timeout
+        if (clearTimeoutIdRef.current) {
+          clearTimeout(clearTimeoutIdRef.current);
+        }
+
+        // Reset timeout when new data arrives
+        initializeStreamingTimeouts();
+      }
+    } finally {
+      processingRef.current = false;
+    }
+  }, [stream, initializeStreamingTimeouts]);
+
+  useEffect(() => {
+    // Auto-detect local development: uses localhost if running on localhost, otherwise production
+    const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const backendUrl = isLocalDev ? 'http://localhost:8000' : 'https://dirtviz.jlab.ucsc.edu';
+    
+    const socket = io(backendUrl, {
+      transports: ['websocket'],
+      upgrade: false,
+      timeout: 20000,
+      forceNew: true
+    });
+
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      if (selectedCells.length > 0) {
+        const cellIds = selectedCells.map(cell => cell.id);
+        socket.emit('subscribe_cells', { cellIds });
+      }
+    });
+
+    socket.on('disconnect', () => {});
+    socket.on('measurement_received', (data) => {
+      processImmediateUpdate(data);
+    });
+    socket.on('connect_error', () => {});
+
+    return () => {
+      socket.disconnect();
+      socketRef.current = null;
+      if (clearTimeoutIdRef.current) {
+        clearTimeout(clearTimeoutIdRef.current);
+      }
+    };
+  }, [stream, processImmediateUpdate, selectedCells]);
+
+  useEffect(() => {
+    const socket = socketRef.current;
+    if (!socket || !socket.connected) return;
+
+    if (selectedCells.length > 0) {
+      const cellIds = selectedCells.map(cell => cell.id);
+      socket.emit('subscribe_cells', { cellIds });
+    }
+  }, [selectedCells]);
 
   // Smart date range functionality
   // const {
@@ -44,7 +227,6 @@ function Dashboard() {
   //   showFallbackNotificationHandler,
   //   hideFallbackNotification,
   // } = useSmartDateRange();
-
   // Initialize state from URL parameters
   useEffect(() => {
     if (!cells.data) return;
@@ -130,17 +312,48 @@ function Dashboard() {
     setSearchParams(newParams, { replace: true });
   }, [startDate, endDate, selectedCells, isInitialized, setSearchParams]);
 
-  // Handle manual date changes
   const handleStartDateChange = (newStartDate) => {
-    setStartDate(newStartDate);
+    if (stream) {
+      setStartDate(newStartDate);
+    } else {
+      setHourlyStartDate(newStartDate);
+    }
     setManualDateSelection(true);
     //setSmartDateRangeApplied(true); // Prevent smart range from overriding manual selection
   };
 
   const handleEndDateChange = (newEndDate) => {
-    setEndDate(newEndDate);
+    if (stream) {
+      setEndDate(newEndDate);
+    } else {
+      setHourlyEndDate(newEndDate);
+    }
     setManualDateSelection(true);
     // setSmartDateRangeApplied(true); // Prevent smart range from overriding manual selection
+  };
+
+  // Handle switching between streaming and hourly modes
+  const handleStreamToggle = (newStreamMode) => {
+    setStream(newStreamMode);
+    if (newStreamMode) {
+      setLiveData([...backgroundStreamDataRef.current]);
+      
+      // Initialize timeouts when streaming starts
+      initializeStreamingTimeouts();
+      
+      setStartDate(hourlyStartDate);
+      setEndDate(hourlyEndDate);
+    } else {
+      setLiveData([]);
+      
+      if (clearTimeoutIdRef.current) {
+        clearTimeout(clearTimeoutIdRef.current);
+        clearTimeoutIdRef.current = null;
+      }
+      
+      setStartDate(hourlyStartDate);
+      setEndDate(hourlyEndDate);
+    }
   };
 
   // Handle cell selection changes
@@ -216,44 +429,50 @@ function Dashboard() {
 
                 {/* Second bar: Date Range + Controls */}
                 <Stack direction='row' spacing={2} alignItems='center' justifyContent='space-between'>
-                  <DateRangeSel
-                    startDate={startDate}
-                    endDate={endDate}
-                    setStartDate={handleStartDateChange}
-                    setEndDate={handleEndDateChange}
-                  />
-                  <Stack direction='row' spacing={1}>
-                    {!cells.isLoading && !cells.isError && <ArchiveModal cells={cells} />}
+                  {!stream && (
+                      <DateRangeSel
+                        startDate={hourlyStartDate}
+                        endDate={hourlyEndDate}
+                        setStartDate={handleStartDateChange}
+                        setEndDate={handleEndDateChange}
+                      />
+                  )}
+                  {stream && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ 
+                          width: 8, 
+                          height: 8, 
+                          borderRadius: '50%',
+                          backgroundColor: 'success.main',
+                        }} />
+                      <Typography variant="body2" color="text.secondary">
+                        Live
+                        </Typography>
+                    </Box>
+                  )}
+                  <Box sx={{ flexGrow: 1 }} /> {/* Spacer to push toggle to right */}
+                  <Stack direction='row' spacing={1} alignItems='center'>
+                    {!stream && !cells.isLoading && !cells.isError && <ArchiveModal cells={cells} />}
+                    {!stream && (
                     <DownloadBtn
                       disabled={dBtnDisabled}
                       setDBtnDisabled={setDBtnDisabled}
                       cells={selectedCells}
-                      startDate={startDate}
-                      endDate={endDate}
+                      startDate={hourlyStartDate}
+                      endDate={hourlyEndDate}
                     />
-                    <Button
-                      variant={stream ? 'contained' : 'outlined'}
-                      color='primary'
-                      onClick={() => setStream(true)}
-                      size='small'
-                    >
-                      Stream
-                    </Button>
-                    <Button
-                      variant={!stream ? 'contained' : 'outlined'}
-                      color='primary'
-                      onClick={() => setStream(false)}
-                      size='small'
-                    >
-                      Hourly
-                    </Button>
+                    )}
+                    <StreamToggle 
+                      isStreaming={stream} 
+                      onToggle={handleStreamToggle} 
+                    />
                   </Stack>
                 </Stack>
               </Stack>
             </Box>
           ) : (
             // Desktop layout - Single bar (original layout preserved)
-            <Stack direction='row' alignItems='center' justifyContent='space-evenly' sx={{ p: 2 }} spacing={3}>
+            <Stack direction='row' alignItems='center' sx={{ p: 2 }} spacing={3}>
               <BackBtn />
               <Box sx={{ flexGrow: 1, maxWidth: '30%' }}>
                 <CellSelect
@@ -263,27 +482,44 @@ function Dashboard() {
                 />
               </Box>
               <Box display='flex' justifyContent='center' alignItems='center'>
-                <DateRangeSel
-                  startDate={startDate}
-                  endDate={endDate}
-                  setStartDate={handleStartDateChange}
-                  setEndDate={handleEndDateChange}
-                />
+                {!stream ? (
+                    <DateRangeSel
+                      startDate={hourlyStartDate}
+                      endDate={hourlyEndDate}
+                      setStartDate={handleStartDateChange}
+                      setEndDate={handleEndDateChange}
+                    />
+                ) : (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ 
+                      width: 8, 
+                      height: 8, 
+                      borderRadius: '50%',
+                      backgroundColor: 'success.main',
+                    }} />
+                  <Typography variant="body2" color="text.secondary">
+                    Live
+                    </Typography>
+                  </Box>
+                )}
               </Box>
-              {!cells.isLoading && !cells.isError ? <ArchiveModal cells={cells} /> : <span>Loading...</span>}
+              <Box sx={{ flexGrow: 1 }} /> {/* Spacer to push controls to right */}
+              <Stack direction='row' spacing={1} alignItems='center'>
+                {!stream && (!cells.isLoading && !cells.isError ? <ArchiveModal cells={cells} /> : <span />)}
+                {!stream && (
               <DownloadBtn
                 disabled={dBtnDisabled}
                 setDBtnDisabled={setDBtnDisabled}
                 cells={selectedCells}
-                startDate={startDate}
-                endDate={endDate}
+                startDate={hourlyStartDate}
+                endDate={hourlyEndDate}
               />
-              <Button variant={stream ? 'contained' : 'outlined'} color='primary' onClick={() => setStream(true)}>
-                Streaming
-              </Button>
-              <Button variant={!stream ? 'contained' : 'outlined'} color='primary' onClick={() => setStream(false)}>
-                Hourly
-              </Button>
+                )}
+                <StreamToggle 
+                  isStreaming={stream} 
+                  onToggle={handleStreamToggle} 
+                />
+              </Stack>
             </Stack>
           )}
           {selectedCells.length === 0 ? (
@@ -323,20 +559,23 @@ function Dashboard() {
               >
                 <PowerCharts
                   cells={selectedCells}
-                  startDate={startDate}
-                  endDate={endDate}
+                  {...(!stream && { startDate: hourlyStartDate, endDate: hourlyEndDate })}
                   stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.power}
                   onDataStatusChange={setPowerHasData}
                 />
                 <TerosCharts
                   cells={selectedCells}
-                  startDate={startDate}
-                  endDate={endDate}
+                  {...(!stream && { startDate: hourlyStartDate, endDate: hourlyEndDate })}
                   stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.teros}
                   onDataStatusChange={setTerosHasData}
                 />
               </Grid>
 
+         
               {/* Bottom section charts - always rendered */}
               <Stack
                 direction='column'
@@ -347,60 +586,76 @@ function Dashboard() {
                 <UnifiedChart
                   type='soilPot'
                   cells={selectedCells}
-                  startDate={startDate}
-                  endDate={endDate}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
                   stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
                 />
                 <UnifiedChart
                   type='presHum'
                   cells={selectedCells}
-                  startDate={startDate}
-                  endDate={endDate}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
                   stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
                 />
                 <UnifiedChart
                   type='sensor'
                   cells={selectedCells}
-                  startDate={startDate}
-                  endDate={endDate}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
                   stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
                 />
                 <UnifiedChart
                   type='co2'
                   cells={selectedCells}
-                  startDate={startDate}
-                  endDate={endDate}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
                   stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
                 />
                 <UnifiedChart
                   type='temperature'
                   cells={selectedCells}
-                  startDate={startDate}
-                  endDate={endDate}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
                   stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
                 />
 
                 {/* New charts from main branch */}
                 <UnifiedChart
                   type='soilHum'
                   cells={selectedCells}
-                  startDate={startDate}
-                  endDate={endDate}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
                   stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
                 />
                 <UnifiedChart
                   type='waterPress'
                   cells={selectedCells}
-                  startDate={startDate}
-                  endDate={endDate}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
                   stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
                 />
                 <UnifiedChart
                   type='waterFlow'
                   cells={selectedCells}
-                  startDate={startDate}
-                  endDate={endDate}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
                   stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
                 />
               </Stack>
             </>
@@ -428,30 +683,40 @@ function Dashboard() {
         >
           <Box sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
             <Grid container spacing={3} columns={{ xs: 4, sm: 8, md: 12 }}>
-              <PowerCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
-              <TerosCharts cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+              <PowerCharts 
+                cells={selectedCells} 
+                {...(!stream && { startDate, endDate })}
+                stream={stream} 
+                liveData={liveData} 
+              />
+              <TerosCharts 
+                cells={selectedCells} 
+                {...(!stream && { startDate, endDate })}
+                stream={stream} 
+                liveData={liveData} 
+              />
             </Grid>
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <UnifiedChart type="soilPot" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="soilPot" cells={selectedCells} {...(!stream && { startDate, endDate })} stream={stream} liveData={liveData} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <UnifiedChart type="presHum" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="presHum" cells={selectedCells} {...(!stream && { startDate, endDate })} stream={stream} liveData={liveData} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <UnifiedChart type="sensor" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="sensor" cells={selectedCells} {...(!stream && { startDate, endDate })} stream={stream} liveData={liveData} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <UnifiedChart type="co2" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="co2" cells={selectedCells} {...(!stream && { startDate, endDate })} stream={stream} liveData={liveData} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <UnifiedChart type="soilHum" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="soilHum" cells={selectedCells} {...(!stream && { startDate, endDate })} stream={stream} liveData={liveData} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <UnifiedChart type="waterPress" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="waterPress" cells={selectedCells} {...(!stream && { startDate, endDate })} stream={stream} liveData={liveData} />
           </Box>
           <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <UnifiedChart type="waterFlow" cells={selectedCells} startDate={startDate} endDate={endDate} stream={stream} />
+            <UnifiedChart type="waterFlow" cells={selectedCells} {...(!stream && { startDate, endDate })} stream={stream} liveData={liveData} />
           </Box>
         </Stack>
 

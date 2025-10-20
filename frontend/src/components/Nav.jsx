@@ -1,8 +1,8 @@
 import MenuIcon from '@mui/icons-material/Menu';
-import { AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material';
+import { AppBar, Box, Button, Divider, Drawer, IconButton, List, ListItemButton, ListItemText, Menu, MenuItem, Toolbar, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
-import { React, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { React, useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import useAxiosPrivate from '../auth/hooks/useAxiosPrivate';
 import { logout, signIn } from '../services/auth';
 import DvIcon from './DvIcon';
@@ -10,13 +10,9 @@ import DvIcon from './DvIcon';
 function Nav({ user, setUser, loggedIn, setLoggedIn }) {
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
-  const [anchorElNav, setAnchorElNav] = useState(null);
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const openDrawer = () => setMobileOpen(true);
+  const closeDrawer = () => setMobileOpen(false);
 
   const [anchorElProfileMenu, setAnchorElProfileMenu] = useState(null);
   const handleOpenProfileMenu = (event) => {
@@ -53,103 +49,121 @@ function Nav({ user, setUser, loggedIn, setLoggedIn }) {
     };
   }, [axiosPrivate, setLoggedIn, setUser]);
 
+  const location = useLocation();
+  const isActive = useMemo(() => ({
+    home: location.pathname === '/',
+    dashboard: location.pathname.startsWith('/dashboard'),
+    map: location.pathname.startsWith('/map'),
+    docs: location.pathname.startsWith('/docs'),
+  }), [location.pathname]);
+
   return (
-    <AppBar position='static' elevation={0} sx={{ bgcolor: 'transparent', pl: '5%', pr: '5%' }}>
-      <Toolbar disableGutters>
+    <AppBar position='sticky' elevation={0} sx={{ bgcolor: '#FFFFFF', borderBottom: { xs: '1px solid #E5E7EB', md: 'none' }, px: { xs: '4%', md: '6%' }, pt: 1 }}>
+      <Toolbar disableGutters sx={{ alignItems: 'center' }}>
         <Box
           onClick={() => navigate('/')}
-          sx={{
-            cursor: 'pointer',
-            display: 'flex',
-          }}
+          sx={{ cursor: 'pointer', display: 'flex' }}
           aria-label='Go to home page'
         >
           <DvIcon />
         </Box>
-        <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-          <IconButton size='large' onClick={handleOpenNavMenu} color='inherit'>
+
+        {/* Mobile menu */}
+        <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' }, justifyContent: 'flex-end' }}>
+          <IconButton size='large' onClick={openDrawer} aria-label='Open menu' color='default'>
             <MenuIcon />
           </IconButton>
-          <Menu
-            anchorEl={anchorElNav}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-            keepMounted
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'left',
-            }}
-            open={Boolean(anchorElNav)}
-            onClose={handleCloseNavMenu}
-            sx={{
-              display: { xs: 'block', md: 'none' },
-            }}
-          >
-            <MenuItem key='Home' onClick={() => navigate('/')}>
-              <Typography textAlign='center'>Home</Typography>
-            </MenuItem>
-            <MenuItem key='Dashboard' onClick={() => navigate('/dashboard')}>
-              <Typography textAlign='center'>Dashboard</Typography>
-            </MenuItem>
-            <MenuItem key='Map' onClick={() => navigate('/')}>
-              <Typography textAlign='center'>Map</Typography>
-            </MenuItem>
-            {loggedIn === false ? (
-              <MenuItem key='Sign-in' onClick={() => signIn()}>
-                <Typography textAlign='center'>Sign In</Typography>
-              </MenuItem>
-            ) : (
-              <MenuItem key='Logout' onClick={() => logout()}>
-                <Typography textAlign='center'>Logout</Typography>
-              </MenuItem>
-            )}
-          </Menu>
+          <Drawer anchor='right' open={mobileOpen} onClose={closeDrawer} PaperProps={{ sx: { width: 280 } }}>
+            <Box sx={{ p: 2 }}>
+              <Typography variant='subtitle2' sx={{ fontWeight: 800, color: '#111827' }}>Menu</Typography>
+            </Box>
+            <Divider />
+            <List>
+              <ListItemButton onClick={() => { navigate('/'); closeDrawer(); }}>
+                <ListItemText primary='Home' />
+              </ListItemButton>
+              <ListItemButton onClick={() => { navigate('/dashboard'); closeDrawer(); }}>
+                <ListItemText primary='Dashboard' />
+              </ListItemButton>
+              <ListItemButton onClick={() => { navigate('/map'); closeDrawer(); }}>
+                <ListItemText primary='Map' />
+              </ListItemButton>
+              <ListItemButton onClick={() => { navigate('/docs'); closeDrawer(); }}>
+                <ListItemText primary='Docs' />
+              </ListItemButton>
+            </List>
+            <Divider />
+            <Box sx={{ p: 2 }}>
+              {loggedIn === false ? (
+                <Button fullWidth onClick={() => { signIn(); closeDrawer(); }} sx={{ textTransform: 'none', borderRadius: '8px', px: 2, py: 1, fontWeight: 700, backgroundColor: '#111827', color: '#FFFFFF', '&:hover': { backgroundColor: '#0B1220' } }}>
+                  Sign in
+                </Button>
+              ) : (
+                <Button fullWidth onClick={() => { logout(); closeDrawer(); }} sx={{ textTransform: 'none', borderRadius: '8px', px: 2, py: 1, fontWeight: 700, color: '#111827' }}>
+                  Logout
+                </Button>
+              )}
+            </Box>
+          </Drawer>
         </Box>
 
-        <Box
-          sx={{
-            flexGrow: 1,
-            display: { xs: 'none', md: 'flex' },
-            justifyContent: 'flex-end',
-          }}
-        >
-          <Button key='Home' onClick={() => navigate('/')} sx={{ my: 2, color: 'black', display: 'block' }}>
-            Home
-          </Button>
-          <Button
-            key='Dashboard'
-            onClick={() => navigate('/dashboard')}
-            sx={{ my: 2, color: 'black', display: 'block' }}
-          >
-            Dashboard
-          </Button>
-          <Button key='Map' onClick={() => navigate('/map')} sx={{ my: 2, color: 'black', display: 'block' }}>
-            Map
-          </Button>
+        {/* Center pill nav - keep original menu items */}
+        <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, justifyContent: 'center' }}>
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+            background: 'rgba(255,255,255,0.72)',
+            border: '1px solid rgba(0,0,0,0.06)',
+            borderRadius: '999px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+            px: 0.75,
+            py: 0.5,
+            backdropFilter: 'blur(8px)'
+          }}>
+            <Button onClick={() => navigate('/')} sx={{
+              textTransform: 'none',
+              borderRadius: '999px',
+              px: 1.75,
+              py: 0.5,
+              fontWeight: 700,
+              color: isActive.home ? '#FFFFFF' : '#0F172A',
+              backgroundColor: isActive.home ? '#0F172A' : 'transparent',
+              '&:hover': { backgroundColor: isActive.home ? '#111827' : 'rgba(0,0,0,0.04)' }
+            }}>Home</Button>
+            <Button onClick={() => navigate('/dashboard')} sx={{
+              textTransform: 'none', borderRadius: '999px', px: 1.75, py: 0.5, fontWeight: 700,
+              color: isActive.dashboard ? '#FFFFFF' : '#0F172A',
+              backgroundColor: isActive.dashboard ? '#0F172A' : 'transparent',
+              '&:hover': { backgroundColor: isActive.dashboard ? '#111827' : 'rgba(0,0,0,0.04)' }
+            }}>Dashboard</Button>
+            <Button onClick={() => navigate('/map')} sx={{
+              textTransform: 'none', borderRadius: '999px', px: 1.75, py: 0.5, fontWeight: 700,
+              color: isActive.map ? '#FFFFFF' : '#0F172A',
+              backgroundColor: isActive.map ? '#0F172A' : 'transparent',
+              '&:hover': { backgroundColor: isActive.map ? '#111827' : 'rgba(0,0,0,0.04)' }
+            }}>Map</Button>
+            <Button onClick={() => navigate('/docs')} sx={{
+              textTransform: 'none', borderRadius: '999px', px: 1.75, py: 0.5, fontWeight: 700,
+              color: isActive.docs ? '#FFFFFF' : '#0F172A',
+              backgroundColor: isActive.docs ? '#0F172A' : 'transparent',
+              '&:hover': { backgroundColor: isActive.docs ? '#111827' : 'rgba(0,0,0,0.04)' }
+            }}>Docs</Button>
+          </Box>
+        </Box>
+
+        {/* Right sign-in/profile */}
+        <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
           {loggedIn === false ? (
-            <Button key='Sign-in' onClick={() => signIn()} sx={{ my: 2, color: 'black', display: 'block' }}>
+            <Button key='Sign-in' onClick={() => signIn()} sx={{ textTransform: 'none', borderRadius: '999px', px: 2, py: 0.75, fontWeight: 700, color: '#0F172A' }}>
               Sign in
             </Button>
           ) : (
             <>
-              <Button key='profile' onClick={handleOpenProfileMenu} sx={{ my: 2, color: 'black', display: 'block' }}>
+              <Button key='profile' onClick={handleOpenProfileMenu} sx={{ textTransform: 'none', color: '#0F172A' }}>
                 Hi, {user?.first_name}
               </Button>
-
-              <Menu
-                id='user-menu'
-                anchorEl={anchorElProfileMenu}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'left',
-                }}
-                open={Boolean(anchorElProfileMenu)}
-                onClose={handleCloseProfileMenu}
-                MenuListProps={{
-                  'aria-labelledby': 'basic-button',
-                }}
-              >
+              <Menu id='user-menu' anchorEl={anchorElProfileMenu} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} keepMounted transformOrigin={{ vertical: 'top', horizontal: 'left' }} open={Boolean(anchorElProfileMenu)} onClose={handleCloseProfileMenu}>
                 <MenuItem onClick={() => navigate('/profile')}>Profile</MenuItem>
                 <MenuItem onClick={() => logout()}>Logout</MenuItem>
               </Menu>
@@ -161,9 +175,9 @@ function Nav({ user, setUser, loggedIn, setLoggedIn }) {
   );
 }
 Nav.propTypes = {
-  user: PropTypes.array,
+  user: PropTypes.object,
   setUser: PropTypes.func,
-  loggedIn: PropTypes.Boolean,
+  loggedIn: PropTypes.bool,
   setLoggedIn: PropTypes.func,
 };
 
