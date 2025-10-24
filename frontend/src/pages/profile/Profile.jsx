@@ -24,7 +24,7 @@ function Profile() {
         scrollSnapStop: 'always',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: '#DAD7CD',
+        backgroundColor: '#fff',
       }}
     >
       <Nav user={user} setUser={setUser} loggedIn={loggedIn} setLoggedIn={setLoggedIn} />

@@ -2,6 +2,7 @@ import EmailIcon from '@mui/icons-material/Email';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { Box, Link, Typography } from '@mui/material';
 import { React } from 'react';
+import DvIcon from './DvIcon';
 
 function Footer() {
   return (
@@ -25,9 +26,10 @@ function Footer() {
           flexDirection: 'column',
           width: '100%',
           alignItems: 'center',
-          gap: '8px',
+          gap: '12px',
         }}
       >
+        <DvIcon color="#588157" />
         <Typography variant='body2'>
           Made by jLab. Check out our website at{' '}
           <Link href='https://sensors.soe.ucsc.edu/' sx={{ color: '#588157' }} underline='hover'>

@@ -26,7 +26,7 @@ export default function HeroStreamingPower({ height = 360, intervalMs = 2500 }) 
   const countRef = useRef(0);
   const containerRef = useRef(null);
   const driftRef = useRef(0);
-  const [yBounds, setYBounds] = useState({ min: -0.3, max: 0.3, step: 0.06 });
+  const [yBounds, setYBounds] = useState({ min: 0, max: 0.6, step: 0.06 });
   const yBoundsRef = useRef(yBounds);
 
   const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
@@ -38,7 +38,7 @@ export default function HeroStreamingPower({ height = 360, intervalMs = 2500 }) 
       0.006,
     );
     const noise = (Math.random() - 0.5) * 0.01;
-    const base = (prevY ?? -0.12) + driftRef.current + noise;
+    const base = (prevY ?? 0.12) + driftRef.current + noise;
     const range = Math.max(0.001, yBoundsRef.current.max - yBoundsRef.current.min);
     const minB = yBoundsRef.current.min + range * 0.02; // inner bounds to avoid touching edges
     const maxB = yBoundsRef.current.max - range * 0.02;
@@ -296,7 +296,7 @@ export default function HeroStreamingPower({ height = 360, intervalMs = 2500 }) 
       const start = end - (PRESEED_POINTS - 1) * intervalMs;
       const labels = [];
       const series = [];
-      let y = -0.12;
+      let y = 0.12;
       for (let i = 0; i < PRESEED_POINTS; i += 1) {
         y = nextPower(y);
         const t = start + i * intervalMs;
@@ -323,7 +323,7 @@ export default function HeroStreamingPower({ height = 360, intervalMs = 2500 }) 
     timerRef.current = setInterval(() => {
       setData((prev) => {
         const prevData = prev.datasets[0].data || [];
-        const lastY = prevData.length ? prevData[prevData.length - 1].y : -0.12;
+        const lastY = prevData.length ? prevData[prevData.length - 1].y : 0.12;
         const lastT = prev.labels.length ? prev.labels[prev.labels.length - 1] : Date.now();
         // If reached cycle limit (30), reseed 8 fresh random points and continue
         if (prev.labels.length >= CYCLE_POINTS) {
@@ -375,7 +375,7 @@ export default function HeroStreamingPower({ height = 360, intervalMs = 2500 }) 
         <Chip size='small' label={`Avg: ${fmt(stats.avg, 3)}`} sx={{ backgroundColor: '#ffffff', border: '1px solid #D9E5DC' }} />
       </Box>
       <div style={{ height: typeof height === 'number' ? `${height}px` : height, width: '100%' }}>
-        <Line ref={chartRef} data={data} options={options} plugins={[glowPlugin, pulsePlugin, crosshairPlugin, zeroBaselinePlugin]} />
+        <Line ref={chartRef} data={data} options={options} plugins={[glowPlugin, pulsePlugin, crosshairPlugin]} />
       </div>
     </Box>
   );
