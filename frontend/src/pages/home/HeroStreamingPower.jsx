@@ -255,31 +255,6 @@ export default function HeroStreamingPower({ height = 360, intervalMs = 2500 }) 
     [],
   );
 
-  // Zero baseline if within range
-  const zeroBaselinePlugin = useMemo(
-    () => ({
-      id: 'heroZeroBaseline',
-      afterDraw: (chart) => {
-        const yScale = chart.scales.y;
-        if (!yScale) return;
-        const zeroY = yScale.getPixelForValue(0);
-        const { top, bottom, left, right } = chart.chartArea;
-        if (zeroY >= top && zeroY <= bottom) {
-          const { ctx } = chart;
-          ctx.save();
-          ctx.strokeStyle = 'rgba(0,0,0,0.12)';
-          ctx.lineWidth = 1;
-          ctx.setLineDash([6, 6]);
-          ctx.beginPath();
-          ctx.moveTo(left, zeroY);
-          ctx.lineTo(right, zeroY);
-          ctx.stroke();
-          ctx.restore();
-        }
-      },
-    }),
-    [],
-  );
 
   useEffect(() => {
     // Helper to seed the chart with a small window of points in the past
