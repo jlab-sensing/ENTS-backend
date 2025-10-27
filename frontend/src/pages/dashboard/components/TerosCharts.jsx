@@ -179,7 +179,7 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
           
           // Extract data arrays
           const timestamps = sortedMeasurements.map(m => m.timestamp * 1000);
-          const vwcData = sortedMeasurements.map(m => m.data.vwcAdj);
+          const vwcData = sortedMeasurements.map(m => m.data.vwcAdj * 100);
           const ecData = sortedMeasurements.map(m => m.data.ec);
           const tempData = sortedMeasurements.map(m => m.data.temp);
 

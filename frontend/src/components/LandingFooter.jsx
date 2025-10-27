@@ -1,6 +1,7 @@
 import { React } from 'react';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import LanguageIcon from '@mui/icons-material/Language';
+import DvIcon from './DvIcon';
 
 function LandingFooter() {
   return (
@@ -43,11 +44,7 @@ function LandingFooter() {
           <div className="col-xl-3 col-md-6 my-auto">
             <ul className="list-unstyled mt-md-3 mt-5">
               <li style={{ marginBottom: 8 }}>
-                <img
-                  src="/assets/dirtviz-logo.png"
-                  alt="DirtViz logo"
-                  style={{ height: 'calc(34px + (64 - 34) * ((100vw - 360px) / (1600 - 360)))', width: 'auto' }}
-                />
+                <DvIcon color="#FFFFFF" />
               </li>
               <li style={{ color: 'rgb(196, 193, 193)' }}>© 2025 DirtViz - UCSC JLab</li>
             </ul>
