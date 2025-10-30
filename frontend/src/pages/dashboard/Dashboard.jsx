@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 // import DateRangeNotification from '../../components/DateRangeNotification';
 // import { useSmartDateRange } from '../../hooks/useSmartDateRange';
 import useAxiosPrivate from '../../auth/hooks/useAxiosPrivate';
+import useAuth from '../../auth/hooks/useAuth';
 import { useCells } from '../../services/cell';
 import ArchiveModal from './components/ArchiveModal';
 import BackBtn from './components/BackBtn';
@@ -19,6 +20,7 @@ import { io } from 'socket.io-client';
 
 function Dashboard() {
   const axiosPrivate = useAxiosPrivate();
+  const { loggedIn } = useAuth();
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
   const [endDate, setEndDate] = useState(DateTime.now());
   const [dBtnDisabled, setDBtnDisabled] = useState(true);
@@ -334,6 +336,11 @@ function Dashboard() {
 
   // Handle switching between streaming and hourly modes
   const handleStreamToggle = (newStreamMode) => {
+    // Prevent enabling streaming for unauthenticated users
+    if (newStreamMode && loggedIn === false) {
+      return;
+    }
+    
     setStream(newStreamMode);
     if (newStreamMode) {
       setLiveData([...backgroundStreamDataRef.current]);
@@ -391,6 +398,19 @@ function Dashboard() {
       clearTimeout(timer3);
     };
   }, [selectedCells, startDate, endDate, stream]);
+
+  // Disable streaming when user logs out
+  useEffect(() => {
+    if (loggedIn === false && stream) {
+      setStream(false);
+      setLiveData([]);
+      
+      if (clearTimeoutIdRef.current) {
+        clearTimeout(clearTimeoutIdRef.current);
+        clearTimeoutIdRef.current = null;
+      }
+    }
+  }, [loggedIn, stream]);
 
   // Check if top section should be hidden
   const topSectionHasData = powerHasData || terosHasData;
