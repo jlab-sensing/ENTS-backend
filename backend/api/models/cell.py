@@ -71,6 +71,7 @@ class Cell(db.Model):
     def get(id):
         return Cell.query.filter_by(id=id).first()
 
+    @staticmethod
     def find_by_name(name):
         return Cell.query.filter_by(name=name).first()
 

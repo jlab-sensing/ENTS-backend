@@ -1,5 +1,6 @@
 from flask_restful import Resource
 from flask import request
+from ..auth.auth import authenticate
 from ..models.cell import Cell as CellModel
 from ..models.user import User as UserModel
 from ..schemas.user_schema import UserSchema
@@ -12,7 +13,7 @@ user_schema = UserSchema()
 class CellUsers(Resource):
     """Resource for managing users associated with a specific cell"""
 
-    # No authentication required - following Cell resource pattern
+    method_decorators = {"post": [authenticate]}
 
     def get(self, cell_id):
         """Get all users for a specific cell"""
@@ -22,7 +23,7 @@ class CellUsers(Resource):
 
         return users_schema.dump(cell.users)
 
-    def post(self, cell_id):
+    def post(self, user, cell_id):
         """Assign multiple users to a cell (replaces existing users)"""
         cell = CellModel.get(cell_id)
         if not cell:
@@ -61,9 +62,9 @@ class CellUsers(Resource):
 class CellUserDetail(Resource):
     """Resource for managing individual user assignment to a cell"""
 
-    # No authentication required - following Cell resource pattern
+    method_decorators = {"put": [authenticate], "delete": [authenticate]}
 
-    def put(self, cell_id, user_id):
+    def put(self, user, cell_id, user_id):
         """Add a specific user to a cell"""
         cell = CellModel.get(cell_id)
         if not cell:
@@ -89,7 +90,7 @@ class CellUserDetail(Resource):
         except Exception as e:
             return {"message": "Error adding user to cell", "error": str(e)}, 500
 
-    def delete(self, cell_id, user_id):
+    def delete(self, user, cell_id, user_id):
         """Remove a specific user from a cell"""
         cell = CellModel.get(cell_id)
         if not cell:
