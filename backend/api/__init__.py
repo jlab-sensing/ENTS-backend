@@ -168,6 +168,7 @@ def create_app(debug: bool = False) -> Flask:
     from .resources.data_availability import DataAvailability
     from .resources.tag import Tag, TagDetail
     from .resources.cell_tags import CellTags, CellTagDetail, CellsByTag
+    from .resources.cell_users import CellUsers, CellUserDetail, CellByUser
     from .resources.logger import Logger
 
     from .auth.routes import auth
@@ -194,6 +195,11 @@ def create_app(debug: bool = False) -> Flask:
     api.add_resource(CellTags, "/cell/<int:cell_id>/tags")
     api.add_resource(CellTagDetail, "/cell/<int:cell_id>/tags/<int:tag_id>")
     api.add_resource(CellsByTag, "/tags/<int:tag_id>/cells")
+
+    # Cell-User relationship endpoints
+    api.add_resource(CellUsers, "/cell/<int:cell_id>/users")
+    api.add_resource(CellUserDetail, "/cell/<int:cell_id>/users/<int:user_id>")
+    api.add_resource(CellByUser, "/users/<int:user_id>/cells")
 
     app.register_blueprint(auth, url_prefix="/api")
     return app
