@@ -1,5 +1,4 @@
 from ..models import db
-from .user import User
 
 
 """"This is the reference; we stole this from commenter
@@ -55,6 +54,7 @@ class Cell(db.Model):
 
     @staticmethod
     def add_cell_by_user_email(name, location, latitude, longitude, archive, userEmail):
+        from .user import User
         user_id = User.get_user_by_email(userEmail).id
         new_cell = Cell(
             name=name,
