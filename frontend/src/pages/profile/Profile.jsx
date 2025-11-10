@@ -1,5 +1,6 @@
-import { Box } from '@mui/material';
-import { Outlet } from 'react-router-dom';
+import { Box, CircularProgress } from '@mui/material';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import useAuth from '../../auth/hooks/useAuth';
 import useAxiosPrivate from '../../auth/hooks/useAxiosPrivate';
 import Nav from '../../components/Nav';
@@ -9,10 +10,36 @@ import SideBar from './components/SideBar';
 
 function Profile() {
   const axiosPrivate = useAxiosPrivate();
-  const { user, setUser, loggedIn, setLoggedIn } = useAuth();
+  const { user, setUser, loggedIn, setLoggedIn, isAuthLoading } = useAuth();
+  const navigate = useNavigate();
 
   const { data, isLoading, isError, refetch } = useUserCells(axiosPrivate);
   const { data: loggerData, isLoading: loggerIsLoading, isError: loggerIsError, refetch: loggerRefetch } = useUserLoggers(axiosPrivate);
+
+  // Redirect to home if not logged in after auth check completes
+  useEffect(() => {
+    if (!isAuthLoading && !loggedIn) {
+      navigate('/');
+    }
+  }, [isAuthLoading, loggedIn, navigate]);
+
+  // Show loading spinner while checking authentication
+  if (isAuthLoading) {
+    return (
+      <Box
+        sx={{
+          minHeight: '100vh',
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#fff',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box

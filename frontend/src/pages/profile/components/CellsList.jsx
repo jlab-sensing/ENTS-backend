@@ -111,6 +111,7 @@ function CellsList() {
           rows={rows}
           columns={columns}
           pageSize={5}
+          checkboxSelection={true}
           autoHeight
           onRowSelectionModelChange={handleRowSelection}
         />
