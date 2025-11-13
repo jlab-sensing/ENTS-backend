@@ -448,7 +448,14 @@ function Dashboard() {
                 </Stack>
 
                 {/* Second bar: Date Range + Controls */}
-                <Stack direction='row' spacing={2} alignItems='center' justifyContent='space-between'>
+                <Stack
+                  direction='row'
+                  spacing={2}
+                  alignItems='center'
+                  justifyContent='space-between'
+                  sx={{ flexWrap: 'wrap', gap: 1 }}
+                >
+
                   {!stream && (
                       <DateRangeSel
                         startDate={hourlyStartDate}
