@@ -2,6 +2,7 @@ import { Box, Divider, Grid, Stack, Typography, useMediaQuery, useTheme } from '
 import { DateTime } from 'luxon';
 import { React, useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import TopNav from '../../components/TopNav';
 // import DateRangeNotification from '../../components/DateRangeNotification';
 // import { useSmartDateRange } from '../../hooks/useSmartDateRange';
 import useAxiosPrivate from '../../auth/hooks/useAxiosPrivate';
@@ -417,6 +418,8 @@ function Dashboard() {
 
   return (
     <>
+    <TopNav />
+
       <Box>
         {/* <DateRangeNotification
           open={showFallbackNotification}
