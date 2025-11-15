@@ -23,8 +23,8 @@ class GetCellDataSchema(ma.SQLAlchemySchema):
         ),
         load_default="hour",
     )
-    startTime = ma.DateTime("rfc", required=False)
-    endTime = ma.DateTime("rfc", required=False)
+    startTime = ma.DateTime("iso", required=False)
+    endTime = ma.DateTime("iso", required=False)
     stream = ma.Bool(required=False)
     # @validates('time_created')
     # def is_not_in_future(value):

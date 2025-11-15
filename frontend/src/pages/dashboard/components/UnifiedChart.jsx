@@ -100,7 +100,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
       for (const meas of measurements) {
         data[id] = {
           ...data[id],
-          [meas]: await getSensorData(sensor_name, id, meas, startDate.toHTTP(), endDate.toHTTP()),
+          [meas]: await getSensorData(sensor_name, id, meas, startDate.toISO(), endDate.toISO()),
         };
       }
     }
