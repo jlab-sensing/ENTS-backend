@@ -29,7 +29,7 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
     for (const { id, name } of loadCells) {
       data[id] = {
         name: name,
-        terosData: await getTerosData(id, startDate.toHTTP(), endDate.toHTTP(), resample),
+        terosData: await getTerosData(id, startDate.toISO(), endDate.toISO(), resample),
       };
     }
     return data;

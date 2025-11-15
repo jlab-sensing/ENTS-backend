@@ -3,7 +3,7 @@ import { DateTime } from 'luxon';
 export const getSensorData = (name, cellId, meas, startTime, endTime, resample = 'hour') => {
   return axios
     .get(
-      `${process.env.PUBLIC_URL}/api/sensor/?name=${name}&cellId=${cellId}&measurement=${meas}&startTime=${startTime}&endTime=${endTime}&resample=${resample}`,
+      `${process.env.PUBLIC_URL}/api/sensor/?name=${name}&cellId=${cellId}&measurement=${meas}&startTime=${startTime.toISO()}&endTime=${endTime.toISO()}&resample=${resample}`,
     )
     .then((res) => res.data);
 };
@@ -18,7 +18,7 @@ export const streamSensorData = (
 ) => {
   return axios
     .get(
-      `${process.env.PUBLIC_URL}/api/sensor/?name=${name}&cellId=${cellId}&measurement=${meas}&startTime=${startTime}&endTime=${endTime}&stream=${stream}`,
+      `${process.env.PUBLIC_URL}/api/sensor/?name=${name}&cellId=${cellId}&measurement=${meas}&startTime=${startTime.toISO()}&endTime=${endTime.toISO()}&stream=${stream}`,
     )
     .then((res) => res.data);
 };

@@ -32,7 +32,7 @@ function PowerCharts({ cells, startDate, endDate, stream, liveData, processedDat
     for (const { id, name } of loadCells) {
       data[id] = {
         name: name,
-        powerData: await getPowerData(id, startDate.toHTTP(), endDate.toHTTP(), resample),
+        powerData: await getPowerData(id, startDate.toISO(), endDate.toISO(), resample),
       };
     }
     return data;
