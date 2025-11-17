@@ -4,8 +4,8 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 vi.mock('../services/cell', () => ({
   useCells: () => ({
     data: [
-      { id: '1', name: 'test_cell_1', archive: false },
-      { id: '2', name: 'test_cell_2', archive: false },
+      { id: '1', name: 'test_cell_1', label: 'test_cell_1', value: '1', archive: false },
+      { id: '2', name: 'test_cell_2', label: 'test_cell_2', value: '2', archive: false },
     ],
     isLoading: false,
     isError: false,
@@ -63,10 +63,18 @@ describe('Loading dashboard', () => {
   it('should display mocked cell names when dropdown is open', async () => {
     const user = userEvent.setup();
     render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
-    const dropdownButton = screen.getByLabelText('Open');
+
+    // Prefer role-based queries which are more robust and accessible-friendly
+    const dropdownButton = screen.getByRole('button', { name: /open/i });
     await user.click(dropdownButton);
-    expect(await screen.findByText('test_cell_1')).toBeInTheDocument();
-    expect(await screen.findByText('test_cell_2')).toBeInTheDocument();
+
+    // Wait for the listbox (or options) to appear, then assert option contents
+    const listbox = await screen.findByRole('listbox'); // works for native/select-like widgets
+    const options = within(listbox).getAllByRole('option');
+
+    // Expect at least the two mocked items to be present
+    expect(options.some(opt => opt.textContent.includes('test_cell_1'))).toBe(true);
+    expect(options.some(opt => opt.textContent.includes('test_cell_2'))).toBe(true);
   });
 });
 
