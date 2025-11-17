@@ -15,12 +15,17 @@ import { React, useMemo, useState, useEffect } from 'react';
 import { useCells } from '../../../services/cell';
 import { useTags, getCellsByTag } from '../../../services/tag';
 
+
 function CellSelect({ selectedCells, setSelectedCells }) {
   const cells = useCells();
   const { data: tags = [] } = useTags();
   const [selectedTags, setSelectedTags] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [taggedCellIds, setTaggedCellIds] = useState([]);
+  
+  // State to hold the search query for cells
+  const [cellSearchQuery, setCellSearchQuery] = useState('');
+
 
   // Fetch cells for selected tags
   useEffect(() => {
@@ -29,9 +34,11 @@ function CellSelect({ selectedCells, setSelectedCells }) {
       return;
     }
 
+
     const fetchTaggedCells = async () => {
       try {
         const allTaggedCells = new Set();
+
 
         // Get cells for each selected tag
         for (const tag of selectedTags) {
@@ -47,6 +54,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
           }
         }
 
+
         setTaggedCellIds(Array.from(allTaggedCells));
       } catch (error) {
         console.error('Error fetching tagged cells:', error);
@@ -54,13 +62,16 @@ function CellSelect({ selectedCells, setSelectedCells }) {
       }
     };
 
+
     fetchTaggedCells();
   }, [selectedTags]);
+
 
   // Filter cells by selected tags
   const filteredCells = useMemo(() => {
     if (!cells.data || !Array.isArray(cells.data)) return [];
     if (selectedTags.length === 0) return cells.data;
+
 
     // Filter cells that have at least one of the selected tags
     return cells.data.filter((cell) => {
@@ -68,13 +79,40 @@ function CellSelect({ selectedCells, setSelectedCells }) {
     });
   }, [cells.data, selectedTags, taggedCellIds]);
 
+
+  // Further filter cells based on the text search query
+  const searchableCells = useMemo(() => {
+    if (!cellSearchQuery) {
+        return filteredCells;
+    }
+    const query = cellSearchQuery.toLowerCase().trim();
+    if (!query) {
+        return filteredCells;
+    }
+    return filteredCells.filter(cell => {
+        if (!cell) return false;
+        const cellName = (cell.name || '').toLowerCase();
+        const cellId = (cell.id || '').toString();
+
+
+        return (
+            cellName.startsWith(query) ||
+            cellName.includes(query) ||
+            cellId.includes(query)
+        );
+    });
+  }, [filteredCells, cellSearchQuery]);
+
+
   if (cells.isLoading) {
     return <span>Loading...</span>;
   }
 
+
   if (cells.isError) {
     return <span>Error: {cells.error?.message || 'Failed to load cells'}</span>;
   }
+
 
   // Ensure selectedCells is always a valid array with valid objects
   const safeSelectedCells = Array.isArray(selectedCells) ? selectedCells.filter((cell) => cell && cell.id) : [];
@@ -156,10 +194,27 @@ function CellSelect({ selectedCells, setSelectedCells }) {
           )}
         </Box>
 
+
         <Divider />
 
-        {Array.isArray(filteredCells)
-          ? filteredCells
+
+        {/* Search field for cells */}
+        <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0' }}>
+            <TextField
+                fullWidth
+                placeholder="Search by cell name or ID..."
+                variant="outlined"
+                size="small"
+                value={cellSearchQuery}
+                onChange={(e) => setCellSearchQuery(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+            />
+        </Box>
+
+
+        {/* Use the 'searchableCells' list for rendering */}
+        {Array.isArray(searchableCells)
+          ? searchableCells
               .filter((cell) => cell && cell.id && !cell.archive)
               .sort((a, b) => (a?.name || '').localeCompare(b?.name || ''))
               .map((cell) => {
@@ -188,9 +243,11 @@ function CellSelect({ selectedCells, setSelectedCells }) {
   );
 }
 
+
 CellSelect.propTypes = {
   selectedCells: PropTypes.array,
   setSelectedCells: PropTypes.func.isRequired,
 };
+
 
 export default CellSelect;
