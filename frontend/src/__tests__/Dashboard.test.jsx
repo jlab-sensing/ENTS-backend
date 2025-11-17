@@ -1,14 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import CellSelect from '../pages/dashboard/components/CellSelect';
-import CopyLinkBtn from '../pages/dashboard/components/CopyLinkBtn';
-import { DateTime } from 'luxon';
-import PropTypes from 'prop-types';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 
-// This interceptor tells any component that calls 'useCells' to use our fake data instead of making a network request.
+// Mock the cell service BEFORE importing the CellSelect component.
 vi.mock('../services/cell', () => ({
   useCells: () => ({
     data: [
@@ -20,6 +12,19 @@ vi.mock('../services/cell', () => ({
   }),
 }));
 
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import CellSelect from '../pages/dashboard/components/CellSelect';
+import CopyLinkBtn from '../pages/dashboard/components/CopyLinkBtn';
+import { DateTime } from 'luxon';
+import PropTypes from 'prop-types';
+
+// Clean up mocks after each test to ensure test isolation.
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 const queryClient = new QueryClient();
 const mockedSetSelectedCells = vi.fn();
@@ -67,7 +72,6 @@ describe('Loading dashboard', () => {
 
 
 describe('Testing copy functionality', () => {
-    // ... all other tests remain unchanged ...
   it('should copy a URL with the correct cellID QueryParam of 1,2', async () => {
     const writeTextMock = vi.fn();
     vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeTextMock);
@@ -84,9 +88,6 @@ describe('Testing copy functionality', () => {
 
 
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
-
-
-    vi.restoreAllMocks();
   });
 
 
@@ -106,9 +107,6 @@ describe('Testing copy functionality', () => {
 
 
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
-
-
-    vi.restoreAllMocks();
   });
 
 
@@ -126,9 +124,6 @@ describe('Testing copy functionality', () => {
 
 
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
-
-
-    vi.restoreAllMocks();
   });
 
 
@@ -144,8 +139,5 @@ describe('Testing copy functionality', () => {
     await user.click(copyLinkButton);
     const copiedText = `http://localhost:3000/dashboard?cell_id=&startDate=${DateTimeNow}&endDate=${endDate}`;
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
-
-
-    vi.restoreAllMocks();
   });
 });
