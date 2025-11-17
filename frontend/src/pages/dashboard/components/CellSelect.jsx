@@ -6,61 +6,16 @@ import {
   TextField,
 } from '@mui/material';
 import PropTypes from 'prop-types';
-import { React, useMemo, useState, useEffect } from 'react';
+import { React, useMemo } from 'react';
 import { useCells } from '../../../services/cell';
-import { useTags, getCellsByTag } from '../../../services/tag';
-
 
 function CellSelect({ selectedCells, setSelectedCells }) {
   const cells = useCells();
 
-  const { data: tags = [] } = useTags();
-  const [selectedTags, setSelectedTags] = useState([]);
-  const [taggedCellIds, setTaggedCellIds] = useState([]);
-
-
-  // Fetch cells for selected tags
-  useEffect(() => {
-    if (selectedTags.length === 0) {
-      setTaggedCellIds([]);
-      return;
-    }
-    const fetchTaggedCells = async () => {
-      try {
-        const allTaggedCells = new Set();
-        for (const tag of selectedTags) {
-          if (tag && tag.id) {
-            const response = await getCellsByTag(tag.id);
-            if (response.cells && Array.isArray(response.cells)) {
-              response.cells.forEach((cell) => {
-                if (cell && cell.id) {
-                  allTaggedCells.add(cell.id);
-                }
-              });
-            }
-          }
-        }
-        setTaggedCellIds(Array.from(allTaggedCells));
-      } catch (error) {
-        console.error('Error fetching tagged cells:', error);
-        setTaggedCellIds([]);
-      }
-    };
-    fetchTaggedCells();
-  }, [selectedTags]);
-
-
-  // Filter cells by selected tags
   const filteredCells = useMemo(() => {
     if (!cells.data || !Array.isArray(cells.data)) return [];
-    if (selectedTags.length === 0) return cells.data.filter(cell => cell && !cell.archive);
-
-
-    return cells.data.filter((cell) => {
-      return cell && cell.id && !cell.archive && taggedCellIds.includes(cell.id);
-    });
-  }, [cells.data, selectedTags, taggedCellIds]);
-
+    return cells.data.filter(cell => cell && !cell.archive);
+  }, [cells.data]);
 
   if (cells.isLoading) {
     return <span>Loading...</span>;
@@ -68,7 +23,6 @@ function CellSelect({ selectedCells, setSelectedCells }) {
   if (cells.isError) {
     return <span>Error: {cells.error?.message || 'Failed to load cells'}</span>;
   }
-
 
   return (
     <FormControl sx={{ width: 1 }}>
@@ -85,6 +39,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
         renderTags={(value, getTagProps) =>
           value.map((option, index) => (
             <Chip
+              key={option.id}
               label={option.name}
               {...getTagProps({ index })}
               size="small"
@@ -122,12 +77,9 @@ function CellSelect({ selectedCells, setSelectedCells }) {
   );
 }
 
-
 CellSelect.propTypes = {
   selectedCells: PropTypes.array,
   setSelectedCells: PropTypes.func.isRequired,
 };
 
-
 export default CellSelect;
-
