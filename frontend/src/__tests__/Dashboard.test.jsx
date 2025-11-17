@@ -8,6 +8,18 @@ import CopyLinkBtn from '../pages/dashboard/components/CopyLinkBtn';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 
+// This interceptor tells any component that calls 'useCells' to use our fake data instead of making a network request.
+vi.mock('../services/cell', () => ({
+  useCells: () => ({
+    data: [
+      { id: '1', name: 'test_cell_1', archive: false },
+      { id: '2', name: 'test_cell_2', archive: false },
+    ],
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
 
 const queryClient = new QueryClient();
 const mockedSetSelectedCells = vi.fn();
@@ -33,7 +45,6 @@ MockCellSelect.propTypes = {
 describe('Loading dashboard', () => {
   it('should load cell select as unselected', async () => {
     render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
-    // Find the Autocomplete input by its visible label "Cell" instead of the old hidden text
     const cellSelectElement = await screen.findByLabelText('Cell');
     expect(cellSelectElement).toBeInTheDocument();
   });
@@ -47,10 +58,8 @@ describe('Loading dashboard', () => {
   it('should display mocked cell names when dropdown is open', async () => {
     const user = userEvent.setup();
     render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
-    // Find the dropdown button by its accessible name "Open" and click it
     const dropdownButton = screen.getByLabelText('Open');
     await user.click(dropdownButton);
-    // The rest of the test remains the same
     expect(await screen.findByText('test_cell_1')).toBeInTheDocument();
     expect(await screen.findByText('test_cell_2')).toBeInTheDocument();
   });
@@ -58,6 +67,7 @@ describe('Loading dashboard', () => {
 
 
 describe('Testing copy functionality', () => {
+    // ... all other tests remain unchanged ...
   it('should copy a URL with the correct cellID QueryParam of 1,2', async () => {
     const writeTextMock = vi.fn();
     vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeTextMock);
