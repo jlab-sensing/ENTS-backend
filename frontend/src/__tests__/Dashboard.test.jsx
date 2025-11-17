@@ -65,7 +65,7 @@ describe('Loading dashboard', () => {
     const input = screen.getByLabelText('Cell');
     await user.click(input);
 
-    // Wait for the listbox (options popper) to appear
+    // Wait for the listbox to appear (MUI places options in a popper with role="listbox")
     const listbox = await screen.findByRole('listbox');
 
     // Assert the mocked options are present inside the listbox
@@ -75,7 +75,7 @@ describe('Loading dashboard', () => {
 });
 
 describe('Testing copy functionality', () => {
-  it('should copy a URL with the correct cellID QueryParam of 1,2', async () => {
+  it('should copy a URL with the correct cellID QueryParam of 1', async () => {
     const writeTextMock = vi.fn();
     vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeTextMock);
 
@@ -131,6 +131,7 @@ describe('Testing copy functionality', () => {
     const copyLinkButton = screen.getByLabelText('Copy Link');
     await user.click(copyLinkButton);
     const copiedText = `http://localhost:3000/dashboard?cell_id=&startDate=${DateTimeNow}&endDate=${endDate}`;
+
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
   });
 });
