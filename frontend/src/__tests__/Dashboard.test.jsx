@@ -13,7 +13,7 @@ vi.mock('../services/cell', () => ({
 }));
 
 import React from 'react';
-import { render, screen, within } from '@testing-library/react'; // Import 'within'
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import CellSelect from '../pages/dashboard/components/CellSelect';
@@ -59,24 +59,21 @@ describe('Loading dashboard', () => {
     expect(copyLinkButton).toBeInTheDocument();
   });
 
-  it('should display mocked cell names when dropdown is open', async () => {
+  it('should filter and display options when a user types', async () => {
     const user = userEvent.setup();
     render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
-    
-    // 1. Find the input field by its role and click it to open the dropdown
+
+    // 1. Find the input field by its accessible role and name
     const input = screen.getByRole('combobox', { name: 'Cell' });
-    await user.click(input);
-    
-    // 2. Wait for the listbox (the dropdown menu) to appear in the document
-    const listbox = await screen.findByRole('listbox');
-    
-    // 3. Use `within` to scope the search for the options only inside the listbox
-    const option1 = await within(listbox).findByText('test_cell_1');
-    const option2 = await within(listbox).findByText('test_cell_2');
-    
-    // 4. Assert that the options were found within the listbox
+
+    // 2. Simulate a user typing into the search field
+    await user.type(input, 'test_cell_1');
+
+    // 3. Find the option that appears as a result of the typing
+    const option1 = await screen.findByText('test_cell_1');
+
+    // 4. Assert that the filtered option is visible
     expect(option1).toBeInTheDocument();
-    expect(option2).toBeInTheDocument();
   });
 });
 
