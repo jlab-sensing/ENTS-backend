@@ -13,7 +13,7 @@ vi.mock('../services/cell', () => ({
 }));
 
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import CellSelect from '../pages/dashboard/components/CellSelect';
@@ -30,7 +30,6 @@ const queryClient = new QueryClient();
 const mockedSetSelectedCells = vi.fn();
 const DateTimeNow = DateTime.now();
 
-
 const MockCellSelect = ({ selectedCells, setSelectedCells }) => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -39,12 +38,10 @@ const MockCellSelect = ({ selectedCells, setSelectedCells }) => {
   );
 };
 
-
 MockCellSelect.propTypes = {
   selectedCells: PropTypes.array,
   setSelectedCells: PropTypes.func,
 };
-
 
 //** integration test: service calls on dashboard */
 describe('Loading dashboard', () => {
@@ -64,26 +61,23 @@ describe('Loading dashboard', () => {
     const user = userEvent.setup();
     render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
 
-    // Prefer role-based queries which are more robust and accessible-friendly
-    const dropdownButton = screen.getByRole('button', { name: /open/i });
-    await user.click(dropdownButton);
+    // Open the Autocomplete by clicking the labeled input (MUI Autocomplete)
+    const input = screen.getByLabelText('Cell');
+    await user.click(input);
 
-    // Wait for the listbox (or options) to appear, then assert option contents
-    const listbox = await screen.findByRole('listbox'); // works for native/select-like widgets
-    const options = within(listbox).getAllByRole('option');
+    // Wait for the listbox (options popper) to appear
+    const listbox = await screen.findByRole('listbox');
 
-    // Expect at least the two mocked items to be present
-    expect(options.some(opt => opt.textContent.includes('test_cell_1'))).toBe(true);
-    expect(options.some(opt => opt.textContent.includes('test_cell_2'))).toBe(true);
+    // Assert the mocked options are present inside the listbox
+    expect(within(listbox).getByText('test_cell_1')).toBeInTheDocument();
+    expect(within(listbox).getByText('test_cell_2')).toBeInTheDocument();
   });
 });
-
 
 describe('Testing copy functionality', () => {
   it('should copy a URL with the correct cellID QueryParam of 1,2', async () => {
     const writeTextMock = vi.fn();
     vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeTextMock);
-
 
     const user = userEvent.setup();
     const selectedCells = [{ id: 1 }, { id: 2 }];
@@ -94,15 +88,12 @@ describe('Testing copy functionality', () => {
       .map((cell) => cell.id)
       .join(',')}&startDate=${DateTimeNow}&endDate=${DateTimeNow}`;
 
-
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
   });
-
 
   it('should copy a URL with the correct cellID QueryParam of 12', async () => {
     const writeTextMock = vi.fn();
     vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeTextMock);
-
 
     const user = userEvent.setup();
     const selectedCells = [{ id: 12 }];
@@ -113,16 +104,13 @@ describe('Testing copy functionality', () => {
       .map((cell) => cell.id)
       .join(',')}&startDate=${DateTimeNow}&endDate=${DateTimeNow}`;
 
-
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
   });
-
 
   it('should copy a URL with the correct startDate QueryParam', async () => {
     const writeTextMock = vi.fn();
     vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeTextMock);
     const startDate = DateTime.now().minus({ days: 14 });
-
 
     const user = userEvent.setup();
     render(<CopyLinkBtn startDate={startDate} endDate={DateTimeNow} selectedCells={[]} />);
@@ -130,16 +118,13 @@ describe('Testing copy functionality', () => {
     await user.click(copyLinkButton);
     const copiedText = `http://localhost:3000/dashboard?cell_id=&startDate=${startDate}&endDate=${DateTimeNow}`;
 
-
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
   });
-
 
   it('should copy a URL with the correct endDate QueryParam', async () => {
     const writeTextMock = vi.fn();
     vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeTextMock);
     const endDate = DateTime.now().minus({ days: 14 });
-
 
     const user = userEvent.setup();
     render(<CopyLinkBtn startDate={DateTimeNow} endDate={endDate} selectedCells={[]} />);
