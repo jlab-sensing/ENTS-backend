@@ -26,6 +26,42 @@ docker compose up --build -d
 
 At this point the backend is accessible at [http://localhost:3000/](http://localhost:3000/), but will likely show a blank page in your web browser and throw an error. This is due to the database being empty, therefore there is no data to display.
 
+#### Alternative Setup Methods
+
+If you prefer to run the frontend and backend separately without Docker:
+
+**Frontend Setup:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+**Backend Setup:**
+```bash
+python -m venv .venv
+source .venv/bin/activate  # (Windows: .venv\Scripts\activate)
+pip install -r backend/requirements.txt
+python backend/wsgi.py
+```
+
+The frontend will be available at `http://localhost:3000` and the backend at `http://localhost:8000`.
+
+**Testing:**
+```bash
+cd backend
+pytest -q
+```
+
+**Docker (Alternative):**
+```bash
+docker-compose up --build
+# Frontend at http://localhost:3000
+# Backend at  http://localhost:8000
+```
+
+For Docker users, see `docker-compose.yml` at the repo root for more configuration options.
+
 ## Windows Development Note
 
 When developing on Windows, be aware that Git may automatically convert line endings from LF (Unix-style) to CRLF (Windows-style). This can cause issues with shell scripts run inside Docker containers, such as `entrypoint.sh` and `migrate.sh`, resulting in errors like "entrypoint.sh not found" or "bad interpreter".
@@ -125,9 +161,56 @@ Now some graphs should appear on the website and look like the following.
 
 ## Architecture
 
-### System
+### System Overview
+
+DirtViz is an open-source platform for visualizing environmental sensor networks. It combines a React frontend with a Python backend and a relational database to stream, store, and visualize sensor data in real time.
 
 ENTS backend's client is built with React and is located under the `frontend` folder. ENTS backend's API is built with Flask and located under the `backend` folder. Check out the [frontend readme](frontend/README.md) and the [backend readme](backend/README.md) for more information.
+
+### Frontend
+
+The frontend is built with React and Vite, using Material UI for components, Chart.js for charts, and TanStack Query for data fetching/caching.
+
+#### Frontend Structure
+
+```
+frontend/
+  src/
+    components/        # Navbar, footer, shared UI
+    pages/             # Home, Dashboard, Map, Profile, Docs
+    charts/            # Chart.js wrappers & plugins
+    services/          # API clients & auth
+    auth/              # Auth context and hooks
+```
+
+#### Dashboard Details
+
+- Route: `/dashboard`; responsive layout built with Material UI Grid
+- Charts: components under `frontend/src/charts` (e.g., `VwcChart`, `TempChart`, `PwrChart`), powered by Chart.js
+- Data fetching: TanStack Query hooks using axios clients in `frontend/src/services`
+- Filters: tag/cell filters and date-range utilities in `hooks/useSmartDateRange.js`
+- UX: zoom/pan plugins, downsampling, and synchronized axes for charts
+- Auth-aware: protected data routes require a valid access token; handled by `useAxiosPrivate`
+
+### Backend
+
+The backend (Python) exposes RESTful endpoints, manages authentication, and persists sensor readings. It uses SQLAlchemy ORM with Alembic migrations. Resources under `backend/api/resources` map to models in `backend/api/models`.
+
+For detailed API endpoint documentation, see `backend/api/resources` and tests under `backend/tests`.
+
+### Database Schema
+
+The ER diagram shows tables for users, sensors, loggers, cells, and time-series measurements.
+
+![Database schema diagram](frontend/public/assets/db.png)
+
+### How It Works
+
+Data flows from field sensors through gateways to the backend API where it is validated and stored. The frontend queries the API to render dashboards and live visualizations.
+
+1. Sensor devices publish readings (e.g., via LoRaWAN / TTN integration)
+2. Backend receives payloads, normalizes units, and writes to the database
+3. Frontend fetches aggregated data and streams recent points to charts
 
 ### Local Development and Production Environments
 
