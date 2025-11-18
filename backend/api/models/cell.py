@@ -8,7 +8,7 @@ https://stackoverflow.com/questions/5756559/how-to-build-many-to-many-relations-
 class Cell_User(db.Model):
     __tablename__ = "cell_user"
     cell_id = db.Column(db.Integer, db.ForeignKey("cell.id"), primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    user_id = db.Column(db.Uuid(), db.ForeignKey("user.id"), primary_key=True)
 
 
 class Cell_Tag(db.Model):
@@ -55,16 +55,21 @@ class Cell(db.Model):
     @staticmethod
     def add_cell_by_user_email(name, location, latitude, longitude, archive, userEmail):
         from .user import User
-        user_id = User.get_user_by_email(userEmail).id
+        creator = User.get_user_by_email(userEmail)
         new_cell = Cell(
             name=name,
             location=location,
             latitude=latitude,
             longitude=longitude,
-            user_id=user_id,
+            user_id=creator.id,
             archive=archive,
         )
         new_cell.save()
+
+        # Automatically add creator to the cell_user relationship for access
+        new_cell.users.append(creator)
+        new_cell.save()
+
         return new_cell
 
     @staticmethod
@@ -77,6 +82,17 @@ class Cell(db.Model):
 
     @staticmethod
     def get_cells_by_user_id(id):
+        """Get cells that a user has access to via the cell_user relationship"""
+        from .user import User
+        user = User.get(id)
+        if not user:
+            return []
+        # Return cells from the many-to-many relationship
+        return user.cells
+
+    @staticmethod
+    def get_cells_created_by_user(id):
+        """Get cells created by a specific user"""
         return Cell.query.filter_by(user_id=id).all()
 
     @staticmethod

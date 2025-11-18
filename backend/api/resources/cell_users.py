@@ -64,49 +64,49 @@ class CellUserDetail(Resource):
 
     method_decorators = {"put": [authenticate], "delete": [authenticate]}
 
-    def put(self, user, cell_id, user_id):
+    def put(self, authenticated_user, cell_id, user_id):
         """Add a specific user to a cell"""
         cell = CellModel.get(cell_id)
         if not cell:
             return {"message": "Cell not found"}, 404
 
-        user = UserModel.get(user_id)
-        if not user:
-            return {"message": "user not found"}, 404
+        target_user = UserModel.get(user_id)
+        if not target_user:
+            return {"message": "User not found"}, 404
 
         try:
             # Check if user is already assigned
-            if user in cell.users:
+            if target_user in cell.users:
                 return {"message": "User already assigned to cell"}, 400
 
             # Add user to cell
-            cell.users.append(user)
+            cell.users.append(target_user)
             cell.save()
 
             return {
                 "message": "User added to cell successfully",
-                "user": user_schema.dump(user),
+                "user": user_schema.dump(target_user),
             }
         except Exception as e:
             return {"message": "Error adding user to cell", "error": str(e)}, 500
 
-    def delete(self, user, cell_id, user_id):
+    def delete(self, authenticated_user, cell_id, user_id):
         """Remove a specific user from a cell"""
         cell = CellModel.get(cell_id)
         if not cell:
             return {"message": "Cell not found"}, 404
 
-        user = UserModel.get(user_id)
-        if not user:
+        target_user = UserModel.get(user_id)
+        if not target_user:
             return {"message": "User not found"}, 404
 
         try:
             # Check if user is assigned to cell
-            if user not in cell.users:
+            if target_user not in cell.users:
                 return {"message": "User not assigned to this cell"}, 404
 
             # Remove user from cell
-            cell.users.remove(user)
+            cell.users.remove(target_user)
             cell.save()
 
             return {"message": "User removed from cell successfully"}
@@ -130,3 +130,44 @@ class CellByUser(Resource):
         cells_schema = CellSchema(many=True)
 
         return {"user": user_schema.dump(user), "cells": cells_schema.dump(user.cells)}
+
+
+class CellShare(Resource):
+    """Resource for sharing a cell with another user by email"""
+
+    method_decorators = [authenticate]
+
+    def post(self, authenticated_user, cell_id):
+        """Share a cell with a user by their email"""
+        cell = CellModel.get(cell_id)
+        if not cell:
+            return {"message": "Cell not found"}, 404
+
+        json_data = request.json
+        if not json_data or "email" not in json_data:
+            return {"message": "email is required"}, 400
+
+        email = json_data.get("email")
+        if not email:
+            return {"message": "email cannot be empty"}, 400
+
+        try:
+            # Find user by email
+            target_user = UserModel.get_user_by_email(email)
+            if not target_user:
+                return {"message": f"User with email {email} not found"}, 404
+
+            # Check if user is already assigned
+            if target_user in cell.users:
+                return {"message": "User already has access to this cell"}, 400
+
+            # Add user to cell
+            cell.users.append(target_user)
+            cell.save()
+
+            return {
+                "message": "Cell shared successfully",
+                "user": user_schema.dump(target_user),
+            }
+        except Exception as e:
+            return {"message": "Error sharing cell", "error": str(e)}, 500

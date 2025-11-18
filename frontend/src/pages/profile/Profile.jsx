@@ -64,8 +64,9 @@ function Profile() {
       >
         <Box
           sx={{
-            width: '20vw',
-            paddingLeft: '3rem',
+            width: { xs: 0, sm: '200px', md: '20vw' },
+            paddingLeft: { xs: 0, sm: '1rem', md: '3rem' },
+            display: { xs: 'none', sm: 'block' },
           }}
         >
           <SideBar />
@@ -73,8 +74,10 @@ function Profile() {
         <Box
           sx={{
             flex: 1,
-            paddingLeft: '4vw',
+            paddingLeft: { xs: '2vw', sm: '3vw', md: '4vw' },
+            paddingRight: { xs: '2vw', sm: '3vw', md: '2vw' },
             overflowY: 'auto',
+            width: '100%',
           }}
         >
           <Outlet context={[data, isLoading, isError, refetch, user, setUser, loggerData, loggerIsLoading, loggerIsError, loggerRefetch, axiosPrivate]} />
