@@ -189,20 +189,21 @@ FLASK_ENV=production`}
 
     
 
-        {/* Setup */}
+       
+        <Box id='setup' sx={{ mb: { xs: 4, md: 6 } }}>
+            <Typography variant='h5' sx={{ fontWeight: 800, mb: 1 }}>
+              Setup Instructions
+            </Typography>
 
-        </Container><Box id='setup' sx={{ mb: { xs: 4, md: 6 } }}> 
-
-        <Box id='overview' sx={{ mb: { xs: 4, md: 6 } }}></Box>
-        <Typography variant='h5' sx={{ fontWeight: 800, mb: 1 }}>Setup Instructions</Typography>
-          <Typography variant='body1' sx={{ color: '#374151' }}>
-            I like big butts and I cannot lie. 
-            Sir, you cannot write that on your paper!
-            The greater the mass, the greater the force of attraction.
-          </Typography>
+            <Typography variant='body1' sx={{ color: '#374151' }}>
+              I like big butts and I cannot lie.
+              Sir, you cannot write that on your paper!
+              The greater the mass, the greater the force of attraction.
+            </Typography>
         </Box>
+        
 
-
+      
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Typography variant='subtitle2' sx={{ fontWeight: 800, mb: 1 }}>Frontend</Typography>
@@ -243,7 +244,7 @@ pytest -q`}
           <Typography variant='caption' sx={{ color: '#6B7280', display: 'block', mt: 1 }}>
             For Docker users, see docker-compose.yml at the repo root.
           </Typography>
-        </Box>
+        {/* </Box> */}
         {/*board setup section*/}
 
         {/* Learn more */}
