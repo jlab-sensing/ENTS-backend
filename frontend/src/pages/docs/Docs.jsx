@@ -34,7 +34,7 @@ function Docs() {
       <Container maxWidth='lg' sx={{ py: { xs: 4, md: 6 } }}>
         <Box sx={{ textAlign: 'center', mb: { xs: 3, md: 4 } }}>
           <Typography variant='h3' component='h1' sx={{ fontWeight: 900, color: '#0F172A' }}>
-            Ents Documentation
+            EnTS Documentation 
           </Typography>
           
         </Box>
