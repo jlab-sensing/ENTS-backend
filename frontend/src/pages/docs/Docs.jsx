@@ -177,10 +177,24 @@ FLASK_ENV=production`}
             <li>Frontend fetches aggregated data and streams recent points to charts.</li>
           </ol>
         </Box>
+{/* 
+         <Typography variant='h5' sx={{ fontWeight: 800, mb: 1 }}>Overview</Typography>
+          <Typography variant='body1' sx={{ color: '#374151' }}>
+            DirtViz is an open-source platform for visualizing environmental sensor networks. It combines a modern
+            React frontend with a Python backend and a relational database to stream, store, and visualize sensor data in
+            real time.
+          </Typography>
+        </Box> */}
+
+
+    
 
         {/* Setup */}
-        <Box id='setup' sx={{ mb: { xs: 4, md: 6 } }}>
-          <Typography variant='h5' sx={{ fontWeight: 800, mb: 1 }}>Setup Instructions</Typography>
+
+        </Container><Box id='setup' sx={{ mb: { xs: 4, md: 6 } }}> 
+
+        <Box id='overview' sx={{ mb: { xs: 4, md: 6 } }}></Box>
+        <Typography variant='h5' sx={{ fontWeight: 800, mb: 1 }}>Setup Instructions</Typography>
           <Typography variant='body1' sx={{ color: '#374151' }}>
             I like big butts and I cannot lie. 
             Sir, you cannot write that on your paper!
