@@ -57,7 +57,7 @@ function Docs() {
           <Divider orientation='vertical' flexItem sx={{ mx: 0.5, borderColor: '#E5E7EB' }} />
           <AnchorLink href='#backend'>Backend</AnchorLink>
           <Divider orientation='vertical' flexItem sx={{ mx: 0.5, borderColor: '#E5E7EB' }} />
-          <AnchorLink href='#schema'>Schema</AnchorLink>
+          <AnchorLink href='#schema'>Function</AnchorLink>
           <Divider orientation='vertical' flexItem sx={{ mx: 0.5, borderColor: '#E5E7EB' }} />
           <AnchorLink href='#setup'>Setup</AnchorLink>
          
