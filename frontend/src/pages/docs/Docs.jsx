@@ -186,6 +186,9 @@ FLASK_ENV=production`}
             Sir, you cannot write that on your paper!
             The greater the mass, the greater the force of attraction.
           </Typography>
+        </Box>
+
+
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Typography variant='subtitle2' sx={{ fontWeight: 800, mb: 1 }}>Frontend</Typography>
