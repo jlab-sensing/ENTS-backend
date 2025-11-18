@@ -196,13 +196,17 @@ FLASK_ENV=production`}
             </Typography>
 
             <Typography variant='body1' sx={{ color: '#374151' }}>
-              I like big butts and I cannot lie.
-              Sir, you cannot write that on your paper!
-              The greater the mass, the greater the force of attraction.
+              Get a EnTS board.
             </Typography>
+            <ol style={{ margin: '12px 0 0 20px', color: '#374151' }}>
+              <li>Plug in your board to your computer to power or power cycle the device.</li>
+              <li>Connect to ents-xxx. If the board has not been configured it will show ents-unconfigured. Otherwise xxx will be replaced by the logger id. One minute after the first upload the WiFi network will turn off to save power if no one is currently connected. Repeat step 1 in this case.</li>
+              <li>Slap your butt for encouragement.</li>
+            </ol>
         </Box>
-        
-
+      
+      
+      
       
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
