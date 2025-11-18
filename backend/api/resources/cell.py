@@ -14,7 +14,7 @@ add_cell_schema = AddCellSchema()
 
 
 class Cell(Resource):
-    method_decorators = {"get": [authenticate]}
+    method_decorators = {"get": [authenticate], "post": [authenticate], "put": [authenticate], "delete": [authenticate]}
 
     def get(self, user):
         json_data = request.args
@@ -51,7 +51,7 @@ class Cell(Resource):
 
         return cells_schema.dump(cells)
 
-    def post(self):
+    def post(self, user):
         json_data = request.json
         cell_data = add_cell_schema.load(json_data)
         cell_name = cell_data["name"]
@@ -97,7 +97,7 @@ class Cell(Resource):
         except Exception as e:
             return {"message": "Error adding cell", "error": str(e)}, 500
 
-    def put(self, cellId):
+    def put(self, user, cellId):
         json_data = request.json
         cell = CellModel.get(cellId)
 
@@ -140,7 +140,7 @@ class Cell(Resource):
         except Exception as e:
             return {"message": "Error updating cell", "error": str(e)}, 500
 
-    def delete(self, cellId):
+    def delete(self, user, cellId):
         cell = CellModel.get(cellId)
         if not cell:
             return jsonify({"message": "Cell not found"}), 404

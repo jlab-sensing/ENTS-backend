@@ -3,6 +3,7 @@ import { AppBar, Box, Button, Divider, Drawer, IconButton, List, ListItemButton,
 import PropTypes from 'prop-types';
 import { React, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import useAuth from '../auth/hooks/useAuth';
 import useAxiosPrivate from '../auth/hooks/useAxiosPrivate';
 import { logout, signIn } from '../services/auth';
 import DvIcon from './DvIcon';
@@ -10,6 +11,7 @@ import DvIcon from './DvIcon';
 function Nav({ user, setUser, loggedIn, setLoggedIn }) {
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
+  const { isAuthLoading, setIsAuthLoading } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const openDrawer = () => setMobileOpen(true);
   const closeDrawer = () => setMobileOpen(false);
@@ -38,6 +40,15 @@ function Nav({ user, setUser, loggedIn, setLoggedIn }) {
         }
       } catch (err) {
         console.error(err);
+        // If user fetch fails, clear auth state
+        if (isMounted) {
+          setLoggedIn(false);
+          setUser(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsAuthLoading(false);
+        }
       }
     }
     getUserData();
@@ -47,7 +58,7 @@ function Nav({ user, setUser, loggedIn, setLoggedIn }) {
       isMounted = false;
       controller.abort();
     };
-  }, [axiosPrivate, setLoggedIn, setUser]);
+  }, [axiosPrivate, setLoggedIn, setUser, setIsAuthLoading]);
 
   const location = useLocation();
   const isActive = useMemo(() => ({

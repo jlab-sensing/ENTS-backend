@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import { axiosPrivate } from '../api/axios';
 
 export const getCellData = (cellIds, resample, startTime, endTime) => {
   return axios
@@ -78,6 +79,27 @@ export const deleteCell = async (cellId) => {
   } catch (error) {
     console.error('Error deleting cell:', error.response ? error.response.data : error.message);
     throw error; // Rethrow the error for further handling
+  }
+};
+
+export const shareCell = async (cellId, email, accessToken) => {
+  const url = `${process.env.PUBLIC_URL}/api/cell/${cellId}/share`;
+
+  try {
+    const response = await axios.post(
+      url,
+      { email },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error sharing cell:', error.response ? error.response.data : error.message);
+    throw error;
   }
 };
 

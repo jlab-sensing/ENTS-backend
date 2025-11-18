@@ -6,19 +6,19 @@ import { useOutletContext } from 'react-router-dom';
 import { deleteCell } from '../../../services/cell';
 import PropTypes from 'prop-types';
 
-function DeleteCellModal({ id }) {
+function DeleteCellModal({ ids }) {
   let data = useOutletContext();
   const refetch = data[3];
   const user = data[4];
   data = data[0];
   const [isOpen, setOpen] = useState(false);
   const [response, setResponse] = useState(null);
-  const [cellId, setCellId] = useState('');
+  const [cellIds, setCellIds] = useState([]);
 
   const handleOpen = () => {
-    if (id != '') {
+    if (ids && ids.length > 0) {
       setOpen(true);
-      setCellId(id);
+      setCellIds(ids);
     }
     setResponse(null);
   };
@@ -26,7 +26,7 @@ function DeleteCellModal({ id }) {
   const handleClose = () => {
     setOpen(false);
     setResponse(null);
-    setCellId('');
+    setCellIds([]);
   };
 
   useEffect(() => {
@@ -87,20 +87,20 @@ function DeleteCellModal({ id }) {
                 >
                   <CloseIcon fontSize='small' />
                 </IconButton>
-                <Typography 
-                  variant='h5' 
+                <Typography
+                  variant='h5'
                   component='h2'
-                  sx={{ 
+                  sx={{
                     color: 'white',
                     fontWeight: 600,
                     fontSize: '1.5rem'
                   }}
                 >
-                  Delete Cell
+                  Delete {cellIds.length > 1 ? `${cellIds.length} Cells` : 'Cell'}
                 </Typography>
-                <Typography 
-                  variant='body2' 
-                  sx={{ 
+                <Typography
+                  variant='body2'
+                  sx={{
                     color: 'rgba(255, 255, 255, 0.8)',
                     mt: 0.5
                   }}
@@ -112,7 +112,7 @@ function DeleteCellModal({ id }) {
               {/* Content Section */}
               <Box sx={{ padding: '2rem' }}>
                 <Typography variant='body1' sx={{ mb: 3, color: '#666', lineHeight: 1.6 }}>
-                  Are you sure you want to delete this cell? All associated data and configurations will be permanently removed.
+                  Are you sure you want to delete {cellIds.length > 1 ? `these ${cellIds.length} cells` : 'this cell'}? All associated data and configurations will be permanently removed.
                 </Typography>
 
                 {/* Action Buttons */}
@@ -140,9 +140,10 @@ function DeleteCellModal({ id }) {
                   <Button
                     variant='contained'
                     onClick={() => {
-                      deleteCell(cellId)
-                        .then((res) => {
-                          setResponse(res);
+                      // Delete all selected cells
+                      Promise.all(cellIds.map(cellId => deleteCell(cellId)))
+                        .then((responses) => {
+                          setResponse({ success: true, count: cellIds.length });
                           refetch();
                         })
                         .catch((error) => console.error(error));
@@ -154,7 +155,7 @@ function DeleteCellModal({ id }) {
                       px: '1.5rem'
                     }}
                   >
-                    Delete Cell
+                    Delete {cellIds.length > 1 ? `${cellIds.length} Cells` : 'Cell'}
                   </Button>
                 </Box>
               </Box>
@@ -163,44 +164,47 @@ function DeleteCellModal({ id }) {
           {response && (
             <>
               {/* Success Header */}
-              <Box sx={{ 
-                backgroundColor: '#2e7d32', 
+              <Box sx={{
+                backgroundColor: '#2e7d32',
                 padding: '1.5rem 2rem',
                 position: 'relative',
                 mb: 0
               }}>
-                <Typography 
-                  variant='h5' 
+                <Typography
+                  variant='h5'
                   component='h2'
-                  sx={{ 
+                  sx={{
                     color: 'white',
                     fontWeight: 600,
                     fontSize: '1.5rem'
                   }}
                 >
-                  Cell Deleted Successfully!
+                  {response?.count > 1 ? `${response.count} Cells Deleted Successfully!` : 'Cell Deleted Successfully!'}
                 </Typography>
-                <Typography 
-                  variant='body2' 
-                  sx={{ 
+                <Typography
+                  variant='body2'
+                  sx={{
                     color: 'rgba(255, 255, 255, 0.8)',
                     mt: 0.5
                   }}
                 >
-                  The cell has been removed from your system
+                  {response?.count > 1 ? 'The cells have been removed from your system' : 'The cell has been removed from your system'}
                 </Typography>
               </Box>
 
               {/* Success Content */}
               <Box sx={{ padding: '2rem' }}>
-                <Box sx={{ 
-                  backgroundColor: '#f8f9fa', 
-                  borderRadius: '8px', 
+                <Box sx={{
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '8px',
                   padding: '1.5rem',
                   mb: '1.5rem'
                 }}>
                   <Typography variant='body1' sx={{ color: '#666', lineHeight: 1.6 }}>
-                    The cell with ID <strong>{cellId}</strong> has been successfully deleted.
+                    {response?.count > 1
+                      ? `${response.count} cells have been successfully deleted.`
+                      : `The cell with ID ${cellIds[0]} has been successfully deleted.`
+                    }
                   </Typography>
                 </Box>
 
@@ -231,5 +235,5 @@ function DeleteCellModal({ id }) {
 export default DeleteCellModal;
 
 DeleteCellModal.propTypes = {
-  id: PropTypes.oneOfType(PropTypes.number).isRequired,
+  ids: PropTypes.arrayOf(PropTypes.number).isRequired,
 };
