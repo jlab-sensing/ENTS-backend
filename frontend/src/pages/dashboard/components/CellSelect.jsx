@@ -165,7 +165,16 @@ function CellSelect({ selectedCells, setSelectedCells }) {
               .map((cell) => {
                 return (
                   <MenuItem value={cell} key={cell.id} sx={{ py: 1 }}>
-                    <Typography variant='body2'>{cell.name || 'Unnamed Cell'}</Typography>
+                    <Typography
+                      variant='body2'
+                      sx={{
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {cell.name || 'Unnamed Cell'}
+                    </Typography>
                   </MenuItem>
                 );
               })
