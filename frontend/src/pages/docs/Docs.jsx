@@ -181,6 +181,11 @@ FLASK_ENV=production`}
         {/* Setup */}
         <Box id='setup' sx={{ mb: { xs: 4, md: 6 } }}>
           <Typography variant='h5' sx={{ fontWeight: 800, mb: 1 }}>Setup Instructions</Typography>
+          <Typography variant='body1' sx={{ color: '#374151' }}>
+            I like big butts and I cannot lie. 
+            Sir, you cannot write that on your paper!
+            The greater the mass, the greater the force of attraction.
+          </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Typography variant='subtitle2' sx={{ fontWeight: 800, mb: 1 }}>Frontend</Typography>
@@ -212,7 +217,7 @@ pytest -q`}
             <Grid item xs={12} md={6}>
               <Typography variant='subtitle2' sx={{ fontWeight: 800, mb: 1 }}>Docker</Typography>
               <Box component='pre' sx={{ m: 0, p: 2, background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: 1, overflow: 'auto' }}>
-{`docker-compose up --build
+{`docker-compose up --build -d
 # Frontend at http://localhost:3000
 # Backend at  http://localhost:8000`}
               </Box>
