@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Box, Button, Container, Divider, Grid, Stack, Typography } from '@mui/material';
 import TopNav from '../../components/TopNav.jsx';
 import LandingFooter from '../../components/LandingFooter.jsx';
+import Link from '@mui/material/Link';
 
 function AnchorLink({ href, children }) {
   return (
