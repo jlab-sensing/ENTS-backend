@@ -203,9 +203,9 @@ FLASK_ENV=production`}
           <ol style={{ margin: '12px 0 0 20px', color: '#374151' }}>
             <li>Plug in your board to your computer to power or power cycle the device.</li>
             <li>
-              Connect to ents-xxx. If the board has not been configured it will show ents-unconfigured.
-              Otherwise xxx will be replaced by the logger ID. One minute after the first upload the WiFi
-              network will turn off to save power if no one is currently connected. Repeat step 1 in this case.
+              Connect to <strong>ents-xxx</strong>. If the board has not been configured it will show <strong>ents-unconfigured</strong>.
+              Otherwise <strong>xxx</strong> will be replaced by the <em>Logger ID</em>. One minute after the first upload the WiFi
+              network will turn off to save power if no one is currently connected. Repeat Step 1 in this case.
             </li>
             <li>
               Navigate to{' '}
