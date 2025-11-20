@@ -4,6 +4,7 @@ import { Box, Button, Container, Divider, Grid, Stack, Typography } from '@mui/m
 import TopNav from '../../components/TopNav.jsx';
 import LandingFooter from '../../components/LandingFooter.jsx';
 import Link from '@mui/material/Link';
+import Screenshot1 from 'frontend\src\pages\docs\Screenshot1.png';
 
 
 
@@ -195,11 +196,11 @@ FLASK_ENV=production`}
        
         <Box id='setup' sx={{ mb: { xs: 4, md: 6 } }}>
           <Typography variant='h5' sx={{ fontWeight: 800, mb: 1 }}>
-            Setup Instructions
+            Board Configuration Instructions
           </Typography>
 
           <Typography variant='body1' sx={{ color: '#374151' }}>
-            Get an EnTS board. Lick it.
+            Get an EnTS board. This should be done after flashing firmware onto the onboard STM32 and ESP32.
           </Typography>
 
           <ol style={{ margin: '12px 0 0 20px', color: '#374151' }}>
