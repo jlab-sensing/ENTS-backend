@@ -3,6 +3,10 @@ import PropTypes from 'prop-types';
 import { Box, Button, Container, Divider, Grid, Stack, Typography } from '@mui/material';
 import TopNav from '../../components/TopNav.jsx';
 import LandingFooter from '../../components/LandingFooter.jsx';
+import Link from '@mui/material/Link';
+import Screenshot1 from 'frontend\src\pages\docs\Screenshot1.png';
+
+
 
 function AnchorLink({ href, children }) {
   return (
@@ -34,7 +38,7 @@ function Docs() {
       <Container maxWidth='lg' sx={{ py: { xs: 4, md: 6 } }}>
         <Box sx={{ textAlign: 'center', mb: { xs: 3, md: 4 } }}>
           <Typography variant='h3' component='h1' sx={{ fontWeight: 900, color: '#0F172A' }}>
-            DirtViz Documentation
+            EnTS Documentation 
           </Typography>
           
         </Box>
@@ -57,7 +61,7 @@ function Docs() {
           <Divider orientation='vertical' flexItem sx={{ mx: 0.5, borderColor: '#E5E7EB' }} />
           <AnchorLink href='#backend'>Backend</AnchorLink>
           <Divider orientation='vertical' flexItem sx={{ mx: 0.5, borderColor: '#E5E7EB' }} />
-          <AnchorLink href='#schema'>Schema</AnchorLink>
+          <AnchorLink href='#schema'>Function</AnchorLink>
           <Divider orientation='vertical' flexItem sx={{ mx: 0.5, borderColor: '#E5E7EB' }} />
           <AnchorLink href='#setup'>Setup</AnchorLink>
          
@@ -177,10 +181,51 @@ FLASK_ENV=production`}
             <li>Frontend fetches aggregated data and streams recent points to charts.</li>
           </ol>
         </Box>
+{/* 
+         <Typography variant='h5' sx={{ fontWeight: 800, mb: 1 }}>Overview</Typography>
+          <Typography variant='body1' sx={{ color: '#374151' }}>
+            DirtViz is an open-source platform for visualizing environmental sensor networks. It combines a modern
+            React frontend with a Python backend and a relational database to stream, store, and visualize sensor data in
+            real time.
+          </Typography>
+        </Box> */}
 
-        {/* Setup */}
+
+    
+
+       
         <Box id='setup' sx={{ mb: { xs: 4, md: 6 } }}>
-          <Typography variant='h5' sx={{ fontWeight: 800, mb: 1 }}>Setup Instructions</Typography>
+          <Typography variant='h5' sx={{ fontWeight: 800, mb: 1 }}>
+            Board Configuration Instructions
+          </Typography>
+
+          <Typography variant='body1' sx={{ color: '#374151' }}>
+            Get an EnTS board. This should be done after flashing firmware onto the onboard STM32 and ESP32.
+          </Typography>
+
+          <ol style={{ margin: '12px 0 0 20px', color: '#374151' }}>
+            <li>Plug in your board to your computer to power or power cycle the device.</li>
+            <li>
+              Connect to <strong>ents-xxx</strong>. If the board has not been configured it will show <strong>ents-unconfigured</strong>.
+              Otherwise <strong>xxx</strong> will be replaced by the <em>Logger ID</em>. One minute after the first upload the WiFi
+              network will turn off to save power if no one is currently connected. Repeat Step 1 in this case.
+            </li>
+            <li>
+              Navigate to{' '}
+              <Link href="http://192.168.4.1/" target="_blank" rel="noopener">
+                http://192.168.4.1/
+              </Link>{' '}
+              to configure the EnTS board. The <em>Cell ID</em> and <em>Logger ID</em> are obtained from your profile.
+            </li>
+            <li>Save the configuration to the device.</li>
+            <li>Press the reset button (top right white button) for the EnTS board to start using the new configuration.</li>
+          </ol>
+        </Box>
+
+      
+      
+      
+      
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Typography variant='subtitle2' sx={{ fontWeight: 800, mb: 1 }}>Frontend</Typography>
@@ -212,7 +257,7 @@ pytest -q`}
             <Grid item xs={12} md={6}>
               <Typography variant='subtitle2' sx={{ fontWeight: 800, mb: 1 }}>Docker</Typography>
               <Box component='pre' sx={{ m: 0, p: 2, background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: 1, overflow: 'auto' }}>
-{`docker-compose up --build
+{`docker-compose up --build -d
 # Frontend at http://localhost:3000
 # Backend at  http://localhost:8000`}
               </Box>
@@ -221,7 +266,8 @@ pytest -q`}
           <Typography variant='caption' sx={{ color: '#6B7280', display: 'block', mt: 1 }}>
             For Docker users, see docker-compose.yml at the repo root.
           </Typography>
-        </Box>
+        {/* </Box> */}
+        {/*board setup section*/}
 
         {/* Learn more */}
         <Box id='learn' sx={{ textAlign: 'center', mb: { xs: 2, md: 4 } }}>
