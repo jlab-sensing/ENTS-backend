@@ -12,7 +12,12 @@ add_logger_schema = AddLoggerSchema()
 
 
 class Logger(Resource):
-    method_decorators = {"get": [authenticate], "post": [authenticate], "put": [authenticate], "delete": [authenticate]}
+    method_decorators = {
+        "get": [authenticate],
+        "post": [authenticate],
+        "put": [authenticate],
+        "delete": [authenticate],
+    }
     ttn_api = TTNApi()
 
     def get(self, user, logger_id: int | None = None):

@@ -55,6 +55,7 @@ class Cell(db.Model):
     @staticmethod
     def add_cell_by_user_email(name, location, latitude, longitude, archive, userEmail):
         from .user import User
+
         creator = User.get_user_by_email(userEmail)
         new_cell = Cell(
             name=name,
@@ -84,6 +85,7 @@ class Cell(db.Model):
     def get_cells_by_user_id(id):
         """Get cells that a user has access to via the cell_user relationship"""
         from .user import User
+
         user = User.get(id)
         if not user:
             return []

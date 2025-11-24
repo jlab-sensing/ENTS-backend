@@ -11,6 +11,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
         exclude = ["cells", "password"]  # Exclude cells relationship and password
 
+
 class TagListSchema(ma.Schema):
     """Schema for tag list responses with additional metadata"""
 

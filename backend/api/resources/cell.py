@@ -14,7 +14,12 @@ add_cell_schema = AddCellSchema()
 
 
 class Cell(Resource):
-    method_decorators = {"get": [authenticate], "post": [authenticate], "put": [authenticate], "delete": [authenticate]}
+    method_decorators = {
+        "get": [authenticate],
+        "post": [authenticate],
+        "put": [authenticate],
+        "delete": [authenticate],
+    }
 
     def get(self, user):
         json_data = request.args
