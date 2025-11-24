@@ -1,6 +1,5 @@
 from ..schemas import ma
 from ..models.user import User
-from marshmallow import validate
 
 
 class UserSchema(ma.SQLAlchemyAutoSchema):

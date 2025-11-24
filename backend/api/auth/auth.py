@@ -6,7 +6,6 @@ from functools import wraps
 from datetime import datetime, timedelta, timezone
 import jwt
 from .json_encoder import UUIDSerializer
-from flask_restful import abort
 from uuid import UUID
 
 config = {
