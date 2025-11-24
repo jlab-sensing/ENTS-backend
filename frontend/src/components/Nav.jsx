@@ -11,7 +11,7 @@ import DvIcon from './DvIcon';
 function Nav({ user, setUser, loggedIn, setLoggedIn }) {
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
-  const { isAuthLoading, setIsAuthLoading } = useAuth();
+  const { setIsAuthLoading } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const openDrawer = () => setMobileOpen(true);
   const closeDrawer = () => setMobileOpen(false);

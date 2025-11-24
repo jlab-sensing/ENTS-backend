@@ -142,7 +142,7 @@ function DeleteCellModal({ ids }) {
                     onClick={() => {
                       // Delete all selected cells
                       Promise.all(cellIds.map(cellId => deleteCell(cellId)))
-                        .then((responses) => {
+                        .then(() => {
                           setResponse({ success: true, count: cellIds.length });
                           refetch();
                         })

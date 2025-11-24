@@ -160,7 +160,6 @@ function ShareButton({ ids }) {
                   error={!!error}
                   helperText={error}
                   sx={{ mb: 3 }}
-                  autoFocus
                 />
 
                 {/* Selected Cells */}
