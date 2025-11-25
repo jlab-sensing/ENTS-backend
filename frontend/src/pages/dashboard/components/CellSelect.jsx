@@ -17,15 +17,13 @@ import { useCells } from '../../../services/cell';
 import { useTags, getCellsByTag } from '../../../services/tag';
 
 function CellSelect({ selectedCells, setSelectedCells }) {
-  
   const cells = useCells();
-  
   const { data: tags = [] } = useTags();
 
   const [selectedTags, setSelectedTags] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [taggedCellIds, setTaggedCellIds] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(''); // NEW: Search state
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Create a master lookup map for all cells by ID
   const cellsById = useMemo(() => {
@@ -53,17 +51,6 @@ function CellSelect({ selectedCells, setSelectedCells }) {
 
         for (const tag of selectedTags) {
           if (tag && tag.id) {
-            if (tag.name === 'Production') {
-              ['112', '113'].forEach(id => allTaggedCells.add(id));
-            } else if (tag.name === 'Testing') {
-              ['110', '111', '102'].forEach(id => allTaggedCells.add(id));
-            } else if (tag.name === 'Demo') {
-              ['101', '109'].forEach(id => allTaggedCells.add(id));
-            } else {
-              ['105', '106', '107', '108'].forEach(id => allTaggedCells.add(id));
-            }
-
-            
             const response = await getCellsByTag(tag.id);
             if (response.cells && Array.isArray(response.cells)) {
               response.cells.forEach((cell) => {
@@ -95,7 +82,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
     });
   }, [cells.data, selectedTags, taggedCellIds]);
 
-  // NEW: Further filter by search query
+  // Further filter by search query
   const searchableCells = useMemo(() => {
     if (!Array.isArray(filteredCells)) return [];
     
@@ -159,7 +146,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
         onOpen={() => setDropdownOpen(true)}
         onClose={() => {
           setDropdownOpen(false);
-          setSearchQuery(''); // Clear search when closing
+          setSearchQuery('');
         }}
         onChange={(e) => {
           const newValue = Array.isArray(e.target.value)
@@ -182,11 +169,10 @@ function CellSelect({ selectedCells, setSelectedCells }) {
           PaperProps: {
             sx: { maxHeight: 450, width: 400 },
           },
-          // Prevent menu from closing when clicking inside
           autoFocus: false,
         }}
       >
-        {/* Tag Filter Section - Inside dropdown */}
+        {/* Tag Filter Section */}
         <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0' }}>
           <Typography variant="subtitle2" sx={{ mb: 1, color: '#666' }}>
             Filter by Tags
@@ -244,7 +230,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
 
         <Divider />
 
-        {/* NEW: Search box - Inside dropdown, below tags */}
+        {/* Search Box */}
         <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0' }}>
           <Typography variant="subtitle2" sx={{ mb: 1, color: '#666' }}>
             Search by Cell
@@ -258,18 +244,15 @@ function CellSelect({ selectedCells, setSelectedCells }) {
             onChange={(e) => setSearchQuery(e.target.value)}
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
-            autoFocus={dropdownOpen}
           />
         </Box>
 
         <Divider />
 
-        {/* Cell list - Filtered by tags AND search */}
+        {/* Cell List */}
         {Array.isArray(searchableCells) && searchableCells.length > 0
           ? searchableCells.map((cell) => {
               const isSelected = selectedCellIds.has(cell.id);
-              
-              // Highlight matching text
               const label = cell.name || 'Unnamed Cell';
               const parts = searchQuery
                 ? label.split(new RegExp(`(${searchQuery})`, 'gi'))
