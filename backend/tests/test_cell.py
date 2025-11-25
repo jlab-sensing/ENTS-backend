@@ -1,5 +1,5 @@
-from api.models.cell import Cell
-from api import db
+# from api.models.cell import Cell
+# from api import db
 
 # Broken test; authenticate in cell.py dosent work for this test
 #
