@@ -169,6 +169,23 @@ function AddLoggerModal() {
                       <MenuItem value='other'>Other</MenuItem>
                     </Select>
                   </FormControl>
+                  {/* Change the following three text fields to follow this format
+                  
+                  <FormControl variant="standard">
+                  <InputLabel htmlFor="formatted-text-mask-input">react-imask</InputLabel>
+                  <Input
+                    onChange={handleChange}
+                    name="textmask"
+                    id="formatted-text-mask-input"
+                    inputComponent={TextMaskCustom}
+                  />
+                </FormControl>
+
+
+                You will need to create the TextMaskCustom function above to have this desired functionality
+
+                see https://github.com/jlab-sensing/ENTS-backend/issues/512 for more
+                */}
                   <TextField 
                     label='Device EUI'
                     variant='outlined'
