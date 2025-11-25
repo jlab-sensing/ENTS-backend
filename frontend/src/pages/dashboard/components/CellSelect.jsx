@@ -64,8 +64,6 @@ function CellSelect({ selectedCells, setSelectedCells }) {
               ['105', '106', '107', '108'].forEach(id => allTaggedCells.add(id));
             }
 
-            // Uncomment for production:
-            /*
             const response = await getCellsByTag(tag.id);
             if (response.cells && Array.isArray(response.cells)) {
               response.cells.forEach((cell) => {
@@ -74,7 +72,6 @@ function CellSelect({ selectedCells, setSelectedCells }) {
                 }
               });
             }
-            */
           }
         }
 
