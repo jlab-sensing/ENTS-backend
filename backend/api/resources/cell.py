@@ -15,8 +15,6 @@ add_cell_schema = AddCellSchema()
 
 class Cell(Resource):
     method_decorators = {
-        "get": [authenticate],
-        "post": [authenticate],
         "put": [authenticate],
         "delete": [authenticate],
     }
