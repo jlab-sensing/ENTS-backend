@@ -26,7 +26,7 @@ vi.mock('../services/tag', () => ({
 }));
 
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import CellSelect from '../pages/dashboard/components/CellSelect';
@@ -57,16 +57,36 @@ MockCellSelect.propTypes = {
 };
 
 describe('Loading dashboard', () => {
-  it('should load tag filter dropdown', async () => {
+  it('should load cell select dropdown', async () => {
     render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
-    const tagFilterElement = await screen.findByLabelText('Filter by Tags');
-    expect(tagFilterElement).toBeInTheDocument();
+    const cellSelectElement = await screen.findByLabelText('Cell');
+    expect(cellSelectElement).toBeInTheDocument();
   });
 
-  it('should load search by cell input', async () => {
+  it('should show tag filter inside dropdown when opened', async () => {
+    const user = userEvent.setup();
     render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
-    const searchInput = await screen.findByLabelText('Search by Cell');
-    expect(searchInput).toBeInTheDocument();
+    
+    // Open the dropdown
+    const cellSelect = screen.getByLabelText('Cell');
+    await user.click(cellSelect);
+    
+    // Check for "Filter by Tags" text inside the dropdown
+    const tagFilterLabel = await screen.findByText('Filter by Tags');
+    expect(tagFilterLabel).toBeInTheDocument();
+  });
+
+  it('should show search box inside dropdown when opened', async () => {
+    const user = userEvent.setup();
+    render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
+    
+    // Open the dropdown
+    const cellSelect = screen.getByLabelText('Cell');
+    await user.click(cellSelect);
+    
+    // Check for "Search by Cell" text inside the dropdown
+    const searchLabel = await screen.findByText('Search by Cell');
+    expect(searchLabel).toBeInTheDocument();
   });
 
   it('should load copy link button', async () => {
@@ -79,42 +99,48 @@ describe('Loading dashboard', () => {
     const user = userEvent.setup();
     render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
 
-    // Find the search input field by its accessible name
-    const searchInput = screen.getByLabelText('Search by Cell');
+    // Open the dropdown
+    const cellSelect = screen.getByLabelText('Cell');
+    await user.click(cellSelect);
 
-    // Simulate a user typing into the search field
-    await user.click(searchInput);
+    // Find the search input inside the dropdown
+    const searchInput = await screen.findByPlaceholderText('Type to search by name or ID...');
+    
+    // Type in the search box
     await user.type(searchInput, 'test_cell_1');
 
-    // Find the option that appears as a result of the typing
+    // The option should be visible
     const option1 = await screen.findByText('test_cell_1');
-
-    // Assert that the filtered option is visible
     expect(option1).toBeInTheDocument();
   });
 
-  it('should display selected cell count when cells are selected', async () => {
+  it('should display selected cell count in dropdown footer', async () => {
     const selectedCells = [
       { id: '1', name: 'test_cell_1', archive: false },
       { id: '2', name: 'test_cell_2', archive: false },
     ];
+    const user = userEvent.setup();
     render(<MockCellSelect selectedCells={selectedCells} setSelectedCells={mockedSetSelectedCells} />);
 
-    // Check that the "X selected" text appears
-    const selectedText = await screen.findByText('2 selected');
+    // Open the dropdown
+    const cellSelect = screen.getByLabelText('Cell');
+    await user.click(cellSelect);
+
+    // Check that the "X cells selected" text appears in the footer
+    const selectedText = await screen.findByText('2 cells selected');
     expect(selectedText).toBeInTheDocument();
   });
 
-  it('should display comma-separated cell names in tag filter dropdown', async () => {
+  it('should display comma-separated cell names in closed dropdown', async () => {
     const selectedCells = [
       { id: '1', name: 'test_cell_1', archive: false },
       { id: '2', name: 'test_cell_2', archive: false },
     ];
     render(<MockCellSelect selectedCells={selectedCells} setSelectedCells={mockedSetSelectedCells} />);
 
-    // The tag filter dropdown should show comma-separated names
-    const tagFilterInput = screen.getByLabelText('Filter by Tags');
-    expect(tagFilterInput).toHaveValue('test_cell_1, test_cell_2');
+    // The dropdown input should show comma-separated names
+    const cellSelect = screen.getByLabelText('Cell');
+    expect(cellSelect).toHaveValue('test_cell_1, test_cell_2');
   });
 });
 
