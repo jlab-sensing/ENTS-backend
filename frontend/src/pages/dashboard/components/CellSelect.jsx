@@ -14,7 +14,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import PropTypes from 'prop-types';
 import { React, useMemo, useState, useEffect } from 'react';
 import { useCells } from '../../../services/cell';
-import { useTags } from '../../../services/tag';
+import { useTags, getCellsByTag } from '../../../services/tag';
 
 function CellSelect({ selectedCells, setSelectedCells }) {
 
@@ -261,6 +261,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
             onChange={(e) => setSearchQuery(e.target.value)}
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
+            autoFocus={dropdownOpen}
           />
         </Box>
 
