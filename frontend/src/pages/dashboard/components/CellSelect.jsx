@@ -19,6 +19,10 @@ import { useTags, getCellsByTag } from '../../../services/tag';
 function CellSelect({ selectedCells, setSelectedCells }) {
 
   const cells = useCells();
+  const { data: tags = [] } = useTags();
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [taggedCellIds, setTaggedCellIds] = useState([]);
 
   const { data: tags = [] } = useTags();
 

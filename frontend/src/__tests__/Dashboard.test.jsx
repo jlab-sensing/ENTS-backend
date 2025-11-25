@@ -34,11 +34,6 @@ import CopyLinkBtn from '../pages/dashboard/components/CopyLinkBtn';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 
-// Clean up mocks after each test
-afterEach(() => {
-  vi.restoreAllMocks();
-});
-
 const queryClient = new QueryClient();
 const mockedSetSelectedCells = vi.fn();
 const DateTimeNow = DateTime.now();
@@ -59,7 +54,7 @@ MockCellSelect.propTypes = {
 describe('Loading dashboard', () => {
   it('should load cell select dropdown', async () => {
     render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
-    const cellSelectElement = await screen.findByLabelText('Cell');
+    const cellSelectElement = await screen.findByText('select-cell');
     expect(cellSelectElement).toBeInTheDocument();
   });
 
@@ -160,7 +155,6 @@ describe('Testing copy functionality', () => {
       .join(',')}&startDate=${DateTimeNow}&endDate=${DateTimeNow}`;
 
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
-  });
 
   it('should copy a URL with the correct cellID QueryParam of 12', async () => {
     const writeTextMock = vi.fn();
@@ -176,7 +170,6 @@ describe('Testing copy functionality', () => {
       .join(',')}&startDate=${DateTimeNow}&endDate=${DateTimeNow}`;
 
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
-  });
 
   it('should copy a URL with the correct startDate QueryParam', async () => {
     const writeTextMock = vi.fn();
@@ -190,7 +183,6 @@ describe('Testing copy functionality', () => {
     const copiedText = `http://localhost:3000/dashboard?cell_id=&startDate=${startDate}&endDate=${DateTimeNow}`;
 
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
-  });
 
   it('should copy a URL with the correct endDate QueryParam', async () => {
     const writeTextMock = vi.fn();
@@ -203,5 +195,7 @@ describe('Testing copy functionality', () => {
     await user.click(copyLinkButton);
     const copiedText = `http://localhost:3000/dashboard?cell_id=&startDate=${DateTimeNow}&endDate=${endDate}`;
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
+
+    vi.restoreAllMocks();
   });
 });
