@@ -17,9 +17,9 @@ import { useCells } from '../../../services/cell';
 import { useTags, getCellsByTag } from '../../../services/tag';
 
 function CellSelect({ selectedCells, setSelectedCells }) {
-
+  
   const cells = useCells();
-
+  
   const { data: tags = [] } = useTags();
 
   const [selectedTags, setSelectedTags] = useState([]);
@@ -53,7 +53,6 @@ function CellSelect({ selectedCells, setSelectedCells }) {
 
         for (const tag of selectedTags) {
           if (tag && tag.id) {
-            // MOCK: For testing
             if (tag.name === 'Production') {
               ['112', '113'].forEach(id => allTaggedCells.add(id));
             } else if (tag.name === 'Testing') {
@@ -64,6 +63,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
               ['105', '106', '107', '108'].forEach(id => allTaggedCells.add(id));
             }
 
+            
             const response = await getCellsByTag(tag.id);
             if (response.cells && Array.isArray(response.cells)) {
               response.cells.forEach((cell) => {
@@ -98,9 +98,9 @@ function CellSelect({ selectedCells, setSelectedCells }) {
   // NEW: Further filter by search query
   const searchableCells = useMemo(() => {
     if (!Array.isArray(filteredCells)) return [];
-
+    
     let result = filteredCells.filter((cell) => cell && cell.id && !cell.archive);
-
+    
     // Apply search filter
     if (searchQuery && searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
@@ -110,7 +110,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
         return name.includes(query) || idStr.includes(query);
       });
     }
-
+    
     return result.sort((a, b) => (a?.name || '').localeCompare(b?.name || ''));
   }, [filteredCells, searchQuery]);
 
@@ -127,7 +127,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
     if (!Array.isArray(selectedCells)) return [];
     const normalized = [];
     const seenIds = new Set();
-
+    
     selectedCells.forEach((cell) => {
       if (cell && cell.id && !seenIds.has(cell.id)) {
         const masterCell = cellsById.get(cell.id);
@@ -137,7 +137,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
         }
       }
     });
-
+    
     return normalized;
   }, [selectedCells, cellsById]);
 
@@ -165,7 +165,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
           const newValue = Array.isArray(e.target.value)
             ? e.target.value.filter((cell) => cell && cell.id)
             : [];
-
+          
           const uniqueMap = new Map();
           newValue.forEach((cell) => {
             if (cell && cell.id) {
@@ -267,60 +267,60 @@ function CellSelect({ selectedCells, setSelectedCells }) {
         {/* Cell list - Filtered by tags AND search */}
         {Array.isArray(searchableCells) && searchableCells.length > 0
           ? searchableCells.map((cell) => {
-            const isSelected = selectedCellIds.has(cell.id);
-
-            // Highlight matching text
-            const label = cell.name || 'Unnamed Cell';
-            const parts = searchQuery
-              ? label.split(new RegExp(`(${searchQuery})`, 'gi'))
-              : [label];
-
-            return (
-              <MenuItem
-                value={cell}
-                key={cell.id}
-                sx={{
-                  py: 1,
-                  backgroundColor: isSelected ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
-                  '&:hover': {
-                    backgroundColor: isSelected
-                      ? 'rgba(25, 118, 210, 0.12)'
-                      : 'rgba(0, 0, 0, 0.04)',
-                  },
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
-                  {isSelected && (
-                    <CheckIcon sx={{ fontSize: 18, color: 'primary.main' }} />
-                  )}
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      fontWeight: isSelected ? 600 : 400,
-                    }}
-                  >
-                    {parts.map((part, index) => (
-                      <span
-                        key={index}
-                        style={{
-                          fontWeight:
-                            searchQuery &&
+              const isSelected = selectedCellIds.has(cell.id);
+              
+              // Highlight matching text
+              const label = cell.name || 'Unnamed Cell';
+              const parts = searchQuery
+                ? label.split(new RegExp(`(${searchQuery})`, 'gi'))
+                : [label];
+              
+              return (
+                <MenuItem
+                  value={cell}
+                  key={cell.id}
+                  sx={{
+                    py: 1,
+                    backgroundColor: isSelected ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: isSelected
+                        ? 'rgba(25, 118, 210, 0.12)'
+                        : 'rgba(0, 0, 0, 0.04)',
+                    },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
+                    {isSelected && (
+                      <CheckIcon sx={{ fontSize: 18, color: 'primary.main' }} />
+                    )}
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        fontWeight: isSelected ? 600 : 400,
+                      }}
+                    >
+                      {parts.map((part, index) => (
+                        <span
+                          key={index}
+                          style={{
+                            fontWeight:
+                              searchQuery &&
                               part.toLowerCase() === searchQuery.toLowerCase()
-                              ? 700
-                              : 'inherit',
-                        }}
-                      >
-                        {part}
-                      </span>
-                    ))}
-                  </Typography>
-                </Box>
-              </MenuItem>
-            );
-          })
+                                ? 700
+                                : 'inherit',
+                          }}
+                        >
+                          {part}
+                        </span>
+                      ))}
+                    </Typography>
+                  </Box>
+                </MenuItem>
+              );
+            })
           : (
             <MenuItem disabled>
               <Typography variant="body2" sx={{ color: '#999', fontStyle: 'italic' }}>
@@ -340,7 +340,7 @@ function CellSelect({ selectedCells, setSelectedCells }) {
             fontSize: '0.75rem',
           }}
         >
-          {safeSelectedCells.length > 0
+          {safeSelectedCells.length > 0 
             ? `${safeSelectedCells.length} cell${safeSelectedCells.length !== 1 ? 's' : ''} selected`
             : 'Select cells from the list above'}
         </MenuItem>
@@ -355,4 +355,3 @@ CellSelect.propTypes = {
 };
 
 export default CellSelect;
-

@@ -67,11 +67,9 @@ describe('Loading dashboard', () => {
     const user = userEvent.setup();
     render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
     
-    // Open the dropdown
     const cellSelect = screen.getByLabelText('Cell');
     await user.click(cellSelect);
     
-    // Check for "Filter by Tags" text inside the dropdown
     const tagFilterLabel = await screen.findByText('Filter by Tags');
     expect(tagFilterLabel).toBeInTheDocument();
   });
@@ -80,11 +78,9 @@ describe('Loading dashboard', () => {
     const user = userEvent.setup();
     render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
     
-    // Open the dropdown
     const cellSelect = screen.getByLabelText('Cell');
     await user.click(cellSelect);
     
-    // Check for "Search by Cell" text inside the dropdown
     const searchLabel = await screen.findByText('Search by Cell');
     expect(searchLabel).toBeInTheDocument();
   });
@@ -99,17 +95,12 @@ describe('Loading dashboard', () => {
     const user = userEvent.setup();
     render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
 
-    // Open the dropdown
     const cellSelect = screen.getByLabelText('Cell');
     await user.click(cellSelect);
 
-    // Find the search input inside the dropdown
     const searchInput = await screen.findByPlaceholderText('Type to search by name or ID...');
-    
-    // Type in the search box
     await user.type(searchInput, 'test_cell_1');
 
-    // The option should be visible
     const option1 = await screen.findByText('test_cell_1');
     expect(option1).toBeInTheDocument();
   });
@@ -122,11 +113,9 @@ describe('Loading dashboard', () => {
     const user = userEvent.setup();
     render(<MockCellSelect selectedCells={selectedCells} setSelectedCells={mockedSetSelectedCells} />);
 
-    // Open the dropdown
     const cellSelect = screen.getByLabelText('Cell');
     await user.click(cellSelect);
 
-    // Check that the "X cells selected" text appears in the footer
     const selectedText = await screen.findByText('2 cells selected');
     expect(selectedText).toBeInTheDocument();
   });
@@ -138,7 +127,6 @@ describe('Loading dashboard', () => {
     ];
     render(<MockCellSelect selectedCells={selectedCells} setSelectedCells={mockedSetSelectedCells} />);
 
-    // The comma-separated text should be visible in the Select's display area
     await waitFor(() => {
       expect(screen.getByText('test_cell_1, test_cell_2')).toBeInTheDocument();
     });
