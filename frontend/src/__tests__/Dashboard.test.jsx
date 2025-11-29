@@ -1,12 +1,43 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+
+// Mock the cell service before importing components that use it
+vi.mock('../services/cell', () => ({
+  useCells: () => ({
+    data: [
+      { id: '1', name: 'test_cell_1', archive: false },
+      { id: '2', name: 'test_cell_2', archive: false },
+    ],
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
+// Mock the tag service
+vi.mock('../services/tag', () => ({
+  useTags: () => ({
+    data: [
+      { id: 'tag1', name: 'Test Tag 1' },
+      { id: 'tag2', name: 'Test Tag 2' },
+    ],
+    isLoading: false,
+    isError: false,
+  }),
+  getCellsByTag: vi.fn(() => Promise.resolve({ cells: [] })),
+}));
+
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import CellSelect from '../pages/dashboard/components/CellSelect';
 import CopyLinkBtn from '../pages/dashboard/components/CopyLinkBtn';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
+
+// Clean up mocks after each test
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 const queryClient = new QueryClient();
 const mockedSetSelectedCells = vi.fn();
@@ -25,25 +56,80 @@ MockCellSelect.propTypes = {
   setSelectedCells: PropTypes.func,
 };
 
-//** integration test: service calls on dashboard */
 describe('Loading dashboard', () => {
-  it('should load cell select as unselected', async () => {
+  it('should load cell select dropdown', async () => {
     render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
-    const cellSelectElement = await screen.findByText('select-cell');
+    const cellSelectElement = await screen.findByLabelText('Cell');
     expect(cellSelectElement).toBeInTheDocument();
   });
+
+  it('should show tag filter inside dropdown when opened', async () => {
+    const user = userEvent.setup();
+    render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
+    
+    const cellSelect = screen.getByLabelText('Cell');
+    await user.click(cellSelect);
+    
+    const tagFilterLabel = await screen.findByText('Filter by Tags');
+    expect(tagFilterLabel).toBeInTheDocument();
+  });
+
+  it('should show search box inside dropdown when opened', async () => {
+    const user = userEvent.setup();
+    render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
+    
+    const cellSelect = screen.getByLabelText('Cell');
+    await user.click(cellSelect);
+    
+    const searchLabel = await screen.findByText('Search by Cell');
+    expect(searchLabel).toBeInTheDocument();
+  });
+
   it('should load copy link button', async () => {
     render(<CopyLinkBtn startDate={DateTimeNow} endDate={DateTimeNow} selectedCells={[]} />);
     const copyLinkButton = await screen.findByLabelText('Copy Link');
     expect(copyLinkButton).toBeInTheDocument();
   });
-  it('should display mocked cell names when dropdown is open', async () => {
+
+  it('should filter and display options when a user types in search bar', async () => {
     const user = userEvent.setup();
     render(<MockCellSelect selectedCells={[]} setSelectedCells={mockedSetSelectedCells} />);
-    const cellDropDownButton = screen.getByLabelText('Cell');
-    await user.click(cellDropDownButton);
-    expect(await screen.findByText('test_cell_1')).toBeInTheDocument();
-    expect(await screen.findByText('test_cell_2')).toBeInTheDocument();
+
+    const cellSelect = screen.getByLabelText('Cell');
+    await user.click(cellSelect);
+
+    const searchInput = await screen.findByPlaceholderText('Type to search by name or ID...');
+    await user.type(searchInput, 'test_cell_1');
+
+    const option1 = await screen.findByText('test_cell_1');
+    expect(option1).toBeInTheDocument();
+  });
+
+  it('should display selected cell count in dropdown footer', async () => {
+    const selectedCells = [
+      { id: '1', name: 'test_cell_1', archive: false },
+      { id: '2', name: 'test_cell_2', archive: false },
+    ];
+    const user = userEvent.setup();
+    render(<MockCellSelect selectedCells={selectedCells} setSelectedCells={mockedSetSelectedCells} />);
+
+    const cellSelect = screen.getByLabelText('Cell');
+    await user.click(cellSelect);
+
+    const selectedText = await screen.findByText('2 cells selected');
+    expect(selectedText).toBeInTheDocument();
+  });
+
+  it('should display comma-separated cell names in closed dropdown', async () => {
+    const selectedCells = [
+      { id: '1', name: 'test_cell_1', archive: false },
+      { id: '2', name: 'test_cell_2', archive: false },
+    ];
+    render(<MockCellSelect selectedCells={selectedCells} setSelectedCells={mockedSetSelectedCells} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('test_cell_1, test_cell_2')).toBeInTheDocument();
+    });
   });
 });
 
@@ -62,8 +148,6 @@ describe('Testing copy functionality', () => {
       .join(',')}&startDate=${DateTimeNow}&endDate=${DateTimeNow}`;
 
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
-
-    vi.restoreAllMocks();
   });
 
   it('should copy a URL with the correct cellID QueryParam of 12', async () => {
@@ -80,8 +164,6 @@ describe('Testing copy functionality', () => {
       .join(',')}&startDate=${DateTimeNow}&endDate=${DateTimeNow}`;
 
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
-
-    vi.restoreAllMocks();
   });
 
   it('should copy a URL with the correct startDate QueryParam', async () => {
@@ -96,8 +178,6 @@ describe('Testing copy functionality', () => {
     const copiedText = `http://localhost:3000/dashboard?cell_id=&startDate=${startDate}&endDate=${DateTimeNow}`;
 
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
-
-    vi.restoreAllMocks();
   });
 
   it('should copy a URL with the correct endDate QueryParam', async () => {
@@ -111,7 +191,5 @@ describe('Testing copy functionality', () => {
     await user.click(copyLinkButton);
     const copiedText = `http://localhost:3000/dashboard?cell_id=&startDate=${DateTimeNow}&endDate=${endDate}`;
     expect(writeTextMock).toHaveBeenCalledWith(copiedText);
-
-    vi.restoreAllMocks();
   });
 });
