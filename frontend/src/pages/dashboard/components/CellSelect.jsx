@@ -16,6 +16,7 @@ import { React, useMemo, useState, useEffect } from 'react';
 import { useCells } from '../../../services/cell';
 import { useTags, getCellsByTag } from '../../../services/tag';
 
+
 function CellSelect({ selectedCells, setSelectedCells }) {
   const cells = useCells();
   const { data: tags = [] } = useTags();
@@ -101,14 +102,6 @@ function CellSelect({ selectedCells, setSelectedCells }) {
     return result.sort((a, b) => (a?.name || '').localeCompare(b?.name || ''));
   }, [filteredCells, searchQuery]);
 
-  if (cells.isLoading) {
-    return <span>Loading...</span>;
-  }
-
-  if (cells.isError) {
-    return <span>Error: {cells.error?.message || 'Failed to load cells'}</span>;
-  }
-
   // Normalize selectedCells
   const safeSelectedCells = useMemo(() => {
     if (!Array.isArray(selectedCells)) return [];
@@ -132,6 +125,15 @@ function CellSelect({ selectedCells, setSelectedCells }) {
   const selectedCellIds = useMemo(() => {
     return new Set(safeSelectedCells.map((cell) => cell.id));
   }, [safeSelectedCells]);
+
+  // MOVED: Early returns now come AFTER all hooks
+  if (cells.isLoading) {
+    return <span>Loading...</span>;
+  }
+
+  if (cells.isError) {
+    return <span>Error: {cells.error?.message || 'Failed to load cells'}</span>;
+  }
 
   return (
     <FormControl sx={{ width: 1, maxWidth: 600 }}>
