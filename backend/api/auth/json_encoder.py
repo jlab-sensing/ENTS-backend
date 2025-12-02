@@ -8,6 +8,6 @@ class UUIDSerializer(JSONEncoder):
 
         # check type is UUID and stringify
         if isinstance(value, UUID):
-            return str(value)
+            return value.urn
 
         return super(UUIDSerializer, self).default(value)
