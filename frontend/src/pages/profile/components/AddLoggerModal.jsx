@@ -186,6 +186,7 @@ function AddLoggerModal() {
 
                 see https://github.com/jlab-sensing/ENTS-backend/issues/512 for more
                 */}
+                {/* THIS IS WHERE THE Device EUI & Join EUI Code is*/}
                   <TextField 
                     label='Device EUI'
                     variant='outlined'
@@ -464,3 +465,44 @@ function AddLoggerModal() {
 }
 
 export default AddLoggerModal;
+
+//The new Masking function to fix issue #512 on GitHub///
+
+
+const LongTextMask = React.forwardRef(function TextMaskCustom(props, ref) {
+  const { onChange, ...other } = props;
+  return (
+    <IMaskInput
+      {...other}
+      mask="**:**:**:**:**:**:**:**:**:**:**:**:**:**:**:**" //AppKey
+      inputRef={ref}
+      onAccept={(value) => onChange({ target: { name: props.name, value } })}
+      overwrite
+    />
+  );
+});
+
+LongTextMask.propTypes = {
+  name: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+};
+
+
+////////////////////////////////////////////
+const ShortTextMask = React.forwardRef(function TextMaskCustom(props, ref) {
+  const { onChange, ...other } = props;
+  return (
+    <IMaskInput
+      {...other}
+      mask="**:**:**:**:**:**:**:**" //AppKey
+      inputRef={ref}
+      onAccept={(value) => onChange({ target: { name: props.name, value } })}
+      overwrite
+    />
+  );
+});
+
+ShortTextMask.propTypes = {
+  name: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+};
