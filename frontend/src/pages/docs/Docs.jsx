@@ -28,7 +28,7 @@ AnchorLink.propTypes = {
 
 function Docs() {
   return (
-    <Box sx={{ width: '100vw', background: '#FFFFFF' }}>
+    <Box sx={{ width: '100vw', position: 'relative', background: '#FFFFFF' }}>
       <TopNav />
 
       <Container maxWidth='lg' sx={{ py: { xs: 4, md: 6 } }}>
