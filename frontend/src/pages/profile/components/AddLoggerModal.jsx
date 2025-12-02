@@ -466,7 +466,7 @@ function AddLoggerModal() {
 
 export default AddLoggerModal;
 
-//The new Masking function to fix issue #512 on GitHub///
+//The new MASKING FUNCTIONS to fix issue #512 on GitHub///
 
 
 const LongTextMask = React.forwardRef(function TextMaskCustom(props, ref) {
@@ -494,7 +494,7 @@ const ShortTextMask = React.forwardRef(function TextMaskCustom(props, ref) {
   return (
     <IMaskInput
       {...other}
-      mask="**:**:**:**:**:**:**:**" //AppKey
+      mask="**:**:**:**:**:**:**:**" //DevEUI & AppEui
       inputRef={ref}
       onAccept={(value) => onChange({ target: { name: props.name, value } })}
       overwrite
