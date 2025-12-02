@@ -5,6 +5,7 @@ import AddCellModal from './AddCellModal';
 import DeleteCellModal from './DeleteCellModal';
 import EditCellModal from './EditCellModal';
 import { React, useState } from 'react';
+import ShareButton from './ShareButton';
 
 function CellsList() {
   let data = useOutletContext();
@@ -12,7 +13,7 @@ function CellsList() {
   const isError = data[2];
   const user = data[4];
   data = data[0];
-  const [selectedRowId, setSelectedRowId] = useState('');
+  const [selectedRowsId, setSelectedRowsId] = useState([]);
 
   if (!user) {
     return <></>;
@@ -37,7 +38,6 @@ function CellsList() {
     {
       field: 'edit',
       headerName: '',
-      width: 85,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
@@ -58,7 +58,7 @@ function CellsList() {
   }
 
   const handleRowSelection = (newSelection) => {
-    setSelectedRowId(newSelection[0]);
+    setSelectedRowsId(newSelection);
   };
 
   return (
@@ -67,36 +67,49 @@ function CellsList() {
         display: 'flex',
         flexDirection: 'column',
         bgcolor: '#A0A0A0',
-        width: '90%',
-        minHeight: '100vh',
-        p: 2,
+        width: { xs: '100%', sm: '95%', md: '90%' },
+        maxWidth: '1400px',
+        minHeight: { xs: 'calc(100vh - 80px)', md: '100vh' },
+        p: { xs: 1, sm: 1.5, md: 2 },
         borderRadius: '10px',
         flexGrow: 1,
+        boxSizing: 'border-box',
       }}
     >
       <Box
         sx={{
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: { xs: 'column', sm: 'row' },
           bgcolor: '#A0A0A0',
           p: 1,
           justifyContent: 'space-between',
+          gap: { xs: 1, sm: 0 },
         }}
       >
         <Typography
           variant='h5'
           sx={{
-            textAlign: 'center',
+            textAlign: { xs: 'left', sm: 'center' },
             color: '#588157',
             fontWeight: 'bold',
-            flex: 1,
-            marginRight: '-8.5%',
+            flex: { xs: 'unset', sm: 1 },
+            marginRight: { xs: 0, sm: '-8.5%' },
+            mb: { xs: 1, sm: 0 },
           }}
         >
           Your Cells
         </Typography>
-        <AddCellModal />
-        <DeleteCellModal id={selectedRowId} />
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 1,
+            flexWrap: 'wrap',
+          }}
+        >
+          <ShareButton ids={selectedRowsId} />
+          <AddCellModal />
+          <DeleteCellModal ids={selectedRowsId} />
+        </Box>
       </Box>
 
       {/* Wrapper to ensure DataGrid does not exceed background */}
@@ -104,15 +117,21 @@ function CellsList() {
         sx={{
           flexGrow: 1,
           height: '100%',
+          overflowX: 'auto',
           overflowY: 'auto',
+          width: '100%',
         }}
       >
         <DataGrid
           rows={rows}
           columns={columns}
           pageSize={5}
+          checkboxSelection={true}
           autoHeight
           onRowSelectionModelChange={handleRowSelection}
+          sx={{
+            minWidth: { xs: '600px', sm: 'unset' },
+          }}
         />
       </Box>
     </Box>

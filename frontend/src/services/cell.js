@@ -81,6 +81,27 @@ export const deleteCell = async (cellId) => {
   }
 };
 
+export const shareCell = async (cellId, email, accessToken) => {
+  const url = `${process.env.PUBLIC_URL}/api/cell/${cellId}/share`;
+
+  try {
+    const response = await axios.post(
+      url,
+      { email },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error sharing cell:', error.response ? error.response.data : error.message);
+    throw error;
+  }
+};
+
 export const getUserCells = (axiosPrivate) => {
   return axiosPrivate.get(`${process.env.PUBLIC_URL}/cell/?user=True`).then((res) => res.data);
 };
