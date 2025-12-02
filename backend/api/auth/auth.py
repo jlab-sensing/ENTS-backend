@@ -6,7 +6,6 @@ from functools import wraps
 from datetime import datetime, timedelta, timezone
 import jwt
 from .json_encoder import UUIDSerializer
-from flask_restful import abort
 from uuid import UUID
 
 config = {
@@ -33,20 +32,25 @@ def authenticate(f):
         try:
             token = request.headers["Authorization"]
             # remove bearer
-
             token = token.split(" ")[1]
 
             if token is None:
-                return jsonify({"loggedIn": False}, None), 200
+                return {"msg": "No token provided"}, 401
+
             data = jwt.decode(token, config["accessToken"], algorithms=["HS256"])
             user = User.query.get(UUID(data["uid"]))
             if user is None:
-                return abort(500)
+                return {"msg": "User not found"}, 404
             return f(user, *args, **kwargs)
 
+        except jwt.exceptions.ExpiredSignatureError:
+            return {"msg": "Token expired"}, 401
+        except jwt.exceptions.InvalidTokenError as e:
+            print(f"Invalid token: {repr(e)}", flush=True)
+            return {"msg": "Invalid token"}, 403
         except Exception as e:
-            print(e, flush=True)
-            return abort(403)
+            print(f"Authentication error: {repr(e)}", flush=True)
+            return {"msg": "Authentication failed"}, 403
 
     return wrapper
 
@@ -90,9 +94,12 @@ def handle_refresh_token(refresh_token):
             .filter(OAuthToken.refresh_token == refresh_token)
             .first()
         )
+        if found_user is None:
+            return make_response(jsonify({"msg": "Invalid refresh token"}), 403)
+
         data = jwt.decode(refresh_token, config["refreshToken"], algorithms="HS256")
         user = User.query.get(UUID(data["uid"]))
-        if user.id != found_user.id:
+        if user is None or user.id != found_user.id:
             return make_response(jsonify({"msg": "Unauthorized user"}), 403)
         access_token = jwt.encode(
             {
@@ -123,12 +130,13 @@ def handle_refresh_token(refresh_token):
             expires=datetime.now(UTC) + timedelta(days=1),
         )
         return resp
+    except jwt.exceptions.ExpiredSignatureError:
+        return make_response(jsonify({"msg": "Token expired"}), 401)
     except jwt.exceptions.InvalidTokenError as e:
-        print(repr(e), flush=True)
+        print(f"Invalid token error: {repr(e)}", flush=True)
         return make_response(jsonify({"msg": "Invalid token"}), 403)
     except Exception as e:
-        print("WARNING NORMAL EXCEPTION CAUGHT")
-        print(repr(e), flush=True)
+        print(f"Authentication error: {repr(e)}", flush=True)
         return jsonify({"msg": "Unauthorized user"}), 403
 
 
