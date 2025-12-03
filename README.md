@@ -145,7 +145,7 @@ To start contributing to the ENTS backend, please read [CONTRIBUTING.md](CONTRIB
 
 Here's a list of [good first issues](https://github.com/jlab-sensing/DirtViz/labels/good%20first%20issue) to get yourself familiar with the ENTS backend. Comment in the issue to pick it up, and feel free to ask any questions!
 
-To keep in communication, we use [Zulip](https://ents.zulipchat.com/)! Feel free to join and ask questions. 
+To keep in communication, we use [Zulip](https://ents.zulipchat.com/)! Feel free to join and ask questions.
 
 ## FAQ
 
@@ -186,9 +186,9 @@ python -m backend.api.database.utils.import_cell_data
 
 ## Maintainers
 
-- Aaron Wu [aaron-wu1](https://github.com/aaron-wu1)
+- Alec Levy [aleclevy](https://github.com/aleclevy)
 
 ## Contributors
 
+- Aaron Wu [aaron-wu1](https://github.com/aaron-wu1)
 - John Madden [jmadden173](https://github.com/jmadden173)
-- Alec Levy [aleclevy](https://github.com/aleclevy)
