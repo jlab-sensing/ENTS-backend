@@ -13,7 +13,7 @@ ENV_OUTPUT_FILE = ".env"
 
 def fetch_secret():
     """Fetch a Secrets Manager secret using the logged-in AWS SSO session."""
-    print("🔎 Fetching secret from AWS…")
+    print("Fetching secret from AWS")
 
     session = boto3.Session(profile_name=AWS_PROFILE)
     client = session.client("secretsmanager", region_name=AWS_REGION)
@@ -29,13 +29,13 @@ def fetch_secret():
 
 def write_env_file(data):
     """Writes key/value pairs to a .env file."""
-    print(f"📝 Writing {ENV_OUTPUT_FILE}…")
+    print(f"Writing {ENV_OUTPUT_FILE}…")
 
     with open(ENV_OUTPUT_FILE, "w") as f:
         for key, value in data.items():
             f.write(f'{key}="{value}"\n')
 
-    print(f"✅ Successfully created {ENV_OUTPUT_FILE}")
+    print(f"Successfully created {ENV_OUTPUT_FILE}")
 
 
 def main():
