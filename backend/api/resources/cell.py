@@ -101,7 +101,7 @@ class Cell(Resource):
         except Exception as e:
             return {"message": "Error adding cell", "error": str(e)}, 500
 
-    def put(self, cellId):
+    def put(self, _user, cellId):
         json_data = request.json
         cell = CellModel.get(cellId)
 
@@ -144,7 +144,7 @@ class Cell(Resource):
         except Exception as e:
             return {"message": "Error updating cell", "error": str(e)}, 500
 
-    def delete(self, cellId):
+    def delete(self, _user, cellId):
         cell = CellModel.get(cellId)
         if not cell:
             return jsonify({"message": "Cell not found"}), 404

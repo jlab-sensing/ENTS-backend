@@ -5,12 +5,14 @@ import { React, useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { deleteCell } from '../../../services/cell';
 import PropTypes from 'prop-types';
+import useAuth from '../../../auth/hooks/useAuth';
 
 function DeleteCellModal({ ids }) {
   let data = useOutletContext();
   const refetch = data[3];
   const user = data[4];
   data = data[0];
+  const { auth } = useAuth();
   const [isOpen, setOpen] = useState(false);
   const [response, setResponse] = useState(null);
   const [cellIds, setCellIds] = useState([]);
@@ -141,7 +143,7 @@ function DeleteCellModal({ ids }) {
                     variant='contained'
                     onClick={() => {
                       // Delete all selected cells
-                      Promise.all(cellIds.map(cellId => deleteCell(cellId)))
+                      Promise.all(cellIds.map(cellId => deleteCell(cellId, auth?.accessToken)))
                         .then(() => {
                           setResponse({ success: true, count: cellIds.length });
                           refetch();

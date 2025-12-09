@@ -4,12 +4,14 @@ import { Box, Button, IconButton, Modal, TextField, Typography, Select, MenuItem
 import { React, useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { addLogger } from '../../../services/logger';
+import useAuth from '../../../auth/hooks/useAuth';
 
 function AddLoggerModal() {
   let data = useOutletContext();
   const refetch = data[9]; // Logger refetch function from outlet context
   const user = data[4];
-  
+  const { auth } = useAuth();
+
   const [isOpen, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [type, setType] = useState('');
@@ -254,7 +256,7 @@ function AddLoggerModal() {
                   <Button
                     variant='contained'
                     onClick={() => {
-                      addLogger(name, type, devEui, joinEui, appKey, description, user.email)
+                      addLogger(name, type, devEui, joinEui, appKey, description, user.email, auth?.accessToken)
                         .then((res) => {
                           setResponse({ ...res, name, type, devEui, description });
                           refetch();
