@@ -6,11 +6,13 @@ import { updateCell } from '../../../services/cell';
 import { useCellTags, useAssignCellTags } from '../../../services/tag';
 import TagSelector from '../../../components/TagSelector';
 import PropTypes from 'prop-types';
+import useAuth from '../../../auth/hooks/useAuth';
 
 function EditCellModal({ cell }) {
   const data = useOutletContext();
   const refetch = data[3];
   const axiosPrivate = data[6];
+  const { auth } = useAuth();
 
   const [isOpen, setOpen] = useState(false);
   const [formData, setFormData] = useState({ ...cell });
@@ -45,12 +47,12 @@ function EditCellModal({ cell }) {
 
     try {
       // Update cell data
-      const cellResponse = await updateCell(cell.id, formData);
-      
+      const cellResponse = await updateCell(cell.id, formData, auth?.accessToken);
+
       // Update cell tags
       const tagIds = selectedTags.map(tag => tag.id);
       await assignCellTagsMutation.mutateAsync({ cellId: cell.id, tagIds });
-      
+
       setResponse(cellResponse);
       refetch();
     } catch (err) {

@@ -4,10 +4,12 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useOutletContext } from 'react-router-dom';
 import { updateLogger } from '../../../services/logger';
 import PropTypes from 'prop-types';
+import useAuth from '../../../auth/hooks/useAuth';
 
 function EditLoggerModal({ logger }) {
   const data = useOutletContext();
   const refetch = data[9]; // Logger refetch function from outlet context
+  const { auth } = useAuth();
 
   const [isOpen, setOpen] = useState(false);
   const [formData, setFormData] = useState({ ...logger });
@@ -35,7 +37,7 @@ function EditLoggerModal({ logger }) {
       description: formData.description,
     };
 
-    updateLogger(logger.id, updateData)
+    updateLogger(logger.id, updateData, auth?.accessToken)
       .then((res) => {
         setResponse(res);
         refetch();

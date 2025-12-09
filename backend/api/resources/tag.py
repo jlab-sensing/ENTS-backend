@@ -80,7 +80,7 @@ class TagDetail(Resource):
 
         return tag_schema.dump(tag)
 
-    def put(self, tag_id):
+    def put(self, _user, tag_id):
         """Update tag"""
         tag = TagModel.get(tag_id)
         if not tag:
@@ -115,7 +115,7 @@ class TagDetail(Resource):
         except Exception as e:
             return {"message": "Error updating tag", "error": str(e)}, 500
 
-    def delete(self, tag_id):
+    def delete(self, _user, tag_id):
         """Delete tag"""
         tag = TagModel.get(tag_id)
         if not tag:

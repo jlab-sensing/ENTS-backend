@@ -16,18 +16,36 @@ export const getTag = (tagId) => {
 };
 
 // Create new tag
-export const createTag = (tagData) => {
-  return axios.post(`${process.env.PUBLIC_URL}/api/tag/`, tagData).then((res) => res.data);
+export const createTag = (tagData, accessToken) => {
+  return axios
+    .post(`${process.env.PUBLIC_URL}/api/tag/`, tagData, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then((res) => res.data);
 };
 
 // Update tag
-export const updateTag = (tagId, tagData) => {
-  return axios.put(`${process.env.PUBLIC_URL}/api/tag/${tagId}`, tagData).then((res) => res.data);
+export const updateTag = (tagId, tagData, accessToken) => {
+  return axios
+    .put(`${process.env.PUBLIC_URL}/api/tag/${tagId}`, tagData, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then((res) => res.data);
 };
 
 // Delete tag
-export const deleteTag = (tagId) => {
-  return axios.delete(`${process.env.PUBLIC_URL}/api/tag/${tagId}`).then((res) => res.data);
+export const deleteTag = (tagId, accessToken) => {
+  return axios
+    .delete(`${process.env.PUBLIC_URL}/api/tag/${tagId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then((res) => res.data);
 };
 
 
@@ -84,7 +102,7 @@ export const useCellTags = (cellId) =>
 export const useCreateTag = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: createTag,
+    mutationFn: ({ tagData, accessToken }) => createTag(tagData, accessToken),
     onSuccess: () => {
       queryClient.invalidateQueries(['tags']);
     },
@@ -94,7 +112,7 @@ export const useCreateTag = () => {
 export const useUpdateTag = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ tagId, tagData }) => updateTag(tagId, tagData),
+    mutationFn: ({ tagId, tagData, accessToken }) => updateTag(tagId, tagData, accessToken),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries(['tags']);
       queryClient.invalidateQueries(['tag', variables.tagId]);
@@ -105,7 +123,7 @@ export const useUpdateTag = () => {
 export const useDeleteTag = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: deleteTag,
+    mutationFn: ({ tagId, accessToken }) => deleteTag(tagId, accessToken),
     onSuccess: () => {
       queryClient.invalidateQueries(['tags']);
     },
