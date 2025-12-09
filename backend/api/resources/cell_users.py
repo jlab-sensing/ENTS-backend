@@ -64,7 +64,7 @@ class CellUserDetail(Resource):
 
     method_decorators = {"put": [authenticate], "delete": [authenticate]}
 
-    def put(self, authenticated_user, cell_id, user_id):
+    def put(self, cell_id, user_id):
         """Add a specific user to a cell"""
         cell = CellModel.get(cell_id)
         if not cell:
@@ -90,7 +90,7 @@ class CellUserDetail(Resource):
         except Exception as e:
             return {"message": "Error adding user to cell", "error": str(e)}, 500
 
-    def delete(self, authenticated_user, cell_id, user_id):
+    def delete(self, cell_id, user_id):
         """Remove a specific user from a cell"""
         cell = CellModel.get(cell_id)
         if not cell:
