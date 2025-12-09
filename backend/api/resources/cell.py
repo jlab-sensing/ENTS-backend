@@ -144,7 +144,7 @@ class Cell(Resource):
         except Exception as e:
             return {"message": "Error updating cell", "error": str(e)}, 500
 
-    def delete(self, user, cellId):
+    def delete(self, cellId):
         cell = CellModel.get(cellId)
         if not cell:
             return jsonify({"message": "Cell not found"}), 404
