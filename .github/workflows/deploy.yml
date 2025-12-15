@@ -46,7 +46,7 @@ jobs:
 
       - name: Caching frontend
         id: frontend-cache-build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             public
