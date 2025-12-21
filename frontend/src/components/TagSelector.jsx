@@ -14,8 +14,10 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import PropTypes from 'prop-types';
 import { useTags, useCreateTag } from '../services/tag';
+import useAuth from '../auth/hooks/useAuth';
 
 function TagSelector({ selectedTags, onTagsChange }) {
+  const { auth } = useAuth();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newTagName, setNewTagName] = useState('');
   const [newTagDescription, setNewTagDescription] = useState('');
@@ -36,7 +38,7 @@ function TagSelector({ selectedTags, onTagsChange }) {
         description: newTagDescription || null,
       };
 
-      await createTagMutation.mutateAsync(tagData);
+      await createTagMutation.mutateAsync({ tagData, accessToken: auth?.accessToken });
 
       setCreateDialogOpen(false);
       setNewTagName('');

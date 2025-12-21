@@ -5,12 +5,14 @@ import { React, useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { deleteLogger } from '../../../services/logger';
 import PropTypes from 'prop-types';
+import useAuth from '../../../auth/hooks/useAuth';
 
 function DeleteLoggerModal({ id }) {
   let data = useOutletContext();
   const refetch = data[9]; // Logger refetch function from outlet context
   const user = data[4];
-  
+  const { auth } = useAuth();
+
   const [isOpen, setOpen] = useState(false);
   const [response, setResponse] = useState(null);
   const [loggerId, setLoggerId] = useState('');
@@ -139,7 +141,7 @@ function DeleteLoggerModal({ id }) {
                   <Button
                     variant='contained'
                     onClick={() => {
-                      deleteLogger(loggerId)
+                      deleteLogger(loggerId, auth?.accessToken)
                         .then((res) => {
                           setResponse(res);
                           refetch();

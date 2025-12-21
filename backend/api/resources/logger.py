@@ -12,7 +12,12 @@ add_logger_schema = AddLoggerSchema()
 
 
 class Logger(Resource):
-    method_decorators = {"get": [authenticate]}
+    method_decorators = {
+        "get": [authenticate],
+        "post": [authenticate],
+        "put": [authenticate],
+        "delete": [authenticate],
+    }
     ttn_api = TTNApi()
 
     def get(self, user, logger_id: int | None = None):
@@ -64,7 +69,7 @@ class Logger(Resource):
             # Return database info only
             return loggers_schema.dump(logger), 200
 
-    def post(self):
+    def post(self, _user):
         """Creates a new logger with database and TTN registration.
 
         Expected JSON payload:
@@ -157,7 +162,7 @@ class Logger(Resource):
                 "logger_id": new_logger.id,
             }, 201
 
-    def put(self, logger_id: int):
+    def put(self, _user, logger_id: int):
         """Update a logger in database and TTN.
 
         Only name and description can be updated. TTN device name will be
@@ -208,7 +213,7 @@ class Logger(Resource):
 
         return {"message": "Successfully updated logger"}, 200
 
-    def delete(self, logger_id: int):
+    def delete(self, _user, logger_id: int):
         """Delete a logger from both TTN and database.
 
         For ents loggers, removes the end device from TTN first, then deletes

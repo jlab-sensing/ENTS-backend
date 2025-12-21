@@ -367,7 +367,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cells, stream]); // Removed startDate, endDate dependencies
+  }, [cells, stream, startDate, endDate]);
 
   if (!config) {
     console.error(`Unknown chart type: ${type}`);

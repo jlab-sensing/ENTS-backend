@@ -10,17 +10,34 @@ import {
   TextField,
   Divider,
 } from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
 import PropTypes from 'prop-types';
 import { React, useMemo, useState, useEffect } from 'react';
 import { useCells } from '../../../services/cell';
 import { useTags, getCellsByTag } from '../../../services/tag';
 
+
 function CellSelect({ selectedCells, setSelectedCells }) {
   const cells = useCells();
   const { data: tags = [] } = useTags();
+
   const [selectedTags, setSelectedTags] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [taggedCellIds, setTaggedCellIds] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Create a master lookup map for all cells by ID
+  const cellsById = useMemo(() => {
+    const map = new Map();
+    if (cells.data && Array.isArray(cells.data)) {
+      cells.data.forEach((cell) => {
+        if (cell && cell.id) {
+          map.set(cell.id, cell);
+        }
+      });
+    }
+    return map;
+  }, [cells.data]);
 
   // Fetch cells for selected tags
   useEffect(() => {
@@ -33,7 +50,6 @@ function CellSelect({ selectedCells, setSelectedCells }) {
       try {
         const allTaggedCells = new Set();
 
-        // Get cells for each selected tag
         for (const tag of selectedTags) {
           if (tag && tag.id) {
             const response = await getCellsByTag(tag.id);
@@ -62,12 +78,55 @@ function CellSelect({ selectedCells, setSelectedCells }) {
     if (!cells.data || !Array.isArray(cells.data)) return [];
     if (selectedTags.length === 0) return cells.data;
 
-    // Filter cells that have at least one of the selected tags
     return cells.data.filter((cell) => {
       return cell && cell.id && taggedCellIds.includes(cell.id);
     });
   }, [cells.data, selectedTags, taggedCellIds]);
 
+  // Further filter by search query
+  const searchableCells = useMemo(() => {
+    if (!Array.isArray(filteredCells)) return [];
+    
+    let result = filteredCells.filter((cell) => cell && cell.id && !cell.archive);
+    
+    // Apply search filter
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter((cell) => {
+        const name = (cell.name || '').toLowerCase();
+        const idStr = String(cell.id || '');
+        return name.includes(query) || idStr.includes(query);
+      });
+    }
+    
+    return result.sort((a, b) => (a?.name || '').localeCompare(b?.name || ''));
+  }, [filteredCells, searchQuery]);
+
+  // Normalize selectedCells
+  const safeSelectedCells = useMemo(() => {
+    if (!Array.isArray(selectedCells)) return [];
+    const normalized = [];
+    const seenIds = new Set();
+    
+    selectedCells.forEach((cell) => {
+      if (cell && cell.id && !seenIds.has(cell.id)) {
+        const masterCell = cellsById.get(cell.id);
+        if (masterCell) {
+          normalized.push(masterCell);
+          seenIds.add(cell.id);
+        }
+      }
+    });
+    
+    return normalized;
+  }, [selectedCells, cellsById]);
+
+  // Create a Set of selected cell IDs for quick lookup
+  const selectedCellIds = useMemo(() => {
+    return new Set(safeSelectedCells.map((cell) => cell.id));
+  }, [safeSelectedCells]);
+
+  // MOVED: Early returns now come AFTER all hooks
   if (cells.isLoading) {
     return <span>Loading...</span>;
   }
@@ -76,39 +135,53 @@ function CellSelect({ selectedCells, setSelectedCells }) {
     return <span>Error: {cells.error?.message || 'Failed to load cells'}</span>;
   }
 
-  // Ensure selectedCells is always a valid array with valid objects
-  const safeSelectedCells = Array.isArray(selectedCells) ? selectedCells.filter((cell) => cell && cell.id) : [];
   return (
-    <FormControl sx={{ width: 1 }}>
-      <InputLabel id='cell-select'>Cell</InputLabel>
+    <FormControl sx={{ width: 1, maxWidth: 600 }}>
+      <InputLabel id="cell-select">Cell</InputLabel>
       <Select
-        labelId='cell-select-label'
-        id='cell-select'
+        labelId="cell-select-label"
+        id="cell-select"
         value={safeSelectedCells}
         multiple
-        label='select-cell'
-        defaultValue={safeSelectedCells}
+        label="Cell"
         open={dropdownOpen}
         onOpen={() => setDropdownOpen(true)}
-        onClose={() => setDropdownOpen(false)}
+        onClose={() => {
+          setDropdownOpen(false);
+          setSearchQuery('');
+        }}
         onChange={(e) => {
-          const newValue = Array.isArray(e.target.value) ? e.target.value.filter((cell) => cell && cell.id) : [];
-          setSelectedCells(newValue);
+          const newValue = Array.isArray(e.target.value)
+            ? e.target.value.filter((cell) => cell && cell.id)
+            : [];
+          
+          const uniqueMap = new Map();
+          newValue.forEach((cell) => {
+            if (cell && cell.id) {
+              uniqueMap.set(cell.id, cell);
+            }
+          });
+          setSelectedCells(Array.from(uniqueMap.values()));
+        }}
+        renderValue={(selected) => {
+          if (!selected || selected.length === 0) return '';
+          return selected.map((cell) => cell.name || 'Unnamed').join(', ');
         }}
         MenuProps={{
           PaperProps: {
-            sx: { maxHeight: 400, width: 350 },
+            sx: { maxHeight: 450, width: 400 },
           },
+          autoFocus: false,
         }}
       >
         {/* Tag Filter Section */}
         <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0' }}>
-          <Typography variant='subtitle2' sx={{ mb: 1, color: '#666' }}>
+          <Typography variant="subtitle2" sx={{ mb: 1, color: '#666' }}>
             Filter by Tags
           </Typography>
           <Autocomplete
             multiple
-            size='small'
+            size="small"
             options={Array.isArray(tags) ? tags.filter((tag) => tag && tag.id) : []}
             getOptionLabel={(option) => option?.name || 'Unknown'}
             value={selectedTags}
@@ -116,72 +189,145 @@ function CellSelect({ selectedCells, setSelectedCells }) {
               setSelectedTags(newValue);
             }}
             renderTags={(value, getTagProps) =>
-              value && Array.isArray(value)
-                ? value
-                    .map((option, index) =>
-                      option && option.id ? (
-                        <Chip
-                          key={option.id}
-                          label={option.name || 'Unknown'}
-                          {...getTagProps({ index })}
-                          size='small'
-                          sx={{
-                            backgroundColor: '#e8f5e8',
-                            color: '#2e7d32',
-                            '& .MuiChip-deleteIcon': {
-                              color: '#2e7d32',
-                            },
-                          }}
-                        />
-                      ) : null,
-                    )
-                    .filter(Boolean)
-                : []
+              value.map((option, index) => (
+                <Chip
+                  key={option.id}
+                  label={option.name || 'Unknown'}
+                  {...getTagProps({ index })}
+                  size="small"
+                  sx={{
+                    backgroundColor: '#e8f5e8',
+                    color: '#2e7d32',
+                    '& .MuiChip-deleteIcon': {
+                      color: '#2e7d32',
+                    },
+                  }}
+                />
+              ))
             }
             renderInput={(params) => (
               <TextField
                 {...params}
-                placeholder={selectedTags.length === 0 ? 'Select tags to filter' : ''}
-                variant='outlined'
-                size='small'
+                placeholder={
+                  selectedTags.length === 0 ? 'Select tags to filter' : ''
+                }
+                variant="outlined"
+                size="small"
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
               />
             )}
             isOptionEqualToValue={(option, value) => option?.id === value?.id}
             sx={{ width: '100%' }}
           />
           {selectedTags.length > 0 && (
-            <Typography variant='caption' sx={{ mt: 1, display: 'block', color: '#666' }}>
-              Showing cells with selected tags ({filteredCells.filter((cell) => cell && !cell.archive).length} cells)
+            <Typography
+              variant="caption"
+              sx={{ mt: 1, display: 'block', color: '#666' }}
+            >
+              Showing {filteredCells.filter((cell) => cell && !cell.archive).length} cells with selected tags
             </Typography>
           )}
         </Box>
 
         <Divider />
 
-        {Array.isArray(filteredCells)
-          ? filteredCells
-              .filter((cell) => cell && cell.id && !cell.archive)
-              .sort((a, b) => (a?.name || '').localeCompare(b?.name || ''))
-              .map((cell) => {
-                return (
-                  <MenuItem value={cell} key={cell.id} sx={{ py: 1 }}>
+        {/* Search Box */}
+        <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0' }}>
+          <Typography variant="subtitle2" sx={{ mb: 1, color: '#666' }}>
+            Search by Cell
+          </Typography>
+          <TextField
+            fullWidth
+            placeholder="Type to search by name or ID..."
+            variant="outlined"
+            size="small"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          />
+        </Box>
+
+        <Divider />
+
+        {/* Cell List */}
+        {Array.isArray(searchableCells) && searchableCells.length > 0
+          ? searchableCells.map((cell) => {
+              const isSelected = selectedCellIds.has(cell.id);
+              const label = cell.name || 'Unnamed Cell';
+              const parts = searchQuery
+                ? label.split(new RegExp(`(${searchQuery})`, 'gi'))
+                : [label];
+              
+              return (
+                <MenuItem
+                  value={cell}
+                  key={cell.id}
+                  sx={{
+                    py: 1,
+                    backgroundColor: isSelected ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: isSelected
+                        ? 'rgba(25, 118, 210, 0.12)'
+                        : 'rgba(0, 0, 0, 0.04)',
+                    },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
+                    {isSelected && (
+                      <CheckIcon sx={{ fontSize: 18, color: 'primary.main' }} />
+                    )}
                     <Typography
-                      variant='body2'
+                      variant="body2"
                       sx={{
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
+                        fontWeight: isSelected ? 600 : 400,
                       }}
                     >
-                      {cell.name || 'Unnamed Cell'}
+                      {parts.map((part, index) => (
+                        <span
+                          key={index}
+                          style={{
+                            fontWeight:
+                              searchQuery &&
+                              part.toLowerCase() === searchQuery.toLowerCase()
+                                ? 700
+                                : 'inherit',
+                          }}
+                        >
+                          {part}
+                        </span>
+                      ))}
                     </Typography>
-                  </MenuItem>
-                );
-              })
-          : ''}
+                  </Box>
+                </MenuItem>
+              );
+            })
+          : (
+            <MenuItem disabled>
+              <Typography variant="body2" sx={{ color: '#999', fontStyle: 'italic' }}>
+                {searchQuery ? 'No cells match your search' : 'No cells available'}
+              </Typography>
+            </MenuItem>
+          )}
+
         <Divider />
-        <MenuItem value='all' disabled={true} sx={{ color: '#999', fontStyle: 'italic', py: 0.5, fontSize: '0.75rem' }}>
-          Select a cell from the list above to view data
+        <MenuItem
+          value="all"
+          disabled
+          sx={{
+            color: '#999',
+            fontStyle: 'italic',
+            py: 0.5,
+            fontSize: '0.75rem',
+          }}
+        >
+          {safeSelectedCells.length > 0 
+            ? `${safeSelectedCells.length} cell${safeSelectedCells.length !== 1 ? 's' : ''} selected`
+            : 'Select cells from the list above'}
         </MenuItem>
       </Select>
     </FormControl>

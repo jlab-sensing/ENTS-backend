@@ -2,6 +2,8 @@ import { React } from 'react';
 import { Container } from '@mui/material';
 import About from './About';
 import Intro from './Intro';
+
+
 function Home() {
   return (
     <Container
@@ -16,7 +18,7 @@ function Home() {
       <Intro />
       <About /> 
     </Container>
-  );
+);
 }
 
 export default Home;

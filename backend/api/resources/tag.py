@@ -1,5 +1,6 @@
 from flask_restful import Resource
 from flask import request
+from ..auth.auth import authenticate
 from ..models.cell import Tag as TagModel
 from ..schemas.tag_schema import (
     TagSchema,
@@ -17,7 +18,7 @@ tag_list_schema = TagListSchema(many=True)
 
 
 class Tag(Resource):
-    # No authentication required - following Cell resource pattern
+    method_decorators = {"post": [authenticate]}
 
     def get(self):
         """Get all tags or filter by search"""
@@ -31,7 +32,7 @@ class Tag(Resource):
 
         return tags_schema.dump(tags)
 
-    def post(self):
+    def post(self, user):
         """Create a new tag"""
         json_data = request.json
 
@@ -56,7 +57,7 @@ class Tag(Resource):
             new_tag = TagModel(
                 name=name,
                 description=description,
-                created_by=None,  # No authentication, so no user ID
+                created_by=user.id,
             )
             new_tag.save()
 
@@ -69,7 +70,7 @@ class Tag(Resource):
 
 
 class TagDetail(Resource):
-    # No authentication required - following Cell resource pattern
+    method_decorators = {"put": [authenticate], "delete": [authenticate]}
 
     def get(self, tag_id):
         """Get specific tag by ID"""
@@ -79,7 +80,7 @@ class TagDetail(Resource):
 
         return tag_schema.dump(tag)
 
-    def put(self, tag_id):
+    def put(self, _user, tag_id):
         """Update tag"""
         tag = TagModel.get(tag_id)
         if not tag:
@@ -114,7 +115,7 @@ class TagDetail(Resource):
         except Exception as e:
             return {"message": "Error updating tag", "error": str(e)}, 500
 
-    def delete(self, tag_id):
+    def delete(self, _user, tag_id):
         """Delete tag"""
         tag = TagModel.get(tag_id)
         if not tag:

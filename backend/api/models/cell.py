@@ -1,9 +1,14 @@
 from ..models import db
-from .user import User
 
 
 """"This is the reference; we stole this from commenter
 https://stackoverflow.com/questions/5756559/how-to-build-many-to-many-relations-using-sqlalchemy-a-good-example"""
+
+
+class Cell_User(db.Model):
+    __tablename__ = "cell_user"
+    cell_id = db.Column(db.Integer, db.ForeignKey("cell.id"), primary_key=True)
+    user_id = db.Column(db.Uuid(), db.ForeignKey("user.id"), primary_key=True)
 
 
 class Cell_Tag(db.Model):
@@ -22,8 +27,9 @@ class Cell(db.Model):
     longitude = db.Column(db.Float())
     archive = db.Column(db.Boolean(), default=False, nullable=False)
     user_id = db.Column(db.Uuid(), db.ForeignKey("user.id"))
-
-    user = db.relationship("User", backref="cells")
+    users = db.relationship(
+        "User", secondary=Cell_User.__table__, back_populates="cells"
+    )
 
     tags = db.relationship("Tag", secondary=Cell_Tag.__table__, back_populates="cells")
 
@@ -48,27 +54,47 @@ class Cell(db.Model):
 
     @staticmethod
     def add_cell_by_user_email(name, location, latitude, longitude, archive, userEmail):
-        user_id = User.get_user_by_email(userEmail).id
+        from .user import User
+
+        creator = User.get_user_by_email(userEmail)
         new_cell = Cell(
             name=name,
             location=location,
             latitude=latitude,
             longitude=longitude,
-            user_id=user_id,
+            user_id=creator.id,
             archive=archive,
         )
         new_cell.save()
+
+        # Automatically add creator to the cell_user relationship for access
+        new_cell.users.append(creator)
+        new_cell.save()
+
         return new_cell
 
     @staticmethod
     def get(id):
         return Cell.query.filter_by(id=id).first()
 
+    @staticmethod
     def find_by_name(name):
         return Cell.query.filter_by(name=name).first()
 
     @staticmethod
     def get_cells_by_user_id(id):
+        """Get cells that a user has access to via the cell_user relationship"""
+        from .user import User
+
+        user = User.get(id)
+        if not user:
+            return []
+        # Return cells from the many-to-many relationship
+        return user.cells
+
+    @staticmethod
+    def get_cells_created_by_user(id):
+        """Get cells created by a specific user"""
         return Cell.query.filter_by(user_id=id).all()
 
     @staticmethod
