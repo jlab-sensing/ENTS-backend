@@ -17,6 +17,7 @@ import StreamToggle from './components/StreamToggle';
 import TerosCharts from './components/TerosCharts';
 import UnifiedChart from './components/UnifiedChart';
 import { io } from 'socket.io-client';
+import TopNav from '../../components/TopNav';
 
 function Dashboard() {
   const axiosPrivate = useAxiosPrivate();
@@ -417,7 +418,8 @@ function Dashboard() {
 
   return (
     <>
-      <Box>
+    <TopNav />
+      <Box sx = {{flex: 1, overflowY: 'auto', background: '#FFFFFF'}}>
         {/* <DateRangeNotification
           open={showFallbackNotification}
           onClose={hideFallbackNotification}
