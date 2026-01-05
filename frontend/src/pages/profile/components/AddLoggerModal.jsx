@@ -1,23 +1,75 @@
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, Button, IconButton, Modal, TextField, Typography, Select, MenuItem, FormControl, InputLabel} from '@mui/material';
-import { React, useEffect, useState } from 'react';
+import {
+  Box,
+  Button,
+  IconButton,
+  Input,
+  Modal,
+  TextField,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+} from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { addLogger } from '../../../services/logger';
+import { IMaskInput } from 'react-imask';
 import useAuth from '../../../auth/hooks/useAuth';
+import PropTypes from 'prop-types';
+
+const LongTextMask = React.forwardRef(function TextMaskCustom(props, ref) {
+  const { onChange, ...other } = props;
+  return (
+    <IMaskInput
+      {...other}
+      mask='**:**:**:**:**:**:**:**:**:**:**:**:**:**:**:**' //AppKey
+      inputRef={ref}
+      onAccept={(value) => onChange({ target: { name: props.name, value } })}
+      overwrite
+    />
+  );
+});
+
+LongTextMask.propTypes = {
+  name: PropTypes.string,
+  onChange: PropTypes.func,
+};
+
+////////////////////////////////////////////
+const ShortTextMask = React.forwardRef(function TextMaskCustom(props, ref) {
+  const { onChange, ...other } = props;
+  return (
+    <IMaskInput
+      {...other}
+      mask='**:**:**:**:**:**:**:**' //DevEUI & AppEui
+      inputRef={ref}
+      onAccept={(value) => onChange({ target: { name: props.name, value } })}
+      overwrite
+    />
+  );
+});
+
+ShortTextMask.propTypes = {
+  name: PropTypes.string,
+  onChange: PropTypes.func,
+};
 
 function AddLoggerModal() {
   let data = useOutletContext();
   const refetch = data[9]; // Logger refetch function from outlet context
   const user = data[4];
+  // eslint-disable-next-line
   const { auth } = useAuth();
 
   const [isOpen, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [type, setType] = useState('');
-  const [devEui, setDevEui] = useState('');  // Changed to match TTN API
-  const [joinEui, setJoinEui] = useState('');  // Added for TTN integration
-  const [appKey, setAppKey] = useState('');  // TTN App Key (sensitive)
+  const [devEui, setDevEui] = useState(''); // Changed to match TTN API
+  const [joinEui, setJoinEui] = useState(''); // Added for TTN integration
+  const [appKey, setAppKey] = useState(''); // TTN App Key (sensitive)
   const [description, setDescription] = useState('');
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
@@ -91,19 +143,21 @@ function AddLoggerModal() {
           {error == null && response == null && (
             <>
               {/* Header Section */}
-              <Box sx={{ 
-                backgroundColor: '#588157', 
-                padding: '1.5rem 2rem',
-                position: 'relative',
-                mb: 0
-              }}>
+              <Box
+                sx={{
+                  backgroundColor: '#588157',
+                  padding: '1.5rem 2rem',
+                  position: 'relative',
+                  mb: 0,
+                }}
+              >
                 <IconButton
-                  sx={{ 
-                    position: 'absolute', 
-                    top: '0.75rem', 
+                  sx={{
+                    position: 'absolute',
+                    top: '0.75rem',
                     right: '0.75rem',
                     color: 'white',
-                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
                   }}
                   aria-label='close'
                   size='small'
@@ -111,22 +165,22 @@ function AddLoggerModal() {
                 >
                   <CloseIcon fontSize='small' />
                 </IconButton>
-                <Typography 
-                  variant='h5' 
+                <Typography
+                  variant='h5'
                   component='h2'
-                  sx={{ 
+                  sx={{
                     color: 'white',
                     fontWeight: 600,
-                    fontSize: '1.5rem'
+                    fontSize: '1.5rem',
                   }}
                 >
                   Add New Logger
                 </Typography>
-                <Typography 
-                  variant='body2' 
-                  sx={{ 
+                <Typography
+                  variant='body2'
+                  sx={{
                     color: 'rgba(255, 255, 255, 0.8)',
-                    mt: 0.5
+                    mt: 0.5,
                   }}
                 >
                   Configure your environmental sensor logger
@@ -148,71 +202,101 @@ function AddLoggerModal() {
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
-                      }
+                      },
                     }}
                   />
                   <FormControl required fullWidth>
                     <InputLabel id='type-label'>Logger Type</InputLabel>
-                  <Select
-                    label='Logger Type'
-                    variant='outlined'
-                    fullWidth
-                    required
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                    placeholder='Select a logger type'
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: '8px',
-                      }
-                    }}
-                  >
+                    <Select
+                      label='Logger Type'
+                      variant='outlined'
+                      fullWidth
+                      required
+                      value={type}
+                      onChange={(e) => setType(e.target.value)}
+                      placeholder='Select a logger type'
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '8px',
+                        },
+                      }}
+                    >
                       <MenuItem value='ents'>EnTS</MenuItem>
                       <MenuItem value='other'>Other</MenuItem>
                     </Select>
                   </FormControl>
-                  <TextField 
-                    label='Device EUI'
-                    variant='outlined'
-                    fullWidth
-                    required
-                    value={devEui}
-                    onChange={(e) => setDevEui(e.target.value)}
-                    placeholder='e.g., 0080E1150546D093'
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: '8px',
-                      }
-                    }}
+                  {/* Change the following three text fields to follow this format
+                  
+                  <FormControl variant="standard">
+                  <InputLabel htmlFor="formatted-text-mask-input">react-imask</InputLabel>
+                  <Input
+                    onChange={handleChange}
+                    name="textmask"
+                    id="formatted-text-mask-input"
+                    inputComponent={TextMaskCustom}
                   />
-                  <TextField
-                    label='Join EUI'
-                    variant='outlined'
-                    fullWidth
-                    required
-                    value={joinEui}
-                    onChange={(e) => setJoinEui(e.target.value)}
-                    placeholder='e.g., 0101010101010101'
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: '8px',
-                      }
-                    }}
-                  />
-                  <TextField
-                    label='App Key'
-                    variant='outlined'
-                    fullWidth
-                    required
-                    value={appKey}
-                    onChange={(e) => setAppKey(e.target.value)}
-                    placeholder='Application Key'
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: '8px',
-                      }
-                    }}
-                  />
+                </FormControl>
+
+
+                You will need to create the TextMaskCustom function above to have this desired functionality
+
+                see https://github.com/jlab-sensing/ENTS-backend/issues/512 for more
+                */}
+                  {/* THIS IS WHERE THE Device EUI & Join EUI Code is*/}
+                  <FormControl variant='standard'>
+                    <InputLabel>Device EUI</InputLabel>
+                    <Input
+                      onChange={(e) => setDevEui(e.target.value)}
+                      name='deviceEUI'
+                      variant='outlined'
+                      fullWidth
+                      required
+                      value={devEui}
+                      placeholder='e.g., 0080E1150546D093'
+                      inputComponent={ShortTextMask}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '8px',
+                        },
+                      }}
+                    />
+                  </FormControl>
+                  <FormControl variant='standard'>
+                    <InputLabel>Join EUI</InputLabel>
+                    <Input
+                      label='Join EUI'
+                      variant='outlined'
+                      fullWidth
+                      required
+                      value={joinEui}
+                      onChange={(e) => setJoinEui(e.target.value)}
+                      placeholder='e.g., 0101010101010101'
+                      inputComponent={ShortTextMask}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '8px',
+                        },
+                      }}
+                    />
+                  </FormControl>
+                  <FormControl variant='standard'>
+                    <InputLabel>Join EUI</InputLabel>
+                    <Input
+                      label='App Key'
+                      variant='outlined'
+                      fullWidth
+                      required
+                      value={appKey}
+                      onChange={(e) => setAppKey(e.target.value)}
+                      placeholder='Application Key'
+                      inputComponent={LongTextMask}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '8px',
+                        },
+                      }}
+                    />
+                  </FormControl>
                   <TextField
                     label='Description'
                     variant='outlined'
@@ -225,20 +309,22 @@ function AddLoggerModal() {
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
-                      }
+                      },
                     }}
                   />
                 </Box>
 
                 {/* Action Buttons */}
-                <Box sx={{ 
-                  display: 'flex', 
-                  gap: '0.75rem', 
-                  justifyContent: 'flex-end',
-                  mt: '2rem',
-                  pt: '1.5rem',
-                  borderTop: '1px solid #f0f0f0'
-                }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    gap: '0.75rem',
+                    justifyContent: 'flex-end',
+                    mt: '2rem',
+                    pt: '1.5rem',
+                    borderTop: '1px solid #f0f0f0',
+                  }}
+                >
                   <Button
                     variant='outlined'
                     onClick={handleClose}
@@ -247,8 +333,8 @@ function AddLoggerModal() {
                       color: '#666',
                       '&:hover': {
                         borderColor: '#bbb',
-                        backgroundColor: '#f5f5f5'
-                      }
+                        backgroundColor: '#f5f5f5',
+                      },
                     }}
                   >
                     Cancel
@@ -256,7 +342,10 @@ function AddLoggerModal() {
                   <Button
                     variant='contained'
                     onClick={() => {
-                      addLogger(name, type, devEui, joinEui, appKey, description, user.email, auth?.accessToken)
+                      devEui.replace(/[^a-zA-Z0-9\s]/g, '');
+                      joinEui.replace(/[^a-zA-Z0-9\s]/g, '');
+                      appKey.replace(/[^a-zA-Z0-9\s]/g, '');
+                      addLogger(name, type, devEui, joinEui, appKey, description, user.email)
                         .then((res) => {
                           setResponse({ ...res, name, type, devEui, description });
                           refetch();
@@ -270,12 +359,12 @@ function AddLoggerModal() {
                     sx={{
                       backgroundColor: '#588157',
                       '&:hover': { backgroundColor: '#3a5a40' },
-                      '&:disabled': { 
+                      '&:disabled': {
                         backgroundColor: '#ccc',
-                        color: '#888'
+                        color: '#888',
                       },
                       borderRadius: '8px',
-                      px: '1.5rem'
+                      px: '1.5rem',
                     }}
                   >
                     Add Logger
@@ -287,19 +376,21 @@ function AddLoggerModal() {
           {error ? (
             <>
               {/* Error Header */}
-              <Box sx={{ 
-                backgroundColor: '#d32f2f', 
-                padding: '1.5rem 2rem',
-                position: 'relative',
-                mb: 0
-              }}>
+              <Box
+                sx={{
+                  backgroundColor: '#d32f2f',
+                  padding: '1.5rem 2rem',
+                  position: 'relative',
+                  mb: 0,
+                }}
+              >
                 <IconButton
-                  sx={{ 
-                    position: 'absolute', 
-                    top: '0.75rem', 
+                  sx={{
+                    position: 'absolute',
+                    top: '0.75rem',
                     right: '0.75rem',
                     color: 'white',
-                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
                   }}
                   aria-label='close'
                   size='small'
@@ -307,13 +398,13 @@ function AddLoggerModal() {
                 >
                   <CloseIcon fontSize='small' />
                 </IconButton>
-                <Typography 
-                  variant='h5' 
+                <Typography
+                  variant='h5'
                   component='h2'
-                  sx={{ 
+                  sx={{
                     color: 'white',
                     fontWeight: 600,
-                    fontSize: '1.5rem'
+                    fontSize: '1.5rem',
                   }}
                 >
                   Error Creating Logger
@@ -325,7 +416,7 @@ function AddLoggerModal() {
                 <Typography variant='body1' sx={{ mb: 3, color: '#666', lineHeight: 1.6 }}>
                   Duplicate logger names or other error occurred. Please try again with a different name.
                 </Typography>
-                <Button 
+                <Button
                   variant='contained'
                   onClick={handleClose}
                   sx={{
@@ -333,7 +424,7 @@ function AddLoggerModal() {
                     '&:hover': { backgroundColor: '#b71c1c' },
                     borderRadius: '8px',
                     width: '100%',
-                    py: '0.75rem'
+                    py: '0.75rem',
                   }}
                 >
                   Close
@@ -344,28 +435,30 @@ function AddLoggerModal() {
             response && (
               <>
                 {/* Success Header */}
-                <Box sx={{ 
-                  backgroundColor: '#2e7d32', 
-                  padding: '1.5rem 2rem',
-                  position: 'relative',
-                  mb: 0
-                }}>
-                  <Typography 
-                    variant='h5' 
+                <Box
+                  sx={{
+                    backgroundColor: '#2e7d32',
+                    padding: '1.5rem 2rem',
+                    position: 'relative',
+                    mb: 0,
+                  }}
+                >
+                  <Typography
+                    variant='h5'
                     component='h2'
-                    sx={{ 
+                    sx={{
                       color: 'white',
                       fontWeight: 600,
-                      fontSize: '1.5rem'
+                      fontSize: '1.5rem',
                     }}
                   >
                     Logger Created Successfully!
                   </Typography>
-                  <Typography 
-                    variant='body2' 
-                    sx={{ 
+                  <Typography
+                    variant='body2'
+                    sx={{
                       color: 'rgba(255, 255, 255, 0.8)',
-                      mt: 0.5
+                      mt: 0.5,
                     }}
                   >
                     Your environmental sensor logger has been configured
@@ -374,16 +467,18 @@ function AddLoggerModal() {
 
                 {/* Success Content */}
                 <Box sx={{ padding: '2rem' }}>
-                  <Box sx={{ 
-                    backgroundColor: '#f8f9fa', 
-                    borderRadius: '8px', 
-                    padding: '1.5rem',
-                    mb: '1.5rem'
-                  }}>
+                  <Box
+                    sx={{
+                      backgroundColor: '#f8f9fa',
+                      borderRadius: '8px',
+                      padding: '1.5rem',
+                      mb: '1.5rem',
+                    }}
+                  >
                     <Typography variant='h6' sx={{ mb: 2, color: '#2e7d32', fontWeight: 600 }}>
                       Logger Details
                     </Typography>
-                    
+
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       <Box>
                         <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
@@ -393,7 +488,7 @@ function AddLoggerModal() {
                           {response.name}
                         </Typography>
                       </Box>
-                      
+
                       <Box>
                         <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
                           Type
@@ -402,7 +497,7 @@ function AddLoggerModal() {
                           {response.type || 'Not specified'}
                         </Typography>
                       </Box>
-                      
+
                       <Box>
                         <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
                           Device EUI
@@ -411,7 +506,7 @@ function AddLoggerModal() {
                           {response.deviceEui || 'Not specified'}
                         </Typography>
                       </Box>
-                      
+
                       <Box>
                         <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
                           Description
