@@ -16,8 +16,9 @@ import {
 import React, { useEffect, useState, forwardRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { addLogger } from '../../../services/logger';
-<<<<<<< HEAD
 import { IMaskInput } from 'react-imask';
+import useAuth from '../../../auth/hooks/useAuth'
+
 
 const LongTextMask = React.forwardRef(function TextMaskCustom(props, ref) {
   const { onChange, ...other } = props;
@@ -45,18 +46,12 @@ const ShortTextMask = React.forwardRef(function TextMaskCustom(props, ref) {
     />
   );
 });
-=======
-import useAuth from '../../../auth/hooks/useAuth';
->>>>>>> main
 
 function AddLoggerModal() {
   let data = useOutletContext();
   const refetch = data[9]; // Logger refetch function from outlet context
   const user = data[4];
-<<<<<<< HEAD
-=======
   const { auth } = useAuth();
->>>>>>> main
 
   const [isOpen, setOpen] = useState(false);
   const [name, setName] = useState('');
@@ -336,14 +331,10 @@ function AddLoggerModal() {
                   <Button
                     variant='contained'
                     onClick={() => {
-<<<<<<< HEAD
                       devEui.replace(/[^a-zA-Z0-9\s]/g, '');
                       joinEui.replace(/[^a-zA-Z0-9\s]/g, '');
                       appKey.replace(/[^a-zA-Z0-9\s]/g, '');
                       addLogger(name, type, devEui, joinEui, appKey, description, user.email)
-=======
-                      addLogger(name, type, devEui, joinEui, appKey, description, user.email, auth?.accessToken)
->>>>>>> main
                         .then((res) => {
                           setResponse({ ...res, name, type, devEui, description });
                           refetch();
