@@ -13,12 +13,12 @@ import {
   FormControl,
   InputLabel,
 } from '@mui/material';
-import React, { useEffect, useState, forwardRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { addLogger } from '../../../services/logger';
 import { IMaskInput } from 'react-imask';
-import useAuth from '../../../auth/hooks/useAuth'
-
+import useAuth from '../../../auth/hooks/useAuth';
+import PropTypes from 'prop-types';
 
 const LongTextMask = React.forwardRef(function TextMaskCustom(props, ref) {
   const { onChange, ...other } = props;
@@ -32,6 +32,11 @@ const LongTextMask = React.forwardRef(function TextMaskCustom(props, ref) {
     />
   );
 });
+
+LongTextMask.propTypes = {
+  name: PropTypes.string,
+  onChange: PropTypes.func,
+};
 
 ////////////////////////////////////////////
 const ShortTextMask = React.forwardRef(function TextMaskCustom(props, ref) {
@@ -47,10 +52,16 @@ const ShortTextMask = React.forwardRef(function TextMaskCustom(props, ref) {
   );
 });
 
+ShortTextMask.propTypes = {
+  name: PropTypes.string,
+  onChange: PropTypes.func,
+};
+
 function AddLoggerModal() {
   let data = useOutletContext();
   const refetch = data[9]; // Logger refetch function from outlet context
   const user = data[4];
+  // eslint-disable-next-line
   const { auth } = useAuth();
 
   const [isOpen, setOpen] = useState(false);
@@ -533,5 +544,3 @@ function AddLoggerModal() {
 }
 
 export default AddLoggerModal;
-
-//The new MASKING FUNCTIONS to fix issue #512 on GitHub///
