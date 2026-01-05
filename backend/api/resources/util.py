@@ -18,6 +18,7 @@ from .. import socketio
 
 DEBUG_SOCKETIO = os.getenv("DEBUG_SOCKETIO", "False").lower() == "true"
 
+
 def process_generic_measurement_json(meas: dict) -> Response:
     """Process generic measurement
 
@@ -75,15 +76,19 @@ def process_generic_measurement_json(meas: dict) -> Response:
                     }
                     room_name = f"cell_{cell_id}"
 
-                    socketio.emit("measurement_received", measurement_data, room=room_name)
+                    socketio.emit(
+                        "measurement_received", measurement_data, room=room_name
+                    )
 
                     if DEBUG_SOCKETIO:
-                        has_subscribers = socketio.server.manager.rooms.get("/", {}).get(
-                            room_name
-                        )
+                        has_subscribers = socketio.server.manager.rooms.get(
+                            "/", {}
+                        ).get(room_name)
                         if has_subscribers:
                             count = len(has_subscribers)
-                            print(f"[socketio] emitted to {room_name}: {count} subscribers")
+                            print(
+                                f"[socketio] emitted to {room_name}:{count} subscribers"
+                            )
                 except Exception as e:
                     print(f"[socketio] error emitting measurement: {e}")
 
@@ -233,7 +238,6 @@ def process_measurement_dict(meas: dict):
 
     # sen0257 water pressure measurement
     elif meas["type"] == "sen0257":
-
         pressure_obj = Sensor.add_data(
             meas_name="pressure", meas_unit="kPa", meas_dict=meas
         )
@@ -248,7 +252,6 @@ def process_measurement_dict(meas: dict):
 
     # sen0308 soil humidity measurement
     elif meas["type"] == "sen0308":
-
         voltage_obj = Sensor.add_data(
             meas_name="voltage", meas_unit="V", meas_dict=meas
         )
@@ -263,7 +266,6 @@ def process_measurement_dict(meas: dict):
 
     # yfs210c water flow measurement
     elif meas["type"] == "yfs210c":
-
         flow_obj = Sensor.add_data(meas_name="flow", meas_unit="L/Min", meas_dict=meas)
 
         obj_list.append(flow_obj)

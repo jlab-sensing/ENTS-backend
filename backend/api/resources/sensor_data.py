@@ -128,7 +128,6 @@ class SensorData(Resource):
 
         return resp
 
-
     @staticmethod
     def handle_binary(data):
         """Handles POST request containing binary data and return response
@@ -148,7 +147,10 @@ class SensorData(Resource):
         else:
             resp = Response()
             resp.status_code = 400
-            resp.data = "Invalid Content-Type for POST request, must be application/octet-stream"
+            resp.data = (
+                "Invalid Content-Type for POST request, "
+                "must be application/octet-stream"
+            )
             return resp
 
         sensor_type = request.headers.get("SensorVersion", "1")
