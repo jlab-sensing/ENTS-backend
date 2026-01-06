@@ -50,6 +50,16 @@ Alternatively, you can also:
 - Run `git config --global core.autocrlf input` to configure Git to preserve line endings
 - Clone the repository again
 
+### Accessing Environment Variables
+
+To access environment variables to properly run a local version of the site, you must utilize our python script 'env-import.py'. To use this, you must first:
+
+1. Contact a member of jLab to be granted AWS credentials
+2. Download aws cli (preferred method is through brew)
+3. Run the command `aws configure`
+4. Input your AWS Access Key ID, AWS Secret Access Key, Default region name (us-west-1), and output format (None)
+5. Run the python script! 'python3 env-import.py'
+
 ### Generating environmental variables
 
 The frontend and backend containers require environmental variables to be set in order to run. These are stored in a `.env` file in the root directory, which you will need to create based on the provided `.env.example` template. Copy `.env.example` to `.env` and update the values as needed.
