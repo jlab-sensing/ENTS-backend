@@ -25,7 +25,7 @@ To access environment variables to properly run a local version of the site, you
 2. Download aws cli (preferred method is through brew)
 3. Run the command `aws configure`
 4. Input your AWS Access Key ID, AWS Secret Access Key, Default region name (us-west-1), and output format (None)
-5. Run the python script! 'python3 env-import.py'
+5. Run the python script! `python3 env-import.py`
 
 ### Starting Services
 
