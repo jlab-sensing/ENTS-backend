@@ -259,6 +259,9 @@ function Dashboard() {
 
       setStartDate(parsedStartDate);
       setEndDate(parsedEndDate);
+      // Also set hourly dates so charts get the correct dates from URL
+      setHourlyStartDate(parsedStartDate);
+      setHourlyEndDate(parsedEndDate);
 
       // Only block smart date range if this appears to be a genuine manual selection
       if (isManualSelection && searchQueryCells) {
@@ -309,11 +312,12 @@ function Dashboard() {
       newParams.set('cell_id', selectedCells.map((cell) => cell.id).join(','));
     }
 
-    newParams.set('startDate', startDate.toISO());
-    newParams.set('endDate', endDate.toISO());
+    // Use hourlyStartDate/hourlyEndDate for URL since those are what the UI shows
+    newParams.set('startDate', hourlyStartDate.toISO());
+    newParams.set('endDate', hourlyEndDate.toISO());
 
     setSearchParams(newParams, { replace: true });
-  }, [startDate, endDate, selectedCells, isInitialized, setSearchParams]);
+  }, [hourlyStartDate, hourlyEndDate, selectedCells, isInitialized, setSearchParams]);
 
   const handleStartDateChange = (newStartDate) => {
     if (stream) {
