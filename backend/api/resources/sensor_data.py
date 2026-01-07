@@ -31,7 +31,7 @@ import base64
 from flask import request, jsonify, Response
 from flask_restful import Resource
 
-from .util import process_measurement
+from .util import process_measurement, process_generic_measurement
 
 from ..models.sensor import Sensor
 from ..schemas.get_sensor_data_schema import GetSensorDataSchema
@@ -97,6 +97,9 @@ class SensorData(Resource):
         Sample uplink message:
         https://www.thethingsindustries.com/docs/the-things-stack/concepts/data-formats/#uplink-messages
 
+        In this case the http request gets returned to TTN where it can show an
+        error code.
+
         Args:
             uplink_json: Uplink json for TTN
 
@@ -105,22 +108,24 @@ class SensorData(Resource):
             for full description.
         """
 
-        # check if uplink is on correctly LoRaWAN application port
-        if uplink_json["uplink_message"]["f_port"] != 1:
+        if uplink_json["uplink_message"]["f_port"] == 1:
+            # get payload
+            payload_str = uplink_json["uplink_message"]["frm_payload"]
+            payload = base64.b64decode(payload_str)
+
+            resp = process_measurement(payload)
+
+        elif uplink_json["uplink_message"]["f_port"] == 2:
+            payload_str = uplink_json["uplink_message"]["frm_payload"]
+            payload = base64.b64decode(payload_str)
+
+            resp = process_generic_measurement(payload)
+
+        else:
             # don't process and return success
             resp = Response()
-            resp.status_code = 200
-            return resp
+            resp.status_code = 404
 
-        # get payload
-        payload_str = uplink_json["uplink_message"]["frm_payload"]
-        payload = base64.b64decode(payload_str)
-
-        resp = process_measurement(payload)
-
-        # TODO: Add downlink messages to device
-
-        # return json of measurement
         return resp
 
     @staticmethod
@@ -140,9 +145,22 @@ class SensorData(Resource):
             # get uplink json
             data = request.data
         else:
-            raise ValueError("POST request must be application/json")
+            resp = Response()
+            resp.status_code = 400
+            resp.data = (
+                "Invalid Content-Type for POST request, "
+                "must be application/octet-stream"
+            )
+            return resp
 
-        # decode and insert into db
-        resp = process_measurement(data)
+        sensor_type = request.headers.get("SensorVersion", "1")
+
+        # process generic measurement
+        if sensor_type == "2":
+            resp = process_generic_measurement(data)
+        # default to original version
+        else:
+            # decode and insert into db
+            resp = process_measurement(data)
 
         return resp
