@@ -280,7 +280,7 @@ function AddLoggerModal() {
                     />
                   </FormControl>
                   <FormControl variant='standard'>
-                    <InputLabel>Join EUI</InputLabel>
+                    <InputLabel>App Key</InputLabel>
                     <Input
                       label='App Key'
                       variant='outlined'
