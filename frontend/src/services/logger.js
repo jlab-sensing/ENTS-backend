@@ -10,26 +10,18 @@ export const getLoggers = () => {
     });
 };
 
-export const addLogger = (name, type, devEui, joinEui, appKey, description, email, accessToken) => {
-  return axios
-    .post(
-      `${process.env.PUBLIC_URL}/api/logger/`,
-      {
-        name: name,
-        type: type,
-        device_eui: devEui, // for database
-        dev_eui: devEui, // for TTN API
-        join_eui: joinEui, // for TTN only
-        app_key: appKey, // for TTN only
-        description: description,
-        userEmail: email,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      },
-    )
+export const addLogger = (name, type, devEui, joinEui, appKey, description, email, axiosPrivate) => {
+  return axiosPrivate
+    .post(`${process.env.PUBLIC_URL}/logger/`, {
+      name: name,
+      type: type,
+      device_eui: devEui, // for database
+      dev_eui: devEui, // for TTN API
+      join_eui: joinEui, // for TTN only
+      app_key: appKey, // for TTN only
+      description: description,
+      userEmail: email,
+    })
     .then((res) => res.data)
     .catch((error) => {
       console.log(error);

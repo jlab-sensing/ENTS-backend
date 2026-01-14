@@ -7,6 +7,7 @@ from ..models.logger import Logger as LoggerModel
 from ..schemas.add_logger_schema import AddLoggerSchema
 from ..ttn.end_devices import TTNApi, EntsEndDevice, EndDevice
 
+logger_schema = LoggerSchema()
 loggers_schema = LoggerSchema(many=True)
 add_logger_schema = AddLoggerSchema()
 
@@ -60,14 +61,14 @@ class Logger(Resource):
                     ttn_device = self.ttn_api.get_end_device(ed)
                     if ttn_device:
                         # Return combined database + TTN info
-                        logger_data = loggers_schema.dump(logger)
+                        logger_data = logger_schema.dump(logger)
                         logger_data["ttn_status"] = ttn_device.data
                         return logger_data, 200
                 except Exception as e:
                     warnings.warn(f"Failed to get TTN device info: {str(e)}")
 
             # Return database info only
-            return loggers_schema.dump(logger), 200
+            return logger_schema.dump(logger), 200
 
     def post(self, _user):
         """Creates a new logger with database and TTN registration.
