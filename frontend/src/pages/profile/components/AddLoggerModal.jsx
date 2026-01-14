@@ -414,7 +414,7 @@ function AddLoggerModal() {
               {/* Error Content */}
               <Box sx={{ padding: '2rem' }}>
                 <Typography variant='body1' sx={{ mb: 3, color: '#666', lineHeight: 1.6 }}>
-                  Duplicate logger names or other error occurred. Please try again with a different name.
+                  {error?.response?.data?.message || error?.message || 'An unknown error occurred. Please try again.'}
                 </Typography>
                 <Button
                   variant='contained'
