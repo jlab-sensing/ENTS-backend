@@ -17,7 +17,6 @@ import React, { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { addLogger } from '../../../services/logger';
 import { IMaskInput } from 'react-imask';
-import useAuth from '../../../auth/hooks/useAuth';
 import PropTypes from 'prop-types';
 
 const LongTextMask = React.forwardRef(function TextMaskCustom(props, ref) {
@@ -61,8 +60,7 @@ function AddLoggerModal() {
   let data = useOutletContext();
   const refetch = data[9]; // Logger refetch function from outlet context
   const user = data[4];
-  // eslint-disable-next-line
-  const { auth } = useAuth();
+  const axiosPrivate = data[10];
 
   const [isOpen, setOpen] = useState(false);
   const [name, setName] = useState('');
@@ -345,7 +343,7 @@ function AddLoggerModal() {
                       devEui.replace(/[^a-zA-Z0-9\s]/g, '');
                       joinEui.replace(/[^a-zA-Z0-9\s]/g, '');
                       appKey.replace(/[^a-zA-Z0-9\s]/g, '');
-                      addLogger(name, type, devEui, joinEui, appKey, description, user.email)
+                      addLogger(name, type, devEui, joinEui, appKey, description, user.email, axiosPrivate)
                         .then((res) => {
                           setResponse({ ...res, name, type, devEui, description });
                           refetch();
