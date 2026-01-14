@@ -71,7 +71,6 @@ class Logger(Resource):
             return logger_schema.dump(logger), 200
 
     def post(self, _user):
-
         """Creates a new logger with database and TTN registration.
 
         Expected JSON payload:

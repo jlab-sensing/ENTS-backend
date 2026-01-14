@@ -4,9 +4,7 @@ import { useEffect } from 'react';
 import useAuth from '../../auth/hooks/useAuth';
 import useAxiosPrivate from '../../auth/hooks/useAxiosPrivate';
 import Nav from '../../components/Nav';
-import { useUserCells } from '../../services/cell';
-import { useUserLoggers } from '../../services/logger';
-import SideBar from './components/SideBar';
+import { useUserCells } from '../../services/cell'; import { useUserLoggers } from '../../services/logger'; import SideBar from './components/SideBar';
 
 function Profile() {
   const axiosPrivate = useAxiosPrivate();
