@@ -340,12 +340,12 @@ function AddLoggerModal() {
                   <Button
                     variant='contained'
                     onClick={() => {
-                      devEui.replace(/[^a-zA-Z0-9\s]/g, '');
-                      joinEui.replace(/[^a-zA-Z0-9\s]/g, '');
-                      appKey.replace(/[^a-zA-Z0-9\s]/g, '');
-                      addLogger(name, type, devEui, joinEui, appKey, description, user.email, axiosPrivate)
+                      const cleanDevEui = devEui.replace(/[^a-zA-Z0-9]/g, '');
+                      const cleanJoinEui = joinEui.replace(/[^a-zA-Z0-9]/g, '');
+                      const cleanAppKey = appKey.replace(/[^a-zA-Z0-9]/g, '');
+                      addLogger(name, type, cleanDevEui, cleanJoinEui, cleanAppKey, description, user.email, axiosPrivate)
                         .then((res) => {
-                          setResponse({ ...res, name, type, devEui, description });
+                          setResponse({ ...res, name, type, devEui: cleanDevEui, description });
                           refetch();
                         })
                         .catch((error) => {
