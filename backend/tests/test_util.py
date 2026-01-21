@@ -1,10 +1,51 @@
-from api.resources.util import process_measurement_dict
+from api.resources.util import (
+    process_measurement_dict,
+    process_generic_measurement
+)
 from datetime import datetime
 from unittest.mock import patch
 from api.models.logger import Logger
 from api.models.cell import Cell
+from api.models.sensor import Sensor
+from api.models.data import Data
 import os
 
+
+from ents.proto.sensor import format_sensor_measurement
+
+
+def test_sensor_generic(init_database):
+    """Processes a generic measurement."""
+
+    # metadata
+    ts = 1705176162
+    cell = Cell("cell_4")
+    cell.save()
+    logger = Logger("test_logger")
+    logger.save()
+
+    meas = {
+        "meta": {
+            "cellId": cell.id,
+            "loggerId": logger.id,
+            "ts": ts,
+        },
+        "type": "POWER_VOLTAGE",
+        "unsignedInt": 100
+    }
+
+    # process measuire
+    data = format_sensor_measurement([meas])
+    resp = process_generic_measurement(data)
+
+    sensor_objs = Sensor.query.all()
+    data_objs = Data.query.all()
+
+    print(sensor_objs)
+
+    assert resp.status_code == 200
+    assert len(sensor_objs) == 1
+    assert len(data_objs) == 1
 
 def test_process_measurement_dict_power_with_websocket(init_database):
     logger = Logger("test_logger_ws", None, "")
