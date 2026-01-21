@@ -63,16 +63,16 @@ def process_generic_measurement_json(meas: dict) -> Response:
             resp.data = f"Error adding sensor data for measurement {m}"
             return resp
         else:
-            cell_id = m.get("cellId")
+            cell_id = meas_dict.get("cellId")
             if cell_id:
                 try:
                     measurement_data = {
-                        "type": m.get("type", "unknown"),
+                        "type": meas_dict.get("type", "unknown"),
                         "cellId": cell_id,
-                        "loggerId": m.get("loggerId"),
-                        "timestamp": m.get("ts"),
-                        "data": m.get("data", {}),
-                        "obj_count": len(m.get("data", {})),
+                        "loggerId": meas_dict.get("loggerId"),
+                        "timestamp": meas_dict.get("ts"),
+                        "data": meas_dict.get("data", {}),
+                        "obj_count": len(meas_dict.get("data", {})),
                     }
                     room_name = f"cell_{cell_id}"
 
