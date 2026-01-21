@@ -44,6 +44,7 @@ def test_sensor_generic_uint(init_database, clear_data):
     assert len(sensor_objs) == 1
     assert len(data_objs) == 1
 
+
 def test_sensor_generic_int(init_database, clear_data):
     """Processes a generic measurement."""
 
@@ -76,6 +77,7 @@ def test_sensor_generic_int(init_database, clear_data):
     assert resp.status_code == 200
     assert len(sensor_objs) == 1
     assert len(data_objs) == 1
+
 
 def test_sensor_generic_decimal(init_database, clear_data):
     """Processes a generic measurement."""

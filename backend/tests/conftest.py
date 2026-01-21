@@ -115,8 +115,6 @@ def clear_data(test_client):
     yield test_client
 
 
-
-
 @pytest.fixture(scope="module")
 def setup_cells(test_client):
     # db.drop_all()
