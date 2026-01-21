@@ -611,6 +611,51 @@ function Dashboard() {
                 sx={{ width: '95%', boxSizing: 'border-box' }}
               >
                 <UnifiedChart
+                  type='power_voltage'
+                  cells={selectedCells}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
+                  stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
+                />
+                <UnifiedChart
+                  type='power_current'
+                  cells={selectedCells}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
+                  stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
+                />
+                <UnifiedChart
+                  type='teros12_vwc'
+                  cells={selectedCells}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
+                  stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
+                />
+                <UnifiedChart
+                  type='teros12_temp'
+                  cells={selectedCells}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
+                  stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
+                />
+                <UnifiedChart
+                  type='teros12_ec'
+                  cells={selectedCells}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
+                  stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
+                />
+                <UnifiedChart
                   type='soilPot'
                   cells={selectedCells}
                   startDate={hourlyStartDate}

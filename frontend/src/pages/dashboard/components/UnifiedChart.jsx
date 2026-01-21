@@ -6,6 +6,41 @@ import { getSensorData } from '../../../services/sensor';
 import UniversalChart from '../../../charts/UniversalChart';
 
 const CHART_CONFIGS = {
+  power_voltage: {
+    sensor_name: 'POWER_VOLTAGE',
+    measurements: ['Voltage'],
+    units: ['mV'],
+    axisIds: ['y'],
+    chartId: 'powerVoltage',
+  },
+  power_current: {
+    sensor_name: 'POWER_CURRENT',
+    measurements: ['Current'],
+    units: ['uA'],
+    axisIds: ['y'],
+    chartId: 'powerCurrent',
+  },
+  teros12_vwc: {
+    sensor_name: 'TEROS12_VWC_ADJ',
+    measurements: ['Volumetric Water Content'],
+    units: ['%'],
+    axisIds: ['y'],
+    chartId: 'teros12VWC',
+  },
+  teros12_temp: {
+    sensor_name: 'TEROS12_TEMP',
+    measurements: ['Temperature'],
+    units: ['C'],
+    axisIds: ['y'],
+    chartId: 'teros12Temp',
+  },
+  teros12_ec: {
+    sensor_name: 'TEROS12_EC',
+    measurements: ['Electrical Conductivity'],
+    units: ['uS/cm'],
+    axisIds: ['y'],
+    chartId: 'teros12EC',
+  },
   temperature: {
     sensor_name: 'bme280',
     measurements: ['temperature'],
@@ -284,7 +319,27 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
             let dataValues = [];
             
             // Extract data based on measurement type and sensor
-            if (sensor_name === 'bme280') {
+            if (sensor_name === 'POWER_VOLTAGE') {
+              if (meas === "Voltage") {
+                dataValues = sortedMeasurements.map(m => m.data.power_voltage);
+              }
+            } else if (sensor_name === "POWER_CURRENT") {
+              if (meas === "Current") {
+                dataValues = sortedMeasurements.map(m => m.data.power_current);
+              }
+            } else if (sensor_name === "TEROS12_VWC_ADJ") {
+              if (meas === "Volumetric Water Content") {
+                dataValues = sortedMeasurements.map(m => m.data.teros12_vwc);
+              }
+            } else if (sensor_name === "TEROS12_TEMP") {
+              if (meas === "Temperature") {
+                dataValues = sortedMeasurements.map(m => m.data.teros12_temp);
+              }
+            } else if (sensor_name === "TEROS12_EC") {
+              if (meas === "Electrical Conductivity") {
+                dataValues = sortedMeasurements.map(m => m.data.teros12_ec);
+              }
+            } else if (sensor_name === 'bme280') {
               if (meas === 'temperature') {
                 dataValues = sortedMeasurements.map(m => m.data.temperature);
               } else if (meas === 'pressure') {
