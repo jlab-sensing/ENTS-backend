@@ -1,7 +1,4 @@
-from api.resources.util import (
-    process_measurement_dict,
-    process_generic_measurement
-)
+from api.resources.util import process_measurement_dict, process_generic_measurement
 from datetime import datetime
 from unittest.mock import patch
 from api.models.logger import Logger
@@ -31,7 +28,7 @@ def test_sensor_generic(init_database):
             "ts": ts,
         },
         "type": "POWER_VOLTAGE",
-        "unsignedInt": 100
+        "unsignedInt": 100,
     }
 
     # process measuire
@@ -46,6 +43,7 @@ def test_sensor_generic(init_database):
     assert resp.status_code == 200
     assert len(sensor_objs) == 1
     assert len(data_objs) == 1
+
 
 def test_process_measurement_dict_power_with_websocket(init_database):
     logger = Logger("test_logger_ws", None, "")
