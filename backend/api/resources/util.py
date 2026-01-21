@@ -8,7 +8,7 @@ from datetime import datetime
 
 from flask import Response
 from ents.proto import encode_response, decode_measurement
-from ents.proto.sensor import parse_sensor_measurements
+from ents.proto.sensor import parse_sensor_measurement
 
 
 from ..models.power_data import PowerData
@@ -63,16 +63,16 @@ def process_generic_measurement_json(meas: dict) -> Response:
             resp.data = f"Error adding sensor data for measurement {m}"
             return resp
         else:
-            cell_id = meas.get("cellId")
+            cell_id = m.get("cellId")
             if cell_id:
                 try:
                     measurement_data = {
-                        "type": meas.get("type", "unknown"),
+                        "type": m.get("type", "unknown"),
                         "cellId": cell_id,
-                        "loggerId": meas.get("loggerId"),
-                        "timestamp": meas.get("ts"),
-                        "data": meas.get("data", {}),
-                        "obj_count": len(meas.get("data", {})),
+                        "loggerId": m.get("loggerId"),
+                        "timestamp": m.get("ts"),
+                        "data": m.get("data", {}),
+                        "obj_count": len(m.get("data", {})),
                     }
                     room_name = f"cell_{cell_id}"
 
@@ -111,14 +111,14 @@ def process_generic_measurement(data: bytes) -> Response:
     """
 
     try:
-        meas = parse_sensor_measurements(data)
+        meas = parse_sensor_measurement(data)
     except Exception as e:
         resp = Response()
         resp.status_code = 400
         resp.data = f"Error parsing sensor measurements: {e}"
         return resp
 
-    return process_generic_measurement_json(meas)
+    return process_generic_measurement_json(meas["measurements"])
 
 
 def process_measurement(data: bytes):
