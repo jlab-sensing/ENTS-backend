@@ -5,6 +5,8 @@ import pytest
 from api import create_app, db
 from api.models.user import User
 from api.models.cell import Cell
+from api.models.sensor import Sensor
+from api.models.data import Data
 
 import logging
 from pytest_postgresql import factories
@@ -100,6 +102,19 @@ def init_database(test_client):
     # we need to wait or have the fixure generate all the values
     # db.session.commit()
     # db.drop_all()
+
+
+@pytest.fixture(scope="function")
+def clear_data(test_client):
+    """Clear all the data from sensor and data tables."""
+
+    db.session.query(Data).delete()
+    db.session.query(Sensor).delete()
+    db.session.commit()
+
+    yield test_client
+
+
 
 
 @pytest.fixture(scope="module")
