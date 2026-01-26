@@ -1,4 +1,4 @@
-import { Box, Divider, Grid, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { DateTime } from 'luxon';
 import { React, useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -12,9 +12,7 @@ import BackBtn from './components/BackBtn';
 import CellSelect from './components/CellSelect';
 import DateRangeSel from './components/DateRangeSel';
 import DownloadBtn from './components/DownloadBtn';
-import PowerCharts from './components/PowerCharts';
 import StreamToggle from './components/StreamToggle';
-import TerosCharts from './components/TerosCharts';
 import UnifiedChart from './components/UnifiedChart';
 import { io } from 'socket.io-client';
 import TopNav from '../../components/TopNav';
@@ -31,8 +29,6 @@ function Dashboard() {
   const [showNoDataMessage, setShowNoDataMessage] = useState(false);
   const [manualDateSelection, setManualDateSelection] = useState(false);
   const [smartDateRangeApplied, setSmartDateRangeApplied] = useState(false); // eslint-disable-line no-unused-vars
-  const [powerHasData, setPowerHasData] = useState(false);
-  const [terosHasData, setTerosHasData] = useState(false);
   const [liveData, setLiveData] = useState([]);
   
   // Background streaming data - always collecting in background
@@ -57,52 +53,29 @@ function Dashboard() {
   const cells = useCells();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // data processing
+  // data processing - all sensors now use the unified data table
   const processLiveData = useCallback((measurements) => {
     if (!measurements || measurements.length === 0) return;
 
     const processed = {
-      power: { byCell: {}, allMeasurements: [] },
-      teros: { byCell: {}, allMeasurements: [] },
       sensors: { byType: {}, allMeasurements: [] }
     };
 
-    // Process measurements
+    // Process all measurements uniformly
     measurements.forEach(measurement => {
       const { type, cellId } = measurement;
-      
-      // Group by sensor type and cell
-      if (type === 'power') {
-        if (!processed.power.byCell[cellId]) {
-          processed.power.byCell[cellId] = [];
-        }
-        processed.power.byCell[cellId].push(measurement);
-        processed.power.allMeasurements.push(measurement);
-      } else if (type === 'teros12') {
-        if (!processed.teros.byCell[cellId]) {
-          processed.teros.byCell[cellId] = [];
-        }
-        processed.teros.byCell[cellId].push(measurement);
-        processed.teros.allMeasurements.push(measurement);
-      } else {
-        if (!processed.sensors.byType[type]) {
-          processed.sensors.byType[type] = { byCell: {} };
-        }
-        if (!processed.sensors.byType[type].byCell[cellId]) {
-          processed.sensors.byType[type].byCell[cellId] = [];
-        }
-        processed.sensors.byType[type].byCell[cellId].push(measurement);
-        processed.sensors.allMeasurements.push(measurement);
+
+      if (!processed.sensors.byType[type]) {
+        processed.sensors.byType[type] = { byCell: {} };
       }
+      if (!processed.sensors.byType[type].byCell[cellId]) {
+        processed.sensors.byType[type].byCell[cellId] = [];
+      }
+      processed.sensors.byType[type].byCell[cellId].push(measurement);
+      processed.sensors.allMeasurements.push(measurement);
     });
 
     // Sort measurements by timestamp for each group
-    Object.keys(processed.power.byCell).forEach(cellId => {
-      processed.power.byCell[cellId].sort((a, b) => a.timestamp - b.timestamp);
-    });
-    Object.keys(processed.teros.byCell).forEach(cellId => {
-      processed.teros.byCell[cellId].sort((a, b) => a.timestamp - b.timestamp);
-    });
     Object.keys(processed.sensors.byType).forEach(type => {
       Object.keys(processed.sensors.byType[type].byCell).forEach(cellId => {
         processed.sensors.byType[type].byCell[cellId].sort((a, b) => a.timestamp - b.timestamp);
@@ -123,8 +96,6 @@ function Dashboard() {
     const clearTimeoutId = setTimeout(() => {
       setLiveData([]);
       backgroundStreamDataRef.current = [];
-      setPowerHasData(false);
-      setTerosHasData(false);
     }, 30 * 60 * 1000);
     clearTimeoutIdRef.current = clearTimeoutId;
   }, []);
@@ -133,8 +104,6 @@ function Dashboard() {
   const processedLiveData = useMemo(() => {
     if (!liveData || liveData.length === 0) {
       return {
-        power: { byCell: {}, allMeasurements: [] },
-        teros: { byCell: {}, allMeasurements: [] },
         sensors: { byType: {}, allMeasurements: [] }
       };
     }
@@ -417,9 +386,6 @@ function Dashboard() {
     }
   }, [loggedIn, stream]);
 
-  // Check if top section should be hidden
-  const topSectionHasData = powerHasData || terosHasData;
-
   return (
     <>
     <TopNav />
@@ -576,46 +542,56 @@ function Dashboard() {
             </Box>
           ) : (
             <>
-              {/* Top section charts - always render but conditionally display */}
-              <Grid
-                container
+              {/* All charts - using unified data table */}
+              <Stack
+                direction='column'
                 spacing={3}
                 sx={{
                   width: '100%',
-                  p: topSectionHasData ? 2 : 0,
-                  height: topSectionHasData ? 'auto' : '0px',
-                  overflow: 'hidden',
+                  boxSizing: 'border-box',
+                  py: 2,
+                  px: { xs: 2, sm: 3, md: 4 },
                 }}
-                alignItems='center'
-                justifyContent='space-evenly'
-                columns={{ xs: 4, sm: 8, md: 12 }}
               >
-                <PowerCharts
+                {/* Power charts */}
+                <UnifiedChart
+                  type='voltageCurrent'
                   cells={selectedCells}
-                  {...(!stream && { startDate: hourlyStartDate, endDate: hourlyEndDate })}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
                   stream={stream}
                   liveData={liveData}
-                  processedData={processedLiveData.power}
-                  onDataStatusChange={setPowerHasData}
+                  processedData={processedLiveData.sensors}
                 />
-                <TerosCharts
+                <UnifiedChart
+                  type='power'
                   cells={selectedCells}
-                  {...(!stream && { startDate: hourlyStartDate, endDate: hourlyEndDate })}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
                   stream={stream}
                   liveData={liveData}
-                  processedData={processedLiveData.teros}
-                  onDataStatusChange={setTerosHasData}
+                  processedData={processedLiveData.sensors}
                 />
-              </Grid>
-
-         
-              {/* Bottom section charts - always rendered */}
-              <Stack
-                direction='column'
-                divider={<Divider orientation='horizontal' flexItem />}
-                justifyContent='spaced-evently'
-                sx={{ width: '95%', boxSizing: 'border-box' }}
-              >
+                {/* Teros charts */}
+                <UnifiedChart
+                  type='vwcEc'
+                  cells={selectedCells}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
+                  stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
+                />
+                <UnifiedChart
+                  type='terosTemp'
+                  cells={selectedCells}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
+                  stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
+                />
+                {/* Other sensor charts */}
                 <UnifiedChart
                   type='soilPot'
                   cells={selectedCells}
@@ -661,8 +637,6 @@ function Dashboard() {
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
                 />
-
-                {/* New charts from main branch */}
                 <UnifiedChart
                   type='soilHum'
                   cells={selectedCells}

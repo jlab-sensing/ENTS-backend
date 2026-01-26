@@ -9,8 +9,6 @@ from datetime import datetime
 from flask import Response
 from ents.proto import encode_response, decode_measurement
 
-from ..models.power_data import PowerData
-from ..models.teros_data import TEROSData
 from ..models.sensor import Sensor
 from .. import socketio
 
@@ -54,31 +52,39 @@ def process_measurement_json(data: dict):
 def process_measurement_dict(meas: dict):
     obj_list = []
 
-    # power measurement
+    # power measurement - now uses unified data table via Sensor.add_data
     if meas["type"] == "power":
-        obj = PowerData.add_protobuf_power_data(
-            meas["loggerId"],
-            meas["cellId"],
-            datetime.fromtimestamp(meas["ts"]),
-            meas["data"]["voltage"],
-            meas["data"]["current"],
+        voltage_obj = Sensor.add_data(
+            meas_name="voltage", meas_unit="V", meas_dict=meas
         )
+        obj_list.append(voltage_obj)
 
-        obj_list.append(obj)
+        current_obj = Sensor.add_data(
+            meas_name="current", meas_unit="A", meas_dict=meas
+        )
+        obj_list.append(current_obj)
 
-    # teros12 measurement
+    # teros12 measurement - now uses unified data table via Sensor.add_data
     elif meas["type"] == "teros12":
-        obj = TEROSData.add_protobuf_teros_data(
-            meas["cellId"],
-            datetime.fromtimestamp(meas["ts"]),
-            meas["data"]["vwcAdj"],
-            meas["data"]["vwcRaw"],
-            meas["data"]["temp"],
-            meas["data"]["ec"],
-            None,
+        vwc_obj = Sensor.add_data(
+            meas_name="vwcAdj", meas_unit="%", meas_dict=meas
         )
+        obj_list.append(vwc_obj)
 
-        obj_list.append(obj)
+        vwc_raw_obj = Sensor.add_data(
+            meas_name="vwcRaw", meas_unit="V", meas_dict=meas
+        )
+        obj_list.append(vwc_raw_obj)
+
+        temp_obj = Sensor.add_data(
+            meas_name="temp", meas_unit="C", meas_dict=meas
+        )
+        obj_list.append(temp_obj)
+
+        ec_obj = Sensor.add_data(
+            meas_name="ec", meas_unit="uS/cm", meas_dict=meas
+        )
+        obj_list.append(ec_obj)
 
     elif meas["type"] == "phytos31":
         obj1 = Sensor.add_data(meas_name="voltage", meas_unit="V", meas_dict=meas)

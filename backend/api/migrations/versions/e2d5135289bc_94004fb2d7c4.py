@@ -8,6 +8,7 @@ Create Date: 2026-01-14 19:53:11.356915
 
 from alembic import op
 import sqlalchemy as sa
+from datetime import datetime
 
 
 # revision identifiers, used by Alembic.
@@ -16,28 +17,118 @@ down_revision = "94004fb2d7c4"
 branch_labels = None
 depends_on = None
 
+
 def upgrade():
     # Get a connection to perform SQL operations
     connection = op.get_bind()
 
-    # Check if data already exists in the data table
+    # =========================================================================
+    # STEP 1: Pre-flight checks
+    # =========================================================================
+
+    # Check if source tables exist
+    table_check = sa.text("""
+        SELECT table_name FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_name IN ('power_data', 'teros_data')
+    """)
+    existing_tables = {row[0] for row in connection.execute(table_check)}
+
+    has_power_data = 'power_data' in existing_tables
+    has_teros_data = 'teros_data' in existing_tables
+
+    if not has_power_data and not has_teros_data:
+        print("Neither power_data nor teros_data tables exist. Nothing to migrate.")
+        return
+
+    print(f"Found tables: power_data={has_power_data}, teros_data={has_teros_data}")
+
+    # =========================================================================
+    # STEP 2: Reset sequences using dynamic lookup (handles custom names)
+    # =========================================================================
+
+    # Reset sensor sequence
+    connection.execute(
+        sa.text("""
+            SELECT setval(
+                pg_get_serial_sequence('sensor', 'id'),
+                COALESCE((SELECT MAX(id) FROM sensor), 0) + 1,
+                false
+            )
+        """)
+    )
+
+    # Reset data sequence
+    connection.execute(
+        sa.text("""
+            SELECT setval(
+                pg_get_serial_sequence('data', 'id'),
+                COALESCE((SELECT MAX(id) FROM data), 0) + 1,
+                false
+            )
+        """)
+    )
+    print("Reset sequences to current max + 1")
+
+    # =========================================================================
+    # STEP 3: Validate foreign key constraints
+    # =========================================================================
+
+    # Get all valid cell_ids from the cell table
+    valid_cell_ids_query = sa.text("SELECT id FROM cell")
+    valid_cell_ids = {row[0] for row in connection.execute(valid_cell_ids_query)}
+    print(f"Found {len(valid_cell_ids)} valid cells in cell table")
+
+    if len(valid_cell_ids) == 0:
+        print("WARNING: No cells found in cell table. Migration will skip all records.")
+
+    # Check for orphaned cell_ids in power_data
+    if has_power_data:
+        orphan_check = sa.text("""
+            SELECT DISTINCT cell_id FROM power_data
+            WHERE cell_id IS NOT NULL
+            AND cell_id NOT IN (SELECT id FROM cell)
+        """)
+        orphaned_power_cells = [row[0] for row in connection.execute(orphan_check)]
+        if orphaned_power_cells:
+            print(f"WARNING: power_data contains {len(orphaned_power_cells)} cell_ids not in cell table: {orphaned_power_cells[:10]}...")
+            print("These records will be SKIPPED to avoid FK constraint violations.")
+
+    # Check for orphaned cell_ids in teros_data
+    if has_teros_data:
+        orphan_check = sa.text("""
+            SELECT DISTINCT cell_id FROM teros_data
+            WHERE cell_id IS NOT NULL
+            AND cell_id NOT IN (SELECT id FROM cell)
+        """)
+        orphaned_teros_cells = [row[0] for row in connection.execute(orphan_check)]
+        if orphaned_teros_cells:
+            print(f"WARNING: teros_data contains {len(orphaned_teros_cells)} cell_ids not in cell table: {orphaned_teros_cells[:10]}...")
+            print("These records will be SKIPPED to avoid FK constraint violations.")
+
+    # =========================================================================
+    # STEP 4: Check existing data count
+    # =========================================================================
+
     check_query = sa.text("SELECT COUNT(*) FROM data")
     existing_count = connection.execute(check_query).scalar()
 
     if existing_count > 0:
-        print(
-            f"Data table already contains {existing_count} records. Will check for duplicates during migration."
-        )
+        print(f"Data table already contains {existing_count} records. Will check for duplicates during migration.")
+
+    # =========================================================================
+    # STEP 5: Define table models and helper functions
+    # =========================================================================
 
     # Track migration progress
     migrated_count = 0
     skipped_count = 0
+    skipped_orphan_count = 0
 
     # Define all the table models we'll need
     power_data = sa.Table(
         "power_data",
         sa.MetaData(),
-        sa.Column("id", sa.Integer),
+        sa.Column("id", sa.Integer, primary_key=True),
         sa.Column("logger_id", sa.Integer),
         sa.Column("cell_id", sa.Integer),
         sa.Column("ts", sa.DateTime),
@@ -49,7 +140,7 @@ def upgrade():
     teros_data = sa.Table(
         "teros_data",
         sa.MetaData(),
-        sa.Column("id", sa.Integer),
+        sa.Column("id", sa.Integer, primary_key=True),
         sa.Column("cell_id", sa.Integer),
         sa.Column("ts", sa.DateTime),
         sa.Column("ts_server", sa.DateTime),
@@ -63,19 +154,18 @@ def upgrade():
     sensor = sa.Table(
         "sensor",
         sa.MetaData(),
-        sa.Column("id", sa.Integer),
+        sa.Column("id", sa.Integer, primary_key=True),
         sa.Column("cell_id", sa.Integer),
         sa.Column("measurement", sa.Text),
         sa.Column("data_type", sa.Text),
         sa.Column("unit", sa.Text),
         sa.Column("name", sa.Text),
-        sa.Column("logger_id", sa.Integer),
     )
 
     data = sa.Table(
         "data",
         sa.MetaData(),
-        sa.Column("id", sa.Integer),
+        sa.Column("id", sa.Integer, primary_key=True),
         sa.Column("sensor_id", sa.Integer),
         sa.Column("ts", sa.DateTime),
         sa.Column("ts_server", sa.DateTime),
@@ -84,14 +174,49 @@ def upgrade():
         sa.Column("text_val", sa.Text),
     )
 
-    # Helper function to get existing timestamps for a sensor
-    def get_existing_timestamps(sensor_id):
-        """Get all existing timestamps for a given sensor to check duplicates efficiently"""
-        query = sa.select(data.c.ts).where(data.c.sensor_id == sensor_id)
-        result = connection.execute(query)
-        return set(row[0] for row in result)
+    # Cache for existing timestamps per sensor (to avoid repeated DB queries)
+    existing_timestamps_cache = {}
 
-    # Helper function to insert data in batches while checking for duplicates
+    def get_existing_timestamps(sensor_id):
+        """Get all existing timestamps for a given sensor (with caching)"""
+        if sensor_id not in existing_timestamps_cache:
+            query = sa.select(data.c.ts).where(data.c.sensor_id == sensor_id)
+            result = connection.execute(query)
+            existing_timestamps_cache[sensor_id] = set(row[0] for row in result)
+        return existing_timestamps_cache[sensor_id]
+
+    def update_timestamp_cache(sensor_id, new_timestamps):
+        """Update cache with newly inserted timestamps"""
+        if sensor_id in existing_timestamps_cache:
+            existing_timestamps_cache[sensor_id].update(new_timestamps)
+        else:
+            existing_timestamps_cache[sensor_id] = set(new_timestamps)
+
+    def get_or_create_sensor(cell_id, measurement, data_type, unit, name):
+        """Get existing sensor or create new one"""
+        sensor_query = sa.select(sensor.c.id).where(
+            sa.and_(
+                sensor.c.cell_id == cell_id,
+                sensor.c.measurement == measurement,
+                sensor.c.name == name,
+            )
+        )
+        sensor_id = connection.execute(sensor_query).scalar()
+
+        if not sensor_id:
+            sensor_insert = sensor.insert().values(
+                cell_id=cell_id,
+                measurement=measurement,
+                data_type=data_type,
+                unit=unit,
+                name=name,
+            )
+            result = connection.execute(sensor_insert.returning(sensor.c.id))
+            sensor_id = result.scalar()
+            print(f"  Created {name}/{measurement} sensor with ID {sensor_id}")
+
+        return sensor_id
+
     def insert_data_batch(data_values, data_type=""):
         """Insert data values while checking for duplicates"""
         nonlocal migrated_count, skipped_count
@@ -110,15 +235,23 @@ def upgrade():
         # Process each sensor's data
         new_data_values = []
         for sensor_id, sensor_data in data_by_sensor.items():
-            # Get existing timestamps for this sensor
+            # Get existing timestamps for this sensor (from cache)
             existing_timestamps = get_existing_timestamps(sensor_id)
 
-            # Filter out duplicates
+            # Track timestamps we're about to insert (for within-batch deduplication)
+            batch_timestamps = set()
+
+            # Filter out duplicates (both existing and within-batch)
             for value in sensor_data:
-                if value["ts"] not in existing_timestamps:
+                ts = value["ts"]
+                if ts not in existing_timestamps and ts not in batch_timestamps:
                     new_data_values.append(value)
+                    batch_timestamps.add(ts)
                 else:
                     skipped_count += 1
+
+            # Update cache with newly inserted timestamps
+            update_timestamp_cache(sensor_id, batch_timestamps)
 
         # Insert non-duplicate data in chunks
         chunk_size = 1000
@@ -129,404 +262,332 @@ def upgrade():
                 migrated_count += len(chunk)
 
         if new_data_values:
-            print(
-                f"  Inserted {len(new_data_values)} new {data_type} records, skipped {len(data_values) - len(new_data_values)} duplicates"
-            )
+            print(f"    Inserted {len(new_data_values)} new {data_type} records, skipped {len(data_values) - len(new_data_values)} duplicates")
 
-    # Alembic handles transactions automatically, so we don't need manual transaction management
+    # =========================================================================
+    # STEP 6: Migrate power_data
+    # =========================================================================
+
     try:
-        # Part 1: Migrate power_data
-        print("Starting migration of power_data to data table")
+        if has_power_data:
+            print("\n" + "=" * 60)
+            print("MIGRATING power_data TO data TABLE")
+            print("=" * 60)
 
-        # Get all unique cell_ids from power_data
-        cell_ids_query = sa.select(sa.distinct(power_data.c.cell_id))
-        cell_ids = [row[0] for row in connection.execute(cell_ids_query)]
-        print(f"Found {len(cell_ids)} unique cells in power_data")
+            # Get all unique cell_ids from power_data (excluding NULL and invalid cells)
+            cell_ids_query = sa.text("""
+                SELECT DISTINCT cell_id FROM power_data
+                WHERE cell_id IS NOT NULL
+                AND cell_id IN (SELECT id FROM cell)
+                ORDER BY cell_id
+            """)
+            power_cell_ids = [row[0] for row in connection.execute(cell_ids_query)]
+            print(f"Found {len(power_cell_ids)} valid unique cells in power_data")
 
-        # Process each cell_id
-        for cell_id in cell_ids:
-            print(f"Processing cell_id: {cell_id}")
+            # Count skipped orphan records
+            orphan_count_query = sa.text("""
+                SELECT COUNT(*) FROM power_data
+                WHERE cell_id IS NULL OR cell_id NOT IN (SELECT id FROM cell)
+            """)
+            orphan_power_count = connection.execute(orphan_count_query).scalar()
+            if orphan_power_count > 0:
+                print(f"Skipping {orphan_power_count} power_data records with invalid cell_id")
+                skipped_orphan_count += orphan_power_count
 
-            # 1. Create voltage sensor if it doesn't exist
-            voltage_sensor_query = sa.select(sensor.c.id).where(
-                sa.and_(
-                    sensor.c.cell_id == cell_id,
-                    sensor.c.measurement == "voltage",
-                    sensor.c.name == "power",
-                )
-            )
-            voltage_sensor_id = connection.execute(voltage_sensor_query).scalar()
+            # Process each cell_id
+            for cell_id in power_cell_ids:
+                print(f"\nProcessing power_data for cell_id: {cell_id}")
 
-            if not voltage_sensor_id:
-                # have no need for logger_id as it is not used in the sensor table
-                # Insert voltage sensor
-                voltage_sensor_insert = sensor.insert().values(
+                # Create/get voltage sensor
+                voltage_sensor_id = get_or_create_sensor(
                     cell_id=cell_id,
                     measurement="voltage",
                     data_type="float",
                     unit="V",
                     name="power",
                 )
-                result = connection.execute(
-                    voltage_sensor_insert.returning(sensor.c.id)
-                )
-                voltage_sensor_id = result.scalar()
-                print(f"Created voltage sensor with ID {voltage_sensor_id}")
 
-            # 2. Create current sensor if it doesn't exist
-            current_sensor_query = sa.select(sensor.c.id).where(
-                sa.and_(
-                    sensor.c.cell_id == cell_id,
-                    sensor.c.measurement == "current",
-                    sensor.c.name == "power",
-                )
-            )
-            current_sensor_id = connection.execute(current_sensor_query).scalar()
-
-            if not current_sensor_id:
-                # have no need for logger_id as it is not used in the sensor table
-                # Insert current sensor
-                current_sensor_insert = sensor.insert().values(
+                # Create/get current sensor
+                current_sensor_id = get_or_create_sensor(
                     cell_id=cell_id,
                     measurement="current",
                     data_type="float",
                     unit="A",
                     name="power",
                 )
-                result = connection.execute(
-                    current_sensor_insert.returning(sensor.c.id)
-                )
-                current_sensor_id = result.scalar()
-                print(f"Created current sensor with ID {current_sensor_id}")
 
-            # 3. Migrate voltage data
-            # Process in batches to avoid memory issues
-            batch_size = 10000
-            offset = 0
+                # Migrate data in batches
+                batch_size = 10000
+                offset = 0
 
-            while True:
-                power_records_query = (
-                    sa.select(
-                        power_data.c.ts,
-                        power_data.c.ts_server,
-                        power_data.c.voltage,
-                        power_data.c.current,
+                while True:
+                    power_records_query = (
+                        sa.select(
+                            power_data.c.ts,
+                            power_data.c.ts_server,
+                            power_data.c.voltage,
+                            power_data.c.current,
+                        )
+                        .where(power_data.c.cell_id == cell_id)
+                        .order_by(power_data.c.id)
+                        .limit(batch_size)
+                        .offset(offset)
                     )
-                    .where(power_data.c.cell_id == cell_id)
-                    .order_by(power_data.c.id)
-                    .limit(batch_size)
-                    .offset(offset)
-                )
 
-                power_records = connection.execute(power_records_query).fetchall()
+                    power_records = connection.execute(power_records_query).fetchall()
 
-                if not power_records:
-                    break
+                    if not power_records:
+                        break
 
-                print(
-                    f"Migrating {len(power_records)} power records for cell_id {cell_id}"
-                )
+                    print(f"  Processing batch of {len(power_records)} power records (offset {offset})")
 
-                # Prepare voltage data batch
-                voltage_data_values = [
-                    {
-                        "sensor_id": voltage_sensor_id,
-                        "ts": record.ts,
-                        "ts_server": record.ts_server,
-                        "float_val": record.voltage,
-                        "int_val": None,
-                        "text_val": None,
-                    }
-                    for record in power_records
-                    if record.voltage is not None
-                ]
+                    # Prepare and insert voltage data
+                    voltage_data_values = [
+                        {
+                            "sensor_id": voltage_sensor_id,
+                            "ts": record.ts,
+                            "ts_server": record.ts_server,
+                            "float_val": record.voltage,
+                            "int_val": None,
+                            "text_val": None,
+                        }
+                        for record in power_records
+                        if record.voltage is not None
+                    ]
+                    insert_data_batch(voltage_data_values, "voltage")
 
-                # Insert voltage data using the helper function
-                insert_data_batch(voltage_data_values, "voltage")
+                    # Prepare and insert current data
+                    current_data_values = [
+                        {
+                            "sensor_id": current_sensor_id,
+                            "ts": record.ts,
+                            "ts_server": record.ts_server,
+                            "float_val": record.current,
+                            "int_val": None,
+                            "text_val": None,
+                        }
+                        for record in power_records
+                        if record.current is not None
+                    ]
+                    insert_data_batch(current_data_values, "current")
 
-                # 4. Migrate current data from the same batch
-                current_data_values = [
-                    {
-                        "sensor_id": current_sensor_id,
-                        "ts": record.ts,
-                        "ts_server": record.ts_server,
-                        "float_val": record.current,
-                        "int_val": None,
-                        "text_val": None,
-                    }
-                    for record in power_records
-                    if record.current is not None
-                ]
+                    offset += batch_size
 
-                # Insert current data using the helper function
-                insert_data_batch(current_data_values, "current")
+            print("\nFinished migrating power_data")
 
-                offset += batch_size
+        # =========================================================================
+        # STEP 7: Migrate teros_data
+        # =========================================================================
 
-        print("Finished migrating power_data to data table")
+        if has_teros_data:
+            print("\n" + "=" * 60)
+            print("MIGRATING teros_data TO data TABLE")
+            print("=" * 60)
 
-        # Part 2: Migrate teros_data
-        print("Starting migration of teros_data to data table")
+            # Get all unique cell_ids from teros_data (excluding NULL and invalid cells)
+            cell_ids_query = sa.text("""
+                SELECT DISTINCT cell_id FROM teros_data
+                WHERE cell_id IS NOT NULL
+                AND cell_id IN (SELECT id FROM cell)
+                ORDER BY cell_id
+            """)
+            teros_cell_ids = [row[0] for row in connection.execute(cell_ids_query)]
+            print(f"Found {len(teros_cell_ids)} valid unique cells in teros_data")
 
-        # Get all unique cell_ids from teros_data
-        cell_ids_query = sa.select(sa.distinct(teros_data.c.cell_id))
-        cell_ids = [row[0] for row in connection.execute(cell_ids_query)]
-        print(f"Found {len(cell_ids)} unique cells in teros_data")
+            # Count skipped orphan records
+            orphan_count_query = sa.text("""
+                SELECT COUNT(*) FROM teros_data
+                WHERE cell_id IS NULL OR cell_id NOT IN (SELECT id FROM cell)
+            """)
+            orphan_teros_count = connection.execute(orphan_count_query).scalar()
+            if orphan_teros_count > 0:
+                print(f"Skipping {orphan_teros_count} teros_data records with invalid cell_id")
+                skipped_orphan_count += orphan_teros_count
 
-        # Process each cell_id
-        for cell_id in cell_ids:
-            print(f"Processing cell_id: {cell_id}")
+            # Process each cell_id
+            for cell_id in teros_cell_ids:
+                print(f"\nProcessing teros_data for cell_id: {cell_id}")
 
-            # Create sensors for each teros measurement if they don't exist
-            # 1. vwc sensor
-            vwc_sensor_query = sa.select(sensor.c.id).where(
-                sa.and_(
-                    sensor.c.cell_id == cell_id,
-                    sensor.c.measurement == "vwcAdj",
-                    sensor.c.name == "teros12",
-                )
-            )
-            vwc_sensor_id = connection.execute(vwc_sensor_query).scalar()
-
-            if not vwc_sensor_id:
-                vwc_sensor_insert = sensor.insert().values(
+                # Create/get all teros sensors
+                vwc_sensor_id = get_or_create_sensor(
                     cell_id=cell_id,
                     measurement="vwcAdj",
                     data_type="float",
                     unit="%",
                     name="teros12",
                 )
-                result = connection.execute(vwc_sensor_insert.returning(sensor.c.id))
-                vwc_sensor_id = result.scalar()
-                print(f"Created vwc sensor with ID {vwc_sensor_id}")
 
-            # 2. raw_vwc sensor
-            raw_vwc_sensor_query = sa.select(sensor.c.id).where(
-                sa.and_(
-                    sensor.c.cell_id == cell_id,
-                    sensor.c.measurement == "vwcRaw",
-                    sensor.c.name == "teros12",
-                )
-            )
-            raw_vwc_sensor_id = connection.execute(raw_vwc_sensor_query).scalar()
-
-            if not raw_vwc_sensor_id:
-                raw_vwc_sensor_insert = sensor.insert().values(
+                raw_vwc_sensor_id = get_or_create_sensor(
                     cell_id=cell_id,
                     measurement="vwcRaw",
                     data_type="float",
                     unit="V",
                     name="teros12",
                 )
-                result = connection.execute(
-                    raw_vwc_sensor_insert.returning(sensor.c.id)
-                )
-                raw_vwc_sensor_id = result.scalar()
-                print(f"Created raw_vwc sensor with ID {raw_vwc_sensor_id}")
 
-            # 3. temp sensor
-            temp_sensor_query = sa.select(sensor.c.id).where(
-                sa.and_(
-                    sensor.c.cell_id == cell_id,
-                    sensor.c.measurement == "temp",
-                    sensor.c.name == "teros12",
-                )
-            )
-            temp_sensor_id = connection.execute(temp_sensor_query).scalar()
-
-            if not temp_sensor_id:
-                temp_sensor_insert = sensor.insert().values(
+                temp_sensor_id = get_or_create_sensor(
                     cell_id=cell_id,
                     measurement="temp",
                     data_type="float",
                     unit="C",
                     name="teros12",
                 )
-                result = connection.execute(temp_sensor_insert.returning(sensor.c.id))
-                temp_sensor_id = result.scalar()
-                print(f"Created temp sensor with ID {temp_sensor_id}")
 
-            # 4. ec sensor
-            ec_sensor_query = sa.select(sensor.c.id).where(
-                sa.and_(
-                    sensor.c.cell_id == cell_id,
-                    sensor.c.measurement == "ec",
-                    sensor.c.name == "teros12",
-                )
-            )
-            ec_sensor_id = connection.execute(ec_sensor_query).scalar()
-
-            if not ec_sensor_id:
-                ec_sensor_insert = sensor.insert().values(
+                ec_sensor_id = get_or_create_sensor(
                     cell_id=cell_id,
                     measurement="ec",
                     data_type="int",
-                    unit="µS/cm",
+                    unit="uS/cm",  # Using ASCII-safe version
                     name="teros12",
                 )
-                result = connection.execute(ec_sensor_insert.returning(sensor.c.id))
-                ec_sensor_id = result.scalar()
-                print(f"Created ec sensor with ID {ec_sensor_id}")
 
-            # 5. water_pot sensor
-            water_pot_sensor_query = sa.select(sensor.c.id).where(
-                sa.and_(
-                    sensor.c.cell_id == cell_id,
-                    sensor.c.measurement == "waterPot",
-                    sensor.c.name == "teros12",
-                )
-            )
-            water_pot_sensor_id = connection.execute(water_pot_sensor_query).scalar()
-
-            if not water_pot_sensor_id:
-                water_pot_sensor_insert = sensor.insert().values(
+                water_pot_sensor_id = get_or_create_sensor(
                     cell_id=cell_id,
                     measurement="waterPot",
                     data_type="float",
                     unit="kPa",
                     name="teros12",
                 )
-                result = connection.execute(
-                    water_pot_sensor_insert.returning(sensor.c.id)
-                )
-                water_pot_sensor_id = result.scalar()
-                print(f"Created water_pot sensor with ID {water_pot_sensor_id}")
 
-            # Migrate teros data in batches
-            batch_size = 10000
-            offset = 0
+                # Migrate teros data in batches
+                batch_size = 10000
+                offset = 0
 
-            while True:
-                teros_records_query = (
-                    sa.select(
-                        teros_data.c.ts,
-                        teros_data.c.ts_server,
-                        teros_data.c.vwc,
-                        teros_data.c.raw_vwc,
-                        teros_data.c.temp,
-                        teros_data.c.ec,
-                        teros_data.c.water_pot,
+                while True:
+                    teros_records_query = (
+                        sa.select(
+                            teros_data.c.ts,
+                            teros_data.c.ts_server,
+                            teros_data.c.vwc,
+                            teros_data.c.raw_vwc,
+                            teros_data.c.temp,
+                            teros_data.c.ec,
+                            teros_data.c.water_pot,
+                        )
+                        .where(teros_data.c.cell_id == cell_id)
+                        .order_by(teros_data.c.id)
+                        .limit(batch_size)
+                        .offset(offset)
                     )
-                    .where(teros_data.c.cell_id == cell_id)
-                    .order_by(teros_data.c.id)
-                    .limit(batch_size)
-                    .offset(offset)
-                )
 
-                teros_records = connection.execute(teros_records_query).fetchall()
+                    teros_records = connection.execute(teros_records_query).fetchall()
 
-                if not teros_records:
-                    break
+                    if not teros_records:
+                        break
 
-                print(
-                    f"Migrating {len(teros_records)} teros records for cell_id {cell_id}"
-                )
+                    print(f"  Processing batch of {len(teros_records)} teros records (offset {offset})")
 
-                # Prepare data batches for each measurement
-                data_values = []
+                    # Insert each measurement type separately for better deduplication
+                    # VWC data
+                    vwc_data_values = [
+                        {
+                            "sensor_id": vwc_sensor_id,
+                            "ts": record.ts,
+                            "ts_server": record.ts_server,
+                            "float_val": record.vwc,
+                            "int_val": None,
+                            "text_val": None,
+                        }
+                        for record in teros_records
+                        if record.vwc is not None
+                    ]
+                    insert_data_batch(vwc_data_values, "vwc")
 
-                # VWC data
-                vwc_data_values = [
-                    {
-                        "sensor_id": vwc_sensor_id,
-                        "ts": record.ts,
-                        "ts_server": record.ts_server,
-                        "float_val": record.vwc,
-                        "int_val": None,
-                        "text_val": None,
-                    }
-                    for record in teros_records
-                    if record.vwc is not None
-                ]
-                data_values.extend(vwc_data_values)
+                    # Raw VWC data
+                    raw_vwc_data_values = [
+                        {
+                            "sensor_id": raw_vwc_sensor_id,
+                            "ts": record.ts,
+                            "ts_server": record.ts_server,
+                            "float_val": record.raw_vwc,
+                            "int_val": None,
+                            "text_val": None,
+                        }
+                        for record in teros_records
+                        if record.raw_vwc is not None
+                    ]
+                    insert_data_batch(raw_vwc_data_values, "raw_vwc")
 
-                # Raw VWC data
-                raw_vwc_data_values = [
-                    {
-                        "sensor_id": raw_vwc_sensor_id,
-                        "ts": record.ts,
-                        "ts_server": record.ts_server,
-                        "float_val": record.raw_vwc,
-                        "int_val": None,
-                        "text_val": None,
-                    }
-                    for record in teros_records
-                    if record.raw_vwc is not None
-                ]
-                data_values.extend(raw_vwc_data_values)
+                    # Temperature data
+                    temp_data_values = [
+                        {
+                            "sensor_id": temp_sensor_id,
+                            "ts": record.ts,
+                            "ts_server": record.ts_server,
+                            "float_val": record.temp,
+                            "int_val": None,
+                            "text_val": None,
+                        }
+                        for record in teros_records
+                        if record.temp is not None
+                    ]
+                    insert_data_batch(temp_data_values, "temp")
 
-                # Temperature data
-                temp_data_values = [
-                    {
-                        "sensor_id": temp_sensor_id,
-                        "ts": record.ts,
-                        "ts_server": record.ts_server,
-                        "float_val": record.temp,
-                        "int_val": None,
-                        "text_val": None,
-                    }
-                    for record in teros_records
-                    if record.temp is not None
-                ]
-                data_values.extend(temp_data_values)
+                    # EC data
+                    ec_data_values = [
+                        {
+                            "sensor_id": ec_sensor_id,
+                            "ts": record.ts,
+                            "ts_server": record.ts_server,
+                            "float_val": None,
+                            "int_val": record.ec,
+                            "text_val": None,
+                        }
+                        for record in teros_records
+                        if record.ec is not None
+                    ]
+                    insert_data_batch(ec_data_values, "ec")
 
-                # EC data
-                ec_data_values = [
-                    {
-                        "sensor_id": ec_sensor_id,
-                        "ts": record.ts,
-                        "ts_server": record.ts_server,
-                        "float_val": None,
-                        "int_val": record.ec,
-                        "text_val": None,
-                    }
-                    for record in teros_records
-                    if record.ec is not None
-                ]
-                data_values.extend(ec_data_values)
+                    # Water potential data
+                    water_pot_data_values = [
+                        {
+                            "sensor_id": water_pot_sensor_id,
+                            "ts": record.ts,
+                            "ts_server": record.ts_server,
+                            "float_val": record.water_pot,
+                            "int_val": None,
+                            "text_val": None,
+                        }
+                        for record in teros_records
+                        if record.water_pot is not None
+                    ]
+                    insert_data_batch(water_pot_data_values, "water_pot")
 
-                # Water potential data
-                water_pot_data_values = [
-                    {
-                        "sensor_id": water_pot_sensor_id,
-                        "ts": record.ts,
-                        "ts_server": record.ts_server,
-                        "float_val": record.water_pot,
-                        "int_val": None,
-                        "text_val": None,
-                    }
-                    for record in teros_records
-                    if record.water_pot is not None
-                ]
-                data_values.extend(water_pot_data_values)
+                    offset += batch_size
 
-                # Insert all teros data using the helper function
-                insert_data_batch(data_values, "teros")
+            print("\nFinished migrating teros_data")
 
-                offset += batch_size
+        # =========================================================================
+        # STEP 8: Final summary and verification
+        # =========================================================================
 
-        print("Finished migrating teros_data to data table")
+        print("\n" + "=" * 60)
+        print("MIGRATION SUMMARY")
+        print("=" * 60)
 
-        # Print final summary
-        print(f"\nMigration Summary:")
-        print(f"  Total records migrated: {migrated_count}")
+        final_count = connection.execute(sa.text("SELECT COUNT(*) FROM data")).scalar()
+        sensor_count = connection.execute(sa.text("SELECT COUNT(*) FROM sensor")).scalar()
+
+        print(f"  Records migrated: {migrated_count}")
         print(f"  Duplicate records skipped: {skipped_count}")
-        print(
-            f"  Final data table count: {connection.execute(sa.text('SELECT COUNT(*) FROM data')).scalar()}"
-        )
+        print(f"  Orphan records skipped (invalid cell_id): {skipped_orphan_count}")
+        print(f"  Sensors created/used: {sensor_count}")
+        print(f"  Final data table count: {final_count}")
 
-        # Optional: Add a comment to indicate that the migration is complete
+        # Add migration completion comment with actual date
+        migration_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         op.execute(
-            """
-        COMMENT ON TABLE data IS 'Power and TEROS data migrated from legacy tables on 2025-06-30'
-        """
+            sa.text(f"""
+            COMMENT ON TABLE data IS 'Power and TEROS data migrated from legacy tables on {migration_date}'
+            """)
         )
 
-        print("Migration completed successfully")
+        print(f"\nMigration completed successfully at {migration_date}")
 
     except Exception as e:
         # Alembic will handle the rollback automatically
-        print(f"Migration failed: {e}")
+        print(f"\nMIGRATION FAILED: {e}")
+        print("Transaction will be rolled back automatically.")
         raise
 
 
@@ -535,4 +596,5 @@ def downgrade():
     # It would require reconstructing the original tables from the data table
     # This is highly risky and generally not recommended
     print("Downgrade is not implemented for this migration as it would be lossy")
+    print("To reverse this migration, restore from a database backup taken before the migration.")
     pass

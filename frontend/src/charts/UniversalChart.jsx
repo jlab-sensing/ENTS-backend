@@ -53,7 +53,7 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
 
     // Handle single measurement (left axis only)
     if (measurements.length === 1) {
-      const { leftYMin, leftYMax, leftYStep } = getAxisBoundsAndStepValues(data.datasets, [], 10, 5);
+      const { leftYMin, leftYMax, leftYStep } = getAxisBoundsAndStepValues(data.datasets, [], 6, 0);
 
       scales.y = {
         type: 'linear',
@@ -67,6 +67,10 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
           : {
               ticks: {
                 stepSize: leftYStep,
+                callback: function(value) {
+                  // Display whole numbers where possible
+                  return Number.isInteger(value) ? value : value.toFixed(1);
+                },
               },
               min: leftYMin,
               max: leftYMax,
@@ -81,8 +85,8 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
       const { leftYMin, leftYMax, leftYStep, rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
         leftDatasets,
         rightDatasets,
-        8,
-        0.2,
+        6,
+        0,
       );
 
       scales[axisIds[0]] = {
@@ -97,6 +101,9 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
           : {
               ticks: {
                 stepSize: leftYStep,
+                callback: function(value) {
+                  return Number.isInteger(value) ? value : value.toFixed(1);
+                },
               },
               min: leftYMin,
               max: leftYMax,
@@ -110,11 +117,17 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
           display: true,
           text: `${measurements[1].charAt(0).toUpperCase() + measurements[1].slice(1)} (${units[1]})`,
         },
+        grid: {
+          drawOnChartArea: false, // Don't draw grid lines for right axis to avoid clutter
+        },
         ...(stream
           ? { grace: '10%' }
           : {
               ticks: {
                 stepSize: rightYStep,
+                callback: function(value) {
+                  return Number.isInteger(value) ? value : value.toFixed(1);
+                },
               },
               min: rightYMin,
               max: rightYMax,

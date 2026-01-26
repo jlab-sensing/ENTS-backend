@@ -5,22 +5,50 @@
 // takes arrays of datasets of the left axis and the right axis and
 // scales them to have their grid lines match
 
+/*** Calculates a "nice" step value that results in whole numbers on the axis
+ * @param  {[number]} range the data range
+ * @param  {[number]} tickCount desired number of ticks
+ * @return {[number]} a nice step value (1, 2, 5, 10, 20, 50, etc.)
+ */
+function getNiceStep(range, tickCount) {
+  const rawStep = range / tickCount;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const normalized = rawStep / magnitude;
+
+  let niceStep;
+  if (normalized <= 1) {
+    niceStep = 1;
+  } else if (normalized <= 2) {
+    niceStep = 2;
+  } else if (normalized <= 5) {
+    niceStep = 5;
+  } else {
+    niceStep = 10;
+  }
+
+  return niceStep * magnitude;
+}
+
 /*** calculates new y axis bounds based on tick counts and the step factor
  * @param  {[number]} tickCount maximum number of ticks both axis should share
  * @param  {[number]} min smallest datapoint in dataset
  * @param  {[number]} max largest datapoint in dataset
- * @param  {[number]} factor number that each step between ticks should be a factor of
+ * @param  {[number]} factor number that each step between ticks should be a factor of (ignored if 0, uses nice numbers instead)
  * @return {[Object]}      object with min, max, and step values for the axis
  */
 function calculateAxisBounds(tickCount, min, max, factor) {
   // Handle edge cases
   if (min === max) {
     if (min === 0) {
-      return { min: 0, max: 10, step: 10 / tickCount };
+      return { min: 0, max: 10, step: 2 };
     } else if (min > 0) {
-      return { min: 0, max: min * 1.1, step: (min * 1.1) / tickCount };
+      const niceMax = Math.ceil(min * 1.2);
+      const step = getNiceStep(niceMax, tickCount);
+      return { min: 0, max: Math.ceil(niceMax / step) * step, step };
     } else {
-      return { min: min * 1.1, max: 0, step: Math.abs(min * 1.1) / tickCount };
+      const niceMin = Math.floor(min * 1.2);
+      const step = getNiceStep(Math.abs(niceMin), tickCount);
+      return { min: Math.floor(niceMin / step) * step, max: 0, step };
     }
   }
 
@@ -45,35 +73,27 @@ function calculateAxisBounds(tickCount, min, max, factor) {
     axisMax = max + padding;
   }
 
-  // Calculate step size
+  // Calculate step size using nice numbers
   const axisRange = axisMax - axisMin;
-  let step = axisRange / tickCount;
+  let step = getNiceStep(axisRange, tickCount);
 
-  // Round step to nice numbers based on factor
-  if (factor > 0) {
-    step = Math.ceil(step / factor) * factor;
-
-    // Recalculate bounds to align with step
-    const totalSteps = Math.ceil(axisRange / step);
-    const totalRange = totalSteps * step;
-    const extraRange = totalRange - axisRange;
-
-    if (min >= 0) {
-      axisMax = axisMin + totalRange;
-    } else if (max <= 0) {
-      axisMin = axisMax - totalRange;
-    } else {
-      // For mixed data, distribute extra range proportionally
-      const minRatio = Math.abs(axisMin) / axisRange;
-      axisMin -= extraRange * minRatio;
-      axisMax += extraRange * (1 - minRatio);
-    }
+  // Round bounds to align with step for cleaner numbers
+  if (min >= 0) {
+    axisMin = 0;
+    axisMax = Math.ceil(axisMax / step) * step;
+  } else if (max <= 0) {
+    axisMax = 0;
+    axisMin = Math.floor(axisMin / step) * step;
+  } else {
+    // Mixed data - align both bounds
+    axisMin = Math.floor(axisMin / step) * step;
+    axisMax = Math.ceil(axisMax / step) * step;
   }
 
   return {
     min: axisMin,
     max: axisMax,
-    step: Math.abs(step),
+    step: step,
   };
 }
 
