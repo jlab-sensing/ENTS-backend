@@ -343,7 +343,16 @@ function AddLoggerModal() {
                       const cleanDevEui = devEui.replace(/[^a-zA-Z0-9]/g, '');
                       const cleanJoinEui = joinEui.replace(/[^a-zA-Z0-9]/g, '');
                       const cleanAppKey = appKey.replace(/[^a-zA-Z0-9]/g, '');
-                      addLogger(name, type, cleanDevEui, cleanJoinEui, cleanAppKey, description, user.email, axiosPrivate)
+                      addLogger(
+                        name,
+                        type,
+                        cleanDevEui,
+                        cleanJoinEui,
+                        cleanAppKey,
+                        description,
+                        user.email,
+                        axiosPrivate,
+                      )
                         .then((res) => {
                           setResponse({ ...res, name, type, devEui: cleanDevEui, description });
                           refetch();
@@ -479,37 +488,37 @@ function AddLoggerModal() {
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       <Box>
-                        <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
-                          Name
+                        <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }} component='span'>
+                          Name:{' '}
                         </Typography>
-                        <Typography variant='body1' sx={{ color: '#333' }}>
+                        <Typography variant='body1' sx={{ color: '#333' }} component='span'>
                           {response.name}
                         </Typography>
                       </Box>
 
                       <Box>
-                        <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
-                          Type
+                        <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }} component='span'>
+                          Type:{' '}
                         </Typography>
-                        <Typography variant='body1' sx={{ color: '#333' }}>
+                        <Typography variant='body1' sx={{ color: '#333' }} component='span'>
                           {response.type || 'Not specified'}
                         </Typography>
                       </Box>
 
                       <Box>
-                        <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
-                          Device EUI
+                        <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }} component='span'>
+                          Device EUI:{' '}
                         </Typography>
-                        <Typography variant='body1' sx={{ color: '#333' }}>
-                          {response.deviceEui || 'Not specified'}
+                        <Typography variant='body1' sx={{ color: '#333' }} component='span'>
+                          {response.devEui}
                         </Typography>
                       </Box>
 
                       <Box>
-                        <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
-                          Description
+                        <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }} component='span'>
+                          Description:{' '}
                         </Typography>
-                        <Typography variant='body1' sx={{ color: '#333' }}>
+                        <Typography variant='body1' sx={{ color: '#333' }} component='span'>
                           {response.description || 'No description provided'}
                         </Typography>
                       </Box>
