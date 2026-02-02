@@ -26,6 +26,7 @@ class SensorData_Json(Resource):
         # get args
         v_args = self.get_sensor_data_schema.load(request.args)
         stream = v_args["stream"] if "stream" in v_args else False
+        resample = v_args["resample"] if "resample" in v_args else "hour"
 
         # get data
         sensor_data_obj = Sensor.get_sensor_data_obj(
@@ -35,6 +36,7 @@ class SensorData_Json(Resource):
             measurement=v_args["measurement"],
             end_time=v_args["endTime"],
             stream=stream,
+            resample=resample,
         )
 
         return jsonify(sensor_data_obj)
