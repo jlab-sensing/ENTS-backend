@@ -20,12 +20,19 @@ const CHART_CONFIGS = {
     axisIds: ['y'],
     chartId: 'powerCurrent',
   },
-  teros12_vwc: {
+  teros12_vwc_adj: {
+    sensor_name: 'TEROS12_VWC',
+    measurements: ['Volumetric Water Content (Raw)'],
+    units: ['raw'],
+    axisIds: ['y'],
+    chartId: 'teros12VWC',
+  },
+  teros12_vwc_adj: {
     sensor_name: 'TEROS12_VWC_ADJ',
     measurements: ['Volumetric Water Content'],
     units: ['%'],
     axisIds: ['y'],
-    chartId: 'teros12VWC',
+    chartId: 'teros12VWCADJ',
   },
   teros12_temp: {
     sensor_name: 'TEROS12_TEMP',
@@ -99,7 +106,8 @@ const CHART_CONFIGS = {
   },
 };
 
-function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, processedData }) {
+function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange }) {
+  const [resample, setResample] = useState('hour');
   const chartSettings = {
     label: [],
     datasets: [],
@@ -135,7 +143,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
       for (const meas of measurements) {
         data[id] = {
           ...data[id],
-          [meas]: await getSensorData(sensor_name, id, meas, startDate.toHTTP(), endDate.toHTTP()),
+          [meas]: await getSensorData(sensor_name, id, meas, startDate.toHTTP(), endDate.toHTTP(), resample),
         };
       }
     }
@@ -284,8 +292,8 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     if (stream && liveData && liveData.length > 0) {
       const sensorMeasurements = liveData.filter(measurement => {
         const expectedType = sensor_name;
-        return measurement.type === expectedType && 
-               cells.some(cell => cell.id === measurement.cellId);
+        return measurement.type === expectedType &&
+          cells.some(cell => cell.id === measurement.cellId);
       });
 
       if (sensorMeasurements.length > 0) {
@@ -310,14 +318,14 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
           if (!cellMeasurements || cellMeasurements.length === 0) continue;
 
           hasAnyData = true;
-          
+
           const sortedMeasurements = cellMeasurements.sort((a, b) => a.timestamp - b.timestamp);
-          
+
           const timestamps = sortedMeasurements.map(m => m.timestamp * 1000);
-          
+
           measurements.forEach((meas, measIndex) => {
             let dataValues = [];
-            
+
             // Extract data based on measurement type and sensor
             if (sensor_name === 'POWER_VOLTAGE') {
               if (meas === "Voltage") {
@@ -376,7 +384,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
             if (dataValues.length > 0) {
               // Create dataset
               const measDataset = createDataset(timestamps, dataValues);
-              
+
               // Add dataset to chart
               newSensorChartData.labels = timestamps;
               newSensorChartData.datasets.push({
@@ -422,7 +430,18 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cells, stream, startDate, endDate]);
+  }, [cells, stream, resample, startDate, endDate]);
+
+  const handleResampleChange = (newResample) => {
+    setResample(newResample);
+  };
+
+  // Notify parent component when data status changes
+  useEffect(() => {
+    if (onDataStatusChange) {
+      onDataStatusChange(hasData);
+    }
+  }, [hasData, onDataStatusChange]);
 
   if (!config) {
     console.error(`Unknown chart type: ${type}`);
@@ -445,6 +464,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
         units={units}
         axisIds={axisIds}
         {...(!stream && { startDate, endDate })}
+        onResampleChange={handleResampleChange}
       />
     </Grid>
   );

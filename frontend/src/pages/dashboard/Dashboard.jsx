@@ -644,6 +644,15 @@ function Dashboard() {
                   processedData={processedLiveData.sensors}
                 />
                 <UnifiedChart
+                  type='teros12_vwc_adj'
+                  cells={selectedCells}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
+                  stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
+                />
+                <UnifiedChart
                   type='teros12_temp'
                   cells={selectedCells}
                   startDate={hourlyStartDate}
