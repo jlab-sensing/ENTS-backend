@@ -435,19 +435,19 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     setResample(newResample);
   };
 
+  const hasRenderableData = sensorChartData.datasets.some((ds) => Array.isArray(ds.data) && ds.data.length > 0);
+
   // Notify parent component when data status changes
   useEffect(() => {
     if (onDataStatusChange) {
-      onDataStatusChange(hasData);
+      onDataStatusChange(hasRenderableData);
     }
-  }, [hasData, onDataStatusChange]);
+  }, [hasRenderableData, onDataStatusChange]);
 
   if (!config) {
     console.error(`Unknown chart type: ${type}`);
     return null;
   }
-
-  const hasRenderableData = sensorChartData.datasets.some((ds) => Array.isArray(ds.data) && ds.data.length > 0);
 
   if (!hasRenderableData && !isLoading) {
     return null;
@@ -477,6 +477,7 @@ UnifiedChart.propTypes = {
   stream: PropTypes.bool,
   liveData: PropTypes.array,
   processedData: PropTypes.object,
+  onDataStatusChange: PropTypes.func,
 };
 
 export default UnifiedChart;
