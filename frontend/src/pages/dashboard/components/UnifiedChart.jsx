@@ -21,23 +21,30 @@ const CHART_CONFIGS = {
     chartId: 'powerCurrent',
   },
   teros12_vwc: {
-    sensor_name: 'TEROS12_VWC_ADJ',
+    sensor_name: 'TEROS12_VWC',
     measurements: ['Volumetric Water Content'],
     units: ['%'],
     axisIds: ['y'],
     chartId: 'teros12VWC',
   },
+  teros12_vwc_adj: {
+    sensor_name: 'TEROS12_VWC_ADJ',
+    measurements: ['Volumetric Water Content'],
+    units: ['%'],
+    axisIds: ['y'],
+    chartId: 'teros12VWCADJ',
+  },
   teros12_temp: {
     sensor_name: 'TEROS12_TEMP',
     measurements: ['Temperature'],
-    units: ['C'],
+    units: ['°C'],
     axisIds: ['y'],
     chartId: 'teros12Temp',
   },
   teros12_ec: {
     sensor_name: 'TEROS12_EC',
     measurements: ['Electrical Conductivity'],
-    units: ['uS/cm'],
+    units: ['µS/cm'],
     axisIds: ['y'],
     chartId: 'teros12EC',
   },
@@ -99,14 +106,14 @@ const CHART_CONFIGS = {
   },
 };
 
-function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, processedData }) {
+function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange }) {
+  const [resample, setResample] = useState('hour');
   const chartSettings = {
     label: [],
     datasets: [],
   };
   const [sensorChartData, setSensorChartData] = useState(chartSettings);
   const [isLoading, setIsLoading] = useState(false);
-  const [resample, setResample] = useState('hour');
   const debounceTimer = useRef(null);
 
   const config = CHART_CONFIGS[type];
@@ -283,15 +290,14 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
 
   useEffect(() => {
     if (stream && liveData && liveData.length > 0) {
-      const sensorMeasurements = liveData.filter(measurement => {
+      const sensorMeasurements = liveData.filter((measurement) => {
         const expectedType = sensor_name;
-        return measurement.type === expectedType && 
-               cells.some(cell => cell.id === measurement.cellId);
+        return measurement.type === expectedType && cells.some((cell) => cell.id === measurement.cellId);
       });
 
       if (sensorMeasurements.length > 0) {
         const cellData = {};
-        sensorMeasurements.forEach(measurement => {
+        sensorMeasurements.forEach((measurement) => {
           if (!cellData[measurement.cellId]) {
             cellData[measurement.cellId] = [];
           }
@@ -300,7 +306,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
 
         const newSensorChartData = {
           labels: [],
-          datasets: []
+          datasets: [],
         };
 
         let selectCounter = 0;
@@ -311,73 +317,73 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
           if (!cellMeasurements || cellMeasurements.length === 0) continue;
 
           hasAnyData = true;
-          
+
           const sortedMeasurements = cellMeasurements.sort((a, b) => a.timestamp - b.timestamp);
-          
-          const timestamps = sortedMeasurements.map(m => m.timestamp * 1000);
-          
+
+          const timestamps = sortedMeasurements.map((m) => m.timestamp * 1000);
+
           measurements.forEach((meas, measIndex) => {
             let dataValues = [];
-            
+
             // Extract data based on measurement type and sensor
             if (sensor_name === 'POWER_VOLTAGE') {
-              if (meas === "Voltage") {
-                dataValues = sortedMeasurements.map(m => m.data.power_voltage);
+              if (meas === 'Voltage') {
+                dataValues = sortedMeasurements.map((m) => m.data.power_voltage);
               }
-            } else if (sensor_name === "POWER_CURRENT") {
-              if (meas === "Current") {
-                dataValues = sortedMeasurements.map(m => m.data.power_current);
+            } else if (sensor_name === 'POWER_CURRENT') {
+              if (meas === 'Current') {
+                dataValues = sortedMeasurements.map((m) => m.data.power_current);
               }
-            } else if (sensor_name === "TEROS12_VWC_ADJ") {
-              if (meas === "Volumetric Water Content") {
-                dataValues = sortedMeasurements.map(m => m.data.teros12_vwc);
+            } else if (sensor_name === 'TEROS12_VWC_ADJ') {
+              if (meas === 'Volumetric Water Content') {
+                dataValues = sortedMeasurements.map((m) => m.data.teros12_vwc);
               }
-            } else if (sensor_name === "TEROS12_TEMP") {
-              if (meas === "Temperature") {
-                dataValues = sortedMeasurements.map(m => m.data.teros12_temp);
+            } else if (sensor_name === 'TEROS12_TEMP') {
+              if (meas === 'Temperature') {
+                dataValues = sortedMeasurements.map((m) => m.data.teros12_temp);
               }
-            } else if (sensor_name === "TEROS12_EC") {
-              if (meas === "Electrical Conductivity") {
-                dataValues = sortedMeasurements.map(m => m.data.teros12_ec);
+            } else if (sensor_name === 'TEROS12_EC') {
+              if (meas === 'Electrical Conductivity') {
+                dataValues = sortedMeasurements.map((m) => m.data.teros12_ec);
               }
             } else if (sensor_name === 'bme280') {
               if (meas === 'temperature') {
-                dataValues = sortedMeasurements.map(m => m.data.temperature);
+                dataValues = sortedMeasurements.map((m) => m.data.temperature);
               } else if (meas === 'pressure') {
-                dataValues = sortedMeasurements.map(m => m.data.pressure);
+                dataValues = sortedMeasurements.map((m) => m.data.pressure);
               } else if (meas === 'humidity') {
-                dataValues = sortedMeasurements.map(m => m.data.humidity);
+                dataValues = sortedMeasurements.map((m) => m.data.humidity);
               }
             } else if (sensor_name === 'co2') {
               if (meas === 'co2') {
-                dataValues = sortedMeasurements.map(m => m.data.CO2);
+                dataValues = sortedMeasurements.map((m) => m.data.CO2);
               }
             } else if (sensor_name === 'phytos31') {
               if (meas === 'dielectric_permittivity') {
-                dataValues = sortedMeasurements.map(m => m.data.voltage);
+                dataValues = sortedMeasurements.map((m) => m.data.voltage);
               }
             } else if (sensor_name === 'teros21') {
               if (meas === 'soil_water_potential') {
-                dataValues = sortedMeasurements.map(m => m.data.matricPot);
+                dataValues = sortedMeasurements.map((m) => m.data.matricPot);
               }
             } else if (sensor_name === 'sen0308') {
               if (meas === 'humidity') {
-                dataValues = sortedMeasurements.map(m => m.data.humidity);
+                dataValues = sortedMeasurements.map((m) => m.data.humidity);
               }
             } else if (sensor_name === 'sen0257') {
               if (meas === 'pressure') {
-                dataValues = sortedMeasurements.map(m => m.data.pressure);
+                dataValues = sortedMeasurements.map((m) => m.data.pressure);
               }
             } else if (sensor_name === 'yfs210c') {
               if (meas === 'flow') {
-                dataValues = sortedMeasurements.map(m => m.data.flow);
+                dataValues = sortedMeasurements.map((m) => m.data.flow);
               }
             }
 
             if (dataValues.length > 0) {
               // Create dataset
               const measDataset = createDataset(timestamps, dataValues);
-              
+
               // Add dataset to chart
               newSensorChartData.labels = timestamps;
               newSensorChartData.datasets.push({
@@ -425,20 +431,27 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cells, stream, resample, startDate, endDate]);
 
+  const handleResampleChange = (newResample) => {
+    setResample(newResample);
+  };
+
+  const hasRenderableData = sensorChartData.datasets.some((ds) => Array.isArray(ds.data) && ds.data.length > 0);
+
+  // Notify parent component when data status changes
+  useEffect(() => {
+    if (onDataStatusChange) {
+      onDataStatusChange(hasRenderableData);
+    }
+  }, [hasRenderableData, onDataStatusChange]);
+
   if (!config) {
     console.error(`Unknown chart type: ${type}`);
     return null;
   }
 
-  const hasRenderableData = sensorChartData.datasets.some((ds) => Array.isArray(ds.data) && ds.data.length > 0);
-
   if (!hasRenderableData && !isLoading) {
     return null;
   }
-
-  const handleResampleChange = (newResample) => {
-    setResample(newResample);
-  };
 
   return (
     <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
@@ -464,6 +477,7 @@ UnifiedChart.propTypes = {
   stream: PropTypes.bool,
   liveData: PropTypes.array,
   processedData: PropTypes.object,
+  onDataStatusChange: PropTypes.func,
 };
 
 export default UnifiedChart;
