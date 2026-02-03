@@ -114,7 +114,6 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
   };
   const [sensorChartData, setSensorChartData] = useState(chartSettings);
   const [isLoading, setIsLoading] = useState(false);
-  const [resample, setResample] = useState('hour');
   const debounceTimer = useRef(null);
 
   const config = CHART_CONFIGS[type];
@@ -144,7 +143,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
       for (const meas of measurements) {
         data[id] = {
           ...data[id],
-          [meas]: await getSensorData(sensor_name, id, meas, startDate.toHTTP(), endDate.toHTTP(), resample, resample),
+          [meas]: await getSensorData(sensor_name, id, meas, startDate.toHTTP(), endDate.toHTTP(), resample),
         };
       }
     }
@@ -430,7 +429,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cells, stream, resample, resample, startDate, endDate]);
+  }, [cells, stream, resample, startDate, endDate]);
 
   const handleResampleChange = (newResample) => {
     setResample(newResample);
@@ -453,10 +452,6 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
   if (!hasRenderableData && !isLoading) {
     return null;
   }
-
-  const handleResampleChange = (newResample) => {
-    setResample(newResample);
-  };
 
   return (
     <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
