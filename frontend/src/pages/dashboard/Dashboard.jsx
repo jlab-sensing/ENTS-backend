@@ -34,21 +34,20 @@ function Dashboard() {
   const [powerHasData, setPowerHasData] = useState(false);
   const [terosHasData, setTerosHasData] = useState(false);
   const [liveData, setLiveData] = useState([]);
-  
+
   // Background streaming data - always collecting in background
   const backgroundStreamDataRef = useRef([]);
-  
+
   // Timeout
   const clearTimeoutIdRef = useRef(null);
-  
+
   const processingRef = useRef(false);
   const socketRef = useRef(null);
-  
+
   // Streaming
-  
+
   const [hourlyStartDate, setHourlyStartDate] = useState(DateTime.now().minus({ days: 14 }));
   const [hourlyEndDate, setHourlyEndDate] = useState(DateTime.now());
-
 
   // Mobile responsive detection
   const theme = useTheme();
@@ -64,13 +63,13 @@ function Dashboard() {
     const processed = {
       power: { byCell: {}, allMeasurements: [] },
       teros: { byCell: {}, allMeasurements: [] },
-      sensors: { byType: {}, allMeasurements: [] }
+      sensors: { byType: {}, allMeasurements: [] },
     };
 
     // Process measurements
-    measurements.forEach(measurement => {
+    measurements.forEach((measurement) => {
       const { type, cellId } = measurement;
-      
+
       // Group by sensor type and cell
       if (type === 'power') {
         if (!processed.power.byCell[cellId]) {
@@ -97,14 +96,14 @@ function Dashboard() {
     });
 
     // Sort measurements by timestamp for each group
-    Object.keys(processed.power.byCell).forEach(cellId => {
+    Object.keys(processed.power.byCell).forEach((cellId) => {
       processed.power.byCell[cellId].sort((a, b) => a.timestamp - b.timestamp);
     });
-    Object.keys(processed.teros.byCell).forEach(cellId => {
+    Object.keys(processed.teros.byCell).forEach((cellId) => {
       processed.teros.byCell[cellId].sort((a, b) => a.timestamp - b.timestamp);
     });
-    Object.keys(processed.sensors.byType).forEach(type => {
-      Object.keys(processed.sensors.byType[type].byCell).forEach(cellId => {
+    Object.keys(processed.sensors.byType).forEach((type) => {
+      Object.keys(processed.sensors.byType[type].byCell).forEach((cellId) => {
         processed.sensors.byType[type].byCell[cellId].sort((a, b) => a.timestamp - b.timestamp);
       });
     });
@@ -135,64 +134,70 @@ function Dashboard() {
       return {
         power: { byCell: {}, allMeasurements: [] },
         teros: { byCell: {}, allMeasurements: [] },
-        sensors: { byType: {}, allMeasurements: [] }
+        sensors: { byType: {}, allMeasurements: [] },
       };
     }
     return processLiveData(liveData);
   }, [liveData, processLiveData]);
 
   // processing for WebSocket updates
-  const processImmediateUpdate = useCallback((data) => {
-    if (processingRef.current) return;
-    processingRef.current = true;
+  const processImmediateUpdate = useCallback(
+    (data) => {
+      if (processingRef.current) return;
+      processingRef.current = true;
 
-    try {
-      // Always collect data in background
-      backgroundStreamDataRef.current = [
-        ...backgroundStreamDataRef.current,
-        { ...data, receivedAt: new Date().toISOString() }
-      ].slice(-200);
+      try {
+        // Always collect data in background
+        backgroundStreamDataRef.current = [
+          ...backgroundStreamDataRef.current,
+          { ...data, receivedAt: new Date().toISOString() },
+        ].slice(-200);
 
-      // Update live data if streaming
-      if (stream) {
-        setLiveData(prevData => {
-          const newData = [...prevData, {
-            ...data,
-            receivedAt: new Date().toISOString()
-          }];
-          return newData.slice(-100);
-        });
+        // Update live data if streaming
+        if (stream) {
+          setLiveData((prevData) => {
+            const newData = [
+              ...prevData,
+              {
+                ...data,
+                receivedAt: new Date().toISOString(),
+              },
+            ];
+            return newData.slice(-100);
+          });
 
-        // Clear existing timeout
-        if (clearTimeoutIdRef.current) {
-          clearTimeout(clearTimeoutIdRef.current);
+          // Clear existing timeout
+          if (clearTimeoutIdRef.current) {
+            clearTimeout(clearTimeoutIdRef.current);
+          }
+
+          // Reset timeout when new data arrives
+          initializeStreamingTimeouts();
         }
-
-        // Reset timeout when new data arrives
-        initializeStreamingTimeouts();
+      } finally {
+        processingRef.current = false;
       }
-    } finally {
-      processingRef.current = false;
-    }
-  }, [stream, initializeStreamingTimeouts]);
+    },
+    [stream, initializeStreamingTimeouts],
+  );
 
   useEffect(() => {
     // Auto-detect local development: uses localhost if running on localhost, otherwise production
     const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const backendUrl = isLocalDev ? 'http://localhost:8000' : 'https://dirtviz.jlab.ucsc.edu';
-    
+
     const socket = io(backendUrl, {
       transports: ['websocket'],
       upgrade: false,
       timeout: 20000,
-      forceNew: true
+      forceNew: true,
     });
 
     socketRef.current = socket;
 
     socket.on('connect', () => {
       if (selectedCells.length > 0) {
-        const cellIds = selectedCells.map(cell => cell.id);
+        const cellIds = selectedCells.map((cell) => cell.id);
         socket.emit('subscribe_cells', { cellIds });
       }
     });
@@ -217,7 +222,7 @@ function Dashboard() {
     if (!socket || !socket.connected) return;
 
     if (selectedCells.length > 0) {
-      const cellIds = selectedCells.map(cell => cell.id);
+      const cellIds = selectedCells.map((cell) => cell.id);
       socket.emit('subscribe_cells', { cellIds });
     }
   }, [selectedCells]);
@@ -345,24 +350,24 @@ function Dashboard() {
     if (newStreamMode && loggedIn === false) {
       return;
     }
-    
+
     setStream(newStreamMode);
     if (newStreamMode) {
       setLiveData([...backgroundStreamDataRef.current]);
-      
+
       // Initialize timeouts when streaming starts
       initializeStreamingTimeouts();
-      
+
       setStartDate(hourlyStartDate);
       setEndDate(hourlyEndDate);
     } else {
       setLiveData([]);
-      
+
       if (clearTimeoutIdRef.current) {
         clearTimeout(clearTimeoutIdRef.current);
         clearTimeoutIdRef.current = null;
       }
-      
+
       setStartDate(hourlyStartDate);
       setEndDate(hourlyEndDate);
     }
@@ -409,7 +414,7 @@ function Dashboard() {
     if (loggedIn === false && stream) {
       setStream(false);
       setLiveData([]);
-      
+
       if (clearTimeoutIdRef.current) {
         clearTimeout(clearTimeoutIdRef.current);
         clearTimeoutIdRef.current = null;
@@ -422,8 +427,8 @@ function Dashboard() {
 
   return (
     <>
-    <TopNav />
-      <Box sx = {{flex: 1, overflowY: 'auto', background: '#FFFFFF'}}>
+      <TopNav />
+      <Box sx={{ flex: 1, overflowY: 'auto', background: '#FFFFFF' }}>
         {/* <DateRangeNotification
           open={showFallbackNotification}
           onClose={hideFallbackNotification}
@@ -461,44 +466,42 @@ function Dashboard() {
                   justifyContent='space-between'
                   sx={{ flexWrap: 'wrap', gap: 1 }}
                 >
-
                   {!stream && (
-                      <DateRangeSel
-                        startDate={hourlyStartDate}
-                        endDate={hourlyEndDate}
-                        setStartDate={handleStartDateChange}
-                        setEndDate={handleEndDateChange}
-                      />
+                    <DateRangeSel
+                      startDate={hourlyStartDate}
+                      endDate={hourlyEndDate}
+                      setStartDate={handleStartDateChange}
+                      setEndDate={handleEndDateChange}
+                    />
                   )}
                   {stream && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ 
-                          width: 8, 
-                          height: 8, 
+                      <Box
+                        sx={{
+                          width: 8,
+                          height: 8,
                           borderRadius: '50%',
                           backgroundColor: 'success.main',
-                        }} />
-                      <Typography variant="body2" color="text.secondary">
+                        }}
+                      />
+                      <Typography variant='body2' color='text.secondary'>
                         Live
-                        </Typography>
+                      </Typography>
                     </Box>
                   )}
                   <Box sx={{ flexGrow: 1 }} /> {/* Spacer to push toggle to right */}
                   <Stack direction='row' spacing={1} alignItems='center'>
                     {!stream && !cells.isLoading && !cells.isError && <ArchiveModal cells={cells} />}
                     {!stream && (
-                    <DownloadBtn
-                      disabled={dBtnDisabled}
-                      setDBtnDisabled={setDBtnDisabled}
-                      cells={selectedCells}
-                      startDate={hourlyStartDate}
-                      endDate={hourlyEndDate}
-                    />
+                      <DownloadBtn
+                        disabled={dBtnDisabled}
+                        setDBtnDisabled={setDBtnDisabled}
+                        cells={selectedCells}
+                        startDate={hourlyStartDate}
+                        endDate={hourlyEndDate}
+                      />
                     )}
-                    <StreamToggle 
-                      isStreaming={stream} 
-                      onToggle={handleStreamToggle} 
-                    />
+                    <StreamToggle isStreaming={stream} onToggle={handleStreamToggle} />
                   </Stack>
                 </Stack>
               </Stack>
@@ -516,22 +519,24 @@ function Dashboard() {
               </Box>
               <Box display='flex' justifyContent='center' alignItems='center'>
                 {!stream ? (
-                    <DateRangeSel
-                      startDate={hourlyStartDate}
-                      endDate={hourlyEndDate}
-                      setStartDate={handleStartDateChange}
-                      setEndDate={handleEndDateChange}
-                    />
+                  <DateRangeSel
+                    startDate={hourlyStartDate}
+                    endDate={hourlyEndDate}
+                    setStartDate={handleStartDateChange}
+                    setEndDate={handleEndDateChange}
+                  />
                 ) : (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ 
-                      width: 8, 
-                      height: 8, 
-                      borderRadius: '50%',
-                      backgroundColor: 'success.main',
-                    }} />
-                  <Typography variant="body2" color="text.secondary">
-                    Live
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        backgroundColor: 'success.main',
+                      }}
+                    />
+                    <Typography variant='body2' color='text.secondary'>
+                      Live
                     </Typography>
                   </Box>
                 )}
@@ -540,18 +545,15 @@ function Dashboard() {
               <Stack direction='row' spacing={1} alignItems='center'>
                 {!stream && (!cells.isLoading && !cells.isError ? <ArchiveModal cells={cells} /> : <span />)}
                 {!stream && (
-              <DownloadBtn
-                disabled={dBtnDisabled}
-                setDBtnDisabled={setDBtnDisabled}
-                cells={selectedCells}
-                startDate={hourlyStartDate}
-                endDate={hourlyEndDate}
-              />
+                  <DownloadBtn
+                    disabled={dBtnDisabled}
+                    setDBtnDisabled={setDBtnDisabled}
+                    cells={selectedCells}
+                    startDate={hourlyStartDate}
+                    endDate={hourlyEndDate}
+                  />
                 )}
-                <StreamToggle 
-                  isStreaming={stream} 
-                  onToggle={handleStreamToggle} 
-                />
+                <StreamToggle isStreaming={stream} onToggle={handleStreamToggle} />
               </Stack>
             </Stack>
           )}
@@ -608,7 +610,6 @@ function Dashboard() {
                 />
               </Grid>
 
-         
               {/* Bottom section charts - always rendered */}
               <Stack
                 direction='column'
@@ -715,8 +716,6 @@ function Dashboard() {
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
                 />
-
-                {/* New charts from main branch */}
                 <UnifiedChart
                   type='soilHum'
                   cells={selectedCells}
