@@ -20,10 +20,10 @@ const CHART_CONFIGS = {
     axisIds: ['y'],
     chartId: 'powerCurrent',
   },
-  teros12_vwc_adj: {
+  teros12_vwc: {
     sensor_name: 'TEROS12_VWC',
-    measurements: ['Volumetric Water Content (Raw)'],
-    units: ['raw'],
+    measurements: ['Volumetric Water Content'],
+    units: ['%'],
     axisIds: ['y'],
     chartId: 'teros12VWC',
   },
@@ -37,14 +37,14 @@ const CHART_CONFIGS = {
   teros12_temp: {
     sensor_name: 'TEROS12_TEMP',
     measurements: ['Temperature'],
-    units: ['C'],
+    units: ['°C'],
     axisIds: ['y'],
     chartId: 'teros12Temp',
   },
   teros12_ec: {
     sensor_name: 'TEROS12_EC',
     measurements: ['Electrical Conductivity'],
-    units: ['uS/cm'],
+    units: ['µS/cm'],
     axisIds: ['y'],
     chartId: 'teros12EC',
   },
