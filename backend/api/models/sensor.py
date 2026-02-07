@@ -43,11 +43,16 @@ class Sensor(db.Model):
         cell_id,
         measurement,
         resample="hour",
-        start_time=datetime.now() - relativedelta(months=1),
-        end_time=datetime.now(),
+        start_time=None,
+        end_time=None,
         stream=False,
     ):
         """gets sensor data as a list of objects"""
+
+        if start_time is None:
+            start_time = datetime.now() - relativedelta(months=1)
+        if end_time is None:
+            end_time = datetime.now()
 
         data = {
             "timestamp": [],
