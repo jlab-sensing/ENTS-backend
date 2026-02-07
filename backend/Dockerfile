@@ -30,7 +30,7 @@ ENV PYTHONUNBUFFERED 1
 
 # install system dependencies
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends gcc
+    apt-get install -y --no-install-recommends gcc libpq-dev
 
 # install python dependencies
 COPY requirements.txt /tmp/requirements.txt

@@ -40,27 +40,41 @@ export function useSmartDateRange() {
       }
 
       const latestDate = DateTime.fromISO(availability.latest_timestamp);
-
-      if (availability.has_recent_data) {
-        // Recent data available, use standard 2-week range ending now
+      if (!latestDate.isValid) {
         return {
           startDate: DateTime.now().minus({ days: 14 }),
           endDate: DateTime.now(),
           isFallback: false,
         };
+      }
+
+      const getAdjustedStartDate = (endDate) => {
+        const defaultStartDate = endDate.minus({ days: 14 });
+        if (!availability.earliest_timestamp) {
+          return defaultStartDate;
+        }
+
+        const earliestDate = DateTime.fromISO(availability.earliest_timestamp);
+        if (!earliestDate.isValid) {
+          return defaultStartDate;
+        }
+
+        return defaultStartDate < earliestDate ? earliestDate : defaultStartDate;
+      };
+
+      if (availability.has_recent_data) {
+        // Recent data available, use the most recent 2-week period ending at latest data.
+        const endDate = latestDate;
+        const startDate = getAdjustedStartDate(endDate);
+        return {
+          startDate,
+          endDate,
+          isFallback: false,
+        };
       } else {
         // No recent data, fall back to most recent available 2-week period
         const fallbackEndDate = latestDate;
-        const fallbackStartDate = latestDate.minus({ days: 14 });
-
-        // Ensure we don't go before the earliest available data
-        let adjustedStartDate = fallbackStartDate;
-        if (availability.earliest_timestamp) {
-          const earliestDate = DateTime.fromISO(availability.earliest_timestamp);
-          if (fallbackStartDate < earliestDate) {
-            adjustedStartDate = earliestDate;
-          }
-        }
+        const adjustedStartDate = getAdjustedStartDate(fallbackEndDate);
 
         // Store fallback dates for notification
         setFallbackDates({
