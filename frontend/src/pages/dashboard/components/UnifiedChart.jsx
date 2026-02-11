@@ -22,8 +22,8 @@ const CHART_CONFIGS = {
   },
   teros12_vwc: {
     sensor_name: 'TEROS12_VWC',
-    measurements: ['Volumetric Water Content'],
-    units: ['%'],
+    measurements: ['Volumetric Water Content (Raw)'],
+    units: ['N/A'],
     axisIds: ['y'],
     chartId: 'teros12VWC',
   },
