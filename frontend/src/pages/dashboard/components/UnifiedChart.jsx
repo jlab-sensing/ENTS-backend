@@ -104,6 +104,13 @@ const CHART_CONFIGS = {
     axisIds: ['y'],
     chartId: 'waterFlow',
   },
+  pcap02: {
+    sensor_name: 'PCAP02_CAPACITANCE',
+    measurements: ['Capacitance'],
+    units: ['pF'],
+    axisIds: ['y'],
+    chartId: 'pcap02',
+  },
 };
 
 function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange }) {
