@@ -172,8 +172,11 @@ class TTNApi:
     def register_end_device(
         self,
         end_device: EndDevice,
-    ) -> EndDevice:
+    ) -> EndDevice | None:
         """Register a new end device in the TTN registry.
+        
+        If one of the requests fails then it will ensure instances are cleared
+        from TTN.
 
         Args:
             end_device: The End Device object to register.
@@ -192,10 +195,37 @@ class TTNApi:
 
         new_end_device = EndDevice()
 
-        new_end_device.merge(self.end_device_reg.create(end_device))
-        new_end_device.merge(self.ns_device_reg.create(end_device))
-        new_end_device.merge(self.as_device_reg.create(end_device))
-        new_end_device.merge(self.js_device_reg.create(end_device))
+        # end device server
+        _end_device = self.end_device_reg.create(end_device)
+        if not _end_device:
+            self.delete_end_device(end_device, force=True)
+            return None
+        else:
+            new_end_device.merge(_end_device)
+
+        # network server
+        ns_end_device = self.ns_device_reg.create(end_device)
+        if not ns_end_device:
+            self.delete_end_device(end_device, force=True)
+            return None
+        else:
+            new_end_device.merge(ns_end_device)
+
+        # application server
+        as_end_device = self.as_device_reg.create(end_device)
+        if not as_end_device:
+            self.delete_end_device(end_device, force=True)
+            return None
+        else:
+            new_end_device.merge(as_end_device)
+
+        # join server
+        js_end_device = self.js_device_reg.create(end_device)
+        if not js_end_device:
+            self.delete_end_device(end_device, force=True)
+            return None
+        else:
+            new_end_device.merge(as_end_device)
 
         return new_end_device
 
