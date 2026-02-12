@@ -50,7 +50,7 @@ function EditCellModal({ cell }) {
       const cellResponse = await updateCell(cell.id, formData, auth?.accessToken);
 
       // Update cell tags
-      const tagIds = selectedTags.map(tag => tag.id);
+      const tagIds = selectedTags.map((tag) => tag.id);
       await assignCellTagsMutation.mutateAsync({ cellId: cell.id, tagIds });
 
       setResponse(cellResponse);
@@ -96,19 +96,21 @@ function EditCellModal({ cell }) {
           {!response ? (
             <>
               {/* Header Section */}
-              <Box sx={{ 
-                backgroundColor: '#588157', 
-                padding: '1.5rem 2rem',
-                position: 'relative',
-                mb: 0
-              }}>
+              <Box
+                sx={{
+                  backgroundColor: '#588157',
+                  padding: '1.5rem 2rem',
+                  position: 'relative',
+                  mb: 0,
+                }}
+              >
                 <IconButton
-                  sx={{ 
-                    position: 'absolute', 
-                    top: '0.75rem', 
+                  sx={{
+                    position: 'absolute',
+                    top: '0.75rem',
                     right: '0.75rem',
                     color: 'white',
-                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
                   }}
                   aria-label='close'
                   size='small'
@@ -116,22 +118,22 @@ function EditCellModal({ cell }) {
                 >
                   <CloseIcon fontSize='small' />
                 </IconButton>
-                <Typography 
-                  variant='h5' 
+                <Typography
+                  variant='h5'
                   component='h2'
-                  sx={{ 
+                  sx={{
                     color: 'white',
                     fontWeight: 600,
-                    fontSize: '1.5rem'
+                    fontSize: '1.5rem',
                   }}
                 >
                   Edit Cell
                 </Typography>
-                <Typography 
-                  variant='body2' 
-                  sx={{ 
+                <Typography
+                  variant='body2'
+                  sx={{
                     color: 'rgba(255, 255, 255, 0.8)',
-                    mt: 0.5
+                    mt: 0.5,
                   }}
                 >
                   Update your environmental monitoring cell settings
@@ -142,7 +144,7 @@ function EditCellModal({ cell }) {
               <Box sx={{ padding: '2rem' }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                   <TextField
-                    label="Cell Name"
+                    label='Cell Name'
                     value={formData.name || ''}
                     onChange={handleChange('name')}
                     fullWidth
@@ -152,11 +154,11 @@ function EditCellModal({ cell }) {
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
-                      }
+                      },
                     }}
                   />
                   <TextField
-                    label="Location"
+                    label='Location'
                     value={formData.location || ''}
                     onChange={handleChange('location')}
                     fullWidth
@@ -167,56 +169,66 @@ function EditCellModal({ cell }) {
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
-                      }
+                      },
                     }}
                   />
                   <TextField
-                    label="Latitude"
-                    value={formData.lat || ''}
+                    label='Latitude'
+                    value={formData.lat ?? ''}
                     onChange={handleChange('lat')}
                     fullWidth
                     required
                     error={!formData.lat?.toString().trim() || isNaN(Number(formData.lat))}
-                    helperText={!formData.lat?.toString().trim() ? 'Latitude is required' : isNaN(Number(formData.lat)) ? 'Please enter a valid number' : ''}
+                    helperText={
+                      !formData.lat?.toString().trim()
+                        ? 'Latitude is required'
+                        : isNaN(Number(formData.lat))
+                        ? 'Please enter a valid number'
+                        : ''
+                    }
                     placeholder='e.g., 36.9741'
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
-                      }
+                      },
                     }}
                   />
                   <TextField
-                    label="Longitude"
-                    value={formData.long || ''}
+                    label='Longitude'
+                    value={formData.long ?? ''}
                     onChange={handleChange('long')}
                     fullWidth
                     required
                     error={!formData.long?.toString().trim() || isNaN(Number(formData.long))}
-                    helperText={!formData.long?.toString().trim() ? 'Longitude is required' : isNaN(Number(formData.long)) ? 'Please enter a valid number' : ''}
+                    helperText={
+                      !formData.long?.toString().trim()
+                        ? 'Longitude is required'
+                        : isNaN(Number(formData.long))
+                        ? 'Please enter a valid number'
+                        : ''
+                    }
                     placeholder='e.g., -122.0308'
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
-                      }
+                      },
                     }}
                   />
-                  
-                  <TagSelector
-                    selectedTags={selectedTags}
-                    onTagsChange={setSelectedTags}
-                    axiosPrivate={axiosPrivate}
-                  />
+
+                  <TagSelector selectedTags={selectedTags} onTagsChange={setSelectedTags} axiosPrivate={axiosPrivate} />
                 </Box>
 
                 {/* Action Buttons */}
-                <Box sx={{ 
-                  display: 'flex', 
-                  gap: '0.75rem', 
-                  justifyContent: 'flex-end',
-                  mt: '2rem',
-                  pt: '1.5rem',
-                  borderTop: '1px solid #f0f0f0'
-                }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    gap: '0.75rem',
+                    justifyContent: 'flex-end',
+                    mt: '2rem',
+                    pt: '1.5rem',
+                    borderTop: '1px solid #f0f0f0',
+                  }}
+                >
                   <Button
                     variant='outlined'
                     onClick={handleClose}
@@ -226,25 +238,33 @@ function EditCellModal({ cell }) {
                       color: '#666',
                       '&:hover': {
                         borderColor: '#bbb',
-                        backgroundColor: '#f5f5f5'
-                      }
+                        backgroundColor: '#f5f5f5',
+                      },
                     }}
                   >
                     Cancel
                   </Button>
                   <Button
-                    type="submit"
+                    type='submit'
                     variant='contained'
-                    disabled={isSubmitting || !formData.name?.trim() || !formData.location?.trim() || !formData.lat?.toString().trim() || !formData.long?.toString().trim() || isNaN(Number(formData.lat)) || isNaN(Number(formData.long))}
+                    disabled={
+                      isSubmitting ||
+                      !formData.name?.trim() ||
+                      !formData.location?.trim() ||
+                      !formData.lat?.toString().trim() ||
+                      !formData.long?.toString().trim() ||
+                      isNaN(Number(formData.lat)) ||
+                      isNaN(Number(formData.long))
+                    }
                     sx={{
                       backgroundColor: '#588157',
                       '&:hover': { backgroundColor: '#3a5a40' },
-                      '&:disabled': { 
+                      '&:disabled': {
                         backgroundColor: '#ccc',
-                        color: '#888'
+                        color: '#888',
                       },
                       borderRadius: '8px',
-                      px: '1.5rem'
+                      px: '1.5rem',
                     }}
                   >
                     {isSubmitting ? 'Updating...' : 'Update Cell'}
@@ -255,28 +275,30 @@ function EditCellModal({ cell }) {
           ) : (
             <>
               {/* Success Header */}
-              <Box sx={{ 
-                backgroundColor: '#2e7d32', 
-                padding: '1.5rem 2rem',
-                position: 'relative',
-                mb: 0
-              }}>
-                <Typography 
-                  variant='h5' 
+              <Box
+                sx={{
+                  backgroundColor: '#2e7d32',
+                  padding: '1.5rem 2rem',
+                  position: 'relative',
+                  mb: 0,
+                }}
+              >
+                <Typography
+                  variant='h5'
                   component='h2'
-                  sx={{ 
+                  sx={{
                     color: 'white',
                     fontWeight: 600,
-                    fontSize: '1.5rem'
+                    fontSize: '1.5rem',
                   }}
                 >
                   Cell Updated Successfully!
                 </Typography>
-                <Typography 
-                  variant='body2' 
-                  sx={{ 
+                <Typography
+                  variant='body2'
+                  sx={{
                     color: 'rgba(255, 255, 255, 0.8)',
-                    mt: 0.5
+                    mt: 0.5,
                   }}
                 >
                   Your cell settings have been saved
