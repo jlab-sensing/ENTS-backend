@@ -131,7 +131,13 @@ jobs:
 
       - name: Save short logs
         if: always()
-        run: docker compose logs -t --since ${{ steps.timestamp.outputs.start_time }} > dirtviz_short.log
+        run: |
+          SINCE="${{ steps.timestamp.outputs.start_time }}"
+          if [ -n "$SINCE" ]; then
+            docker compose logs -t --since "$SINCE" > dirtviz_short.log
+          else
+            docker compose logs -t > dirtviz_short.log
+          fi
 
       - name: Check for errors
         run: "! grep -i 'error' dirtviz_short.log"
