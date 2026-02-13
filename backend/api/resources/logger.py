@@ -117,12 +117,13 @@ class Logger(Resource):
         if type_val and type_val.lower() == "ents":
             try:
                 # Extract TTN-specific fields (not stored in database).
-                # LoRaWAN credentials are optional. If missing/invalid, we create the logger
-                # in the DB but skip TTN registration (supports "wifi only" loggers).
+                # LoRaWAN credentials are optional.
+                # If missing/invalid, create the logger in the DB and skip TTN
+                # registration (supports "wifi only" loggers).
                 def _norm_hex(v):
                     return re.sub(r"[^0-9a-fA-F]", "", v or "")
 
-                dev_eui = _norm_hex(json_data.get("dev_eui") or device_eui)
+                dev_eui = _norm_hex(json_data.get("dev_eui"))
                 join_eui = _norm_hex(json_data.get("join_eui"))
                 app_key = _norm_hex(json_data.get("app_key"))
 
@@ -173,7 +174,9 @@ class Logger(Resource):
 
             except Exception as e:
                 # Rollback database entry on TTN error
-                warnings.warn(f"TTN registration failed for logger {new_logger.id}: {str(e)}")
+                warnings.warn(
+                    f"TTN registration failed for logger {new_logger.id}: {str(e)}"
+                )
                 new_logger.delete()
                 return {"message": f"TTN registration failed: {str(e)}"}, 400
         else:

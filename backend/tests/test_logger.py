@@ -1,10 +1,6 @@
-import os
 import types
 
 from flask import Flask
-
-os.environ.setdefault("TTN_API_KEY", "test-key")
-os.environ.setdefault("TTN_APP_ID", "test-app")
 
 from api.resources.logger import Logger as LoggerResource
 
@@ -100,7 +96,9 @@ def test_ents_valid_lorawan_registers_with_ttn(monkeypatch):
     )
 
     resource = LoggerResource()
-    resource.ttn_api = types.SimpleNamespace(register_end_device=lambda _ed: {"ok": True})
+    resource.ttn_api = types.SimpleNamespace(
+        register_end_device=lambda _ed: {"ok": True}
+    )
 
     app = _make_test_app()
     with app.test_request_context(json=payload):
