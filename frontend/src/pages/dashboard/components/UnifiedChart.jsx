@@ -53,6 +53,13 @@ const CHART_CONFIGS = {
     measurements: ['temperature'],
     units: ['°C'],
     axisIds: ['y'],
+    chartId: 'bme280temp',
+  },
+  temperature: {
+    sensor_name: 'BME280_TEMP',
+    measurements: ['temperature'],
+    units: ['°C'],
+    axisIds: ['y'],
     chartId: 'temp',
   },
   co2: {
@@ -68,6 +75,20 @@ const CHART_CONFIGS = {
     units: ['kPa', '%'],
     axisIds: ['pressureAxis', 'humidityAxis'],
     chartId: 'presHum',
+  },
+  presHum: {
+    sensor_name: 'BME280_PRESSURE',
+    measurements: ['pressure'],
+    units: ['kPa'],
+    axisIds: ['pressureAxis'],
+    chartId: 'bme280pressure',
+  },
+  presHum: {
+    sensor_name: 'BME280_HUMIDITY',
+    measurements: ['humidity'],
+    units: ['%'],
+    axisIds: ['humidityAxis'],
+    chartId: 'bme280humidity',
   },
   sensor: {
     sensor_name: 'phytos31',
