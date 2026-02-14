@@ -57,7 +57,7 @@ const CHART_CONFIGS = {
   },
   temperature: {
     sensor_name: 'BME280_TEMP',
-    measurements: ['temperature'],
+    measurements: ['Temperature'],
     units: ['°C'],
     axisIds: ['y'],
     chartId: 'temp',
@@ -78,14 +78,14 @@ const CHART_CONFIGS = {
   },
   presHum: {
     sensor_name: 'BME280_PRESSURE',
-    measurements: ['pressure'],
+    measurements: ['Pressure'],
     units: ['kPa'],
     axisIds: ['pressureAxis'],
     chartId: 'bme280pressure',
   },
   presHum: {
     sensor_name: 'BME280_HUMIDITY',
-    measurements: ['humidity'],
+    measurements: ['Humidity'],
     units: ['%'],
     axisIds: ['humidityAxis'],
     chartId: 'bme280humidity',
