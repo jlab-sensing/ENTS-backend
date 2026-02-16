@@ -2,7 +2,9 @@ import warnings
 import re
 from flask_restful import Resource
 from flask import request
+from sqlalchemy.exc import IntegrityError
 from ..auth.auth import authenticate
+from ..models import db
 from ..schemas.logger_schema import LoggerSchema
 from ..models.logger import Logger as LoggerModel
 from ..schemas.add_logger_schema import AddLoggerSchema
@@ -11,6 +13,7 @@ from ..ttn.end_devices import TTNApi, EntsEndDevice, EndDevice
 logger_schema = LoggerSchema()
 loggers_schema = LoggerSchema(many=True)
 add_logger_schema = AddLoggerSchema()
+DUPLICATE_DEVICE_ID_MESSAGE = "There already exists a logger id with that device id."
 
 
 class Logger(Resource):
@@ -97,7 +100,7 @@ class Logger(Resource):
         # Extract data for database
         logger_name = json_data["name"]
         type_val = json_data.get("type", "")
-        device_eui = json_data.get("device_eui", "")
+        device_eui = (json_data.get("device_eui") or "").strip().upper()
         description = json_data.get("description", "")
         userEmail = json_data["userEmail"]
 
@@ -105,10 +108,24 @@ class Logger(Resource):
         if LoggerModel.find_by_name(logger_name):
             return {"message": "Duplicate logger name"}, 400
 
+        # Check for duplicate device EUI when provided
+        if LoggerModel.find_by_device_eui(device_eui):
+            return {"message": DUPLICATE_DEVICE_ID_MESSAGE}, 400
+
         # Create database entry first to get logger_id
-        new_logger = LoggerModel.add_logger_by_user_email(
-            logger_name, type_val, device_eui, description, userEmail
-        )
+        try:
+            new_logger = LoggerModel.add_logger_by_user_email(
+                logger_name, type_val, device_eui, description, userEmail
+            )
+        except IntegrityError:
+            # Handle race conditions where another request inserted first.
+            db.session.rollback()
+
+            if LoggerModel.find_by_name(logger_name):
+                return {"message": "Duplicate logger name"}, 400
+            if LoggerModel.find_by_device_eui(device_eui):
+                return {"message": DUPLICATE_DEVICE_ID_MESSAGE}, 400
+            return {"message": "Error adding logger to database"}, 400
 
         if not new_logger:
             return {"message": "Error adding logger to database"}, 400
