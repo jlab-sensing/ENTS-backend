@@ -75,11 +75,11 @@ black ./backend
 
 ## Docker Builds
 
-There are two targets for building the api, `development` and `production`. In the development target, hot reload is avaliable as well as the running flask in developement mode (Debug logs print to stderr). In the production target, gunicorn is ran in front of flask and the env is set to production env vars.
+There are two targets for building the api, `development` and `production`. In the development target, hot reload is available as well as the running flask in development mode (Debug logs print to stderr). In the production target, gunicorn is ran in front of flask and the env is set to production env vars.
 
 ## Production
 
-To support the demands of deployment, ENTS API utilizes [gunicorn](https://gunicorn.org/) as a WSGI HTTP server. The configuration is located at `gunicorn.conf.py`. Gunicorn workers at set to scale according to `CPU_COUNT * 2 + 1` as per [gunicorn docs](https://docs.gunicorn.org/en/latest/design.html#how-many-workers). Monkey patching is also done for performace, which is patched before gunicorn. **Note: additional librarys need monkey patching support or you may encounter unintended errors**
+To support the demands of deployment, ENTS API utilizes [gunicorn](https://gunicorn.org/) as a WSGI HTTP server. The configuration is located at `gunicorn.conf.py`. Gunicorn workers at set to scale according to `CPU_COUNT * 2 + 1` as per [gunicorn docs](https://docs.gunicorn.org/en/latest/design.html#how-many-workers). Monkey patching is also done for performance, which is patched before gunicorn. **Note: additional libraries need monkey patching support or you may encounter unintended errors**
 
 ## API Endpoints Reference
 
