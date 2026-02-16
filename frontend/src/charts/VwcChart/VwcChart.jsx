@@ -9,7 +9,7 @@ import { getVwcAxisBounds } from './vwcAxis';
 
 export default function VwcChart({ data, stream, startDate, endDate, onResampleChange }) {
   const vwcDatasets = data.datasets.filter((_, i) => i % 2 == 0);
-  const { leftYMin, leftYMax, leftYStep, rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
+  const { rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
     vwcDatasets,
     data.datasets.filter((_, i) => i % 2 == 1),
     10,

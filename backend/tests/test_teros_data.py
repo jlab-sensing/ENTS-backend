@@ -268,16 +268,12 @@ def test_get_teros_obj_hour_resample_normalizes_before_averaging(init_database):
     cell = Cell("cell_13", "", 1, 1, False, None)
     cell.save()
 
-    TEROSData.add_teros_data(
-        "cell_13", ts_a, 0.4, 2, 3, 4, 5
-    )  # should normalize to 40
-    TEROSData.add_teros_data(
-        "cell_13", ts_b, 40, 2, 3, 4, 5
-    )  # already percent
+    # should normalize to 40
+    TEROSData.add_teros_data("cell_13", ts_a, 0.4, 2, 3, 4, 5)
+    # already percent
+    TEROSData.add_teros_data("cell_13", ts_b, 40, 2, 3, 4, 5)
 
-    teros_data_obj = TEROSData.get_teros_data_obj(
-        cell.id, "hour", ts_a, ts_b, False
-    )
+    teros_data_obj = TEROSData.get_teros_data_obj(cell.id, "hour", ts_a, ts_b, False)
 
     assert len(teros_data_obj["vwc"]) == 1
     assert teros_data_obj["vwc"][0] == pytest.approx(40.0)
