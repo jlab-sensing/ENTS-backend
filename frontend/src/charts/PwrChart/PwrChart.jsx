@@ -3,10 +3,12 @@ import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import { React } from 'react';
 import { getAxisBoundsAndStepValues } from '../alignAxis';
+import { getNonStreamTimeDomain } from '../timeDomain';
 import ChartWrapper from '../ChartWrapper';
 
-export default function PwrChart({ data, stream, onResampleChange }) {
+export default function PwrChart({ data, stream, startDate, endDate, onResampleChange }) {
   const { leftYMin, leftYMax, leftYStep } = getAxisBoundsAndStepValues(data.datasets, [], 10, 5);
+  const nonStreamXDomain = getNonStreamTimeDomain(stream, startDate, endDate);
 
   const chartOptions = {
     maintainAspectRatio: false,
@@ -34,6 +36,7 @@ export default function PwrChart({ data, stream, onResampleChange }) {
             day: 'MM/dd',
           },
         },
+        ...nonStreamXDomain,
       },
       y: {
         type: 'linear',

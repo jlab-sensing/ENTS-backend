@@ -111,8 +111,12 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
     if (chartRef.current) {
       for (const { axis, axisMin, axisMax } of axesWithScaleKeys) {
         if (chartRef.current.scales[axis]) {
-          chartRef.current.scales[axis].options.min = scaleRef[axisMin];
-          chartRef.current.scales[axis].options.max = scaleRef[axisMax];
+          if (scaleRef[axisMin] !== undefined) {
+            chartRef.current.scales[axis].options.min = scaleRef[axisMin];
+          }
+          if (scaleRef[axisMax] !== undefined) {
+            chartRef.current.scales[axis].options.max = scaleRef[axisMax];
+          }
         }
       }
       chartRef.current.update();
@@ -132,6 +136,7 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
     if (chartRef.current) {
       chartRef.current.resetZoom();
       chartRef.current.update();
+      setScaleRef({});
     }
   };
   const handleToggleZoom = () => {
@@ -191,18 +196,16 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
   /** Maintain zoom and pan ref from previous render */
   useEffect(() => {
     if (chartRef.current) {
-      if (prevScaleRef != undefined) {
-        setScales(prevScaleRef);
-        chartRef.current.update();
-      } else if (scaleRef != undefined) {
+      if (scaleRef != undefined) {
         setScales(scaleRef);
+        chartRef.current.update();
       }
       return;
     }
 
     // TODO: refactor for better state management, useCallback for setting scaleRef
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zoomSelected, panSelected, prevScaleRef, scaleRef, data]);
+  }, [zoomSelected, panSelected, scaleRef, data]);
 
   //** Maintain zoom and pan when streaming new data */
   useEffect(() => {
@@ -305,7 +308,7 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
             <Box component='img' src={reset} sx={{ width: '16px', height: '16px' }}></Box>
           </ToggleButton>
         </Tooltip>
-        
+
         {/* Show additional controls only when not streaming */}
         {!stream && (
           <>
