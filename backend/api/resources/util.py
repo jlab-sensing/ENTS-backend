@@ -8,6 +8,8 @@ from datetime import datetime
 
 from flask import Response
 from ents.proto import encode_response, decode_measurement
+from ents.proto.sensor import parse_sensor_measurement
+
 
 from ..models.power_data import PowerData
 from ..models.teros_data import TEROSData
@@ -15,6 +17,108 @@ from ..models.sensor import Sensor
 from .. import socketio
 
 DEBUG_SOCKETIO = os.getenv("DEBUG_SOCKETIO", "False").lower() == "true"
+
+
+def process_generic_measurement_json(meas: dict) -> Response:
+    """Process generic measurement
+
+    New generic measurement processing. Takes the dictionary and inserts into
+    the database and returns a appropriate response code.
+
+    Args:
+        meas: Measurement dictionary in protojson format
+
+    Returns:
+        Flask response with status code and protobuf encoded response.
+    """
+
+    for m in meas:
+        if "unsignedInt" in m:
+            value = m["unsignedInt"]
+        elif "signedInt" in m:
+            value = m["signedInt"]
+        elif "decimal" in m:
+            value = m["decimal"]
+        else:
+            raise ValueError("No valid measurement value found")
+
+        # format a compatible dict
+        meas_dict = {
+            "type": m["type"],
+            "loggerId": m["meta"]["loggerId"],
+            "cellId": m["meta"]["cellId"],
+            "ts": m["meta"]["ts"],
+            "data": {
+                m["name"]: value,
+            },
+            "data_type": {
+                m["name"]: type(value),
+            },
+        }
+
+        obj = Sensor.add_data(m["name"], m["unit"], meas_dict=meas_dict)
+        if not obj:
+            resp = Response()
+            resp.status_code = 400
+            resp.data = f"Error adding sensor data for measurement {m}"
+            return resp
+        else:
+            cell_id = meas_dict.get("cellId")
+            if cell_id:
+                try:
+                    measurement_data = {
+                        "type": meas_dict.get("type", "unknown"),
+                        "cellId": cell_id,
+                        "loggerId": meas_dict.get("loggerId"),
+                        "timestamp": meas_dict.get("ts"),
+                        "data": meas_dict.get("data", {}),
+                        "obj_count": len(meas_dict.get("data", {})),
+                    }
+                    room_name = f"cell_{cell_id}"
+
+                    socketio.emit(
+                        "measurement_received", measurement_data, room=room_name
+                    )
+
+                    if DEBUG_SOCKETIO:
+                        has_subscribers = socketio.server.manager.rooms.get(
+                            "/", {}
+                        ).get(room_name)
+                        if has_subscribers:
+                            count = len(has_subscribers)
+                            print(
+                                f"[socketio] emitted to {room_name}:{count} subscribers"
+                            )
+                except Exception as e:
+                    print(f"[socketio] error emitting measurement: {e}")
+
+    resp = Response()
+    resp.status_code = 200
+    return resp
+
+
+def process_generic_measurement(data: bytes) -> Response:
+    """Process generic protobuf encoded measurement
+
+    New generic measurement processing. Decodes and inserts into the database
+    and returns a appropriate response code.
+
+    Args
+        data: Encoded measurement message
+
+    Returns:
+        Flask response with status code and protobuf encoded response.
+    """
+
+    try:
+        meas = parse_sensor_measurement(data)
+    except Exception as e:
+        resp = Response()
+        resp.status_code = 400
+        resp.data = f"Error parsing sensor measurements: {e}"
+        return resp
+
+    return process_generic_measurement_json(meas["measurements"])
 
 
 def process_measurement(data: bytes):
@@ -134,7 +238,6 @@ def process_measurement_dict(meas: dict):
 
     # sen0257 water pressure measurement
     elif meas["type"] == "sen0257":
-
         pressure_obj = Sensor.add_data(
             meas_name="pressure", meas_unit="kPa", meas_dict=meas
         )
@@ -149,7 +252,6 @@ def process_measurement_dict(meas: dict):
 
     # sen0308 soil humidity measurement
     elif meas["type"] == "sen0308":
-
         voltage_obj = Sensor.add_data(
             meas_name="voltage", meas_unit="V", meas_dict=meas
         )
@@ -164,7 +266,6 @@ def process_measurement_dict(meas: dict):
 
     # yfs210c water flow measurement
     elif meas["type"] == "yfs210c":
-
         flow_obj = Sensor.add_data(meas_name="flow", meas_unit="L/Min", meas_dict=meas)
 
         obj_list.append(flow_obj)

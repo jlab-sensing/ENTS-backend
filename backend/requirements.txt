@@ -21,7 +21,7 @@ redis
 PyJWT
 Requests
 google-auth
-ents
+ents==2.3.7
 gevent
 eventlet
 celery[redis,gevent,sqlalchemy,sqs]

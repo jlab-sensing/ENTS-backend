@@ -3,15 +3,17 @@ import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import { React } from 'react';
 import { getAxisBoundsAndStepValues } from '../alignAxis';
+import { getNonStreamTimeDomain } from '../timeDomain';
 import ChartWrapper from '../ChartWrapper';
 
-export default function VwcChart({ data, stream, onResampleChange }) {
+export default function VwcChart({ data, stream, startDate, endDate, onResampleChange }) {
   const { leftYMin, leftYMax, leftYStep, rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
     data.datasets.filter((_, i) => i % 2 == 0),
     data.datasets.filter((_, i) => i % 2 == 1),
     10,
     10,
   );
+  const nonStreamXDomain = getNonStreamTimeDomain(stream, startDate, endDate);
 
   const chartOptions = {
     maintainAspectRatio: false,
@@ -39,6 +41,7 @@ export default function VwcChart({ data, stream, onResampleChange }) {
             day: 'MM/dd',
           },
         },
+        ...nonStreamXDomain,
       },
       ecAxis: {
         type: 'linear',

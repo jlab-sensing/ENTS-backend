@@ -50,7 +50,7 @@ To install Prettier, search up Prettier in VSCode extension marketplace and inst
 #### Ruff
 
 For Python files, DirtViz uses Ruff to lint for potential syntax/code errors.
-Run ruff with the following commmand:
+Run ruff with the following command:
 
 ```bash
 ruff check .
@@ -59,7 +59,7 @@ ruff check .
 #### ESLint
 
 For JSX files, DirtViz uses ESLint to lint for potential syntax/code errors.
-Run ESLint with the following commmand while in the frontend folder:
+Run ESLint with the following command while in the frontend folder:
 
 ```bash
 npm run lint

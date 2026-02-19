@@ -68,8 +68,8 @@ class TEROSData(db.Model):
     def get_teros_data_obj(
         cell_id,
         resample="hour",
-        start_time=datetime.now() - relativedelta(months=1),
-        end_time=datetime.now(),
+        start_time=None,
+        end_time=None,
         stream=False,
     ):
         """gets teros data as a list of objects
@@ -80,6 +80,11 @@ class TEROSData(db.Model):
         is preformed and the timestamp is when the measurement is inserted into
         the server.
         """
+
+        if start_time is None:
+            start_time = datetime.now() - relativedelta(months=1)
+        if end_time is None:
+            end_time = datetime.now()
 
         data = {"timestamp": [], "vwc": [], "temp": [], "ec": [], "raw_vwc": []}
 

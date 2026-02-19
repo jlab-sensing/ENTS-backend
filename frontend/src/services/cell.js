@@ -46,38 +46,54 @@ export const addCell = (cellName, location, longitude, latitude, archive, email)
       throw error;
     });
 };
-// used to edit cell data in the table with put request - BACKEND NOT YET IMPLEMENTED
-export const updateCell = async (cellId, updatedData) => {
-  const url = `${process.env.PUBLIC_URL}/api/cell/${cellId}`;
-  try {
-    //console.log('Sending payload', updatedData);
-    const response = await axios.put(url, updatedData, { headers: { 'Content-Type': 'application/json' } });
-    return response.data;
-  } catch (error) {
-    console.error('Error updating cell:', error.response ? error.response.data : error.message);
-    throw error;
-  }
+// used to edit cell data in the table with put request
+export const updateCell = async (cellId, updatedData, accessToken) => {
+  return axios
+    .put(`${process.env.PUBLIC_URL}/api/cell/${cellId}`, updatedData, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then((res) => res.data)
+    .catch((error) => {
+      console.log(error);
+      throw error;
+    });
 };
 
-export const deleteCell = async (cellId) => {
-  // Show confirmation dialog before proceeding with deletion
-  // const confirmDelete = window.confirm('Are you sure you want to delete this cell?');
+export const deleteCell = async (cellId, accessToken) => {
+  return axios
+    .delete(`${process.env.PUBLIC_URL}/api/cell/${cellId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then((res) => res.data)
+    .catch((error) => {
+      console.log(error);
+      throw error;
+    });
+};
 
-  // if (!confirmDelete) {
-  //   console.log('Deletion canceled by user.');
-  //   return; // Stop execution if the user cancels
-  // }
-
-  const url = `${process.env.PUBLIC_URL}/api/cell/${cellId}`;
+export const shareCell = async (cellId, email, accessToken) => {
+  const url = `${process.env.PUBLIC_URL}/api/cell/${cellId}/share`;
 
   try {
-    const response = await axios.delete(url, { headers: { 'Content-Type': 'application/json' } });
-
-    // alert('Cell deleted successfully!'); // Notify user
+    const response = await axios.post(
+      url,
+      { email },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
     return response.data;
   } catch (error) {
-    console.error('Error deleting cell:', error.response ? error.response.data : error.message);
-    throw error; // Rethrow the error for further handling
+    console.error('Error sharing cell:', error.response ? error.response.data : error.message);
+    throw error;
   }
 };
 

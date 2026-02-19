@@ -28,4 +28,4 @@ The testing pipeline is configured from `conftest.py`. In the file there's vario
 
 ## Structure
 
-Tests are denoted by `test_NAME_OF_TEST.py` as definded by [pytest practices](https://docs.pytest.org/en/stable/explanation/goodpractices.html). At the moment, with the low volume of tests, tests reside in the `backend/tests` folder.
+Tests are denoted by `test_NAME_OF_TEST.py` as defined by [pytest practices](https://docs.pytest.org/en/stable/explanation/goodpractices.html). At the moment, with the low volume of tests, tests reside in the `backend/tests` folder.

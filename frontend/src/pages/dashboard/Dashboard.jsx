@@ -2,8 +2,8 @@ import { Box, Divider, Grid, Stack, Typography, useMediaQuery, useTheme } from '
 import { DateTime } from 'luxon';
 import { React, useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-// import DateRangeNotification from '../../components/DateRangeNotification';
-// import { useSmartDateRange } from '../../hooks/useSmartDateRange';
+import DateRangeNotification from '../../components/DateRangeNotification';
+import { useSmartDateRange } from '../../hooks/useSmartDateRange';
 import useAxiosPrivate from '../../auth/hooks/useAxiosPrivate';
 import useAuth from '../../auth/hooks/useAuth';
 import { useCells } from '../../services/cell';
@@ -17,6 +17,7 @@ import StreamToggle from './components/StreamToggle';
 import TerosCharts from './components/TerosCharts';
 import UnifiedChart from './components/UnifiedChart';
 import { io } from 'socket.io-client';
+import TopNav from '../../components/TopNav';
 
 function Dashboard() {
   const axiosPrivate = useAxiosPrivate();
@@ -29,25 +30,24 @@ function Dashboard() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [showNoDataMessage, setShowNoDataMessage] = useState(false);
   const [manualDateSelection, setManualDateSelection] = useState(false);
-  const [smartDateRangeApplied, setSmartDateRangeApplied] = useState(false); // eslint-disable-line no-unused-vars
+  const [smartDateRangeApplied, setSmartDateRangeApplied] = useState(false);
   const [powerHasData, setPowerHasData] = useState(false);
   const [terosHasData, setTerosHasData] = useState(false);
   const [liveData, setLiveData] = useState([]);
-  
+
   // Background streaming data - always collecting in background
   const backgroundStreamDataRef = useRef([]);
-  
+
   // Timeout
   const clearTimeoutIdRef = useRef(null);
-  
+
   const processingRef = useRef(false);
   const socketRef = useRef(null);
-  
+
   // Streaming
-  
+
   const [hourlyStartDate, setHourlyStartDate] = useState(DateTime.now().minus({ days: 14 }));
   const [hourlyEndDate, setHourlyEndDate] = useState(DateTime.now());
-
 
   // Mobile responsive detection
   const theme = useTheme();
@@ -63,13 +63,13 @@ function Dashboard() {
     const processed = {
       power: { byCell: {}, allMeasurements: [] },
       teros: { byCell: {}, allMeasurements: [] },
-      sensors: { byType: {}, allMeasurements: [] }
+      sensors: { byType: {}, allMeasurements: [] },
     };
 
     // Process measurements
-    measurements.forEach(measurement => {
+    measurements.forEach((measurement) => {
       const { type, cellId } = measurement;
-      
+
       // Group by sensor type and cell
       if (type === 'power') {
         if (!processed.power.byCell[cellId]) {
@@ -96,14 +96,14 @@ function Dashboard() {
     });
 
     // Sort measurements by timestamp for each group
-    Object.keys(processed.power.byCell).forEach(cellId => {
+    Object.keys(processed.power.byCell).forEach((cellId) => {
       processed.power.byCell[cellId].sort((a, b) => a.timestamp - b.timestamp);
     });
-    Object.keys(processed.teros.byCell).forEach(cellId => {
+    Object.keys(processed.teros.byCell).forEach((cellId) => {
       processed.teros.byCell[cellId].sort((a, b) => a.timestamp - b.timestamp);
     });
-    Object.keys(processed.sensors.byType).forEach(type => {
-      Object.keys(processed.sensors.byType[type].byCell).forEach(cellId => {
+    Object.keys(processed.sensors.byType).forEach((type) => {
+      Object.keys(processed.sensors.byType[type].byCell).forEach((cellId) => {
         processed.sensors.byType[type].byCell[cellId].sort((a, b) => a.timestamp - b.timestamp);
       });
     });
@@ -134,73 +134,79 @@ function Dashboard() {
       return {
         power: { byCell: {}, allMeasurements: [] },
         teros: { byCell: {}, allMeasurements: [] },
-        sensors: { byType: {}, allMeasurements: [] }
+        sensors: { byType: {}, allMeasurements: [] },
       };
     }
     return processLiveData(liveData);
   }, [liveData, processLiveData]);
 
   // processing for WebSocket updates
-  const processImmediateUpdate = useCallback((data) => {
-    if (processingRef.current) return;
-    processingRef.current = true;
+  const processImmediateUpdate = useCallback(
+    (data) => {
+      if (processingRef.current) return;
+      processingRef.current = true;
 
-    try {
-      // Always collect data in background
-      backgroundStreamDataRef.current = [
-        ...backgroundStreamDataRef.current,
-        { ...data, receivedAt: new Date().toISOString() }
-      ].slice(-200);
+      try {
+        // Always collect data in background
+        backgroundStreamDataRef.current = [
+          ...backgroundStreamDataRef.current,
+          { ...data, receivedAt: new Date().toISOString() },
+        ].slice(-200);
 
-      // Update live data if streaming
-      if (stream) {
-        setLiveData(prevData => {
-          const newData = [...prevData, {
-            ...data,
-            receivedAt: new Date().toISOString()
-          }];
-          return newData.slice(-100);
-        });
+        // Update live data if streaming
+        if (stream) {
+          setLiveData((prevData) => {
+            const newData = [
+              ...prevData,
+              {
+                ...data,
+                receivedAt: new Date().toISOString(),
+              },
+            ];
+            return newData.slice(-100);
+          });
 
-        // Clear existing timeout
-        if (clearTimeoutIdRef.current) {
-          clearTimeout(clearTimeoutIdRef.current);
+          // Clear existing timeout
+          if (clearTimeoutIdRef.current) {
+            clearTimeout(clearTimeoutIdRef.current);
+          }
+
+          // Reset timeout when new data arrives
+          initializeStreamingTimeouts();
         }
-
-        // Reset timeout when new data arrives
-        initializeStreamingTimeouts();
+      } finally {
+        processingRef.current = false;
       }
-    } finally {
-      processingRef.current = false;
-    }
-  }, [stream, initializeStreamingTimeouts]);
+    },
+    [stream, initializeStreamingTimeouts],
+  );
 
   useEffect(() => {
     // Auto-detect local development: uses localhost if running on localhost, otherwise production
     const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const backendUrl = isLocalDev ? 'http://localhost:8000' : 'https://dirtviz.jlab.ucsc.edu';
-    
+
     const socket = io(backendUrl, {
       transports: ['websocket'],
       upgrade: false,
       timeout: 20000,
-      forceNew: true
+      forceNew: true,
     });
 
     socketRef.current = socket;
 
     socket.on('connect', () => {
       if (selectedCells.length > 0) {
-        const cellIds = selectedCells.map(cell => cell.id);
+        const cellIds = selectedCells.map((cell) => cell.id);
         socket.emit('subscribe_cells', { cellIds });
       }
     });
 
-    socket.on('disconnect', () => {});
+    socket.on('disconnect', () => { });
     socket.on('measurement_received', (data) => {
       processImmediateUpdate(data);
     });
-    socket.on('connect_error', () => {});
+    socket.on('connect_error', () => { });
 
     return () => {
       socket.disconnect();
@@ -216,19 +222,19 @@ function Dashboard() {
     if (!socket || !socket.connected) return;
 
     if (selectedCells.length > 0) {
-      const cellIds = selectedCells.map(cell => cell.id);
+      const cellIds = selectedCells.map((cell) => cell.id);
       socket.emit('subscribe_cells', { cellIds });
     }
   }, [selectedCells]);
 
   // Smart date range functionality
-  // const {
-  //   calculateSmartDateRange,
-  //   showFallbackNotification,
-  //   fallbackDates,
-  //   showFallbackNotificationHandler,
-  //   hideFallbackNotification,
-  // } = useSmartDateRange();
+  const {
+    calculateSmartDateRange,
+    showFallbackNotification,
+    fallbackDates,
+    showFallbackNotificationHandler,
+    hideFallbackNotification,
+  } = useSmartDateRange();
   // Initialize state from URL parameters
   useEffect(() => {
     if (!cells.data) return;
@@ -246,7 +252,6 @@ function Dashboard() {
     // Only treat URL dates as manual if they're different from the default dates
     if (searchQueryStartDate && searchQueryEndDate) {
       const parsedStartDate = DateTime.fromISO(searchQueryStartDate);
-
       const parsedEndDate = DateTime.fromISO(searchQueryEndDate);
       const defaultStart = DateTime.now().minus({ days: 14 });
       const defaultEnd = DateTime.now();
@@ -258,6 +263,9 @@ function Dashboard() {
 
       setStartDate(parsedStartDate);
       setEndDate(parsedEndDate);
+      // Also set hourly dates so charts get the correct dates from URL
+      setHourlyStartDate(parsedStartDate);
+      setHourlyEndDate(parsedEndDate);
 
       // Only block smart date range if this appears to be a genuine manual selection
       if (isManualSelection && searchQueryCells) {
@@ -268,35 +276,37 @@ function Dashboard() {
     setIsInitialized(true);
   }, [searchParams, cells.data]);
 
-  // // Apply smart date range when cells are selected (only if not manual selection and not already applied)
-  // useEffect(() => {
-  //   if (!isInitialized || manualDateSelection || smartDateRangeApplied) return;
+  // Apply smart date range when cells are selected (only if not manual selection and not already applied)
+  useEffect(() => {
+    if (!isInitialized || manualDateSelection || smartDateRangeApplied) return;
 
-  //   const applySmartDateRange = async () => {
-  //     if (selectedCells.length > 0) {
-  //       try {
-  //         const {
-  //           startDate: smartStartDate,
-  //           endDate: smartEndDate,
-  //           isFallback,
-  //         } = await calculateSmartDateRange(selectedCells);
+    const applySmartDateRange = async () => {
+      if (selectedCells.length > 0) {
+        try {
+          const {
+            startDate: smartStartDate,
+            endDate: smartEndDate,
+            isFallback,
+          } = await calculateSmartDateRange(selectedCells);
 
-  //         setStartDate(smartStartDate);
-  //         setEndDate(smartEndDate);
-  //         setSmartDateRangeApplied(true);
+          setStartDate(smartStartDate);
+          setEndDate(smartEndDate);
+          setHourlyStartDate(smartStartDate);
+          setHourlyEndDate(smartEndDate);
+          setSmartDateRangeApplied(true);
 
-  //         if (isFallback) {
-  //           showFallbackNotificationHandler();
-  //         }
-  //       } catch (error) {
-  //         console.error('Error applying smart date range:', error);
-  //         // Keep default dates on error
-  //       }
-  //     }
-  //   };
+          if (isFallback) {
+            showFallbackNotificationHandler();
+          }
+        } catch (error) {
+          console.error('Error applying smart date range:', error);
+          // Keep default dates on error
+        }
+      }
+    };
 
-  //   applySmartDateRange();
-  // }, [selectedCells.map((cell) => cell.id).join(','), isInitialized, manualDateSelection, smartDateRangeApplied]);
+    applySmartDateRange();
+  }, [selectedCells, isInitialized, manualDateSelection, smartDateRangeApplied, calculateSmartDateRange, showFallbackNotificationHandler]);
 
   // Sync state changes to URL
   useEffect(() => {
@@ -308,11 +318,12 @@ function Dashboard() {
       newParams.set('cell_id', selectedCells.map((cell) => cell.id).join(','));
     }
 
-    newParams.set('startDate', startDate.toISO());
-    newParams.set('endDate', endDate.toISO());
+    // Use hourlyStartDate/hourlyEndDate for URL since those are what the UI shows
+    newParams.set('startDate', hourlyStartDate.toISO());
+    newParams.set('endDate', hourlyEndDate.toISO());
 
     setSearchParams(newParams, { replace: true });
-  }, [startDate, endDate, selectedCells, isInitialized, setSearchParams]);
+  }, [hourlyStartDate, hourlyEndDate, selectedCells, isInitialized, setSearchParams]);
 
   const handleStartDateChange = (newStartDate) => {
     if (stream) {
@@ -321,7 +332,7 @@ function Dashboard() {
       setHourlyStartDate(newStartDate);
     }
     setManualDateSelection(true);
-    //setSmartDateRangeApplied(true); // Prevent smart range from overriding manual selection
+    setSmartDateRangeApplied(true); // Prevent smart range from overriding manual selection
   };
 
   const handleEndDateChange = (newEndDate) => {
@@ -331,7 +342,7 @@ function Dashboard() {
       setHourlyEndDate(newEndDate);
     }
     setManualDateSelection(true);
-    // setSmartDateRangeApplied(true); // Prevent smart range from overriding manual selection
+    setSmartDateRangeApplied(true); // Prevent smart range from overriding manual selection
   };
 
   // Handle switching between streaming and hourly modes
@@ -340,24 +351,24 @@ function Dashboard() {
     if (newStreamMode && loggedIn === false) {
       return;
     }
-    
+
     setStream(newStreamMode);
     if (newStreamMode) {
       setLiveData([...backgroundStreamDataRef.current]);
-      
+
       // Initialize timeouts when streaming starts
       initializeStreamingTimeouts();
-      
+
       setStartDate(hourlyStartDate);
       setEndDate(hourlyEndDate);
     } else {
       setLiveData([]);
-      
+
       if (clearTimeoutIdRef.current) {
         clearTimeout(clearTimeoutIdRef.current);
         clearTimeoutIdRef.current = null;
       }
-      
+
       setStartDate(hourlyStartDate);
       setEndDate(hourlyEndDate);
     }
@@ -369,7 +380,7 @@ function Dashboard() {
     // Reset smart date range state when cells change to allow re-application
     if (!manualDateSelection) {
       setTimeout(() => {
-        //setSmartDateRangeApplied(false);
+        setSmartDateRangeApplied(false);
       }, 100);
     }
   };
@@ -404,7 +415,7 @@ function Dashboard() {
     if (loggedIn === false && stream) {
       setStream(false);
       setLiveData([]);
-      
+
       if (clearTimeoutIdRef.current) {
         clearTimeout(clearTimeoutIdRef.current);
         clearTimeoutIdRef.current = null;
@@ -417,13 +428,14 @@ function Dashboard() {
 
   return (
     <>
-      <Box>
-        {/* <DateRangeNotification
+      <TopNav />
+      <Box sx={{ flex: 1, overflowY: 'auto', background: '#FFFFFF' }}>
+        <DateRangeNotification
           open={showFallbackNotification}
           onClose={hideFallbackNotification}
           fallbackStartDate={fallbackDates.start}
           fallbackEndDate={fallbackDates.end}
-        /> */}
+        />
         <Stack
           direction='column'
           divider={<Divider orientation='horizontal' flexItem />}
@@ -455,44 +467,42 @@ function Dashboard() {
                   justifyContent='space-between'
                   sx={{ flexWrap: 'wrap', gap: 1 }}
                 >
-
                   {!stream && (
-                      <DateRangeSel
-                        startDate={hourlyStartDate}
-                        endDate={hourlyEndDate}
-                        setStartDate={handleStartDateChange}
-                        setEndDate={handleEndDateChange}
-                      />
+                    <DateRangeSel
+                      startDate={hourlyStartDate}
+                      endDate={hourlyEndDate}
+                      setStartDate={handleStartDateChange}
+                      setEndDate={handleEndDateChange}
+                    />
                   )}
                   {stream && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ 
-                          width: 8, 
-                          height: 8, 
+                      <Box
+                        sx={{
+                          width: 8,
+                          height: 8,
                           borderRadius: '50%',
                           backgroundColor: 'success.main',
-                        }} />
-                      <Typography variant="body2" color="text.secondary">
+                        }}
+                      />
+                      <Typography variant='body2' color='text.secondary'>
                         Live
-                        </Typography>
+                      </Typography>
                     </Box>
                   )}
                   <Box sx={{ flexGrow: 1 }} /> {/* Spacer to push toggle to right */}
                   <Stack direction='row' spacing={1} alignItems='center'>
                     {!stream && !cells.isLoading && !cells.isError && <ArchiveModal cells={cells} />}
                     {!stream && (
-                    <DownloadBtn
-                      disabled={dBtnDisabled}
-                      setDBtnDisabled={setDBtnDisabled}
-                      cells={selectedCells}
-                      startDate={hourlyStartDate}
-                      endDate={hourlyEndDate}
-                    />
+                      <DownloadBtn
+                        disabled={dBtnDisabled}
+                        setDBtnDisabled={setDBtnDisabled}
+                        cells={selectedCells}
+                        startDate={hourlyStartDate}
+                        endDate={hourlyEndDate}
+                      />
                     )}
-                    <StreamToggle 
-                      isStreaming={stream} 
-                      onToggle={handleStreamToggle} 
-                    />
+                    <StreamToggle isStreaming={stream} onToggle={handleStreamToggle} />
                   </Stack>
                 </Stack>
               </Stack>
@@ -510,22 +520,24 @@ function Dashboard() {
               </Box>
               <Box display='flex' justifyContent='center' alignItems='center'>
                 {!stream ? (
-                    <DateRangeSel
-                      startDate={hourlyStartDate}
-                      endDate={hourlyEndDate}
-                      setStartDate={handleStartDateChange}
-                      setEndDate={handleEndDateChange}
-                    />
+                  <DateRangeSel
+                    startDate={hourlyStartDate}
+                    endDate={hourlyEndDate}
+                    setStartDate={handleStartDateChange}
+                    setEndDate={handleEndDateChange}
+                  />
                 ) : (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ 
-                      width: 8, 
-                      height: 8, 
-                      borderRadius: '50%',
-                      backgroundColor: 'success.main',
-                    }} />
-                  <Typography variant="body2" color="text.secondary">
-                    Live
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        backgroundColor: 'success.main',
+                      }}
+                    />
+                    <Typography variant='body2' color='text.secondary'>
+                      Live
                     </Typography>
                   </Box>
                 )}
@@ -534,18 +546,15 @@ function Dashboard() {
               <Stack direction='row' spacing={1} alignItems='center'>
                 {!stream && (!cells.isLoading && !cells.isError ? <ArchiveModal cells={cells} /> : <span />)}
                 {!stream && (
-              <DownloadBtn
-                disabled={dBtnDisabled}
-                setDBtnDisabled={setDBtnDisabled}
-                cells={selectedCells}
-                startDate={hourlyStartDate}
-                endDate={hourlyEndDate}
-              />
+                  <DownloadBtn
+                    disabled={dBtnDisabled}
+                    setDBtnDisabled={setDBtnDisabled}
+                    cells={selectedCells}
+                    startDate={hourlyStartDate}
+                    endDate={hourlyEndDate}
+                  />
                 )}
-                <StreamToggle 
-                  isStreaming={stream} 
-                  onToggle={handleStreamToggle} 
-                />
+                <StreamToggle isStreaming={stream} onToggle={handleStreamToggle} />
               </Stack>
             </Stack>
           )}
@@ -602,7 +611,6 @@ function Dashboard() {
                 />
               </Grid>
 
-         
               {/* Bottom section charts - always rendered */}
               <Stack
                 direction='column'
@@ -610,6 +618,60 @@ function Dashboard() {
                 justifyContent='spaced-evently'
                 sx={{ width: '95%', boxSizing: 'border-box' }}
               >
+                <UnifiedChart
+                  type='power_voltage'
+                  cells={selectedCells}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
+                  stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
+                />
+                <UnifiedChart
+                  type='power_current'
+                  cells={selectedCells}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
+                  stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
+                />
+                <UnifiedChart
+                  type='teros12_vwc'
+                  cells={selectedCells}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
+                  stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
+                />
+                <UnifiedChart
+                  type='teros12_vwc_adj'
+                  cells={selectedCells}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
+                  stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
+                />
+                <UnifiedChart
+                  type='teros12_temp'
+                  cells={selectedCells}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
+                  stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
+                />
+                <UnifiedChart
+                  type='teros12_ec'
+                  cells={selectedCells}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
+                  stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
+                />
                 <UnifiedChart
                   type='soilPot'
                   cells={selectedCells}
@@ -655,8 +717,6 @@ function Dashboard() {
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
                 />
-
-                {/* New charts from main branch */}
                 <UnifiedChart
                   type='soilHum'
                   cells={selectedCells}

@@ -3,12 +3,15 @@ import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import { React } from 'react';
 import { getAxisBoundsAndStepValues } from './alignAxis';
+import { getNonStreamTimeDomain } from './timeDomain';
 import ChartWrapper from './ChartWrapper';
 import { chartPlugins } from './plugins';
 
-export default function UniversalChart({ data, stream, chartId, measurements, units, axisIds, onResampleChange }) {
+export default function UniversalChart({ data, stream, chartId, measurements, units, axisIds, startDate, endDate, onResampleChange }) {
   // Build chart options dynamically based on measurements
   const buildChartOptions = () => {
+    const nonStreamXDomain = getNonStreamTimeDomain(stream, startDate, endDate);
+
     const scales = {
       x: {
         position: 'bottom',
@@ -48,6 +51,7 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
           suggestedMin: DateTime.now().minus({ second: 10 }).toJSON(),
           suggestedMax: DateTime.now().toJSON(),
         }),
+        ...nonStreamXDomain,
       },
     };
 
