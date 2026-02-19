@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The ENTS client is built with [React](https://react.dev/), a compoenent based web library and [MUI](https://mui.com/) as the UI component library.
+The ENTS client is built with [React](https://react.dev/), a component based web library and [MUI](https://mui.com/) as the UI component library.
 
 ## Available Scripts
 
@@ -50,7 +50,7 @@ For testing, it uses [vitest](https://vitest.dev/) as the testing framework, [ms
 
 ### Stucture
 
-Testing files are denoted in these formats `*.test.js` or `*.test.jsx` depending on type of tests. Tests are stored with their compoennts, under a `__tests__` for multiple tests or an individual file. For integration tests, they should be store with the highest level and relevant component. End to end testing have not been implemnted to due changing scope of the backend.
+Testing files are denoted in these formats `*.test.js` or `*.test.jsx` depending on type of tests. Tests are stored with their components, under a `__tests__` for multiple tests or an individual file. For integration tests, they should be store with the highest level and relevant component. End to end testing have not been implemented to due changing scope of the backend.
 
 ## Linting
 
@@ -70,7 +70,7 @@ To format, for vscode, install the extentiona nd follow the guide. For other ide
 
 ## Docker Builds
 
-The ENTS client has two docker targets, `development` and `production`. The developent target runs `npm start` and hot reload is supported in `docker-compose.yml` with volumes. The production target builds the client using `npm build` and servers static files using [nginx](https://www.f5.com/products/nginx)
+The ENTS client has two docker targets, `development` and `production`. The development target runs `npm start` and hot reload is supported in `docker-compose.yml` with volumes. The production target builds the client using `npm build` and servers static files using [nginx](https://www.f5.com/products/nginx)
 
 ## HTTP Requests
 
