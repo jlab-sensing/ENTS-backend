@@ -1,7 +1,10 @@
 import warnings
+import re
 from flask_restful import Resource
 from flask import request
+from sqlalchemy.exc import IntegrityError
 from ..auth.auth import authenticate
+from ..models import db
 from ..schemas.logger_schema import LoggerSchema
 from ..models.logger import Logger as LoggerModel
 from ..schemas.add_logger_schema import AddLoggerSchema
@@ -10,6 +13,7 @@ from ..ttn.end_devices import TTNApi, EntsEndDevice, EndDevice
 logger_schema = LoggerSchema()
 loggers_schema = LoggerSchema(many=True)
 add_logger_schema = AddLoggerSchema()
+DUPLICATE_DEVICE_ID_MESSAGE = "There already exists a logger id with that device id."
 
 
 class Logger(Resource):
@@ -96,7 +100,7 @@ class Logger(Resource):
         # Extract data for database
         logger_name = json_data["name"]
         type_val = json_data.get("type", "")
-        device_eui = json_data.get("device_eui", "")
+        device_eui = (json_data.get("device_eui") or "").strip().upper()
         description = json_data.get("description", "")
         userEmail = json_data["userEmail"]
 
@@ -104,10 +108,24 @@ class Logger(Resource):
         if LoggerModel.find_by_name(logger_name):
             return {"message": "Duplicate logger name"}, 400
 
+        # Check for duplicate device EUI when provided
+        if LoggerModel.find_by_device_eui(device_eui):
+            return {"message": DUPLICATE_DEVICE_ID_MESSAGE}, 400
+
         # Create database entry first to get logger_id
-        new_logger = LoggerModel.add_logger_by_user_email(
-            logger_name, type_val, device_eui, description, userEmail
-        )
+        try:
+            new_logger = LoggerModel.add_logger_by_user_email(
+                logger_name, type_val, device_eui, description, userEmail
+            )
+        except IntegrityError:
+            # Handle race conditions where another request inserted first.
+            db.session.rollback()
+
+            if LoggerModel.find_by_name(logger_name):
+                return {"message": "Duplicate logger name"}, 400
+            if LoggerModel.find_by_device_eui(device_eui):
+                return {"message": DUPLICATE_DEVICE_ID_MESSAGE}, 400
+            return {"message": "Error adding logger to database"}, 400
 
         if not new_logger:
             return {"message": "Error adding logger to database"}, 400
@@ -115,21 +133,39 @@ class Logger(Resource):
         # If type is "ents", register with TTN
         if type_val and type_val.lower() == "ents":
             try:
-                # Extract TTN-specific fields (not stored in database)
-                # Use device_eui if dev_eui not provided
-                dev_eui = json_data.get("dev_eui", device_eui)
-                join_eui = json_data.get("join_eui")
-                app_key = json_data.get("app_key")
+                # Extract TTN-specific fields (not stored in database).
+                # LoRaWAN credentials are optional.
+                # If missing/invalid, create the logger in the DB and skip TTN
+                # registration (supports "wifi only" loggers).
+                def _norm_hex(v):
+                    return re.sub(r"[^0-9a-fA-F]", "", v or "")
 
-                if not all([dev_eui, join_eui, app_key]):
-                    # Rollback database entry if TTN fields missing
-                    new_logger.delete()
+                dev_eui = _norm_hex(json_data.get("dev_eui"))
+                join_eui = _norm_hex(json_data.get("join_eui"))
+                app_key = _norm_hex(json_data.get("app_key"))
+
+                def _is_valid_eui64(v):
+                    return bool(re.fullmatch(r"[0-9a-fA-F]{16}", v or ""))
+
+                def _is_valid_app_key(v):
+                    return bool(re.fullmatch(r"[0-9a-fA-F]{32}", v or ""))
+
+                has_all = bool(dev_eui and join_eui and app_key)
+                valid_all = (
+                    _is_valid_eui64(dev_eui)
+                    and _is_valid_eui64(join_eui)
+                    and _is_valid_app_key(app_key)
+                )
+
+                if not (has_all and valid_all):
                     return {
                         "message": (
-                            "Missing TTN fields: dev_eui, join_eui, app_key "
-                            "required for ents type"
-                        )
-                    }, 400
+                            "Successfully added logger (TTN registration skipped: "
+                            "missing or invalid LoRaWAN credentials)"
+                        ),
+                        "logger_id": new_logger.id,
+                        "ttn_registered": False,
+                    }, 201
 
                 # Create TTN end device
                 ed = EntsEndDevice(
@@ -150,10 +186,14 @@ class Logger(Resource):
                     "message": "Successfully added logger with TTN registration",
                     "logger_id": new_logger.id,
                     "ttn_device_id": f"dirtviz-{new_logger.id}",
+                    "ttn_registered": True,
                 }, 201
 
             except Exception as e:
                 # Rollback database entry on TTN error
+                warnings.warn(
+                    f"TTN registration failed for logger {new_logger.id}: {str(e)}"
+                )
                 new_logger.delete()
                 return {"message": f"TTN registration failed: {str(e)}"}, 400
         else:
