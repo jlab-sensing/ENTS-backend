@@ -6,8 +6,9 @@ import { getAxisBoundsAndStepValues } from './alignAxis';
 import { getNonStreamTimeDomain } from './timeDomain';
 import ChartWrapper from './ChartWrapper';
 import { chartPlugins } from './plugins';
+import { getVwcAxisBounds } from './VwcChart/vwcAxis';
 
-export default function UniversalChart({ data, stream, chartId, measurements, units, axisIds, startDate, endDate, onResampleChange }) {
+export default function UniversalChart({ data, stream, chartId, measurements, units, axisIds, axisPolicy, startDate, endDate, onResampleChange }) {
   // Build chart options dynamically based on measurements
   const buildChartOptions = () => {
     const nonStreamXDomain = getNonStreamTimeDomain(stream, startDate, endDate);
@@ -37,15 +38,15 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
         time: {
           displayFormats: stream
             ? {
-                second: 'hh:mm:ss',
-                minute: 'hh:mm',
-                hour: 'hh:mm a',
-                day: 'D',
-              }
+              second: 'hh:mm:ss',
+              minute: 'hh:mm',
+              hour: 'hh:mm a',
+              day: 'D',
+            }
             : {
-                hour: 'hh:mm a',
-                day: 'MM/dd',
-              },
+              hour: 'hh:mm a',
+              day: 'MM/dd',
+            },
         },
         ...(stream && {
           suggestedMin: DateTime.now().minus({ second: 10 }).toJSON(),
@@ -58,6 +59,7 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
     // Handle single measurement (left axis only)
     if (measurements.length === 1) {
       const { leftYMin, leftYMax, leftYStep } = getAxisBoundsAndStepValues(data.datasets, [], 10, 5);
+      const singleAxisBounds = axisPolicy === 'vwcPercent' ? getVwcAxisBounds(data.datasets, 10) : null;
 
       scales.y = {
         type: 'linear',
@@ -66,9 +68,17 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
           display: true,
           text: `${measurements[0].charAt(0).toUpperCase() + measurements[0].slice(1)} (${units[0]})`,
         },
-        ...(stream
-          ? { grace: '10%' }
-          : {
+        ...(singleAxisBounds
+          ? {
+            ticks: {
+              stepSize: singleAxisBounds.step,
+            },
+            min: singleAxisBounds.min,
+            max: singleAxisBounds.max,
+          }
+          : stream
+            ? { grace: '10%' }
+            : {
               ticks: {
                 stepSize: leftYStep,
               },
@@ -99,12 +109,12 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
         ...(stream
           ? { grace: '10%' }
           : {
-              ticks: {
-                stepSize: leftYStep,
-              },
-              min: leftYMin,
-              max: leftYMax,
-            }),
+            ticks: {
+              stepSize: leftYStep,
+            },
+            min: leftYMin,
+            max: leftYMax,
+          }),
       };
 
       scales[axisIds[1]] = {
@@ -117,12 +127,12 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
         ...(stream
           ? { grace: '10%' }
           : {
-              ticks: {
-                stepSize: rightYStep,
-              },
-              min: rightYMin,
-              max: rightYMax,
-            }),
+            ticks: {
+              stepSize: rightYStep,
+            },
+            min: rightYMin,
+            max: rightYMax,
+          }),
       };
     }
 
@@ -149,6 +159,7 @@ UniversalChart.propTypes = {
   measurements: PropTypes.arrayOf(PropTypes.string).isRequired,
   units: PropTypes.arrayOf(PropTypes.string).isRequired,
   axisIds: PropTypes.arrayOf(PropTypes.string).isRequired,
+  axisPolicy: PropTypes.string,
   startDate: PropTypes.object,
   endDate: PropTypes.object,
   onResampleChange: PropTypes.func,

@@ -5,14 +5,17 @@ import { React } from 'react';
 import { getAxisBoundsAndStepValues } from '../alignAxis';
 import { getNonStreamTimeDomain } from '../timeDomain';
 import ChartWrapper from '../ChartWrapper';
+import { getVwcAxisBounds } from './vwcAxis';
 
 export default function VwcChart({ data, stream, startDate, endDate, onResampleChange }) {
-  const { leftYMin, leftYMax, leftYStep, rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
-    data.datasets.filter((_, i) => i % 2 == 0),
+  const vwcDatasets = data.datasets.filter((_, i) => i % 2 == 0);
+  const { rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
+    vwcDatasets,
     data.datasets.filter((_, i) => i % 2 == 1),
     10,
     10,
   );
+  const { min: vwcMin, max: vwcMax, step: vwcStep } = getVwcAxisBounds(vwcDatasets);
   const nonStreamXDomain = getNonStreamTimeDomain(stream, startDate, endDate);
 
   const chartOptions = {
@@ -64,10 +67,10 @@ export default function VwcChart({ data, stream, startDate, endDate, onResampleC
           text: 'VWC (%)',
         },
         ticks: {
-          stepSize: leftYStep,
+          stepSize: vwcStep,
         },
-        min: leftYMin,
-        max: leftYMax,
+        min: vwcMin,
+        max: vwcMax,
         grid: {
           drawOnChartArea: false,
         },
@@ -126,6 +129,11 @@ export default function VwcChart({ data, stream, startDate, endDate, onResampleC
           display: true,
           text: 'VWC (%)',
         },
+        ticks: {
+          stepSize: vwcStep,
+        },
+        min: vwcMin,
+        max: vwcMax,
         grid: {
           drawOnChartArea: false,
         },
