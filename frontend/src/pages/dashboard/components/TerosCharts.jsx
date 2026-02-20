@@ -19,7 +19,7 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
 
   const tempColors = ['#26C6DA', '#FF7043', '#A2708A'];
   const ecColors = ['#26C6DA', '#FF7043', '#A2708A'];
-  const vwcColors = ['#112E51', '#78909C', '#C1F7DC'];
+  const vwcColors = ['#26C6DA', '#FF7043', '#A2708A'];
 
   //** gets teros data from backend */
   async function getTerosChartData() {
@@ -34,7 +34,6 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
     }
     return data;
   }
-
 
   /** takes array x and array y  */
   function createDataset(x, y) {
@@ -120,7 +119,6 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
     });
   }
 
-
   //** clearing all chart settings */
   function clearCharts() {
     const newVwcChartData = {
@@ -142,14 +140,13 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
 
   useEffect(() => {
     if (stream && liveData && liveData.length > 0) {
-      const terosMeasurements = liveData.filter(measurement => 
-        measurement.type === 'teros12' && 
-        cells.some(cell => cell.id === measurement.cellId)
+      const terosMeasurements = liveData.filter(
+        (measurement) => measurement.type === 'teros12' && cells.some((cell) => cell.id === measurement.cellId),
       );
 
       if (terosMeasurements.length > 0) {
         const cellData = {};
-        terosMeasurements.forEach(measurement => {
+        terosMeasurements.forEach((measurement) => {
           if (!cellData[measurement.cellId]) {
             cellData[measurement.cellId] = [];
           }
@@ -158,11 +155,11 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
 
         const newVwcChartData = {
           labels: [],
-          datasets: []
+          datasets: [],
         };
         const newTempChartData = {
           labels: [],
-          datasets: []
+          datasets: [],
         };
 
         let selectCounter = 0;
@@ -173,15 +170,15 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
           if (!cellMeasurements || cellMeasurements.length === 0) continue;
 
           hasAnyData = true;
-          
+
           // Sort measurements by timestamp
           const sortedMeasurements = cellMeasurements.sort((a, b) => a.timestamp - b.timestamp);
-          
+
           // Extract data arrays
-          const timestamps = sortedMeasurements.map(m => m.timestamp * 1000);
-          const vwcData = sortedMeasurements.map(m => m.data.vwcAdj * 100);
-          const ecData = sortedMeasurements.map(m => m.data.ec);
-          const tempData = sortedMeasurements.map(m => m.data.temp);
+          const timestamps = sortedMeasurements.map((m) => m.timestamp * 1000);
+          const vwcData = sortedMeasurements.map((m) => m.data.vwcAdj * 100);
+          const ecData = sortedMeasurements.map((m) => m.data.ec);
+          const tempData = sortedMeasurements.map((m) => m.data.temp);
 
           // Create datasets
           const vwcDataset = createDataset(timestamps, vwcData);
