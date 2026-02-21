@@ -1,8 +1,10 @@
 from celery.result import AsyncResult
 from flask_restful import Resource
+from ..rate_limit import rate_limit
 
 
 class Status(Resource):
+    @rate_limit("poll")
     def get(self, id: str) -> dict[str, object]:
         task = AsyncResult(id)
         if task.state == "FAILURE":

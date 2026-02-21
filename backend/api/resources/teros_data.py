@@ -4,6 +4,7 @@ from ..schemas.teros_data_schema import TEROSDataSchema
 from ..schemas.get_cell_data_schema import GetCellDataSchema
 from ..schemas.t_input import TInput
 from ..models.teros_data import TEROSData
+from ..rate_limit import rate_limit
 
 from datetime import datetime
 
@@ -13,6 +14,7 @@ t_in = TInput()
 
 
 class Teros_Data(Resource):
+    @rate_limit("ingest")
     def post(self):
         json_data = request.json
         teros_data_obj = t_in.load(json_data)
@@ -28,6 +30,7 @@ class Teros_Data(Resource):
         )
         return teros_schema.jsonify(new_teros_data)
 
+    @rate_limit("heavy_read")
     def get(self, cell_id=0):
         v_args = get_cell_data.load(request.args)
         stream = v_args["stream"] if "stream" in v_args else False

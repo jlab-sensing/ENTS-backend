@@ -6,6 +6,7 @@ from ..schemas.cell_schema import CellSchema
 # from ..conn import engine
 from ..models.cell import Cell as CellModel, Tag as TagModel
 from ..schemas.add_cell_schema import AddCellSchema
+from ..rate_limit import rate_limit
 
 cells_schema = CellSchema(many=True)
 add_cell_schema = AddCellSchema()
@@ -20,6 +21,7 @@ class Cell(Resource):
         "delete": [authenticate],
     }
 
+    @rate_limit("heavy_read")
     def get(self, user):
         json_data = request.args
         userCells = json_data.get("user")
@@ -55,6 +57,7 @@ class Cell(Resource):
 
         return cells_schema.dump(cells)
 
+    @rate_limit("default")
     def post(self):
         json_data = request.json
         cell_data = add_cell_schema.load(json_data)
@@ -105,6 +108,7 @@ class Cell(Resource):
         except Exception as e:
             return {"message": "Error adding cell", "error": str(e)}, 500
 
+    @rate_limit("default")
     def put(self, _user, cellId):
         json_data = request.json
         cell = CellModel.get(cellId)
@@ -148,6 +152,7 @@ class Cell(Resource):
         except Exception as e:
             return {"message": "Error updating cell", "error": str(e)}, 500
 
+    @rate_limit("default")
     def delete(self, _user, cellId):
         cell = CellModel.get(cellId)
         if not cell:

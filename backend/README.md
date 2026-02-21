@@ -49,6 +49,27 @@ For validatiaon, ENTS API utilizes [marshmallow](https://marshmallow.readthedocs
 
 To handle long running tasks, ENTS API uses [Celery](https://docs.celeryq.dev/en/stable/getting-started/introduction.html) as a task queue and [Valkey](https://valkey.io/) as a message broker. A Celery worker configuration is handled under `backend/__init__.py` and is built under a seperate flag in the dockerfile named, prodworker and devworker.
 
+## Rate Limiting
+
+ENTS API uses a token-bucket limiter backed by Valkey/Redis. Limits are configured with environment variables in `.env` (see `.env.example`) and support per-endpoint rules such as:
+
+- `heavy_read` for chart/query endpoints
+- `ingest` for sensor ingestion endpoints
+- `export_start` and `poll` for async CSV export flow
+- `auth_token` and `auth_general` for auth endpoints
+
+Core environment variables:
+
+- `RATE_LIMIT_ENABLED`
+- `RATE_LIMIT_STORAGE_URI`
+- `RATE_LIMIT_TRUSTED_PROXY_COUNT`
+- `RATE_LIMIT_<RULE>_CAPACITY`
+- `RATE_LIMIT_<RULE>_REFILL_RATE`
+
+`RATE_LIMIT_TRUSTED_PROXY_COUNT` controls how many proxy hops are trusted for client IP extraction. Keep it at `0` unless the app is behind known reverse proxies.
+
+When a limit is exceeded the API returns `429` with `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Rule` headers.
+
 ## Testing
 
 Testing is conducted using [pytest](https://github.com/pytest-dev/pytest) and [testing fixtures](https://flask.palletsprojects.com/en/3.0.x/testing/) are spun up within the factory app pattern. Flask uses the testing configuration as defined under `api/config.py`. The testing fixtures are defined under `tests/conftest.py`.

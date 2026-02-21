@@ -31,6 +31,17 @@ const useAxiosPrivate = () => {
           prevRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
           return axiosPrivate(prevRequest);
         }
+        // Handle 429 rate limiting — auto-retry after Retry-After delay
+        if (error?.response?.status === 429 && !prevRequest?._rateLimitRetried) {
+          const retryAfter = parseInt(
+            error.response.headers['retry-after'] || '2',
+            10,
+          );
+          const delayMs = Math.min(retryAfter, 30) * 1000;
+          prevRequest._rateLimitRetried = true;
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+          return axiosPrivate(prevRequest);
+        }
         // return error
         return Promise.reject(error);
       },

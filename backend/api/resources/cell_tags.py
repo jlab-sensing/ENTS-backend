@@ -1,18 +1,23 @@
 from flask_restful import Resource
 from flask import request
+from ..auth.auth import authenticate
 from ..models.cell import Cell as CellModel, Tag as TagModel
 from ..schemas.tag_schema import TagSchema
+from ..schemas.cell_schema import CellSchema
+from ..rate_limit import rate_limit
 
 # Initialize schemas
 tags_schema = TagSchema(many=True)
 tag_schema = TagSchema()
+cell_list_schema = CellSchema(many=True)
 
 
 class CellTags(Resource):
     """Resource for managing tags associated with a specific cell"""
 
-    # No authentication required - following Cell resource pattern
+    method_decorators = {"post": [authenticate]}
 
+    @rate_limit("heavy_read")
     def get(self, cell_id):
         """Get all tags for a specific cell"""
         cell = CellModel.get(cell_id)
@@ -21,7 +26,8 @@ class CellTags(Resource):
 
         return tags_schema.dump(cell.tags)
 
-    def post(self, cell_id):
+    @rate_limit("default")
+    def post(self, _user, cell_id):
         """Assign multiple tags to a cell (replaces existing tags)"""
         cell = CellModel.get(cell_id)
         if not cell:
@@ -60,9 +66,10 @@ class CellTags(Resource):
 class CellTagDetail(Resource):
     """Resource for managing individual tag assignment to a cell"""
 
-    # No authentication required - following Cell resource pattern
+    method_decorators = {"put": [authenticate], "delete": [authenticate]}
 
-    def put(self, cell_id, tag_id):
+    @rate_limit("default")
+    def put(self, _user, cell_id, tag_id):
         """Add a specific tag to a cell"""
         cell = CellModel.get(cell_id)
         if not cell:
@@ -88,7 +95,8 @@ class CellTagDetail(Resource):
         except Exception as e:
             return {"message": "Error adding tag to cell", "error": str(e)}, 500
 
-    def delete(self, cell_id, tag_id):
+    @rate_limit("default")
+    def delete(self, _user, cell_id, tag_id):
         """Remove a specific tag from a cell"""
         cell = CellModel.get(cell_id)
         if not cell:
@@ -115,16 +123,11 @@ class CellTagDetail(Resource):
 class CellsByTag(Resource):
     """Resource for getting cells by tag"""
 
-    # No authentication required - following Cell resource pattern
-
+    @rate_limit("heavy_read")
     def get(self, tag_id):
         """Get all cells that have a specific tag"""
         tag = TagModel.get(tag_id)
         if not tag:
             return {"message": "Tag not found"}, 404
 
-        from ..schemas.cell_schema import CellSchema
-
-        cells_schema = CellSchema(many=True)
-
-        return {"tag": tag_schema.dump(tag), "cells": cells_schema.dump(tag.cells)}
+        return {"tag": tag_schema.dump(tag), "cells": cell_list_schema.dump(tag.cells)}

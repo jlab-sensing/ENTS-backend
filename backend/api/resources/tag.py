@@ -8,6 +8,7 @@ from ..schemas.tag_schema import (
     UpdateTagSchema,
     TagListSchema,
 )
+from ..rate_limit import rate_limit
 
 # Initialize schemas
 tags_schema = TagSchema(many=True)
@@ -20,6 +21,7 @@ tag_list_schema = TagListSchema(many=True)
 class Tag(Resource):
     method_decorators = {"post": [authenticate]}
 
+    @rate_limit("heavy_read")
     def get(self):
         """Get all tags or filter by search"""
         json_data = request.args
@@ -32,6 +34,7 @@ class Tag(Resource):
 
         return tags_schema.dump(tags)
 
+    @rate_limit("default")
     def post(self, user):
         """Create a new tag"""
         json_data = request.json
@@ -72,6 +75,7 @@ class Tag(Resource):
 class TagDetail(Resource):
     method_decorators = {"put": [authenticate], "delete": [authenticate]}
 
+    @rate_limit("heavy_read")
     def get(self, tag_id):
         """Get specific tag by ID"""
         tag = TagModel.get(tag_id)
@@ -80,6 +84,7 @@ class TagDetail(Resource):
 
         return tag_schema.dump(tag)
 
+    @rate_limit("default")
     def put(self, _user, tag_id):
         """Update tag"""
         tag = TagModel.get(tag_id)
@@ -115,6 +120,7 @@ class TagDetail(Resource):
         except Exception as e:
             return {"message": "Error updating tag", "error": str(e)}, 500
 
+    @rate_limit("default")
     def delete(self, _user, tag_id):
         """Delete tag"""
         tag = TagModel.get(tag_id)
