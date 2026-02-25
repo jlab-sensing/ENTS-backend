@@ -8,6 +8,7 @@ import jwt
 
 from .auth import handle_refresh_token, handle_login, handle_logout
 from uuid import UUID
+from ..rate_limit import rate_limit
 
 auth = Blueprint("login", __name__)
 
@@ -50,6 +51,7 @@ def query_string(params):
 
 
 @auth.route("/auth/token")
+@rate_limit("auth_token")
 def get_token():
     """Trades in authorization code for access token from Google auth"""
     code = request.args.get("code")
@@ -106,6 +108,7 @@ def get_token():
 
 
 @auth.route("/oauth/url", methods=["GET"])
+@rate_limit("auth_general")
 def auth_url():
     """Returns redirect to Google auth"""
     return jsonify(
@@ -116,6 +119,7 @@ def auth_url():
 
 
 @auth.route("/auth/logged_in")
+@rate_limit("auth_general")
 def check_logged_in():
     """Checks if session is active"""
     token = request.headers["Authorization"]
@@ -132,6 +136,7 @@ def check_logged_in():
 
 
 @auth.route("/auth/logout")
+@rate_limit("auth_general")
 def logout():
     # """Deletes active tokens"""
     refresh_token = request.cookies.get("refresh-token")
@@ -139,6 +144,7 @@ def logout():
 
 
 @auth.route("/auth/refresh")
+@rate_limit("auth_general")
 def refresh():
     refresh_token = request.cookies.get("refresh-token")
     return handle_refresh_token(refresh_token)

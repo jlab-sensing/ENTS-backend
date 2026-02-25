@@ -7,9 +7,11 @@ from ..models.power_data import PowerData
 from ..models import db
 from datetime import datetime, timedelta
 from sqlalchemy import func
+from ..rate_limit import rate_limit
 
 
 class DataAvailability(Resource):
+    @rate_limit("heavy_read")
     def get(self):
         """Get data availability information for intelligent date range selection
 

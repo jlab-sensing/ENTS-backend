@@ -9,6 +9,7 @@ from functools import reduce
 from io import StringIO
 from celery import shared_task
 import numpy as np
+from ..rate_limit import rate_limit
 
 get_cell_data = GetCellDataSchema()
 
@@ -66,9 +67,11 @@ def stream_csv(self, request_args):
 
 
 class Cell_Data(Resource):
+    @rate_limit("export_start")
     def get(self):
         result = stream_csv.delay(request.args)
         return jsonify({"result_id": result.id})
 
+    @rate_limit("default")
     def post(self):
         pass

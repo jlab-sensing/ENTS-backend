@@ -35,11 +35,13 @@ from .util import process_measurement, process_generic_measurement
 
 from ..models.sensor import Sensor
 from ..schemas.get_sensor_data_schema import GetSensorDataSchema
+from ..rate_limit import rate_limit
 
 
 class SensorData(Resource):
     get_sensor_data_schema = GetSensorDataSchema()
 
+    @rate_limit("heavy_read")
     def get(self):
         """Gets specified sensor data"""
 
@@ -61,6 +63,7 @@ class SensorData(Resource):
 
         return jsonify(sensor_data_obj)
 
+    @rate_limit("ingest")
     def post(self):
         """Handle upload post request
 
