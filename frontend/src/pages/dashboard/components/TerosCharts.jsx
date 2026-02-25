@@ -5,6 +5,7 @@ import { React, useEffect, useState } from 'react';
 import TempChart from '../../../charts/TempChart/TempChart';
 import VwcChart from '../../../charts/VwcChart/VwcChart';
 import { getTerosData } from '../../../services/teros';
+import { toPercentIfFraction } from '../../../charts/VwcChart/vwcValue';
 
 function TerosCharts({ cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange }) {
   const [resample, setResample] = useState('hour');
@@ -176,7 +177,7 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
 
           // Extract data arrays
           const timestamps = sortedMeasurements.map((m) => m.timestamp * 1000);
-          const vwcData = sortedMeasurements.map((m) => m.data.vwcAdj * 100);
+          const vwcData = sortedMeasurements.map((m) => toPercentIfFraction(m.data.vwcAdj));
           const ecData = sortedMeasurements.map((m) => m.data.ec);
           const tempData = sortedMeasurements.map((m) => m.data.temp);
 
