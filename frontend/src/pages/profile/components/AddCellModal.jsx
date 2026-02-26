@@ -22,6 +22,10 @@ function AddCellModal() {
   const archive = false;
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
+  const [nameTouched, setNameTouched] = useState(false);
+  const [locationTouched, setLocationTouched] = useState(false);
+  const [latTouched, setLatTouched] = useState(false);
+  const [longTouched, setLongTouched] = useState(false);
 
   const assignCellTagsMutation = useAssignCellTags();
 
@@ -41,6 +45,10 @@ function AddCellModal() {
     setLong('');
     setLat('');
     setSelectedTags([]);
+    setNameTouched(false);
+    setLocationTouched(false);
+    setLatTouched(false);
+    setLongTouched(false);
   };
 
   const handleClose = () => {
@@ -53,6 +61,10 @@ function AddCellModal() {
     setLong('');
     setLat('');
     setSelectedTags([]);
+    setNameTouched(false);
+    setLocationTouched(false);
+    setLatTouched(false);
+    setLongTouched(false);
   };
 
   useEffect(() => {
@@ -142,10 +154,10 @@ function AddCellModal() {
                     variant='outlined'
                     fullWidth
                     required
-                    error={name.length === 0}
-                    helperText={!name.length ? 'Cell name is required' : ''}
+                    error={nameTouched && name.length === 0}
+                    helperText={nameTouched && !name.length ? 'Cell name is required' : ''}
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => { setName(e.target.value); setNameTouched(true); }}
                     placeholder='e.g., Forest Station A'
                     sx={{
                       '& .MuiOutlinedInput-root': {
@@ -158,10 +170,10 @@ function AddCellModal() {
                     variant='outlined'
                     fullWidth
                     required
-                    error={location.length === 0}
-                    helperText={!location.length ? 'Location is required' : ''}
+                    error={locationTouched && location.length === 0}
+                    helperText={locationTouched && !location.length ? 'Location is required' : ''}
                     value={location}
-                    onChange={(e) => setLocation(e.target.value)}
+                    onChange={(e) => { setLocation(e.target.value); setLocationTouched(true); }}
                     placeholder='e.g., North Campus Field'
                     sx={{
                       '& .MuiOutlinedInput-root': {
@@ -174,10 +186,10 @@ function AddCellModal() {
                     variant='outlined'
                     fullWidth
                     required
-                    error={lat.length === 0 || isNaN(Number(lat))}
-                    helperText={!lat.length ? 'Latitude is required' : isNaN(Number(lat)) ? 'Please enter a valid number' : ''}
+                    error={latTouched && (lat.length === 0 || isNaN(Number(lat)))}
+                    helperText={latTouched && (!lat.length ? 'Latitude is required' : isNaN(Number(lat)) ? 'Please enter a valid number' : '')}
                     value={lat}
-                    onChange={(e) => setLat(e.target.value)}
+                    onChange={(e) => { setLat(e.target.value); setLatTouched(true); }}
                     placeholder='e.g., 36.9741'
                     sx={{
                       '& .MuiOutlinedInput-root': {
@@ -190,10 +202,10 @@ function AddCellModal() {
                     variant='outlined'
                     fullWidth
                     required
-                    error={long.length === 0 || isNaN(Number(long))}
-                    helperText={!long.length ? 'Longitude is required' : isNaN(Number(long)) ? 'Please enter a valid number' : ''}
+                    error={longTouched && (long.length === 0 || isNaN(Number(long)))}
+                    helperText={longTouched && (!long.length ? 'Longitude is required' : isNaN(Number(long)) ? 'Please enter a valid number' : '')}
                     value={long}
-                    onChange={(e) => setLong(e.target.value)}
+                    onChange={(e) => { setLong(e.target.value); setLongTouched(true); }}
                     placeholder='e.g., -122.0308'
                     sx={{
                       '& .MuiOutlinedInput-root': {
