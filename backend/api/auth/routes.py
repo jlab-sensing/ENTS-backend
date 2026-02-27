@@ -71,15 +71,20 @@ def get_token():
         )
         if req is None:
             return jsonify({"msg": "Auth error"}), 500
-        token = req.json()["id_token"]
+        google_resp = req.json()
+        if "id_token" not in google_resp:
+            print(f"Google token error: {google_resp}", flush=True)
+            return jsonify({"msg": "Authentication Error"}), 500
+        token = google_resp["id_token"]
 
         # Specify the CLIENT_ID of the app that requests data
         idinfo = id_token.verify_oauth2_token(
-            token, g_requests.Request(), config["clientId"]
+            token, g_requests.Request(), config["clientId"],
+            clock_skew_in_seconds=10,
         )
         email = idinfo["email"]
-        first_name = idinfo["given_name"]
-        last_name = idinfo["family_name"]
+        first_name = idinfo.get("given_name", "")
+        last_name = idinfo.get("family_name", "")
         user = User.query.filter_by(email=email).first()
 
         # Add user to DB if new user
@@ -93,16 +98,24 @@ def get_token():
         # Handle login
         return handle_login(user)
 
-    except ValueError:
+    except ValueError as e:
+        print(f"ValueError in get_token: {e}", flush=True)
         return jsonify({"msg": "Authentication Error"}), 500
     except requests.exceptions.ConnectionError as errc:
-        return jsonify({"error": "Connection Error"}, errc), 500
+        print(f"ConnectionError in get_token: {errc}", flush=True)
+        return jsonify({"error": "Connection Error"}), 500
     except requests.exceptions.HTTPError as errh:
-        return jsonify({"Http Error:", errh}), 500
+        print(f"HTTPError in get_token: {errh}", flush=True)
+        return jsonify({"error": "HTTP Error"}), 500
     except requests.exceptions.Timeout as errt:
-        return jsonify({"Timeout Error:", errt}), 500
+        print(f"Timeout in get_token: {errt}", flush=True)
+        return jsonify({"error": "Timeout Error"}), 500
     except requests.exceptions.RequestException as err:
-        return jsonify({"Other error:", err}), 500
+        print(f"RequestException in get_token: {err}", flush=True)
+        return jsonify({"error": "Request Error"}), 500
+    except Exception as e:
+        print(f"Unexpected error in get_token: {type(e).__name__}: {e}", flush=True)
+        return jsonify({"msg": "Authentication Error"}), 500
 
 
 @auth.route("/oauth/url", methods=["GET"])
