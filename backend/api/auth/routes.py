@@ -73,7 +73,6 @@ def get_token():
             return jsonify({"msg": "Auth error"}), 500
         google_resp = req.json()
         if "id_token" not in google_resp:
-            print(f"Google token error: {google_resp}", flush=True)
             return jsonify({"msg": "Authentication Error"}), 500
         token = google_resp["id_token"]
 
@@ -89,7 +88,6 @@ def get_token():
 
         # Add user to DB if new user
         if not user:
-            print("creating new user", flush=True)
             user = User(
                 first_name=first_name, last_name=last_name, email=email, password=""
             )
@@ -98,23 +96,17 @@ def get_token():
         # Handle login
         return handle_login(user)
 
-    except ValueError as e:
-        print(f"ValueError in get_token: {e}", flush=True)
+    except ValueError:
         return jsonify({"msg": "Authentication Error"}), 500
-    except requests.exceptions.ConnectionError as errc:
-        print(f"ConnectionError in get_token: {errc}", flush=True)
+    except requests.exceptions.ConnectionError:
         return jsonify({"error": "Connection Error"}), 500
-    except requests.exceptions.HTTPError as errh:
-        print(f"HTTPError in get_token: {errh}", flush=True)
+    except requests.exceptions.HTTPError:
         return jsonify({"error": "HTTP Error"}), 500
-    except requests.exceptions.Timeout as errt:
-        print(f"Timeout in get_token: {errt}", flush=True)
+    except requests.exceptions.Timeout:
         return jsonify({"error": "Timeout Error"}), 500
-    except requests.exceptions.RequestException as err:
-        print(f"RequestException in get_token: {err}", flush=True)
+    except requests.exceptions.RequestException:
         return jsonify({"error": "Request Error"}), 500
-    except Exception as e:
-        print(f"Unexpected error in get_token: {type(e).__name__}: {e}", flush=True)
+    except Exception:
         return jsonify({"msg": "Authentication Error"}), 500
 
 
@@ -139,8 +131,7 @@ def check_logged_in():
         data = jwt.decode(token, config["tokenSecret"], algorithms=["HS256"])
         user = User.query.get(UUID(data["uid"]))
         return jsonify({"loggedIn": True}, user), 200
-    except Exception as e:
-        print(e, flush=True)
+    except Exception:
         return jsonify({"loggedIn": False}, None), 401
 
 
