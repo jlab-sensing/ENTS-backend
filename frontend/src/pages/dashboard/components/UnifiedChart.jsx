@@ -5,6 +5,11 @@ import { React, useEffect, useState, useRef } from 'react';
 import { getSensorDataBatch } from '../../../services/sensor';
 import UniversalChart from '../../../charts/UniversalChart';
 import { CHART_CONFIGS } from './chartConfigs';
+import {
+  extractUnifiedStreamValue,
+  matchesSensorStreamType,
+  normalizeUnifiedStreamValue,
+} from './unifiedChartUtils';
 
 function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange }) {
   const [resample, setResample] = useState('hour');
@@ -17,7 +22,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
   const debounceTimer = useRef(null);
 
   const config = CHART_CONFIGS[type];
-  const { sensor_name, measurements, units, axisIds, chartId } = config || {};
+  const { sensor_name, measurements, units, axisIds, chartId, axisPolicy } = config || {};
 
   const meas_colors = [
     '#26C6DA',
@@ -88,7 +93,10 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
               const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) =>
                 DateTime.fromHTTP(dateTime).toMillis(),
               );
-              const measData = createDataset(timestamp, measDataArray);
+              const normalizedData = sensor_name === 'TEROS12_VWC_ADJ' && meas === 'Volumetric Water Content'
+                ? measDataArray.map((value) => normalizeUnifiedStreamValue(sensor_name, meas, value))
+                : measDataArray;
+              const measData = createDataset(timestamp, normalizedData);
               newSensorChartData.labels = timestamp;
               newSensorChartData.datasets.push({
                 label: name + ` ${meas} (${units[idx]})`,
@@ -202,8 +210,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
   useEffect(() => {
     if (stream && liveData && liveData.length > 0) {
       const sensorMeasurements = liveData.filter((measurement) => {
-        const expectedType = sensor_name;
-        return measurement.type === expectedType && cells.some((cell) => cell.id === measurement.cellId);
+        return matchesSensorStreamType(measurement.type, sensor_name) && cells.some((cell) => cell.id === measurement.cellId);
       });
 
       if (sensorMeasurements.length > 0) {
@@ -234,62 +241,10 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
           const timestamps = sortedMeasurements.map((m) => m.timestamp * 1000);
 
           measurements.forEach((meas, measIndex) => {
-            let dataValues = [];
-
-            // Extract data based on measurement type and sensor
-            if (sensor_name === 'POWER_VOLTAGE') {
-              if (meas === 'Voltage') {
-                dataValues = sortedMeasurements.map((m) => m.data.power_voltage);
-              }
-            } else if (sensor_name === 'POWER_CURRENT') {
-              if (meas === 'Current') {
-                dataValues = sortedMeasurements.map((m) => m.data.power_current);
-              }
-            } else if (sensor_name === 'TEROS12_VWC_ADJ') {
-              if (meas === 'Volumetric Water Content') {
-                dataValues = sortedMeasurements.map((m) => m.data.teros12_vwc);
-              }
-            } else if (sensor_name === 'TEROS12_TEMP') {
-              if (meas === 'Temperature') {
-                dataValues = sortedMeasurements.map((m) => m.data.teros12_temp);
-              }
-            } else if (sensor_name === 'TEROS12_EC') {
-              if (meas === 'Electrical Conductivity') {
-                dataValues = sortedMeasurements.map((m) => m.data.teros12_ec);
-              }
-            } else if (sensor_name === 'bme280') {
-              if (meas === 'temperature') {
-                dataValues = sortedMeasurements.map((m) => m.data.temperature);
-              } else if (meas === 'pressure') {
-                dataValues = sortedMeasurements.map((m) => m.data.pressure);
-              } else if (meas === 'humidity') {
-                dataValues = sortedMeasurements.map((m) => m.data.humidity);
-              }
-            } else if (sensor_name === 'co2') {
-              if (meas === 'co2') {
-                dataValues = sortedMeasurements.map((m) => m.data.CO2);
-              }
-            } else if (sensor_name === 'phytos31') {
-              if (meas === 'dielectric_permittivity') {
-                dataValues = sortedMeasurements.map((m) => m.data.voltage);
-              }
-            } else if (sensor_name === 'teros21') {
-              if (meas === 'soil_water_potential') {
-                dataValues = sortedMeasurements.map((m) => m.data.matricPot);
-              }
-            } else if (sensor_name === 'sen0308') {
-              if (meas === 'humidity') {
-                dataValues = sortedMeasurements.map((m) => m.data.humidity);
-              }
-            } else if (sensor_name === 'sen0257') {
-              if (meas === 'pressure') {
-                dataValues = sortedMeasurements.map((m) => m.data.pressure);
-              }
-            } else if (sensor_name === 'yfs210c') {
-              if (meas === 'flow') {
-                dataValues = sortedMeasurements.map((m) => m.data.flow);
-              }
-            }
+            const dataValues = sortedMeasurements.map((m) => {
+              const rawValue = extractUnifiedStreamValue(sensor_name, meas, m.data);
+              return normalizeUnifiedStreamValue(sensor_name, meas, rawValue);
+            });
 
             if (dataValues.length > 0) {
               // Create dataset
@@ -373,6 +328,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
         measurements={measurements}
         units={units}
         axisIds={axisIds}
+        axisPolicy={axisPolicy}
         {...(!stream && { startDate, endDate })}
         onResampleChange={handleResampleChange}
       />

@@ -16,7 +16,7 @@ export const CHART_CONFIGS = {
   teros12_vwc: {
     sensor_name: 'TEROS12_VWC',
     measurements: ['Volumetric Water Content (Raw)'],
-    units: ['N/A'],
+    units: ['raw'],
     axisIds: ['y'],
     chartId: 'teros12VWC',
   },
@@ -25,6 +25,7 @@ export const CHART_CONFIGS = {
     measurements: ['Volumetric Water Content'],
     units: ['%'],
     axisIds: ['y'],
+    axisPolicy: 'vwcPercent',
     chartId: 'teros12VWCADJ',
   },
   teros12_temp: {
@@ -46,7 +47,14 @@ export const CHART_CONFIGS = {
     measurements: ['temperature'],
     units: ['°C'],
     axisIds: ['y'],
-    chartId: 'temp',
+    chartId: 'bme280',
+  },
+  bme280Temperature: {
+    sensor_name: 'BME280_TEMP',
+    measurements: ['Temperature'],
+    units: ['°C'],
+    axisIds: ['y'],
+    chartId: 'bme280temp',
   },
   co2: {
     sensor_name: 'co2',
@@ -61,6 +69,20 @@ export const CHART_CONFIGS = {
     units: ['kPa', '%'],
     axisIds: ['pressureAxis', 'humidityAxis'],
     chartId: 'presHum',
+  },
+  bme280Pressure: {
+    sensor_name: 'BME280_PRESSURE',
+    measurements: ['Pressure'],
+    units: ['kPa'],
+    axisIds: ['pressureAxis'],
+    chartId: 'bme280pressure',
+  },
+  bme280Humidity: {
+    sensor_name: 'BME280_HUMIDITY',
+    measurements: ['Humidity'],
+    units: ['%'],
+    axisIds: ['humidityAxis'],
+    chartId: 'bme280humidity',
   },
   sensor: {
     sensor_name: 'phytos31',
