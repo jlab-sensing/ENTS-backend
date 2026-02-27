@@ -29,8 +29,7 @@ class CellSensors(Resource):
             return {"error": "At least one valid cell_id is required"}, 400
 
         rows = (
-            Sensor.query
-            .filter(Sensor.cell_id.in_(cell_ids))
+            Sensor.query.filter(Sensor.cell_id.in_(cell_ids))
             .with_entities(Sensor.cell_id, Sensor.name)
             .distinct()
             .all()
