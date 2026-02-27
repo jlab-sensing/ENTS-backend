@@ -14,10 +14,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -71,10 +71,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -91,7 +91,7 @@ jobs:
           curl https://github.com/loadimpact/k6/releases/download/v0.26.2/k6-v0.26.2-linux64.tar.gz -L | tar xvz --strip-components 1
 
       - name: Set AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -131,14 +131,20 @@ jobs:
 
       - name: Save short logs
         if: always()
-        run: docker compose logs -t --since ${{ steps.timestamp.outputs.start_time }} > dirtviz_short.log
+        run: |
+          SINCE="${{ steps.timestamp.outputs.start_time }}"
+          if [ -n "$SINCE" ]; then
+            docker compose logs -t --since "$SINCE" > dirtviz_short.log
+          else
+            docker compose logs -t > dirtviz_short.log
+          fi
 
       - name: Check for errors
         run: "! grep -i 'error' dirtviz_short.log"
 
       - name: Upload log artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: DirtViz Logs
           path: |

@@ -96,7 +96,11 @@ class Cell(Resource):
                 new_cell.save()
 
             if new_cell:
-                return {"message": "Successfully added cell"}
+                return {
+                    "message": "Successfully added cell",
+                    "id": new_cell.id,
+                    "name": new_cell.name,
+                }
             return {"message": "Error adding cell"}, 400
         except Exception as e:
             return {"message": "Error adding cell", "error": str(e)}, 500

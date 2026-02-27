@@ -1,6 +1,7 @@
 from ..models import db
 from .user import User
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import func
 from datetime import datetime
 import uuid
 
@@ -51,6 +52,16 @@ class Logger(db.Model):
     @staticmethod
     def find_by_name(name):
         return Logger.query.filter_by(name=name).first()
+
+    @staticmethod
+    def find_by_device_eui(device_eui):
+        normalized = (device_eui or "").strip().upper()
+        if not normalized:
+            return None
+
+        return Logger.query.filter(
+            func.upper(func.trim(Logger.device_eui)) == normalized
+        ).first()
 
     @staticmethod
     def get_loggers_by_user_id(id):
