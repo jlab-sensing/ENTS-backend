@@ -78,7 +78,9 @@ def get_token():
 
         # Specify the CLIENT_ID of the app that requests data
         idinfo = id_token.verify_oauth2_token(
-            token, g_requests.Request(), config["clientId"],
+            token,
+            g_requests.Request(),
+            config["clientId"],
             clock_skew_in_seconds=10,
         )
         email = idinfo["email"]
