@@ -2,10 +2,10 @@ import { Grid } from '@mui/material';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import { React, useEffect, useState, useRef } from 'react';
-import { getSensorData } from '../../../services/sensor';
+import { getSensorDataBatch } from '../../../services/sensor';
 import UniversalChart from '../../../charts/UniversalChart';
 
-const CHART_CONFIGS = {
+export const CHART_CONFIGS = {
   power_voltage: {
     sensor_name: 'POWER_VOLTAGE',
     measurements: ['Voltage'],
@@ -134,16 +134,27 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
 
   async function getCellChartData() {
     const data = {};
-    // Always fetch data for all selected cells when cells change
-    let loadCells = cells;
-    for (const { id, name } of loadCells) {
-      data[id] = {
-        name: name,
-      };
-      for (const meas of measurements) {
-        data[id] = {
-          ...data[id],
-          [meas]: await getSensorData(sensor_name, id, meas, startDate.toHTTP(), endDate.toHTTP(), resample),
+    const cellIds = cells.map((c) => c.id);
+    cells.forEach(({ id, name }) => {
+      data[id] = { name };
+    });
+
+    for (const meas of measurements) {
+      const batchResult = await getSensorDataBatch(
+        sensor_name,
+        cellIds,
+        meas,
+        startDate.toHTTP(),
+        endDate.toHTTP(),
+        resample,
+      );
+      for (const { id } of cells) {
+        data[id][meas] = batchResult[String(id)] ?? {
+          timestamp: [],
+          data: [],
+          measurement: '',
+          unit: '',
+          type: '',
         };
       }
     }

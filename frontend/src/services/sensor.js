@@ -8,6 +8,20 @@ export const getSensorData = (name, cellId, meas, startTime, endTime, resample =
     .then((res) => res.data);
 };
 
+export const getSensorDataBatch = (name, cellIds, meas, startTime, endTime, resample = 'hour') => {
+  return axios
+    .get(
+      `${process.env.PUBLIC_URL}/api/sensor/?name=${name}&cellIds=${cellIds.join(',')}&measurement=${meas}&startTime=${startTime}&endTime=${endTime}&resample=${resample}`,
+    )
+    .then((res) => res.data);
+};
+
+export const getCellSensors = (cellIds) => {
+  return axios
+    .get(`${process.env.PUBLIC_URL}/api/cell-sensors/?cell_ids=${cellIds.join(',')}`)
+    .then((res) => res.data);
+};
+
 export const streamSensorData = (
   name,
   cellId,
