@@ -16,7 +16,8 @@ import DownloadBtn from './components/DownloadBtn';
 import PowerCharts from './components/PowerCharts';
 import StreamToggle from './components/StreamToggle';
 import TerosCharts from './components/TerosCharts';
-import UnifiedChart, { CHART_CONFIGS } from './components/UnifiedChart';
+import { CHART_CONFIGS } from './components/chartConfigs';
+import UnifiedChart from './components/UnifiedChart';
 import { io } from 'socket.io-client';
 import TopNav from '../../components/TopNav';
 
