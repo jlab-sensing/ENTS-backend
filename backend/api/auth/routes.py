@@ -71,20 +71,25 @@ def get_token():
         )
         if req is None:
             return jsonify({"msg": "Auth error"}), 500
-        token = req.json()["id_token"]
+        google_resp = req.json()
+        if "id_token" not in google_resp:
+            return jsonify({"msg": "Authentication Error"}), 500
+        token = google_resp["id_token"]
 
         # Specify the CLIENT_ID of the app that requests data
         idinfo = id_token.verify_oauth2_token(
-            token, g_requests.Request(), config["clientId"]
+            token,
+            g_requests.Request(),
+            config["clientId"],
+            clock_skew_in_seconds=10,
         )
         email = idinfo["email"]
-        first_name = idinfo["given_name"]
-        last_name = idinfo["family_name"]
+        first_name = idinfo.get("given_name", "")
+        last_name = idinfo.get("family_name", "")
         user = User.query.filter_by(email=email).first()
 
         # Add user to DB if new user
         if not user:
-            print("creating new user", flush=True)
             user = User(
                 first_name=first_name, last_name=last_name, email=email, password=""
             )
@@ -95,14 +100,16 @@ def get_token():
 
     except ValueError:
         return jsonify({"msg": "Authentication Error"}), 500
-    except requests.exceptions.ConnectionError as errc:
-        return jsonify({"error": "Connection Error"}, errc), 500
-    except requests.exceptions.HTTPError as errh:
-        return jsonify({"Http Error:", errh}), 500
-    except requests.exceptions.Timeout as errt:
-        return jsonify({"Timeout Error:", errt}), 500
-    except requests.exceptions.RequestException as err:
-        return jsonify({"Other error:", err}), 500
+    except requests.exceptions.ConnectionError:
+        return jsonify({"error": "Connection Error"}), 500
+    except requests.exceptions.HTTPError:
+        return jsonify({"error": "HTTP Error"}), 500
+    except requests.exceptions.Timeout:
+        return jsonify({"error": "Timeout Error"}), 500
+    except requests.exceptions.RequestException:
+        return jsonify({"error": "Request Error"}), 500
+    except Exception:
+        return jsonify({"msg": "Authentication Error"}), 500
 
 
 @auth.route("/oauth/url", methods=["GET"])
@@ -126,8 +133,7 @@ def check_logged_in():
         data = jwt.decode(token, config["tokenSecret"], algorithms=["HS256"])
         user = User.query.get(UUID(data["uid"]))
         return jsonify({"loggedIn": True}, user), 200
-    except Exception as e:
-        print(e, flush=True)
+    except Exception:
         return jsonify({"loggedIn": False}, None), 401
 
 
