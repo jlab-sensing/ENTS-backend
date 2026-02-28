@@ -6,7 +6,7 @@ export const getCellData = (cellIds, resample, startTime, endTime) => {
     .get(
       `${
         process.env.PUBLIC_URL
-      }/api/cell/datas?cellIds=${cellIds.toString()}&resample=${resample}&startTime=${startTime.toHTTP()}&endTime=${endTime.toHTTP()}`,
+      }/api/cell/datas?cellIds=${cellIds.toString()}&resample=${resample}&startTime=${startTime.toISO()}&endTime=${endTime.toISO()}`,
     )
     .then((res) => res.data);
 };
