@@ -1,5 +1,6 @@
 from ..models import db
 from sqlalchemy.sql import func
+from sqlalchemy import case, and_
 from .cell import Cell
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -27,6 +28,27 @@ class TEROSData(db.Model):
 
     def __repr__(self):
         return f"TEROSData(id={self.id!r}, ts={self.ts!r})"
+
+    @staticmethod
+    def _to_percent_if_fraction(vwc):
+        """Normalize VWC values to percentages without double scaling.
+
+        TEROS adjusted VWC values may arrive as either fractions (0..1) or
+        already-scaled percentages (0..100). Convert only fractional values.
+        """
+        if vwc is None:
+            return None
+        if 0 < vwc <= 1:
+            return vwc * 100
+        return vwc
+
+    @staticmethod
+    def _to_percent_if_fraction_expr(vwc_col):
+        """SQL expression version of adjusted VWC normalization."""
+        return case(
+            (and_(vwc_col > 0, vwc_col <= 1), vwc_col * 100),
+            else_=vwc_col,
+        )
 
     def add_teros_data(cell_name, ts, vwc, raw_vwc, temp, ec, water_pot):
         cur_cell = Cell.query.filter_by(name=cell_name).first()
@@ -96,7 +118,7 @@ class TEROSData(db.Model):
                 stmt = (
                     db.select(
                         TEROSData.ts.label("ts"),
-                        (TEROSData.vwc * 100).label("vwc"),
+                        TEROSData.vwc.label("vwc"),
                         TEROSData.temp.label("temp"),
                         TEROSData.ec.label("ec"),
                         TEROSData.raw_vwc.label("raw_vwc"),
@@ -110,10 +132,11 @@ class TEROSData(db.Model):
             else:
                 # Handle normal resampling case
                 date_trunc = func.date_trunc(resample, TEROSData.ts).label("ts")
+                normalized_vwc = TEROSData._to_percent_if_fraction_expr(TEROSData.vwc)
                 stmt = (
                     db.select(
                         date_trunc.label("ts"),
-                        func.avg(TEROSData.vwc * 100).label("vwc"),
+                        func.avg(normalized_vwc).label("vwc"),
                         func.avg(TEROSData.temp).label("temp"),
                         func.avg(TEROSData.ec).label("ec"),
                         func.avg(TEROSData.raw_vwc).label("raw_vwc"),
@@ -130,7 +153,7 @@ class TEROSData(db.Model):
             stmt = (
                 db.select(
                     TEROSData.ts_server.label("ts"),
-                    (TEROSData.vwc * 100).label("vwc"),
+                    TEROSData.vwc.label("vwc"),
                     TEROSData.temp.label("temp"),
                     TEROSData.ec.label("ec"),
                     TEROSData.raw_vwc.label("raw_vwc"),
@@ -144,9 +167,9 @@ class TEROSData(db.Model):
 
         for row in db.session.execute(stmt).yield_per(1000):
             data["timestamp"].append(row.ts)
-            data["vwc"].append(row.vwc)
+            data["vwc"].append(TEROSData._to_percent_if_fraction(row.vwc))
             data["temp"].append(row.temp)
             # returns decimals as integers for chart parsing
-            data["ec"].append(int(row.ec))
+            data["ec"].append(int(row.ec) if row.ec is not None else None)
             data["raw_vwc"].append(row.raw_vwc)
         return data
