@@ -15,6 +15,6 @@ export const streamPowerData = (
   stream,
 ) => {
   return axios
-    .get(`${process.env.PUBLIC_URL}/api/power/${cellId}?startTime=${startTime}&endTime=${endTime}&stream=${stream}`)
+    .get(`${process.env.PUBLIC_URL}/api/power/${cellId}?startTime=${startTime.toHTTP()}&endTime=${endTime.toHTTP()}&stream=${stream}`)
     .then((res) => res.data);
 };

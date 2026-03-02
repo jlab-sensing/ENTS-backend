@@ -18,7 +18,7 @@ export const streamSensorData = (
 ) => {
   return axios
     .get(
-      `${process.env.PUBLIC_URL}/api/sensor/?name=${name}&cellId=${cellId}&measurement=${meas}&startTime=${startTime}&endTime=${endTime}&stream=${stream}`,
+      `${process.env.PUBLIC_URL}/api/sensor/?name=${name}&cellId=${cellId}&measurement=${meas}&startTime=${startTime.toHTTP()}&endTime=${endTime.toHTTP()}&stream=${stream}`,
     )
     .then((res) => res.data);
 };
