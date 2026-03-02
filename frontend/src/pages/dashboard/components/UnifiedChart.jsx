@@ -56,7 +56,7 @@ const CHART_CONFIGS = {
     chartId: 'bme280',
   },
   bme280Temperature: {
-    sensor_name: 'BME280_TEMP',
+    sensor_name: 'bme280',
     measurements: ['Temperature'],
     units: ['°C'],
     axisIds: ['y'],
@@ -77,14 +77,14 @@ const CHART_CONFIGS = {
     chartId: 'presHum',
   },
   bme280Pressure: {
-    sensor_name: 'BME280_PRESSURE',
+    sensor_name: 'bme280',
     measurements: ['Pressure'],
     units: ['kPa'],
     axisIds: ['pressureAxis'],
     chartId: 'bme280pressure',
   },
   bme280Humidity: {
-    sensor_name: 'BME280_HUMIDITY',
+    sensor_name: 'bme280',
     measurements: ['Humidity'],
     units: ['%'],
     axisIds: ['humidityAxis'],
@@ -368,11 +368,12 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
                 dataValues = sortedMeasurements.map((m) => m.data.teros12_ec);
               }
             } else if (sensor_name === 'bme280') {
-              if (meas === 'temperature') {
+              const lowerCaseMeas = meas.toLowerCase();
+              if (lowerCaseMeas === 'temperature') {
                 dataValues = sortedMeasurements.map((m) => m.data.temperature);
-              } else if (meas === 'pressure') {
+              } else if (lowerCaseMeas === 'pressure') {
                 dataValues = sortedMeasurements.map((m) => m.data.pressure);
-              } else if (meas === 'humidity') {
+              } else if (lowerCaseMeas === 'humidity') {
                 dataValues = sortedMeasurements.map((m) => m.data.humidity);
               }
             } else if (sensor_name === 'co2') {
