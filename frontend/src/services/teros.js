@@ -14,6 +14,6 @@ export const streamTerosData = (
   stream,
 ) => {
   return axios
-    .get(`${process.env.PUBLIC_URL}/api/teros/${cellId}?startTime=${startTime.toHTTP()}&endTime=${endTime.toHTTP()}&stream=${stream}`)
+    .get(`${process.env.PUBLIC_URL}/api/teros/${cellId}?startTime=${startTime}&endTime=${endTime}&stream=${stream}`)
     .then((res) => res.data);
 };
