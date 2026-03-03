@@ -30,7 +30,7 @@ def get_or_create_logger(sess, name, mac=None, hostname=None):
     log = sess.execute(stmt).one_or_none()
 
     if not log:
-        log = Logger(name=name)
+        log = Logger(name=name, mac=mac, hostname=hostname)
         sess.add(log)
         sess.flush()
     else:
