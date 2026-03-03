@@ -3,6 +3,7 @@ from flask import request
 from ..models.user import User
 from ..auth.auth import authenticate
 from ..schemas.user_data_schema import UserDataSchema
+from ..rate_limit import rate_limit
 
 user_schema = UserDataSchema(only=(["email", "first_name", "last_name"]))
 
@@ -10,6 +11,7 @@ user_schema = UserDataSchema(only=(["email", "first_name", "last_name"]))
 class User_Data(Resource):
     method_decorators = [authenticate]
 
+    @rate_limit("default")
     def get(self, user):
         try:
             user = User.get_user(user.id)
@@ -17,6 +19,7 @@ class User_Data(Resource):
         except Exception as e:
             return {"message": str(e)}, 500
 
+    @rate_limit("default")
     def put(self, user):
         try:
             json_data = request.get_json()

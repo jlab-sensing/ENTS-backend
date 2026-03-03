@@ -4,10 +4,13 @@ from ..auth.auth import authenticate
 from ..models.cell import Cell as CellModel
 from ..models.user import User as UserModel
 from ..schemas.user_schema import UserSchema
+from ..schemas.cell_schema import CellSchema
+from ..rate_limit import rate_limit
 
 # Initialize schemas
 users_schema = UserSchema(many=True)
 user_schema = UserSchema()
+cell_list_schema = CellSchema(many=True)
 
 
 class CellUsers(Resource):
@@ -15,6 +18,7 @@ class CellUsers(Resource):
 
     method_decorators = {"post": [authenticate]}
 
+    @rate_limit("heavy_read")
     def get(self, cell_id):
         """Get all users for a specific cell"""
         cell = CellModel.get(cell_id)
@@ -23,6 +27,7 @@ class CellUsers(Resource):
 
         return users_schema.dump(cell.users)
 
+    @rate_limit("default")
     def post(self, user, cell_id):
         """Assign multiple users to a cell (replaces existing users)"""
         cell = CellModel.get(cell_id)
@@ -64,6 +69,7 @@ class CellUserDetail(Resource):
 
     method_decorators = {"put": [authenticate], "delete": [authenticate]}
 
+    @rate_limit("default")
     def put(self, cell_id, user_id):
         """Add a specific user to a cell"""
         cell = CellModel.get(cell_id)
@@ -90,6 +96,7 @@ class CellUserDetail(Resource):
         except Exception as e:
             return {"message": "Error adding user to cell", "error": str(e)}, 500
 
+    @rate_limit("default")
     def delete(self, cell_id, user_id):
         """Remove a specific user from a cell"""
         cell = CellModel.get(cell_id)
@@ -119,17 +126,17 @@ class CellByUser(Resource):
 
     # No authentication required - following Cell resource pattern
 
+    @rate_limit("heavy_read")
     def get(self, user_id):
         """Get all cells that have a specific user"""
         user = UserModel.get(user_id)
         if not user:
             return {"message": "User not found"}, 404
 
-        from ..schemas.cell_schema import CellSchema
-
-        cells_schema = CellSchema(many=True)
-
-        return {"user": user_schema.dump(user), "cells": cells_schema.dump(user.cells)}
+        return {
+            "user": user_schema.dump(user),
+            "cells": cell_list_schema.dump(user.cells),
+        }
 
 
 class CellShare(Resource):
@@ -137,6 +144,7 @@ class CellShare(Resource):
 
     method_decorators = [authenticate]
 
+    @rate_limit("default")
     def post(self, authenticated_user, cell_id):
         """Share a cell with a user by their email"""
         cell = CellModel.get(cell_id)

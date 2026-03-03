@@ -4,6 +4,7 @@ from ..schemas.power_data_schema import PowerDataSchema
 from ..schemas.get_cell_data_schema import GetCellDataSchema
 from ..schemas.p_input import PInput
 from ..models.power_data import PowerData
+from ..rate_limit import rate_limit
 
 from datetime import datetime
 
@@ -13,6 +14,7 @@ p_in = PInput()
 
 
 class Power_Data(Resource):
+    @rate_limit("ingest")
     def post(self):
         json_data = request.json
         power_data_obj = p_in.load(json_data)
@@ -26,6 +28,7 @@ class Power_Data(Resource):
         )
         return power_schema.jsonify(new_pwr_data)
 
+    @rate_limit("heavy_read")
     def get(self, cell_id=0):
         v_args = get_cell_data.load(request.args)
         stream = v_args["stream"] if "stream" in v_args else False

@@ -9,6 +9,7 @@ from ..schemas.logger_schema import LoggerSchema
 from ..models.logger import Logger as LoggerModel
 from ..schemas.add_logger_schema import AddLoggerSchema
 from ..ttn.end_devices import TTNApi, EntsEndDevice, EndDevice
+from ..rate_limit import rate_limit
 
 logger_schema = LoggerSchema()
 loggers_schema = LoggerSchema(many=True)
@@ -25,6 +26,7 @@ class Logger(Resource):
     }
     ttn_api = TTNApi()
 
+    @rate_limit("default")
     def get(self, user, logger_id: int | None = None):
         """Get a logger or all loggers with optional TTN integration.
 
@@ -74,6 +76,7 @@ class Logger(Resource):
             # Return database info only
             return logger_schema.dump(logger), 200
 
+    @rate_limit("default")
     def post(self, _user):
         """Creates a new logger with database and TTN registration.
 
@@ -203,6 +206,7 @@ class Logger(Resource):
                 "logger_id": new_logger.id,
             }, 201
 
+    @rate_limit("default")
     def put(self, _user, logger_id: int):
         """Update a logger in database and TTN.
 
@@ -254,6 +258,7 @@ class Logger(Resource):
 
         return {"message": "Successfully updated logger"}, 200
 
+    @rate_limit("default")
     def delete(self, _user, logger_id: int):
         """Delete a logger from both TTN and database.
 

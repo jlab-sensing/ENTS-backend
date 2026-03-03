@@ -19,6 +19,8 @@ from datetime import timedelta
 from .config import DevelopmentConfig, ProductionConfig, TestingConfig
 from .conn import dburl
 from flask_socketio import SocketIO
+from werkzeug.middleware.proxy_fix import ProxyFix
+from .rate_limit import rate_limiter
 
 db = SQLAlchemy()
 ma = Marshmallow()
@@ -69,6 +71,19 @@ def create_app(debug: bool = False) -> Flask:
         if os.getenv("TEST_SQLALCHEMY_DATABASE_URI")
         else dburl
     )
+    trusted_proxy_count = max(
+        0, int(app.config.get("RATE_LIMIT_TRUSTED_PROXY_COUNT", 0))
+    )
+    if trusted_proxy_count > 0:
+        app.wsgi_app = ProxyFix(
+            app.wsgi_app,
+            x_for=trusted_proxy_count,
+            x_proto=0,
+            x_host=0,
+            x_port=0,
+            x_prefix=0,
+        )
+
     db.init_app(app)
     ma.init_app(app)
     migrate.init_app(app, db)
@@ -119,6 +134,7 @@ def create_app(debug: bool = False) -> Flask:
 
     api = Api(app, prefix="/api")
     server_session.init_app(app)
+    rate_limiter.init_app(app)
 
     # configuration for celery
     # broker_transport_options:
