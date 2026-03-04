@@ -6,6 +6,7 @@ import { useOutletContext } from 'react-router-dom';
 import { addCell } from '../../../services/cell';
 import { useAssignCellTags } from '../../../services/tag';
 import TagSelector from '../../../components/TagSelector';
+import { geolocated } from "react-geolocated";
 
 function AddCellModal() {
   let data = useOutletContext();
@@ -53,6 +54,18 @@ function AddCellModal() {
     setLong('');
     setLat('');
     setSelectedTags([]);
+  };
+
+  const getLocation = () => {
+    if (!navigator.geolocation) {
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLong(position.coords.latitude);
+          setLat(position.coords.longitude);
+        },
+      );
+    }
   };
 
   useEffect(() => {
@@ -210,6 +223,11 @@ function AddCellModal() {
                 </Box>
 
                 {/* Action Buttons */}
+
+               
+
+
+
                 <Box sx={{ 
                   display: 'flex', 
                   gap: '0.75rem', 
@@ -218,6 +236,26 @@ function AddCellModal() {
                   pt: '1.5rem',
                   borderTop: '1px solid #f0f0f0'
                 }}>
+
+                {/* get location buttion */}
+
+
+                <Button
+                    variant='outlined'
+                    onClick={getLocation}
+                    sx={{
+                      borderColor: '#ddd',
+                      color: '#666',
+                      '&:hover': {
+                        borderColor: '#bbb',
+                        backgroundColor: '#f5f5f5'
+                      }
+                    }}
+                  >
+                    Find Me
+                  </Button>
+
+                
                   <Button
                     variant='outlined'
                     onClick={handleClose}
