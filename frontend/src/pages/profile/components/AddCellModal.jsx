@@ -22,6 +22,7 @@ function AddCellModal() {
   const archive = false;
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
+  const [IsSubmitted, setIsSubmitted] = useState(null);
 
   const assignCellTagsMutation = useAssignCellTags();
 
@@ -142,8 +143,8 @@ function AddCellModal() {
                     variant='outlined'
                     fullWidth
                     required
-                    error={name.length === 0}
-                    helperText={!name.length ? 'Cell name is required' : ''}
+                    error={name.length === 0 && IsSubmitted}
+                    helperText={!(name.length) && (IsSubmitted) ? 'Cell name is required' : ''}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder='e.g., Forest Station A'
@@ -235,6 +236,7 @@ function AddCellModal() {
                   <Button
                     variant='contained'
                     onClick={async () => {
+                      setIsSubmitted(true);
                       try {
                         const res = await addCell(name, location, long, lat, archive, user.email);
                         
