@@ -94,6 +94,3 @@ jobs:
 
       - name: Run migrations
         run: flask --app backend.api db migrate -d ./backend/api/migrations
-
-      - name: Import example data
-        run: python import_example_data.py
