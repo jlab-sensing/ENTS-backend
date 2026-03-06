@@ -122,15 +122,26 @@ A migration script is provided in this repository that abstracts the migration p
 ./migrate.sh -h
 ```
 
-### Import Example Data
+### Simulate Hardware Data
 
-Real life example data is provided and can be imported with the following. The data was collected at UC Santa Cruz by jlab.
+Example sensor data can be streamed to the backend using the `ents` CLI tool.
 
-```console
-python ./import_example_data.py
+Install the ents CLI tool:
+
+```bash
+pip install ents
+```
+Then stream simulated sensor data to your local backend instance:
+
+```bash
+ents sim_generic stream \
+  --url http://localhost:3000/api/sensor/ \
+  --sensor BME280_TEMP BME280_PRESSURE BME280_HUMIDITY \
+  --cell 1 \
+  --logger 1
 ```
 
-Now some graphs should appear on the website and look like the following.
+Once the data stream starts, graphs should appear on the website similar to the example below.
 
 ![Example screenshot of ENTS backend](.github/assets/img/dashboard.png)
 
