@@ -49,6 +49,9 @@ export const CHART_CONFIGS = {
     axisIds: ['y'],
     chartId: 'bme280',
   },
+  // NOTE: bme280Temperature/Pressure/Humidity below are registry-only entries for the uppercase
+  // sensor-registry API. They are intentionally NOT in DASHBOARD_UNIFIED_CHART_TYPES;
+  // the dashboard uses 'temperature' (bme280) and 'presHum' (combined pressure+humidity) instead.
   bme280Temperature: {
     sensor_name: 'BME280_TEMP',
     measurements: ['Temperature'],
@@ -120,3 +123,20 @@ export const CHART_CONFIGS = {
     chartId: 'waterFlow',
   },
 };
+
+export const DASHBOARD_UNIFIED_CHART_TYPES = [
+  'power_voltage',
+  'power_current',
+  'teros12_vwc',
+  'teros12_vwc_adj',
+  'teros12_temp',
+  'teros12_ec',
+  'soilPot',
+  'presHum',
+  'sensor',
+  'co2',
+  'temperature',
+  'soilHum',
+  'waterPress',
+  'waterFlow',
+];

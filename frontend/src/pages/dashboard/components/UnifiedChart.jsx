@@ -11,7 +11,7 @@ import {
   normalizeUnifiedStreamValue,
 } from './unifiedChartUtils';
 
-function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange }) {
+function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange, gridProps }) {
   const [resample, setResample] = useState('hour');
   const chartSettings = {
     label: [],
@@ -37,6 +37,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     '#E91E63',
   ];
 
+  // async-parallel: fetch all cells × measurements concurrently (via batched API)
   async function getCellChartData() {
     const data = {};
     const cellIds = cells.map((c) => c.id);
@@ -122,81 +123,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
       });
   }
 
-  // Removed unused streamCharts function
 
-  /*
-  // Commented out unused streamSensorChartData-dependent code
-  function streamCharts() {
-    const newSensorChartData = {
-      ...sensorChartData,
-      datasets: sensorChartData.datasets.map((ds) => ({ ...ds, data: [...ds.data] })),
-      labels: [...sensorChartData.labels],
-    };
-
-    // streamSensorChartData().then((cellChartData) => {
-      let selectCounter = 0;
-      let foundNewData = false;
-      if (newSensorChartData.datasets.length) {
-        for (const { id } of cells) {
-          const cellid = id;
-          const measurements = Object.keys(cellChartData[cellid]).filter((k) => k != 'name');
-          for (const [idx, meas] of measurements.entries()) {
-            if (Array.isArray(cellChartData[cellid][meas]['data']) && cellChartData[cellid][meas]['data'].length) {
-              foundNewData = true;
-              const sTimestampRaw = cellChartData[cellid][meas]['timestamp'].map((dateTime) =>
-                DateTime.fromHTTP(dateTime),
-              );
-              const sensorDataRaw = cellChartData[cellid][meas]['data'];
-              const dupIdx = sTimestampRaw.reduce((arr, ts, i) => {
-                return !newSensorChartData.labels.some((oldTs) => ts.equals(oldTs)) && arr.push(i), arr;
-              }, []);
-              const sensorData = sensorDataRaw.filter((_, i) => dupIdx.includes(i));
-              const sTimestamp = sTimestampRaw.filter((_, i) => dupIdx.includes(i));
-              const measData = createDataset(sTimestamp, sensorData);
-              newSensorChartData.labels = newSensorChartData.labels.concat(sTimestamp);
-              const datasetIndex = selectCounter * measurements.length + idx;
-              if (newSensorChartData.datasets[datasetIndex]) {
-                newSensorChartData.datasets[datasetIndex].data =
-                  newSensorChartData.datasets[datasetIndex].data.concat(measData);
-              }
-            }
-          }
-          selectCounter += 1;
-        }
-      } else {
-        for (const { id } of cells) {
-          const cellid = id;
-          const name = cellChartData[cellid].name;
-          const measurements = Object.keys(cellChartData[cellid]).filter((k) => k != 'name');
-          for (const [idx, meas] of measurements.entries()) {
-            const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) =>
-              DateTime.fromHTTP(dateTime).toMillis(),
-            );
-            newSensorChartData.labels = timestamp;
-            newSensorChartData.datasets.push({
-              label: name + ` ${meas} (${units[idx]})`,
-              data: cellChartData[cellid][meas]['data'],
-              borderColor: meas_colors[(selectCounter * measurements.length + idx) % meas_colors.length],
-              borderWidth: 2,
-              fill: false,
-              yAxisID: axisIds[idx],
-              radius: 2,
-              pointRadius: 1,
-            });
-          }
-          selectCounter += 1;
-        }
-      }
-      if (foundNewData) {
-        setSensorChartData(newSensorChartData);
-      }
-    });
-  }
-
-  }
-  */
-
-  // Removed unused clearChartDatasets function
 
   function clearCharts() {
     const newSensorChartData = {
@@ -319,8 +246,10 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     return null;
   }
 
+  const { sx: gridSx, ...restGridProps } = gridProps || {};
+
   return (
-    <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+    <Grid item sx={{ height: '50%', ...gridSx }} xs={4} sm={4} md={5.5} p={0.25} {...restGridProps}>
       <UniversalChart
         data={sensorChartData}
         stream={stream}
@@ -345,6 +274,7 @@ UnifiedChart.propTypes = {
   liveData: PropTypes.array,
   processedData: PropTypes.object,
   onDataStatusChange: PropTypes.func,
+  gridProps: PropTypes.object,
 };
 
 export default UnifiedChart;

@@ -1,4 +1,4 @@
-import { Box, Divider, Grid, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { DateTime } from 'luxon';
 import { React, useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -13,11 +13,9 @@ import BackBtn from './components/BackBtn';
 import CellSelect from './components/CellSelect';
 import DateRangeSel from './components/DateRangeSel';
 import DownloadBtn from './components/DownloadBtn';
-import PowerCharts from './components/PowerCharts';
 import StreamToggle from './components/StreamToggle';
-import TerosCharts from './components/TerosCharts';
-import { CHART_CONFIGS } from './components/chartConfigs';
 import UnifiedChart from './components/UnifiedChart';
+import { CHART_CONFIGS, DASHBOARD_UNIFIED_CHART_TYPES } from './components/chartConfigs';
 import { io } from 'socket.io-client';
 import TopNav from '../../components/TopNav';
 
@@ -33,8 +31,6 @@ function Dashboard() {
   const [showNoDataMessage, setShowNoDataMessage] = useState(false);
   const [manualDateSelection, setManualDateSelection] = useState(false);
   const [smartDateRangeApplied, setSmartDateRangeApplied] = useState(false);
-  const [powerHasData, setPowerHasData] = useState(false);
-  const [terosHasData, setTerosHasData] = useState(false);
   const [liveData, setLiveData] = useState([]);
   const [availableSensors, setAvailableSensors] = useState(null);
 
@@ -59,59 +55,27 @@ function Dashboard() {
   const cells = useCells();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // data processing
+  // All sensor types (including power/teros12) go into the unified sensors bucket
+  // since UnifiedChart handles them all via matchesSensorStreamType.
   const processLiveData = useCallback((measurements) => {
-    if (!measurements || measurements.length === 0) return;
+    if (!measurements || measurements.length === 0) return { sensors: { byType: {}, allMeasurements: [] } };
 
-    const processed = {
-      power: { byCell: {}, allMeasurements: [] },
-      teros: { byCell: {}, allMeasurements: [] },
-      sensors: { byType: {}, allMeasurements: [] },
-    };
+    const sensors = { byType: {}, allMeasurements: [] };
 
-    // Process measurements
     measurements.forEach((measurement) => {
       const { type, cellId } = measurement;
-
-      // Group by sensor type and cell
-      if (type === 'power') {
-        if (!processed.power.byCell[cellId]) {
-          processed.power.byCell[cellId] = [];
-        }
-        processed.power.byCell[cellId].push(measurement);
-        processed.power.allMeasurements.push(measurement);
-      } else if (type === 'teros12') {
-        if (!processed.teros.byCell[cellId]) {
-          processed.teros.byCell[cellId] = [];
-        }
-        processed.teros.byCell[cellId].push(measurement);
-        processed.teros.allMeasurements.push(measurement);
-      } else {
-        if (!processed.sensors.byType[type]) {
-          processed.sensors.byType[type] = { byCell: {} };
-        }
-        if (!processed.sensors.byType[type].byCell[cellId]) {
-          processed.sensors.byType[type].byCell[cellId] = [];
-        }
-        processed.sensors.byType[type].byCell[cellId].push(measurement);
-        processed.sensors.allMeasurements.push(measurement);
-      }
+      if (!sensors.byType[type]) sensors.byType[type] = { byCell: {} };
+      if (!sensors.byType[type].byCell[cellId]) sensors.byType[type].byCell[cellId] = [];
+      sensors.byType[type].byCell[cellId].push(measurement);
+      sensors.allMeasurements.push(measurement);
     });
 
-    // Sort measurements by timestamp for each group
-    Object.keys(processed.power.byCell).forEach((cellId) => {
-      processed.power.byCell[cellId].sort((a, b) => a.timestamp - b.timestamp);
-    });
-    Object.keys(processed.teros.byCell).forEach((cellId) => {
-      processed.teros.byCell[cellId].sort((a, b) => a.timestamp - b.timestamp);
-    });
-    Object.keys(processed.sensors.byType).forEach((type) => {
-      Object.keys(processed.sensors.byType[type].byCell).forEach((cellId) => {
-        processed.sensors.byType[type].byCell[cellId].sort((a, b) => a.timestamp - b.timestamp);
-      });
+    // Sort each cell's measurements by timestamp
+    Object.values(sensors.byType).forEach((typeObj) => {
+      Object.values(typeObj.byCell).forEach((arr) => arr.sort((a, b) => a.timestamp - b.timestamp));
     });
 
-    return processed;
+    return { sensors };
   }, []);
 
   // Initialize timeouts when streaming starts
@@ -125,8 +89,6 @@ function Dashboard() {
     const clearTimeoutId = setTimeout(() => {
       setLiveData([]);
       backgroundStreamDataRef.current = [];
-      setPowerHasData(false);
-      setTerosHasData(false);
     }, 30 * 60 * 1000);
     clearTimeoutIdRef.current = clearTimeoutId;
   }, []);
@@ -134,11 +96,7 @@ function Dashboard() {
   // Memoized processed data
   const processedLiveData = useMemo(() => {
     if (!liveData || liveData.length === 0) {
-      return {
-        power: { byCell: {}, allMeasurements: [] },
-        teros: { byCell: {}, allMeasurements: [] },
-        sensors: { byType: {}, allMeasurements: [] },
-      };
+      return { sensors: { byType: {}, allMeasurements: [] } };
     }
     return processLiveData(liveData);
   }, [liveData, processLiveData]);
@@ -156,18 +114,12 @@ function Dashboard() {
           { ...data, receivedAt: new Date().toISOString() },
         ].slice(-200);
 
-        // Update live data if streaming
+        // Update live data if streaming — functional setState (rerender-functional-setstate)
         if (stream) {
-          setLiveData((prevData) => {
-            const newData = [
-              ...prevData,
-              {
-                ...data,
-                receivedAt: new Date().toISOString(),
-              },
-            ];
-            return newData.slice(-100);
-          });
+          setLiveData((prev) => [
+            ...prev,
+            { ...data, receivedAt: new Date().toISOString() },
+          ].slice(-100));
 
           // Clear existing timeout
           if (clearTimeoutIdRef.current) {
@@ -446,9 +398,6 @@ function Dashboard() {
     return selectedCells.some((c) => (availableSensors[String(c.id)] ?? []).includes(sensorName));
   };
 
-  // Check if top section should be hidden
-  const topSectionHasData = powerHasData || terosHasData;
-
   return (
     <>
       <TopNav />
@@ -609,7 +558,7 @@ function Dashboard() {
                   >
                     GitHub Issue #668
                   </a>
-              </Box>
+                </Box>
               </Box>
             </Box>
           ) : showNoDataMessage ? (
@@ -621,265 +570,29 @@ function Dashboard() {
               </Box>
             </Box>
           ) : (
-            <>
-              {/* Top section charts - always render but conditionally display */}
-              <Grid
-                container
-                spacing={3}
-                sx={{
-                  width: '100%',
-                  p: topSectionHasData ? 2 : 0,
-                  height: topSectionHasData ? 'auto' : '0px',
-                  overflow: 'hidden',
-                }}
-                alignItems='center'
-                justifyContent='space-evenly'
-                columns={{ xs: 4, sm: 8, md: 12 }}
-              >
-                <PowerCharts
+            <Stack
+              direction='column'
+              divider={<Divider orientation='horizontal' flexItem />}
+              justifyContent='spaced-evently'
+              sx={{ width: '95%', boxSizing: 'border-box' }}
+            >
+              {DASHBOARD_UNIFIED_CHART_TYPES.filter(sensorVisible).map((type) => (
+                <UnifiedChart
+                  key={type}
+                  type={type}
                   cells={selectedCells}
-                  {...(!stream && { startDate: hourlyStartDate, endDate: hourlyEndDate })}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
                   stream={stream}
                   liveData={liveData}
-                  processedData={processedLiveData.power}
-                  onDataStatusChange={setPowerHasData}
+                  processedData={processedLiveData.sensors}
                 />
-                <TerosCharts
-                  cells={selectedCells}
-                  {...(!stream && { startDate: hourlyStartDate, endDate: hourlyEndDate })}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.teros}
-                  onDataStatusChange={setTerosHasData}
-                />
-              </Grid>
-
-              {/* Bottom section charts - always rendered */}
-              <Stack
-                direction='column'
-                divider={<Divider orientation='horizontal' flexItem />}
-                justifyContent='spaced-evently'
-                sx={{ width: '95%', boxSizing: 'border-box' }}
-              >
-                {sensorVisible('power_voltage') && (
-                  <UnifiedChart
-                    type='power_voltage'
-                    cells={selectedCells}
-                    startDate={hourlyStartDate}
-                    endDate={hourlyEndDate}
-                    stream={stream}
-                    liveData={liveData}
-                    processedData={processedLiveData.sensors}
-                  />
-                )}
-                {sensorVisible('power_current') && (
-                  <UnifiedChart
-                    type='power_current'
-                    cells={selectedCells}
-                    startDate={hourlyStartDate}
-                    endDate={hourlyEndDate}
-                    stream={stream}
-                    liveData={liveData}
-                    processedData={processedLiveData.sensors}
-                  />
-                )}
-                {sensorVisible('teros12_vwc') && (
-                  <UnifiedChart
-                    type='teros12_vwc'
-                    cells={selectedCells}
-                    startDate={hourlyStartDate}
-                    endDate={hourlyEndDate}
-                    stream={stream}
-                    liveData={liveData}
-                    processedData={processedLiveData.sensors}
-                  />
-                )}
-                {sensorVisible('teros12_vwc_adj') && (
-                  <UnifiedChart
-                    type='teros12_vwc_adj'
-                    cells={selectedCells}
-                    startDate={hourlyStartDate}
-                    endDate={hourlyEndDate}
-                    stream={stream}
-                    liveData={liveData}
-                    processedData={processedLiveData.sensors}
-                  />
-                )}
-                {sensorVisible('teros12_temp') && (
-                  <UnifiedChart
-                    type='teros12_temp'
-                    cells={selectedCells}
-                    startDate={hourlyStartDate}
-                    endDate={hourlyEndDate}
-                    stream={stream}
-                    liveData={liveData}
-                    processedData={processedLiveData.sensors}
-                  />
-                )}
-                {sensorVisible('teros12_ec') && (
-                  <UnifiedChart
-                    type='teros12_ec'
-                    cells={selectedCells}
-                    startDate={hourlyStartDate}
-                    endDate={hourlyEndDate}
-                    stream={stream}
-                    liveData={liveData}
-                    processedData={processedLiveData.sensors}
-                  />
-                )}
-                {sensorVisible('soilPot') && (
-                  <UnifiedChart
-                    type='soilPot'
-                    cells={selectedCells}
-                    startDate={hourlyStartDate}
-                    endDate={hourlyEndDate}
-                    stream={stream}
-                    liveData={liveData}
-                    processedData={processedLiveData.sensors}
-                  />
-                )}
-                {sensorVisible('presHum') && (
-                  <UnifiedChart
-                    type='presHum'
-                    cells={selectedCells}
-                    startDate={hourlyStartDate}
-                    endDate={hourlyEndDate}
-                    stream={stream}
-                    liveData={liveData}
-                    processedData={processedLiveData.sensors}
-                  />
-                )}
-                {sensorVisible('sensor') && (
-                  <UnifiedChart
-                    type='sensor'
-                    cells={selectedCells}
-                    startDate={hourlyStartDate}
-                    endDate={hourlyEndDate}
-                    stream={stream}
-                    liveData={liveData}
-                    processedData={processedLiveData.sensors}
-                  />
-                )}
-                {sensorVisible('co2') && (
-                  <UnifiedChart
-                    type='co2'
-                    cells={selectedCells}
-                    startDate={hourlyStartDate}
-                    endDate={hourlyEndDate}
-                    stream={stream}
-                    liveData={liveData}
-                    processedData={processedLiveData.sensors}
-                  />
-                )}
-                {sensorVisible('temperature') && (
-                  <UnifiedChart
-                    type='temperature'
-                    cells={selectedCells}
-                    startDate={hourlyStartDate}
-                    endDate={hourlyEndDate}
-                    stream={stream}
-                    liveData={liveData}
-                    processedData={processedLiveData.sensors}
-                  />
-                )}
-                {sensorVisible('soilHum') && (
-                  <UnifiedChart
-                    type='soilHum'
-                    cells={selectedCells}
-                    startDate={hourlyStartDate}
-                    endDate={hourlyEndDate}
-                    stream={stream}
-                    liveData={liveData}
-                    processedData={processedLiveData.sensors}
-                  />
-                )}
-                {sensorVisible('waterPress') && (
-                  <UnifiedChart
-                    type='waterPress'
-                    cells={selectedCells}
-                    startDate={hourlyStartDate}
-                    endDate={hourlyEndDate}
-                    stream={stream}
-                    liveData={liveData}
-                    processedData={processedLiveData.sensors}
-                  />
-                )}
-                {sensorVisible('waterFlow') && (
-                  <UnifiedChart
-                    type='waterFlow'
-                    cells={selectedCells}
-                    startDate={hourlyStartDate}
-                    endDate={hourlyEndDate}
-                    stream={stream}
-                    liveData={liveData}
-                    processedData={processedLiveData.sensors}
-                  />
-                )}
-              </Stack>
-            </>
+              ))}
+            </Stack>
           )}
         </Stack>
 
-        {/* 
-        TODO: Alternative layout structure from main branch - currently commented out
-        to preserve conditional rendering functionality. This structure has better spacing
-        and responsive design but doesn't include conditional rendering callbacks.
-        
-        <Divider sx={{ backgroundColor: '#e0e0e0' }} />
 
-        <Stack
-          direction='column'
-          divider={<Divider orientation='horizontal' flexItem />}
-          justifyContent='space-evenly'
-          spacing={4}
-          sx={{
-            width: '100%',
-            boxSizing: 'border-box',
-            py: 3,
-            px: { xs: 2, sm: 3, md: 4 },
-          }}
-        >
-          <Box sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
-            <Grid container spacing={3} columns={{ xs: 4, sm: 8, md: 12 }}>
-              <PowerCharts 
-                cells={selectedCells} 
-                {...(!stream && { startDate, endDate })}
-                stream={stream} 
-                liveData={liveData} 
-              />
-              <TerosCharts 
-                cells={selectedCells} 
-                {...(!stream && { startDate, endDate })}
-                stream={stream} 
-                liveData={liveData} 
-              />
-            </Grid>
-          </Box>
-          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <UnifiedChart type="soilPot" cells={selectedCells} {...(!stream && { startDate, endDate })} stream={stream} liveData={liveData} />
-          </Box>
-          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <UnifiedChart type="presHum" cells={selectedCells} {...(!stream && { startDate, endDate })} stream={stream} liveData={liveData} />
-          </Box>
-          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <UnifiedChart type="sensor" cells={selectedCells} {...(!stream && { startDate, endDate })} stream={stream} liveData={liveData} />
-          </Box>
-          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <UnifiedChart type="co2" cells={selectedCells} {...(!stream && { startDate, endDate })} stream={stream} liveData={liveData} />
-          </Box>
-          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <UnifiedChart type="soilHum" cells={selectedCells} {...(!stream && { startDate, endDate })} stream={stream} liveData={liveData} />
-          </Box>
-          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <UnifiedChart type="waterPress" cells={selectedCells} {...(!stream && { startDate, endDate })} stream={stream} liveData={liveData} />
-          </Box>
-          <Box sx={{ py: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-            <UnifiedChart type="waterFlow" cells={selectedCells} {...(!stream && { startDate, endDate })} stream={stream} liveData={liveData} />
-          </Box>
-        </Stack>
-
-        <Box sx={{ height: { xs: '60px', sm: '80px', md: '100px' } }} />
-        */}
       </Box>
     </>
   );

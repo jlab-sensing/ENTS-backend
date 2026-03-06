@@ -131,6 +131,25 @@ describe('Chart Time Domain', () => {
     expect(chart.config.options.scales.x.max).toBeUndefined();
   });
 
+  it('keeps VChart stream x-axis autoskip disabled', async () => {
+    render(<VChart data={vChartData} stream startDate={startDate} endDate={endDate} />);
+    const chart = await getRenderedChart();
+    expect(chart.config.options.scales.x.ticks.autoSkip).toBe(false);
+  });
+
+  it('keeps VwcChart stream x-axis autoskip disabled', async () => {
+    render(<VwcChart data={vwcChartData} stream startDate={startDate} endDate={endDate} />);
+    const chart = await getRenderedChart();
+    expect(chart.config.options.scales.x.ticks.autoSkip).toBe(false);
+  });
+
+  it('keeps VwcChart stream left axis pinned to percent bounds', async () => {
+    render(<VwcChart data={vwcChartData} stream startDate={startDate} endDate={endDate} />);
+    const chart = await getRenderedChart();
+    expect(chart.config.options.scales.vwcAxis.min).toBe(0);
+    expect(chart.config.options.scales.vwcAxis.max).toBeGreaterThanOrEqual(50);
+  });
+
   it('falls back to auto domain when dates are invalid', async () => {
     const invalidDate = DateTime.invalid('invalid range');
     render(<PwrChart data={singleAxisData} stream={false} startDate={invalidDate} endDate={endDate} />);

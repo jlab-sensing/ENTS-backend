@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { React, useEffect, useState } from 'react';
 import TempChart from '../../../charts/TempChart/TempChart';
 import VwcChart from '../../../charts/VwcChart/VwcChart';
-import { getTerosData } from '../../../services/teros';
+import { getTerosData } from '../../../services/sensor';
 import { toPercentIfFraction } from '../../../charts/VwcChart/vwcValue';
 
 function TerosCharts({ cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange }) {

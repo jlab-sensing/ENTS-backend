@@ -8,7 +8,23 @@ import ChartWrapper from './ChartWrapper';
 import { chartPlugins } from './plugins';
 import { getVwcAxisBounds } from './VwcChart/vwcAxis';
 
-export default function UniversalChart({ data, stream, chartId, measurements, units, axisIds, axisPolicy, startDate, endDate, onResampleChange }) {
+export default function UniversalChart({
+  data,
+  stream,
+  chartId,
+  measurements,
+  units,
+  axisIds,
+  axisPolicy,
+  startDate,
+  endDate,
+  onResampleChange,
+  streamAutoSkip = true,
+  dualAxisTickCount = 8,
+  dualAxisStepFactor = 0.2,
+  primaryAxisGrid,
+  enableAxisPlugins = true,
+}) {
   // Build chart options dynamically based on measurements
   const buildChartOptions = () => {
     const nonStreamXDomain = getNonStreamTimeDomain(stream, startDate, endDate);
@@ -22,7 +38,7 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
         },
         type: 'time',
         ticks: {
-          autoSkip: stream ? true : false,
+          autoSkip: stream ? streamAutoSkip : false,
           autoSkipPadding: 50,
           maxRotation: 0,
           major: {
@@ -91,12 +107,13 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
     else if (measurements.length === 2) {
       const leftDatasets = data.datasets.filter((d) => d.yAxisID === axisIds[0]);
       const rightDatasets = data.datasets.filter((d) => d.yAxisID === axisIds[1]);
+      const dualLeftAxisBounds = axisPolicy === 'vwcPercent' ? getVwcAxisBounds(leftDatasets, 10) : null;
 
       const { leftYMin, leftYMax, leftYStep, rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
         leftDatasets,
         rightDatasets,
-        8,
-        0.2,
+        dualAxisTickCount,
+        dualAxisStepFactor,
       );
 
       scales[axisIds[0]] = {
@@ -106,15 +123,25 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
           display: true,
           text: `${measurements[0].charAt(0).toUpperCase() + measurements[0].slice(1)} (${units[0]})`,
         },
-        ...(stream
-          ? { grace: '10%' }
-          : {
+        ...(dualLeftAxisBounds
+          ? {
+            ...(stream && { grace: '10%' }),
             ticks: {
-              stepSize: leftYStep,
+              stepSize: dualLeftAxisBounds.step,
             },
-            min: leftYMin,
-            max: leftYMax,
-          }),
+            min: dualLeftAxisBounds.min,
+            max: dualLeftAxisBounds.max,
+          }
+          : stream
+            ? { grace: '10%' }
+            : {
+              ticks: {
+                stepSize: leftYStep,
+              },
+              min: leftYMin,
+              max: leftYMax,
+            }),
+        ...(primaryAxisGrid && { grid: primaryAxisGrid }),
       };
 
       scales[axisIds[1]] = {
@@ -141,7 +168,7 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
       responsive: true,
       parsing: false,
       scales,
-      ...(measurements.length > 1 && { plugins: structuredClone(chartPlugins) }),
+      ...(measurements.length > 1 && enableAxisPlugins && { plugins: structuredClone(chartPlugins) }),
     };
   };
 
@@ -163,4 +190,9 @@ UniversalChart.propTypes = {
   startDate: PropTypes.object,
   endDate: PropTypes.object,
   onResampleChange: PropTypes.func,
+  streamAutoSkip: PropTypes.bool,
+  dualAxisTickCount: PropTypes.number,
+  dualAxisStepFactor: PropTypes.number,
+  primaryAxisGrid: PropTypes.object,
+  enableAxisPlugins: PropTypes.bool,
 };
