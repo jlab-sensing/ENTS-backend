@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { React, useEffect, useState } from 'react';
 import PwrChart from '../../../charts/PwrChart/PwrChart';
 import VChart from '../../../charts/VChart/VChart';
-import { getPowerData } from '../../../services/power';
+import { getPowerData } from '../../../services/sensor';
 function PowerCharts({ cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange }) {
   const [resample, setResample] = useState('hour');
   const chartSettings = {
