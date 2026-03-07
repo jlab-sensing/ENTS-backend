@@ -4,7 +4,8 @@ from . import ma
 class GetSensorDataSchema(ma.SQLAlchemySchema):
     """validates get request for sensor data"""
 
-    cellId = ma.Int()
+    cellId = ma.Int(required=False)
+    cellIds = ma.String(required=False, load_default=None)
     name = ma.String()
     measurement = ma.String()
     resample = ma.String(required=False)

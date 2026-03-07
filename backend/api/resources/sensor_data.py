@@ -41,14 +41,42 @@ class SensorData(Resource):
     get_sensor_data_schema = GetSensorDataSchema()
 
     def get(self):
-        """Gets specified sensor data"""
+        """Gets specified sensor data
+
+        Supports two modes:
+        - Single cell: pass cellId (int) — returns sensor data object directly
+        - Batch cells: pass cellIds (comma-separated ints) — returns {cell_id: data_obj}
+        """
 
         # get args
         v_args = self.get_sensor_data_schema.load(request.args)
         stream = v_args.get("stream", False)
         resample = v_args.get("resample", "hour")
 
-        # get data
+        cell_ids_raw = v_args.get("cellIds")
+        if cell_ids_raw:
+            # Batch mode: return data for all requested cells in one response
+            try:
+                cell_ids = [
+                    int(x.strip()) for x in cell_ids_raw.split(",") if x.strip()
+                ]
+            except ValueError:
+                return {"error": "Invalid cellIds format"}, 400
+
+            result = {}
+            for cid in cell_ids:
+                result[str(cid)] = Sensor.get_sensor_data_obj(
+                    name=v_args["name"],
+                    cell_id=cid,
+                    measurement=v_args["measurement"],
+                    resample=resample,
+                    start_time=v_args.get("startTime"),
+                    end_time=v_args.get("endTime"),
+                    stream=stream,
+                )
+            return jsonify(result)
+
+        # Single cell mode (existing behaviour)
         sensor_data_obj = Sensor.get_sensor_data_obj(
             name=v_args["name"],
             cell_id=v_args["cellId"],
