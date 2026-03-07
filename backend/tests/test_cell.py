@@ -1,4 +1,22 @@
 from api.models.user import User
+from api.models.cell import Cell
+
+
+def test_cell_search_by_name(setup_cells):
+    """
+    GIVEN cells exist in the database
+    WHEN searching cells by name pattern
+    THEN only cells whose names match the pattern are returned
+    """
+    results = Cell.search_by_name("cell")
+    assert len(results) == 2
+
+    results = Cell.search_by_name("cell_1")
+    assert len(results) == 1
+    assert results[0].name == "cell_1"
+
+    results = Cell.search_by_name("nonexistent")
+    assert len(results) == 0
 
 
 def test_cell_post_returns_id_and_name(init_database):
