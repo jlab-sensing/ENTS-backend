@@ -9,7 +9,6 @@ Create Date: 2026-02-16 14:22:00.000000
 from alembic import op
 import sqlalchemy as sa
 
-
 # revision identifiers, used by Alembic.
 revision = "a6d9c5f2e1b3"
 down_revision = "94004fb2d7c4"
@@ -21,20 +20,14 @@ def upgrade():
     bind = op.get_bind()
 
     # Normalize values so uniqueness is based on meaningful content.
-    bind.execute(
-        sa.text(
-            """
+    bind.execute(sa.text("""
             UPDATE logger
             SET device_eui = NULLIF(TRIM(device_eui), '')
             WHERE device_eui IS NOT NULL
-            """
-        )
-    )
+            """))
 
     # Stop if duplicates exist so data can be cleaned intentionally.
-    duplicates = bind.execute(
-        sa.text(
-            """
+    duplicates = bind.execute(sa.text("""
             SELECT UPPER(TRIM(device_eui)) AS normalized_device_eui, COUNT(*) AS cnt
             FROM logger
             WHERE device_eui IS NOT NULL AND TRIM(device_eui) <> ''
@@ -42,9 +35,7 @@ def upgrade():
             HAVING COUNT(*) > 1
             ORDER BY cnt DESC, normalized_device_eui
             LIMIT 5
-            """
-        )
-    ).fetchall()
+            """)).fetchall()
 
     if duplicates:
         duplicate_summary = ", ".join(f"{row[0]} ({row[1]})" for row in duplicates)
@@ -53,15 +44,11 @@ def upgrade():
             f"{duplicate_summary}"
         )
 
-    op.execute(
-        sa.text(
-            """
+    op.execute(sa.text("""
             CREATE UNIQUE INDEX uq_logger_device_eui_norm
             ON logger (UPPER(TRIM(device_eui)))
             WHERE device_eui IS NOT NULL AND TRIM(device_eui) <> ''
-            """
-        )
-    )
+            """))
 
 
 def downgrade():

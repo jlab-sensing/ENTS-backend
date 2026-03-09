@@ -23,13 +23,11 @@ def upgrade():
     op.add_column("logger", sa.Column("uuid", sa.UUID(), nullable=True))
 
     # Generate unique UUIDs for existing rows
-    op.execute(
-        """
+    op.execute("""
         UPDATE logger 
         SET uuid = gen_random_uuid() 
         WHERE uuid IS NULL
-    """
-    )
+    """)
 
     # Now make the uuid column NOT NULL
     op.alter_column("logger", "uuid", nullable=False)
@@ -42,13 +40,11 @@ def upgrade():
     # Add date_created as nullable first
     op.add_column("logger", sa.Column("date_created", sa.DateTime(), nullable=True))
     # Set default date for existing rows
-    op.execute(
-        """
+    op.execute("""
         UPDATE logger 
         SET date_created = NOW() 
         WHERE date_created IS NULL
-    """
-    )
+    """)
     # Make it NOT NULL
     op.alter_column("logger", "date_created", nullable=False)
 
