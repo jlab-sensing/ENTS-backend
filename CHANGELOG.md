@@ -1,0 +1,14 @@
+# ENTS Backend Changelog
+
+All notable changes to this project will be documented in this file.
+
+## Format Template
+When adding a new entry, please use the following format:
+`- [YYYY-MM-DD] type: Description of the change [#PR_NUMBER](https://github.com/jlab-sensing/ENTS-backend/pull/PR_NUMBER)`
+
+---
+
+## Log
+
+- [2026-03-05] chore: remove deprecated import_example_data script and update docs to use ents CLI [#665](https://github.com/jlab-sensing/ENTS-backend/pull/665)
+- [2026-03-05] fix: Temp removed "Export to CSV option" hotfix [#671](https://github.com/jlab-sensing/ENTS-backend/pull/671)
