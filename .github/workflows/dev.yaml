@@ -7,6 +7,7 @@ permissions:
 on:
   push:
   workflow_dispatch:
+  pull_request_target:
 
 jobs:
   deploy:
@@ -43,7 +44,7 @@ jobs:
             python3 env-import.py
 
             docker compose down
-            docker compose pull
+            docker compose pull --ignore-buildable
             docker compose up -d --build
             sleep 15
             docker compose logs
