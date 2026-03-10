@@ -39,10 +39,10 @@ jobs:
 
             echo \$AWS_PROFILE
 
-            python3 env-import.py
-
             git fetch origin
             git checkout ${{ github.sha }}
+
+            python3 env-import.py
 
             docker compose down
             docker compose pull
