@@ -158,7 +158,6 @@ def clear_data(test_client):
     yield test_client
 
 
-
 @pytest.fixture(scope="module")
 def cli_test_client():
     # Set the Testing configuration prior to creating the Flask application
