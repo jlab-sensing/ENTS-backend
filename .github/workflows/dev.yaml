@@ -47,6 +47,8 @@ jobs:
 
             python3 env-import.py
 
+            sed -i "s/localhost/${{ secrets.DEV_HOST }}/g" .env
+
             docker compose down
             docker compose pull --ignore-buildable
             docker compose up -d --build
