@@ -567,6 +567,26 @@ function Dashboard() {
                 <Typography variant='h6' color='text.secondary'>
                   Please select one or more cells above to view environmental sensor data
                 </Typography>
+                <Box
+                  sx={{
+                    backgroundColor: "#d32f2f",
+                    color: "white",
+                    px: 2,
+                    py: 1.5,
+                    textAlign: "center",
+                    fontFamily: "sans-serif"
+                  }}
+                >
+                  CSV export is currently non-functional. See the issue for updates:{" "}
+                  <a
+                    href="https://github.com/jlab-sensing/ENTS-backend/issues/668"
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ color: "#ffffff", textDecoration: "underline", fontWeight: "bold" }}
+                  >
+                    GitHub Issue #668
+                  </a>
+              </Box>
               </Box>
             </Box>
           ) : showNoDataMessage ? (

@@ -25,9 +25,12 @@ class Cell(Resource):
         userCells = json_data.get("user")
         tag_ids = json_data.get("tags")  # Comma-separated tag IDs: "1,2,3"
         category = json_data.get("category")  # Filter by tag category
+        name = json_data.get("name")  # Search by name substring
 
         # Base query
-        if userCells:
+        if name:
+            cells = CellModel.search_by_name(name)
+        elif userCells:
             cells = CellModel.get_cells_by_user_id(user.id)
         else:
             cells = CellModel.get_all()
