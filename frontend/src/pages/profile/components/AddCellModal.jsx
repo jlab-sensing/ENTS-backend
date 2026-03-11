@@ -22,7 +22,7 @@ function AddCellModal() {
   const archive = false;
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
-  const [isSubmitted, setIsSubmitted] = useState(null)
+  const [isSubmitted, setisSubmitted] = useState(null)
 
   const assignCellTagsMutation = useAssignCellTags();
 
@@ -191,7 +191,7 @@ function AddCellModal() {
                     variant='outlined'
                     fullWidth
                     required
-                    error={long.length === 0 && isSumbmitted|| isNaN(Number(long))}
+                    error={long.length === 0 && isSubmitted|| isNaN(Number(long))}
                     helperText={!(long.length) && (isSubmitted) ? 'Longitude is required' : isNaN(Number(long)) ? 'Please enter a valid number' : ''}
                     value={long}
                     onChange={(e) => setLong(e.target.value)}
@@ -428,7 +428,9 @@ function AddCellModal() {
 
                   <Button
                     variant='contained'
-                    onClick={DoneButtonClose}
+                    onClick={() => {
+                      DoneButtonClose();
+                      setisSubmitted(false);}}
                     sx={{
                       backgroundColor: '#2e7d32',
                       '&:hover': { backgroundColor: '#1b5e20' },
