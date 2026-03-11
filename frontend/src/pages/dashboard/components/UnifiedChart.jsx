@@ -131,8 +131,14 @@ const CHART_CONFIGS = {
     axisIds: ['y'],
     chartId: 'waterFlow',
   },
+  waterFlowD10: {
+    sensor_name: 'D10',
+    measurements: ['flow'],
+    units: ['G/Min'],
+    axisIds: ['y'],
+    chartId: 'waterFlow',
+  },
 };
-
 function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange }) {
   const [resample, setResample] = useState('hour');
   const chartSettings = {
