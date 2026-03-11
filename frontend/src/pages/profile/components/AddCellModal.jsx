@@ -428,7 +428,10 @@ function AddCellModal() {
 
                   <Button
                     variant='contained'
-                    onClick={DoneButtonClose}
+                    onClick={() => {
+                      DoneButtonClose(); 
+                      setIsSubmitted(false);}
+                    }
                     sx={{
                       backgroundColor: '#2e7d32',
                       '&:hover': { backgroundColor: '#1b5e20' },
