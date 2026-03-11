@@ -61,8 +61,8 @@ function AddCellModal() {
     } else {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setLong(position.coords.latitude);
-          setLat(position.coords.longitude);
+          setLong(position.coords.latitude.toString());
+          setLat(position.coords.longitude.toString());
         },
       );
     }
