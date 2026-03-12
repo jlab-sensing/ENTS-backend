@@ -6,7 +6,6 @@ import { useOutletContext } from 'react-router-dom';
 import { addCell } from '../../../services/cell';
 import { useAssignCellTags } from '../../../services/tag';
 import TagSelector from '../../../components/TagSelector';
-import { geolocated } from "react-geolocated";
 
 function AddCellModal() {
   let data = useOutletContext();
@@ -58,6 +57,7 @@ function AddCellModal() {
 
   const getLocation = () => {
     if (!navigator.geolocation) {
+      // Geolocation not supported, do nothing
     } else {
       navigator.geolocation.getCurrentPosition(
         (position) => {
