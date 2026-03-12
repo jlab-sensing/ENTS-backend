@@ -269,7 +269,7 @@ def process_measurement_dict(meas: dict):
         flow_obj = Sensor.add_data(meas_name="flow", meas_unit="L/Min", meas_dict=meas)
 
         obj_list.append(flow_obj)
-    
+
     elif meas["type"] == "D10":
         flow_obj = Sensor.add_data(meas_name="flow", meas_unit="G/Min", meas_dict=meas)
 
