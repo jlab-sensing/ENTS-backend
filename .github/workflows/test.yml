@@ -116,7 +116,7 @@ jobs:
         run: ./k6 run tests/basic.js
 
       - name: Run backend tests
-        run: pytest --cov
+        run: pytest -v -s --cov 
 
       - name: Run frontend tests + coverage
         working-directory: ./frontend
