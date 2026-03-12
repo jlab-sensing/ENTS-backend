@@ -1,12 +1,11 @@
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Chip, IconButton, Modal, TextField, Typography } from '@mui/material';
-import { React, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { addCell } from '../../../services/cell';
 import { useAssignCellTags } from '../../../services/tag';
 import TagSelector from '../../../components/TagSelector';
-import { geolocated } from "react-geolocated";
 
 function AddCellModal() {
   let data = useOutletContext();
@@ -58,11 +57,14 @@ function AddCellModal() {
 
   const getLocation = () => {
     if (!navigator.geolocation) {
+      // Browser doesn't support geolocation.
+      console.warn('Geolocation is not supported by this browser');
+      return;
     } else {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setLong(position.coords.latitude.toString());
-          setLat(position.coords.longitude.toString());
+          setLong(position.coords.longitude.toString());
+          setLat(position.coords.latitude.toString());
         },
       );
     }

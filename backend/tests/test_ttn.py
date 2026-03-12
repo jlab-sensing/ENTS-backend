@@ -1,9 +1,21 @@
+import os
 from api.ttn.end_devices import EndDevice, EntsEndDevice, TTNApi
 
 import pytest
 
 # global API instance
 api = TTNApi()
+
+# These tests exercise real TTN API calls. Skip by default unless valid creds are present.
+_ttn_key = (os.getenv("TTN_API_KEY") or "").strip()
+_ttn_app = (os.getenv("TTN_APP_ID") or "").strip()
+pytestmark = pytest.mark.skipif(
+    (not _ttn_key)
+    or (not _ttn_app)
+    or (_ttn_key.lower() in {"dummy", "changeme", "token", "test"})
+    or (_ttn_app.lower() in {"dummy", "changeme", "app", "test"}),
+    reason="TTN integration tests require real TTN_API_KEY and TTN_APP_ID.",
+)
 
 
 def test_create_end_device():

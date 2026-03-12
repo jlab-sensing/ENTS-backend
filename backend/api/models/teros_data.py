@@ -108,7 +108,16 @@ class TEROSData(db.Model):
         if end_time is None:
             end_time = datetime.now()
 
-        data = {"timestamp": [], "vwc": [], "temp": [], "ec": [], "raw_vwc": []}
+        # Include units for backwards compatibility with existing callers/tests.
+        data = {
+            "timestamp": [],
+            "vwc": [],
+            "temp": [],
+            "ec": [],
+            "raw_vwc": [],
+            "vwc_unit": "%",
+            "raw_vwc_unit": "raw",
+        }
 
         stmt = None
 
