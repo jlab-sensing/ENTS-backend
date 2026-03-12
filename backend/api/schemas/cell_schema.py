@@ -1,5 +1,6 @@
 from ..schemas import ma
 from ..models.cell import Cell
+from ..models.user import User 
 
 
 class CellSchema(ma.SQLAlchemyAutoSchema):
