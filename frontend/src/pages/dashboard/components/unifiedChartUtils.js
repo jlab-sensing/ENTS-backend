@@ -19,7 +19,13 @@ export function matchesSensorStreamType(measurementType, sensorName) {
 const VALUE_ALIASES = {
   POWER_VOLTAGE: ['power_voltage', 'voltage'],
   POWER_CURRENT: ['power_current', 'current'],
-  TEROS12_VWC: ['Volumetric Water Content (Raw)', 'Volumetric Water Content', 'teros12_vwc_raw', 'vwcRaw', 'teros12_vwc'],
+  TEROS12_VWC: [
+    'Volumetric Water Content (Raw)',
+    'Volumetric Water Content',
+    'teros12_vwc_raw',
+    'vwcRaw',
+    'teros12_vwc',
+  ],
   TEROS12_VWC_ADJ: ['Volumetric Water Content', 'teros12_vwc', 'vwcAdj'],
   TEROS12_TEMP: ['Temperature', 'teros12_temp', 'temp'],
   TEROS12_EC: ['Electrical Conductivity', 'teros12_ec', 'ec'],
@@ -29,16 +35,14 @@ const VALUE_ALIASES = {
   teros21: ['soil_water_potential', 'matricPot'],
   sen0308: ['humidity'],
   sen0257: ['pressure'],
+  D10: ['flow'],
   yfs210c: ['flow'],
 };
 
 export function extractUnifiedStreamValue(sensorName, measurementLabel, measurementData) {
   if (!measurementData || typeof measurementData !== 'object') return null;
 
-  const aliases = [
-    measurementLabel,
-    ...(VALUE_ALIASES[sensorName] || []),
-  ];
+  const aliases = [measurementLabel, ...(VALUE_ALIASES[sensorName] || [])];
 
   for (const key of aliases) {
     if (Object.prototype.hasOwnProperty.call(measurementData, key)) {

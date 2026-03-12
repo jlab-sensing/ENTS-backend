@@ -270,6 +270,11 @@ def process_measurement_dict(meas: dict):
 
         obj_list.append(flow_obj)
 
+    elif meas["type"] == "D10":
+        flow_obj = Sensor.add_data(meas_name="flow", meas_unit="G/Min", meas_dict=meas)
+
+        obj_list.append(flow_obj)
+
     resp = Response()
     resp.content_type = "application/octet-stream"
     if None in obj_list:
