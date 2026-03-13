@@ -77,9 +77,42 @@ jobs:
             sed -i "s|^GOOGLE_CLIENT_ID=.*|GOOGLE_CLIENT_ID=\"${{ secrets.DEV_GOOGLE_CLIENT_ID }}\"|" .env
             sed -i "s|^GOOGLE_CLIENT_SECRET=.*|GOOGLE_CLIENT_SECRET=\"${{ secrets.DEV_GOOGLE_CLIENT_SECRET }}\"|" .env
 
-            docker compose down
+            docker stop $(docker ps -aq)
+            docker rm $(docker ps -aq)
+
             docker compose pull --ignore-buildable
             docker compose up -d --build
             sleep 15
             docker compose logs
           EOF
+
+      - name: Comment deployment result
+        if: success() && github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `PR deployed to development server
+
+            Commit: ${context.payload.issue.number}
+            SHA: ${{ steps.pr.outputs.sha }}
+
+            Triggered by: @${context.actor}`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
+      - name: Comment deployment failure
+        if: failure() && github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: "Deployment to dev server failed. Check the GitHub Actions logs."
+            });
