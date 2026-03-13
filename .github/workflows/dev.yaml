@@ -79,20 +79,23 @@ jobs:
             sed -i "s|^GOOGLE_CLIENT_ID=.*|GOOGLE_CLIENT_ID=\"${{ secrets.DEV_GOOGLE_CLIENT_ID }}\"|" .env
             sed -i "s|^GOOGLE_CLIENT_SECRET=.*|GOOGLE_CLIENT_SECRET=\"${{ secrets.DEV_GOOGLE_CLIENT_SECRET }}\"|" .env
 
-            echo "\n\n"
+            echo ""
+            echo "-------------------------------------------"
             echo "Stopping and removing all docker containers"
             echo "-------------------------------------------"
-            docker stop $(docker ps -aq)
-            docker rm $(docker ps -aq)
+            docker ps -aq | xargs -r docker stop
+            docker ps -aq | xargs -r docker rm
 
-            echo "\n\n"
+            echo ""
+            echo "-------------------------"
             echo "Starting docker instances"
             echo "-------------------------"
             docker compose pull --ignore-buildable
             docker compose up -d --build
             sleep 15
 
-            echo "\n\n"
+            echo ""
+            echo "-------------"
             echo "Logs from 15s"
             echo "-------------"
             docker compose logs
