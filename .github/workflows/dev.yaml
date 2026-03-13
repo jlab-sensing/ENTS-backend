@@ -3,6 +3,8 @@ name: Deploy to development server
 
 permissions:
   contents: read
+  issues: write
+  pull-requests: write
 
 on:
   issue_comment:
@@ -77,12 +79,22 @@ jobs:
             sed -i "s|^GOOGLE_CLIENT_ID=.*|GOOGLE_CLIENT_ID=\"${{ secrets.DEV_GOOGLE_CLIENT_ID }}\"|" .env
             sed -i "s|^GOOGLE_CLIENT_SECRET=.*|GOOGLE_CLIENT_SECRET=\"${{ secrets.DEV_GOOGLE_CLIENT_SECRET }}\"|" .env
 
+            echo "\n\n"
+            echo "Stopping and removing all docker containers"
+            echo "-------------------------------------------"
             docker stop $(docker ps -aq)
             docker rm $(docker ps -aq)
 
+            echo "\n\n"
+            echo "Starting docker instances"
+            echo "-------------------------"
             docker compose pull --ignore-buildable
             docker compose up -d --build
             sleep 15
+
+            echo "\n\n"
+            echo "Logs from 15s"
+            echo "-------------"
             docker compose logs
           EOF
 
