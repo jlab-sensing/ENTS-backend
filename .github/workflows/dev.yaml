@@ -77,7 +77,9 @@ jobs:
             sed -i "s|^GOOGLE_CLIENT_ID=.*|GOOGLE_CLIENT_ID=\"${{ secrets.DEV_GOOGLE_CLIENT_ID }}\"|" .env
             sed -i "s|^GOOGLE_CLIENT_SECRET=.*|GOOGLE_CLIENT_SECRET=\"${{ secrets.DEV_GOOGLE_CLIENT_SECRET }}\"|" .env
 
-            docker compose down
+            docker stop $(docker ps -aq)
+            docker rm $(docker ps -aq)
+
             docker compose pull --ignore-buildable
             docker compose up -d --build
             sleep 15
