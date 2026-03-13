@@ -5,6 +5,8 @@ permissions:
   contents: read
 
 on:
+  issue_comment:
+    types: [created]
   workflow_dispatch:
 
 concurrency:
@@ -13,9 +15,34 @@ concurrency:
 
 jobs:
   deploy:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.issue.pull_request &&
+        contains(github.event.comment.body, '/deploy') &&
+        (github.event.comment.author_association == 'MEMBER' ||
+         github.event.comment.author_association == 'OWNER')
+      )
+
     runs-on: ubuntu-latest
 
     steps:
+      - name: Get PR info
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+
+            core.setOutput("sha", pr.data.head.sha);
+            core.setOutput("clone_url", pr.data.head.repo.clone_url);
+            core.setOutput("owner", pr.data.head.repo.owner.login);
+            core.setOutput("repo", pr.data.head.repo.name);
+
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
@@ -32,16 +59,17 @@ jobs:
             export AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}"
             export AWS_DEFAULT_REGION=us-west-2
 
-            APP_DIR="${{ github.repository }}"
+            APP_DIR="${{ steps.pr.outputs.owner }}/${{ steps.pr.outputs.repo }}"
+            REPO_URL="${{ steps.pr.outputs.clone_url }}"
 
             if [ ! -d "$APP_DIR" ]; then
-              git clone ${{ github.server_url }}/${{ github.repository }} $APP_DIR
+              git clone "$REPO_URL" "$APP_DIR"
             fi
 
-            cd $APP_DIR
+            cd "$APP_DIR"
 
             git fetch origin
-            git checkout ${{ github.sha }}
+            git checkout ${{ steps.pr.outputs.sha }}
 
             python3 env-import.py
 
