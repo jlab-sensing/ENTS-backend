@@ -83,3 +83,22 @@ jobs:
             sleep 15
             docker compose logs
           EOF
+
+      - name: Comment deployment result
+        if: success() && github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `PR deployed to development server
+
+            Commit: ${context.payload.issue.number}
+            SHA: ${{ steps.pr.outputs.sha }}
+
+            Triggered by: @${context.actor}`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
