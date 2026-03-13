@@ -30,7 +30,8 @@ function Dashboard() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [showNoDataMessage, setShowNoDataMessage] = useState(false);
   const [manualDateSelection, setManualDateSelection] = useState(false);
-  const [smartDateRangeApplied, setSmartDateRangeApplied] = useState(false);
+  const smartDateRangeAppliedRef = useRef(false);
+  const cancelSmartDateRef = useRef(null);
   const [powerHasData, setPowerHasData] = useState(false);
   const [terosHasData, setTerosHasData] = useState(false);
   const [liveData, setLiveData] = useState([]);
@@ -277,53 +278,75 @@ function Dashboard() {
   }, [searchParams, cells.data]);
 
   // Apply smart date range when cells are selected (only if not manual selection and not already applied)
-  useEffect(() => {
-    if (!isInitialized || manualDateSelection || smartDateRangeApplied) return;
+useEffect(() => {
+  if (!isInitialized || manualDateSelection) return;
+  if (smartDateRangeAppliedRef.current) return;
+  if (selectedCells.length === 0) return;
 
-    const applySmartDateRange = async () => {
-      if (selectedCells.length > 0) {
-        try {
-          const {
-            startDate: smartStartDate,
-            endDate: smartEndDate,
-            isFallback,
-          } = await calculateSmartDateRange(selectedCells);
+  // Cancel any previous in-flight async call
+  if (cancelSmartDateRef.current) {
+    cancelSmartDateRef.current.cancelled = true;
+  }
+  const cancelToken = { cancelled: false };
+  cancelSmartDateRef.current = cancelToken;
 
-          setStartDate(smartStartDate);
-          setEndDate(smartEndDate);
-          setHourlyStartDate(smartStartDate);
-          setHourlyEndDate(smartEndDate);
-          setSmartDateRangeApplied(true);
+  const applySmartDateRange = async () => {
+    try {
+      const {
+        startDate: smartStartDate,
+        endDate: smartEndDate,
+        isFallback,
+      } = await calculateSmartDateRange(selectedCells);
 
-          if (isFallback) {
-            showFallbackNotificationHandler();
-          }
-        } catch (error) {
-          console.error('Error applying smart date range:', error);
-          // Keep default dates on error
-        }
+      // Discard stale response if cell changed before this resolved
+      if (cancelToken.cancelled) return;
+
+      setStartDate(smartStartDate);
+      setEndDate(smartEndDate);
+      setHourlyStartDate(smartStartDate);
+      setHourlyEndDate(smartEndDate);
+      smartDateRangeAppliedRef.current = true;
+
+      if (isFallback) {
+        showFallbackNotificationHandler();
       }
-    };
+    } catch (error) {
+      if (!cancelToken.cancelled) {
+        console.error('Error applying smart date range:', error);
+      }
+    }
+  };
 
-    applySmartDateRange();
-  }, [selectedCells, isInitialized, manualDateSelection, smartDateRangeApplied, calculateSmartDateRange, showFallbackNotificationHandler]);
+  applySmartDateRange();
+
+  return () => {
+    cancelToken.cancelled = true;
+  };
+}, [selectedCells, isInitialized, manualDateSelection, calculateSmartDateRange, showFallbackNotificationHandler]);
+// ↑ smartDateRangeApplied REMOVED — it's a ref now, refs don't trigger re-renders
+
 
   // Sync state changes to URL
-  useEffect(() => {
-    if (!isInitialized) return;
+// Sync state changes to URL
+useEffect(() => {
+  if (!isInitialized) return;
 
-    const newParams = new URLSearchParams();
+  const newParams = new URLSearchParams();
 
-    if (selectedCells.length > 0) {
-      newParams.set('cell_id', selectedCells.map((cell) => cell.id).join(','));
-    }
+  if (selectedCells.length > 0) {
+    newParams.set('cell_id', selectedCells.map((cell) => cell.id).join(','));
+  }
 
-    // Use hourlyStartDate/hourlyEndDate for URL since those are what the UI shows
+  // Only write dates to URL if user manually selected them
+  // Prevents smart-range dates from poisoning URL on reload
+  if (manualDateSelection) {
     newParams.set('startDate', hourlyStartDate.toISO());
     newParams.set('endDate', hourlyEndDate.toISO());
+  }
 
-    setSearchParams(newParams, { replace: true });
-  }, [hourlyStartDate, hourlyEndDate, selectedCells, isInitialized, setSearchParams]);
+  setSearchParams(newParams, { replace: true });
+}, [hourlyStartDate, hourlyEndDate, selectedCells, isInitialized, manualDateSelection, setSearchParams]);
+
 
   const handleStartDateChange = (newStartDate) => {
     if (stream) {
@@ -332,7 +355,7 @@ function Dashboard() {
       setHourlyStartDate(newStartDate);
     }
     setManualDateSelection(true);
-    setSmartDateRangeApplied(true); // Prevent smart range from overriding manual selection
+    smartDateRangeAppliedRef.current = true;
   };
 
   const handleEndDateChange = (newEndDate) => {
@@ -342,7 +365,7 @@ function Dashboard() {
       setHourlyEndDate(newEndDate);
     }
     setManualDateSelection(true);
-    setSmartDateRangeApplied(true); // Prevent smart range from overriding manual selection
+    smartDateRangeAppliedRef.current = true; // ✅ new
   };
 
   // Handle switching between streaming and hourly modes
@@ -376,14 +399,12 @@ function Dashboard() {
 
   // Handle cell selection changes
   const handleCellSelectionChange = (newSelectedCells) => {
-    setSelectedCells(newSelectedCells);
-    // Reset smart date range state when cells change to allow re-application
-    if (!manualDateSelection) {
-      setTimeout(() => {
-        setSmartDateRangeApplied(false);
-      }, 100);
-    }
-  };
+  setSelectedCells(newSelectedCells);
+  if (!manualDateSelection) {
+    smartDateRangeAppliedRef.current = false; // instant reset, no setTimeout race
+  }
+};
+
 
   useEffect(() => {
     if (selectedCells.length === 0) {
