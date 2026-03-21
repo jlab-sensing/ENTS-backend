@@ -25,3 +25,5 @@ When adding a new entry, please use the following format:
 - [2026-03-10] hotfix: Fixed import errors [#698](https://github.com/jlab-sensing/ENTS-backend/pull/698)
 - [2026-03-05] chore: remove deprecated import_example_data script and update docs to use ents CLI [#665](https://github.com/jlab-sensing/ENTS-backend/pull/665)
 - [2026-03-05] fix: Temp removed "Export to CSV option" hotfix [#671](https://github.com/jlab-sensing/ENTS-backend/pull/671)
+
+- [2026-03-21] fix: Fixed non-deterministic two-week date range fallback bug [#713](https://github.com/jlab-sensing/ENTS-backend/pull/713)
