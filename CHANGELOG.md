@@ -18,6 +18,7 @@ When adding a new entry, please use the following format:
 
 ## Log
 
+- [2026-03-21] fix: Return 400 on duplicate logger name in PUT /api/logger/:id [#710](https://github.com/jlab-sensing/ENTS-backend/pull/710)
 - [2026-03-12] hotfix: linted AddCellModal, ensured functionality of D10 charts, and added flags to github action pytest for logging [#703](https://github.com/jlab-sensing/ENTS-backend/pull/703)
 - [2026-03-12] hotfix: Resolve global frontend linting failure in AddCellModal [#709](https://github.com/jlab-sensing/ENTS-backend/pull/709)
 - [2026-03-10] chore: Enable tests on external PRs [#701](https://github.com/jlab-sensing/ENTS-backend/pull/701)
