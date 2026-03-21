@@ -2,6 +2,8 @@ import os
 
 import pytest
 
+from flask import has_app_context
+
 from api import create_app, db
 from api.models.user import User
 from api.models.cell import Cell
@@ -9,8 +11,23 @@ from api.models.sensor import Sensor
 from api.models.data import Data
 
 import logging
-from pytest_postgresql import factories
-from pytest_postgresql.janitor import DatabaseJanitor
+
+# Optional dependency: we can run tests either:
+# 1) Against an externally provided Postgres via TEST_SQLALCHEMY_DATABASE_URI, or
+# 2) By spawning a temporary Postgres via pytest_postgresql (requires pg_config/pg_ctl).
+#
+# Important: only import pytest_postgresql when we actually need it. Importing it
+# unconditionally can register atexit handlers that require elevated OS access in
+# some sandboxes (psutil sysctl permissions on macOS).
+factories = None
+DatabaseJanitor = None
+if not os.getenv("TEST_SQLALCHEMY_DATABASE_URI"):
+    try:  # pragma: no cover
+        from pytest_postgresql import factories
+        from pytest_postgresql.janitor import DatabaseJanitor
+    except Exception:  # pragma: no cover
+        factories = None
+        DatabaseJanitor = None
 
 # --------
 # Fixtures
@@ -20,12 +37,33 @@ logging.basicConfig()
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-test_db = factories.postgresql_proc(port=None, dbname="test_db")
+if factories is not None:
+    test_db = factories.postgresql_proc(port=None, dbname="test_db")
+else:
+
+    @pytest.fixture(scope="session")
+    def test_db():
+        pytest.skip(
+            "pytest_postgresql is unavailable. Set TEST_SQLALCHEMY_DATABASE_URI "
+            "to run tests against an existing Postgres."
+        )
 
 
 @pytest.fixture(scope="session")
-def db_conn(test_db):
+def db_conn(request):
     """Session for SQLAlchemy."""
+    external = os.getenv("TEST_SQLALCHEMY_DATABASE_URI")
+    if external:
+        yield external
+        return
+
+    if factories is None or DatabaseJanitor is None:
+        pytest.skip(
+            "No Postgres available for tests. Set TEST_SQLALCHEMY_DATABASE_URI "
+            "or install pytest_postgresql."
+        )
+
+    test_db = request.getfixturevalue("test_db")
     pg_host = test_db.host
     pg_port = test_db.port
     pg_user = test_db.user
@@ -66,6 +104,12 @@ def test_client(db_conn):
     with flask_app.test_client() as testing_client:
         # Establish an application context
         with flask_app.app_context():
+            # When using an externally provided DB, it persists across test runs.
+            # Reset schema at the start of the test session to avoid unique-key
+            # collisions from prior runs (e.g. cell.name is unique).
+            if os.getenv("TEST_SQLALCHEMY_DATABASE_URI"):
+                db.drop_all()
+                db.create_all()
             yield testing_client
 
 
@@ -139,3 +183,17 @@ def cli_test_client():
     runner = flask_app.test_cli_runner()
 
     yield runner
+
+
+@pytest.fixture(autouse=True)
+def _db_session_cleanup():
+    """Ensure no test leaves the DB session 'idle in transaction'.
+
+    Some tests run read-only ORM queries without committing/rolling back, which
+    leaves an open transaction and can block DDL in later fixtures (drop_all()).
+    """
+    yield
+    if not has_app_context():
+        return
+    db.session.rollback()
+    db.session.remove()
