@@ -62,7 +62,7 @@ const CHART_CONFIGS = {
     chartId: 'bme280',
   },
   bme280Temperature: {
-    sensor_name: 'BME280_TEMP',
+    sensor_name: 'bme280',
     measurements: ['Temperature'],
     units: ['°C'],
     axisIds: ['y'],
@@ -83,14 +83,14 @@ const CHART_CONFIGS = {
     chartId: 'presHum',
   },
   bme280Pressure: {
-    sensor_name: 'BME280_PRESSURE',
+    sensor_name: 'bme280',
     measurements: ['Pressure'],
     units: ['kPa'],
     axisIds: ['pressureAxis'],
     chartId: 'bme280pressure',
   },
   bme280Humidity: {
-    sensor_name: 'BME280_HUMIDITY',
+    sensor_name: 'bme280',
     measurements: ['Humidity'],
     units: ['%'],
     axisIds: ['humidityAxis'],
@@ -131,8 +131,14 @@ const CHART_CONFIGS = {
     axisIds: ['y'],
     chartId: 'waterFlow',
   },
+  waterFlowD10: {
+    sensor_name: 'D10',
+    measurements: ['flow'],
+    units: ['G/Min'],
+    axisIds: ['y'],
+    chartId: 'waterFlow',
+  },
 };
-
 function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange }) {
   const [resample, setResample] = useState('hour');
   const chartSettings = {
@@ -352,6 +358,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
           const timestamps = sortedMeasurements.map((m) => m.timestamp * 1000);
 
           measurements.forEach((meas, measIndex) => {
+
             const dataValues = sortedMeasurements.map((m) => {
               const rawValue = extractUnifiedStreamValue(sensor_name, meas, m.data);
               return normalizeUnifiedStreamValue(sensor_name, meas, rawValue);

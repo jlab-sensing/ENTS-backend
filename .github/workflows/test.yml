@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - dev
-  pull_request:
+  pull_request_target:
     types: [opened, reopened, synchronize]
 
 jobs:
@@ -15,12 +15,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"
 
       - name: Install backend dependencies
         run: pip install -r ./backend/requirements.txt -r ./backend/requirements-dev.txt
@@ -31,9 +33,9 @@ jobs:
       - name: Black format check
         uses: psf/black@stable
         with:
-          options: '--check --verbose'
-          src: './backend'
-          version: '24.3.0'
+          options: "--check --verbose"
+          src: "./backend"
+          version: "24.3.0"
 
       - name: Install frontend packages
         working-directory: ./frontend
@@ -49,7 +51,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    env: 
+    env:
       CONFIG_TYPE: Production
       DB_USER: dirtviz
       DB_PASS: password
@@ -72,12 +74,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"
 
       - name: Install backend dependencies
         run: pip install -r ./backend/requirements.txt -r ./backend/requirements-dev.txt
@@ -116,7 +120,7 @@ jobs:
         run: ./k6 run tests/basic.js
 
       - name: Run backend tests
-        run: pytest --cov
+        run: pytest --cov -v -s
 
       - name: Run frontend tests + coverage
         working-directory: ./frontend

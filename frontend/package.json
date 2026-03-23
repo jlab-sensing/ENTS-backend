@@ -26,6 +26,7 @@
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
+    "react-geolocated": "^4.4.0",
     "react-imask": "^7.6.1",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.30.3",

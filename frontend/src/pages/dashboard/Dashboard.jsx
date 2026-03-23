@@ -202,11 +202,11 @@ function Dashboard() {
       }
     });
 
-    socket.on('disconnect', () => { });
+    socket.on('disconnect', () => {});
     socket.on('measurement_received', (data) => {
       processImmediateUpdate(data);
     });
-    socket.on('connect_error', () => { });
+    socket.on('connect_error', () => {});
 
     return () => {
       socket.disconnect();
@@ -306,7 +306,14 @@ function Dashboard() {
     };
 
     applySmartDateRange();
-  }, [selectedCells, isInitialized, manualDateSelection, smartDateRangeApplied, calculateSmartDateRange, showFallbackNotificationHandler]);
+  }, [
+    selectedCells,
+    isInitialized,
+    manualDateSelection,
+    smartDateRangeApplied,
+    calculateSmartDateRange,
+    showFallbackNotificationHandler,
+  ]);
 
   // Sync state changes to URL
   useEffect(() => {
@@ -569,24 +576,24 @@ function Dashboard() {
                 </Typography>
                 <Box
                   sx={{
-                    backgroundColor: "#d32f2f",
-                    color: "white",
+                    backgroundColor: '#d32f2f',
+                    color: 'white',
                     px: 2,
                     py: 1.5,
-                    textAlign: "center",
-                    fontFamily: "sans-serif"
+                    textAlign: 'center',
+                    fontFamily: 'sans-serif',
                   }}
                 >
-                  CSV export is currently non-functional. See the issue for updates:{" "}
+                  CSV export is currently non-functional. See the issue for updates:{' '}
                   <a
-                    href="https://github.com/jlab-sensing/ENTS-backend/issues/668"
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ color: "#ffffff", textDecoration: "underline", fontWeight: "bold" }}
+                    href='https://github.com/jlab-sensing/ENTS-backend/issues/668'
+                    target='_blank'
+                    rel='noreferrer'
+                    style={{ color: '#ffffff', textDecoration: 'underline', fontWeight: 'bold' }}
                   >
                     GitHub Issue #668
                   </a>
-              </Box>
+                </Box>
               </Box>
             </Box>
           ) : showNoDataMessage ? (
@@ -757,6 +764,15 @@ function Dashboard() {
                 />
                 <UnifiedChart
                   type='waterFlow'
+                  cells={selectedCells}
+                  startDate={hourlyStartDate}
+                  endDate={hourlyEndDate}
+                  stream={stream}
+                  liveData={liveData}
+                  processedData={processedLiveData.sensors}
+                />
+                <UnifiedChart
+                  type='waterFlowD10'
                   cells={selectedCells}
                   startDate={hourlyStartDate}
                   endDate={hourlyEndDate}
