@@ -10,7 +10,9 @@ import redis
 
 
 class Config(object):
-    SECRET_KEY = os.environ.get("SECRET_KEY") or "super-secret-key"
+    SECRET_KEY = os.environ.get("SECRET_KEY") or (
+        "super-secret-development-key-that-is-at-least-32-bytes"
+    )
     CSRF_ENABLED = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}

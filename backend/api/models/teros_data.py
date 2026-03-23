@@ -115,6 +115,7 @@ class TEROSData(db.Model):
             "ec": [],
             "raw_vwc": [],
             "vwc_unit": "%",
+            "raw_vwc_unit": "raw",
         }
 
         stmt = None
