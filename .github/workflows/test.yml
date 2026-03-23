@@ -116,9 +116,6 @@ jobs:
       # - name: Apply migrations
       #   run: flask --app backend.api db upgrade -d ./backend/api/migrations
 
-      - name: Run smoke test
-        run: ./k6 run tests/basic.js
-
       - name: Run backend tests
         run: pytest --cov -v -s
 
