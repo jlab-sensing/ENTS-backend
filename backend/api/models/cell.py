@@ -1,6 +1,5 @@
 from ..models import db
 
-
 """"This is the reference; we stole this from commenter
 https://stackoverflow.com/questions/5756559/how-to-build-many-to-many-relations-using-sqlalchemy-a-good-example"""
 
@@ -80,6 +79,10 @@ class Cell(db.Model):
     @staticmethod
     def find_by_name(name):
         return Cell.query.filter_by(name=name).first()
+
+    @staticmethod
+    def search_by_name(pattern):
+        return Cell.query.filter(Cell.name.ilike(f"%{pattern}%")).all()
 
     @staticmethod
     def get_cells_by_user_id(id):

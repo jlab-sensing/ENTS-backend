@@ -15,7 +15,7 @@ def fetch_secret():
     """Fetch a Secrets Manager secret using the logged-in AWS SSO session."""
     print("Fetching secret from AWS")
 
-    session = boto3.Session(profile_name=AWS_PROFILE)
+    session = boto3.Session()
     client = session.client("secretsmanager", region_name=AWS_REGION)
 
     try:

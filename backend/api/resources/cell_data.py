@@ -2,8 +2,12 @@ from flask import request, jsonify
 from flask_restful import Resource
 import pandas as pd
 from ..schemas.get_cell_data_schema import GetCellDataSchema
+from ..models.power_data import PowerData  # noqa: F401
+from ..models.teros_data import TEROSData  # noqa: F401
+from ..models.sensor import Sensor  # noqa: F401
 from io import StringIO
 from celery import shared_task
+
 
 get_cell_data = GetCellDataSchema()
 
