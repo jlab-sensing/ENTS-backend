@@ -22,6 +22,7 @@ function AddCellModal() {
   const archive = false;
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
+  const [IsSubmitted, setIsSubmitted] = useState(null);
 
   const assignCellTagsMutation = useAssignCellTags();
 
@@ -153,8 +154,8 @@ function AddCellModal() {
                     variant='outlined'
                     fullWidth
                     required
-                    error={name.length === 0}
-                    helperText={!name.length ? 'Cell name is required' : ''}
+                    error={name.length === 0 && IsSubmitted}
+                    helperText={!(name.length) && (IsSubmitted) ? 'Cell name is required' : ''}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder='e.g., Forest Station A'
@@ -169,8 +170,8 @@ function AddCellModal() {
                     variant='outlined'
                     fullWidth
                     required
-                    error={location.length === 0}
-                    helperText={!location.length ? 'Location is required' : ''}
+                    error={location.length === 0 && IsSubmitted}
+                    helperText={!(location.length) && (IsSubmitted) ? 'Location is required' : ''}
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder='e.g., North Campus Field'
@@ -185,10 +186,9 @@ function AddCellModal() {
                     variant='outlined'
                     fullWidth
                     required
-                    error={lat.length === 0 || isNaN(Number(lat))}
-                    helperText={
-                      !lat.length ? 'Latitude is required' : isNaN(Number(lat)) ? 'Please enter a valid number' : ''
-                    }
+                    error={(lat.length === 0 && IsSubmitted) || isNaN(Number(lat))}
+                    helperText={!(lat.length) && (IsSubmitted) ? 'Latitude is required' : isNaN(Number(lat)) ? 'Please enter a valid number' : ''}
+
                     value={lat}
                     onChange={(e) => setLat(e.target.value)}
                     placeholder='e.g., 36.9741'
@@ -203,10 +203,9 @@ function AddCellModal() {
                     variant='outlined'
                     fullWidth
                     required
-                    error={long.length === 0 || isNaN(Number(long))}
-                    helperText={
-                      !long.length ? 'Longitude is required' : isNaN(Number(long)) ? 'Please enter a valid number' : ''
-                    }
+                    error={(long.length === 0 && IsSubmitted) || isNaN(Number(long))}
+                    helperText={!(long.length) && (IsSubmitted) ? 'Longitude is required' : isNaN(Number(long)) ? 'Please enter a valid number' : ''}
+
                     value={long}
                     onChange={(e) => setLong(e.target.value)}
                     placeholder='e.g., -122.0308'
@@ -266,6 +265,7 @@ function AddCellModal() {
                   <Button
                     variant='contained'
                     onClick={async () => {
+                      setIsSubmitted(true);
                       try {
                         const res = await addCell(name, location, long, lat, archive, user.email);
 
@@ -470,7 +470,10 @@ function AddCellModal() {
 
                   <Button
                     variant='contained'
-                    onClick={DoneButtonClose}
+                    onClick={() => {
+                      DoneButtonClose(); 
+                      setIsSubmitted(false);}
+                    }
                     sx={{
                       backgroundColor: '#2e7d32',
                       '&:hover': { backgroundColor: '#1b5e20' },
