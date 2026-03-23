@@ -99,10 +99,10 @@ def handle_refresh_token(refresh_token):
         try:
             data = jwt.decode(
                 refresh_token, config["refreshToken"], algorithms=["HS256"]
-                )
+            )
         except jwt.exceptions.InvalidTokenError:
             return make_response(jsonify({"msg": "Invalid refresh token"}), 403)
-            
+
         user = User.query.get(UUID(data["uid"]))
         if user is None or user.id != found_user.id:
             return make_response(jsonify({"msg": "Unauthorized user"}), 403)
