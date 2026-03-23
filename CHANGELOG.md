@@ -18,6 +18,7 @@ When adding a new entry, please use the following format:
 
 ## Log
 
+- [2026-03-23] fix: increase fallback SECRET_KEY length to resolve PyJWT InsecureKeyLengthWarning [#682](https://github.com/jlab-sensing/ENTS-backend/pull/682)
 - [2026-03-12] fix: safely catch PyJWT DecodeErrors and remove log spam for invalid tokens [#683](https://github.com/jlab-sensing/ENTS-backend/pull/683)
 - [2026-03-12] hotfix: linted AddCellModal, ensured functionality of D10 charts, and added flags to github action pytest for logging [#703](https://github.com/jlab-sensing/ENTS-backend/pull/703)
 - [2026-03-12] hotfix: Resolve global frontend linting failure in AddCellModal [#709](https://github.com/jlab-sensing/ENTS-backend/pull/709)
