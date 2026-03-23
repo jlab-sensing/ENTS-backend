@@ -1,8 +1,8 @@
 from ..schemas import ma
 from ..models.cell import Cell
 from ..models.user import (
-    User,
-)  # noqa: F401 - ensures User is registered before SQLAlchemy mapper configures
+    User,  # noqa: F401 - ensures User is registered before SQLAlchemy mapper configures
+)
 
 
 class CellSchema(ma.SQLAlchemyAutoSchema):
