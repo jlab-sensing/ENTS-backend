@@ -3,6 +3,7 @@
 author: John Madden <jmadden173@pm.me>
 """
 
+import logging
 import os
 from datetime import datetime
 
@@ -15,6 +16,8 @@ from ..models.power_data import PowerData
 from ..models.teros_data import TEROSData
 from ..models.sensor import Sensor
 from .. import socketio
+
+logger = logging.getLogger(__name__)
 
 DEBUG_SOCKETIO = os.getenv("DEBUG_SOCKETIO", "False").lower() == "true"
 
@@ -86,11 +89,11 @@ def process_generic_measurement_json(meas: dict) -> Response:
                         ).get(room_name)
                         if has_subscribers:
                             count = len(has_subscribers)
-                            print(
-                                f"[socketio] emitted to {room_name}:{count} subscribers"
+                            logger.debug(
+                                "SocketIO emitted to %s: %d subscribers", room_name, count
                             )
                 except Exception as e:
-                    print(f"[socketio] error emitting measurement: {e}")
+                    logger.error("SocketIO error emitting measurement: %s", e)
 
     resp = Response()
     resp.status_code = 200
@@ -121,7 +124,7 @@ def process_generic_measurement(data: bytes) -> Response:
     return process_generic_measurement_json(meas["measurements"])
 
 
-def process_measurement(data: bytes):
+def process_measurement(data: bytes) -> Response:
     """Process protobuf encoded measurement
 
     The byte string gets decoded through protobuf and inserted into the
@@ -137,12 +140,26 @@ def process_measurement(data: bytes):
         Flask response with status code and protobuf encoded response.
     """
 
-    # decode binary protobuf data
-    meas = decode_measurement(data, raw=False)
-    return process_measurement_dict(meas)
+    try:
+        meas = decode_measurement(data, raw=False)
+    except Exception as e:
+        logger.warning("Failed to decode measurement: %s", e)
+        resp = Response()
+        resp.status_code = 400
+        resp.data = f"Error decoding measurement: {e}"
+        return resp
+
+    try:
+        return process_measurement_dict(meas)
+    except Exception as e:
+        logger.exception("Error processing decoded measurement")
+        resp = Response()
+        resp.status_code = 400
+        resp.data = f"Error processing measurement: {e}"
+        return resp
 
 
-def process_measurement_json(data: dict):
+def process_measurement_json(data: dict) -> Response:
     """Process json measurement
 
     Args:
@@ -152,7 +169,14 @@ def process_measurement_json(data: dict):
         Flask response with status code and protobuf encoded response.
     """
 
-    return process_measurement_dict(data)
+    try:
+        return process_measurement_dict(data)
+    except Exception as e:
+        logger.exception("Error processing JSON measurement")
+        resp = Response()
+        resp.status_code = 400
+        resp.data = f"Error processing measurement: {e}"
+        return resp
 
 
 def process_measurement_dict(meas: dict):
@@ -229,6 +253,7 @@ def process_measurement_dict(meas: dict):
         obj = Sensor.add_data(
             meas_name="Photoresistivity", meas_unit="Ohms", meas_dict=meas
         )
+        obj_list.append(obj)
 
     elif meas["type"] == "pcap02":
         obj = Sensor.add_data(
@@ -275,6 +300,14 @@ def process_measurement_dict(meas: dict):
 
         obj_list.append(flow_obj)
 
+    else:
+        logger.warning("Unknown measurement type: %s", meas.get("type"))
+        resp = Response()
+        resp.content_type = "application/octet-stream"
+        resp.status_code = 501
+        resp.data = encode_response(False)
+        return resp
+
     resp = Response()
     resp.content_type = "application/octet-stream"
     if None in obj_list:
@@ -305,8 +338,8 @@ def process_measurement_dict(meas: dict):
                     )
                     if has_subscribers:
                         count = len(has_subscribers)
-                        print(f"[socketio] emitted to {room_name}: {count} subscribers")
+                        logger.debug("SocketIO emitted to %s: %d subscribers", room_name, count)
             except Exception as e:
-                print(f"[socketio] error emitting measurement: {e}")
+                logger.error("SocketIO error emitting measurement: %s", e)
 
     return resp
