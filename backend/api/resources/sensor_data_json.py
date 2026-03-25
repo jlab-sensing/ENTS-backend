@@ -8,7 +8,7 @@ Authors:
 - Alec Levy <aleclevy3@gmail.com>
 """
 
-from flask import request, jsonify
+from flask import request, jsonify, Response
 from flask_restful import Resource
 
 from .util import process_measurement_json
@@ -52,18 +52,19 @@ class SensorData_Json(Resource):
             Response indicating success or failure. See util.process_measurement
             for full description.
         """
-        content_type = request.headers.get("Content-Type")
+        # Use mimetype so "application/json; charset=utf-8" still matches.
+        mimetype = request.mimetype
 
         # response to request
         resp = None
 
-        if content_type == "application/json":
-            # get uplink binary data
-            # data = request.json
+        if mimetype == "application/json":
             resp = self.handle_json(request)
         else:
-            err_str = f"Content-Type header of '{content_type}' incorrect"
-            raise ValueError(err_str)
+            resp = Response()
+            resp.status_code = 400
+            raw_ct = request.headers.get("Content-Type")
+            resp.data = f"Unsupported Content-Type: {raw_ct}"
         return resp
 
     @staticmethod
@@ -76,14 +77,13 @@ class SensorData_Json(Resource):
             for full description.
         """
 
-        content_type = request.headers.get("Content-Type")
-
-        # check for correct content type and get json
-        if content_type == "application/json":
-            # get uplink json
+        if request.mimetype == "application/json":
             data = request.json
         else:
-            raise ValueError("POST request must be application/json")
+            resp = Response()
+            resp.status_code = 400
+            resp.data = "POST request must be application/json"
+            return resp
 
         # decode and insert into db
         resp = process_measurement_json(data)
