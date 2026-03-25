@@ -90,7 +90,9 @@ def process_generic_measurement_json(meas: dict) -> Response:
                         if has_subscribers:
                             count = len(has_subscribers)
                             logger.debug(
-                                "SocketIO emitted to %s: %d subscribers", room_name, count
+                                "SocketIO emitted to %s: %d subscribers",
+                                room_name,
+                                count,
                             )
                 except Exception as e:
                     logger.error("SocketIO error emitting measurement: %s", e)
@@ -338,7 +340,11 @@ def process_measurement_dict(meas: dict):
                     )
                     if has_subscribers:
                         count = len(has_subscribers)
-                        logger.debug("SocketIO emitted to %s: %d subscribers", room_name, count)
+                        logger.debug(
+                            "SocketIO emitted to %s: %d subscribers",
+                            room_name,
+                            count,
+                        )
             except Exception as e:
                 logger.error("SocketIO error emitting measurement: %s", e)
 
