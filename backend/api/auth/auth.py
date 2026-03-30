@@ -45,8 +45,7 @@ def authenticate(f):
 
         except jwt.exceptions.ExpiredSignatureError:
             return {"msg": "Token expired"}, 401
-        except jwt.exceptions.InvalidTokenError as e:
-            print(f"Invalid token: {repr(e)}", flush=True)
+        except jwt.exceptions.InvalidTokenError:
             return {"msg": "Invalid token"}, 403
         except Exception as e:
             print(f"Authentication error: {repr(e)}", flush=True)
@@ -97,7 +96,13 @@ def handle_refresh_token(refresh_token):
         if found_user is None:
             return make_response(jsonify({"msg": "Invalid refresh token"}), 403)
 
-        data = jwt.decode(refresh_token, config["refreshToken"], algorithms="HS256")
+        try:
+            data = jwt.decode(
+                refresh_token, config["refreshToken"], algorithms=["HS256"]
+            )
+        except jwt.exceptions.InvalidTokenError:
+            return make_response(jsonify({"msg": "Invalid refresh token"}), 403)
+
         user = User.query.get(UUID(data["uid"]))
         if user is None or user.id != found_user.id:
             return make_response(jsonify({"msg": "Unauthorized user"}), 403)
