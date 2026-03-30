@@ -156,6 +156,7 @@ def create_app(debug: bool = False) -> Flask:
     app.app_context().push()
     from .resources.health_check import Health_Check
     from .resources.cell_data import Cell_Data
+    from .models.user import User
     from .resources.cell_id import Cell_Id
     from .resources.power_data import Power_Data
     from .resources.teros_data import Teros_Data

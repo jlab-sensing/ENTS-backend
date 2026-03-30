@@ -1,4 +1,4 @@
-# from api.models.user import User
+from api.models.user import User
 from api.models.cell import Cell
 
 
@@ -17,6 +17,7 @@ def test_cell_search_by_name(setup_cells):
 
     results = Cell.search_by_name("nonexistent")
     assert len(results) == 0
+
 
 
 # def test_cell_post_returns_id_and_name(init_database):
