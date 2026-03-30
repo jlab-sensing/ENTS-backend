@@ -1,5 +1,4 @@
 from api.ttn.end_devices import EndDevice, EntsEndDevice, TTNApi
-import pytest
 from .conftest import requires_ttn
 
 

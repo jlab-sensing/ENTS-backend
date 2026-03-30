@@ -153,14 +153,14 @@ class TTNApi:
         if api_key == "":
             api_key_env = os.getenv("TTN_API_KEY")
             if api_key_env is None:
-                warnings.warn(f"TTN_API_KEY environment variable is not set.")
+                warnings.warn("TTN_API_KEY environment variable is not set.")
             else:
                 api_key = api_key_env
 
         if app_id == "":
             app_id_env = os.getenv("TTN_APP_ID")
             if app_id_env is None:
-                warnings.warn(f"TTN_API_ID environment variable is not set.")
+                warnings.warn("TTN_API_ID environment variable is not set.")
             else:
                 app_id = app_id_env
 

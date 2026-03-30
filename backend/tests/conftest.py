@@ -33,7 +33,7 @@ if not os.getenv("TEST_SQLALCHEMY_DATABASE_URI"):
 def requires_ttn():
     env = os.environ.get("TTN_API_KEY")
 
-    return pytest.mark.skipif(env == None, reason=f"TTN_API_KEY not availble")
+    return pytest.mark.skipif(env is None, reason="TTN_API_KEY not availble")
 
 
 # --------
