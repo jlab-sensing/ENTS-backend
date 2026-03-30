@@ -18,7 +18,6 @@ def test_cell_search_by_name(setup_cells):
     assert len(results) == 0
 
 
-
 # def test_cell_post_returns_id_and_name(init_database):
 #     """
 #     GIVEN a user exists in the database
