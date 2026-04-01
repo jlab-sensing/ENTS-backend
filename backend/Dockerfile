@@ -38,9 +38,11 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 #RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
 # create new user and group to run the app with name "app"
-RUN adduser --system --group app
+# Give the user an explicit home directory OUTSIDE the mounted volume
+RUN adduser --system --group --home /home/app app
+ENV HOME=/home/app
 USER app
-WORKDIR $HOME
+WORKDIR /app
 
 # copy files from source tree
 COPY . .
