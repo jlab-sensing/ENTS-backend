@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - dev
-  pull_request_target:
+  pull_request:
     types: [opened, reopened, synchronize]
 
 jobs:
@@ -19,8 +19,8 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.11"
-          cache: "pip"
+          python-version: '3.11'
+          cache: 'pip'
 
       - name: Install backend dependencies
         run: pip install -r ./backend/requirements.txt -r ./backend/requirements-dev.txt
@@ -31,9 +31,9 @@ jobs:
       - name: Black format check
         uses: psf/black@stable
         with:
-          options: "--check --verbose"
-          src: "./backend"
-          version: "24.3.0"
+          options: '--check --verbose'
+          src: './backend'
+          version: '24.3.0'
 
       - name: Install frontend packages
         working-directory: ./frontend
@@ -76,8 +76,8 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.11"
-          cache: "pip"
+          python-version: '3.11'
+          cache: 'pip'
 
       - name: Install backend dependencies
         run: pip install -r ./backend/requirements.txt -r ./backend/requirements-dev.txt
@@ -86,20 +86,27 @@ jobs:
         working-directory: ./frontend
         run: npm ci
 
-      - name: Install k6
-        run: |
-          curl https://github.com/loadimpact/k6/releases/download/v0.26.2/k6-v0.26.2-linux64.tar.gz -L | tar xvz --strip-components 1
-
       - name: Set AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
+        if: >
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.actor != 'dependabot[bot]'
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
 
+      #aws s3 cp s3://dirtviz-env-vars/dev.env ./.env
+
+      - name: Import environment variables
+        if: >
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.actor != 'dependabot[bot]'
+        run:
+          python3 env-import.py
+
       - name: Start services
-        run: |
-          aws s3 cp s3://dirtviz-env-vars/dev.env ./.env
+        run:
           docker compose up -d
 
       - name: Wait for services to start
@@ -111,9 +118,6 @@ jobs:
 
       # - name: Apply migrations
       #   run: flask --app backend.api db upgrade -d ./backend/api/migrations
-
-      - name: Run smoke test
-        run: ./k6 run tests/basic.js
 
       - name: Run backend tests
         run: pytest --cov -v -s

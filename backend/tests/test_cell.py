@@ -1,4 +1,3 @@
-# from api.models.user import User
 from api.models.cell import Cell
 
 
@@ -23,7 +22,7 @@ def test_cell_search_by_name(setup_cells):
 #     """
 #     GIVEN a user exists in the database
 #     WHEN posting to /api/cell/ to create a new cell
-#     THEN the response should contain the new cell's id and name
+#     THEN the response should contain the new cell's id and corresponding name
 #     """
 #     user = User(
 #         first_name="Test", last_name="User", email="celltest@example.com", password=""
