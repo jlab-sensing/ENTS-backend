@@ -4,17 +4,13 @@ from ..models.sensor import Sensor
 from ..models.data import Data
 from ..models.teros_data import TEROSData
 from ..models.power_data import PowerData
-from .. import db, cache
+from .. import db
 from datetime import datetime, timedelta
 from sqlalchemy import func, union_all, select
 
 
 def _get_cell_availability(cell_id: int) -> dict:
-    """Get availability for a single cell, cached individually."""
-    cache_key = f"cell_availability_{cell_id}"
-    cached = cache.get(cache_key)
-    if cached:
-        return cached
+    """Get availability for a single cell"""
 
     teros_q = select(TEROSData.ts).where(TEROSData.cell_id == cell_id)
     power_q = select(PowerData.ts).where(PowerData.cell_id == cell_id)
@@ -29,7 +25,6 @@ def _get_cell_availability(cell_id: int) -> dict:
         "earliest": row[1],
     }
 
-    cache.set(cache_key, result, timeout=300)
     return result
 
 
