@@ -2,6 +2,7 @@ sqlalchemy
 alembic
 psycopg2-binary
 tqdm
+flask_caching
 Flask>=3.0,<3.1
 Flask-RESTful
 flask_cors

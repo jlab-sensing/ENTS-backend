@@ -4,14 +4,38 @@ from ..models.sensor import Sensor
 from ..models.data import Data
 from ..models.teros_data import TEROSData
 from ..models.power_data import PowerData
-from ..models import db
+from .. import db, cache
 from datetime import datetime, timedelta
-from sqlalchemy import func
+from sqlalchemy import func, union_all, select
+
+
+def _get_cell_availability(cell_id: int) -> dict:
+    """Get availability for a single cell, cached individually."""
+    cache_key = f"cell_availability_{cell_id}"
+    cached = cache.get(cache_key)
+    if cached:
+        return cached
+
+    teros_q = select(TEROSData.ts).where(TEROSData.cell_id == cell_id)
+    power_q = select(PowerData.ts).where(PowerData.cell_id == cell_id)
+    sensor_q = select(Data.ts).join(Sensor).where(Sensor.cell_id == cell_id)
+
+    combined = union_all(teros_q, power_q, sensor_q).subquery()
+
+    row = db.session.query(func.max(combined.c.ts), func.min(combined.c.ts)).one()
+
+    result = {
+        "latest": row[0],
+        "earliest": row[1],
+    }
+
+    cache.set(cache_key, result, timeout=300)
+    return result
 
 
 class DataAvailability(Resource):
     def get(self):
-        """Get data availability information for intelligent date range selection
+        """Get data availability information for intelligent date range selection.
 
         Returns the latest available data timestamp across all sensors for
         specified cells. This is used to implement smart default date ranges.
@@ -39,41 +63,17 @@ class DataAvailability(Resource):
         if not cell_ids:
             return {"error": "At least one valid cell_id is required"}, 400
 
-        # Get latest timestamps from different data sources
-        latest_timestamps = []
+        all_latest = []
+        all_earliest = []
 
-        # Check sensor data (generic sensors)
-        sensor_latest = (
-            db.session.query(func.max(Data.ts))
-            .join(Sensor)
-            .filter(Sensor.cell_id.in_(cell_ids))
-            .scalar()
-        )
+        for cell_id in cell_ids:
+            cell_data = _get_cell_availability(cell_id)
+            if cell_data["latest"]:
+                all_latest.append(cell_data["latest"])
+            if cell_data["earliest"]:
+                all_earliest.append(cell_data["earliest"])
 
-        if sensor_latest:
-            latest_timestamps.append(sensor_latest)
-
-        # Check TEROS data
-        teros_latest = (
-            db.session.query(func.max(TEROSData.ts))
-            .filter(TEROSData.cell_id.in_(cell_ids))
-            .scalar()
-        )
-
-        if teros_latest:
-            latest_timestamps.append(teros_latest)
-
-        # Check Power data
-        power_latest = (
-            db.session.query(func.max(PowerData.ts))
-            .filter(PowerData.cell_id.in_(cell_ids))
-            .scalar()
-        )
-
-        if power_latest:
-            latest_timestamps.append(power_latest)
-
-        if not latest_timestamps:
+        if not all_latest:
             return {
                 "latest_timestamp": None,
                 "earliest_timestamp": None,
@@ -81,56 +81,15 @@ class DataAvailability(Resource):
                 "message": "No data found for specified cells",
             }
 
-        # Find the most recent timestamp across all data sources
-        latest_timestamp = max(latest_timestamps)
-
-        # Check if we have data in the last 14 days
+        latest_timestamp = max(all_latest)
+        earliest_timestamp = min(all_earliest) if all_earliest else None
         two_weeks_ago = datetime.now() - timedelta(days=14)
-        has_recent_data = latest_timestamp >= two_weeks_ago
-
-        # Get earliest timestamp for fallback range calculation (no time limit)
-        earliest_timestamps = []
-
-        # Check earliest in sensor data
-        sensor_earliest = (
-            db.session.query(func.min(Data.ts))
-            .join(Sensor)
-            .filter(Sensor.cell_id.in_(cell_ids))
-            .scalar()
-        )
-
-        if sensor_earliest:
-            earliest_timestamps.append(sensor_earliest)
-
-        # Check earliest in TEROS data
-        teros_earliest = (
-            db.session.query(func.min(TEROSData.ts))
-            .filter(TEROSData.cell_id.in_(cell_ids))
-            .scalar()
-        )
-
-        if teros_earliest:
-            earliest_timestamps.append(teros_earliest)
-
-        # Check earliest in Power data
-        power_earliest = (
-            db.session.query(func.min(PowerData.ts))
-            .filter(PowerData.cell_id.in_(cell_ids))
-            .scalar()
-        )
-
-        if power_earliest:
-            earliest_timestamps.append(power_earliest)
-
-        earliest_timestamp = min(earliest_timestamps) if earliest_timestamps else None
-
-        # Format timestamps for response
-        latest_ts = latest_timestamp.isoformat() if latest_timestamp else None
-        earliest_ts = earliest_timestamp.isoformat() if earliest_timestamp else None
 
         return {
-            "latest_timestamp": latest_ts,
-            "earliest_timestamp": earliest_ts,
-            "has_recent_data": has_recent_data,
+            "latest_timestamp": latest_timestamp.isoformat(),
+            "earliest_timestamp": (
+                earliest_timestamp.isoformat() if earliest_timestamp else None
+            ),
+            "has_recent_data": latest_timestamp >= two_weeks_ago,
             "message": "success",
         }
