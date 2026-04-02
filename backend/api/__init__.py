@@ -8,7 +8,6 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from flask_caching import Cache
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_restful import Api
@@ -23,7 +22,6 @@ from flask_socketio import SocketIO
 
 db = SQLAlchemy()
 ma = Marshmallow()
-cache = Cache()
 migrate = Migrate()
 bcrypt = Bcrypt()
 server_session = Session()
@@ -76,12 +74,7 @@ def create_app(debug: bool = False) -> Flask:
     migrate.init_app(app, db)
     oauth.init_app(app)
     bcrypt.init_app(app)
-    app.config["CACHE_TYPE"] = "RedisCache"
-    app.config["CACHE_REDIS_URL"] = os.getenv(
-        "CELERY_BROKER_URL"
-    )  # reuse existing Redis
-    app.config["CACHE_DEFAULT_TIMEOUT"] = 60
-    cache.init_app(app)
+
     CORS(app, resources={r"/*": {"methods": "*"}})
     socketio.init_app(app)
 
