@@ -30,6 +30,7 @@ import base64
 
 from flask import request, jsonify, Response
 from flask_restful import Resource
+from marshmallow.exceptions import ValidationError
 
 from .util import process_measurement, process_generic_measurement
 
@@ -44,7 +45,11 @@ class SensorData(Resource):
         """Gets specified sensor data"""
 
         # get args
-        v_args = self.get_sensor_data_schema.load(request.args)
+        try:
+            v_args = self.get_sensor_data_schema.load(request.args)
+        except ValidationError as _:
+            return jsonify({"errors": "Invalid request arguments."}), 400
+
         stream = v_args.get("stream", False)
         resample = v_args.get("resample", "hour")
 
