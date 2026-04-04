@@ -72,22 +72,25 @@ class SensorData(Resource):
             Response indicating success or failure. See util.process_measurement
             for full description.
         """
-        content_type = request.headers.get("Content-Type")
+        # Use mimetype so "application/json; charset=utf-8" still matches.
+        mimetype = request.mimetype
 
         # response to request
         resp = None
 
-        if content_type == "application/json":
+        if mimetype == "application/json":
             # get uplink json
             uplink_json = request.json
             resp = self.handle_ttn(uplink_json)
-        elif content_type == "application/octet-stream":
+        elif mimetype == "application/octet-stream":
             # get uplink binary data
             data = request.data
             resp = self.handle_binary(data)
         else:
-            err_str = f"Content-Type header of '{content_type}' incorrect"
-            raise ValueError(err_str)
+            resp = Response()
+            resp.status_code = 400
+            raw_ct = request.headers.get("Content-Type")
+            resp.data = f"Unsupported Content-Type: {raw_ct}"
         return resp
 
     @staticmethod
@@ -138,10 +141,8 @@ class SensorData(Resource):
             for full description.
         """
 
-        content_type = request.headers.get("Content-Type")
-
-        # check for correct content type and get json
-        if content_type == "application/octet-stream":
+        # Use mimetype so charset suffixes on Content-Type still match.
+        if request.mimetype == "application/octet-stream":
             # get uplink json
             data = request.data
         else:
