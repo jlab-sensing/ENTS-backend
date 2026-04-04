@@ -221,6 +221,9 @@ class Logger(Resource):
         # Update database fields
         updated = False
         if "name" in json_data:
+            existing = LoggerModel.find_by_name(json_data["name"])
+            if existing and existing.id != logger_id:
+                return {"message": "Duplicate logger name"}, 400
             logger.name = json_data.get("name")
             updated = True
         if "description" in json_data:
