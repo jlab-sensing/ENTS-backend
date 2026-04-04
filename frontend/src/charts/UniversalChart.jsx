@@ -7,8 +7,8 @@ import { getNonStreamTimeDomain } from './timeDomain';
 import ChartWrapper from './ChartWrapper';
 import { chartPlugins } from './plugins';
 import { getVwcAxisBounds } from './VwcChart/vwcAxis';
-
-export default function UniversalChart({ data, stream, chartId, measurements, units, axisIds, axisPolicy, startDate, endDate, onResampleChange }) {
+import { formatElectricalUnit, formatSensorValue } from "../pages/dashboard/components/unifiedChartUtils";
+export default function UniversalChart({ data, stream, chartId, sensorName, measurements, units, axisIds, axisPolicy, startDate, endDate, onResampleChange }) {
   // Build chart options dynamically based on measurements
   const buildChartOptions = () => {
     const nonStreamXDomain = getNonStreamTimeDomain(stream, startDate, endDate);
@@ -86,6 +86,13 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
               max: leftYMax,
             }),
       };
+      scales.y.ticks = scales.y.ticks || {};
+      scales.y.ticks.callback = function(value) {
+        if (sensorName === 'POWER_VOLTAGE' || sensorName === 'POWER_CURRENT') {
+          return formatElectricalUnit(value, sensorName);
+        }
+        return value;
+      };
     }
     // Handle dual measurements (left and right axes)
     else if (measurements.length === 2) {
@@ -136,12 +143,33 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
       };
     }
 
+    const activePlugins = measurements.length > 1 ? structuredClone(chartPlugins) : {};
+    
+    activePlugins.tooltip = {
+      callbacks: {
+        label: function(context) {
+          let label = context.dataset.label || '';
+          if (label) {
+            label += ': ';
+          }
+          if (context.parsed.y !== null) {
+            if (sensorName === 'POWER_VOLTAGE' || sensorName === 'POWER_CURRENT') {
+              label += formatElectricalUnit(context.parsed.y, sensorName);
+            } else {
+              label += context.parsed.y; // Default behavior for other sensors
+            }
+          }
+          return label;
+        }
+      }
+    };
+
     return {
       maintainAspectRatio: false,
       responsive: true,
       parsing: false,
       scales,
-      ...(measurements.length > 1 && { plugins: structuredClone(chartPlugins) }),
+      plugins: activePlugins,
     };
   };
 
@@ -160,6 +188,7 @@ UniversalChart.propTypes = {
   units: PropTypes.arrayOf(PropTypes.string).isRequired,
   axisIds: PropTypes.arrayOf(PropTypes.string).isRequired,
   axisPolicy: PropTypes.string,
+  sensorName: PropTypes.string,
   startDate: PropTypes.object,
   endDate: PropTypes.object,
   onResampleChange: PropTypes.func,

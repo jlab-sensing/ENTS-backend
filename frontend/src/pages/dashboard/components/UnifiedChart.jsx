@@ -14,14 +14,14 @@ const CHART_CONFIGS = {
   power_voltage: {
     sensor_name: 'POWER_VOLTAGE',
     measurements: ['Voltage'],
-    units: ['mV'],
+    units: ['V'],
     axisIds: ['y'],
     chartId: 'powerVoltage',
   },
   power_current: {
     sensor_name: 'POWER_CURRENT',
     measurements: ['Current'],
-    units: ['uA'],
+    units: ['A'],
     axisIds: ['y'],
     chartId: 'powerCurrent',
   },
@@ -443,6 +443,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
         data={sensorChartData}
         stream={stream}
         chartId={chartId}
+        sensorName={sensor_name}
         measurements={measurements}
         units={units}
         axisIds={axisIds}
