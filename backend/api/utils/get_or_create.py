@@ -22,15 +22,15 @@ def get_or_create_logger(sess, name, mac=None, hostname=None):
     """
 
     stmt = select(Logger).where(Logger.name == name)
-    if mac:
-        stmt = stmt.where(Logger.mac == mac)
-    if hostname:
-        stmt = stmt.where(Logger.hostname == hostname)
+    # Logger model currently has no mac/hostname columns; keep params for
+    # backwards compatibility but ignore them for querying.
 
     log = sess.execute(stmt).one_or_none()
 
     if not log:
-        log = Logger(name=name, mac=mac, hostname=hostname)
+        # Logger model doesn't accept mac/hostname; keep creation minimal
+        # for import flows.
+        log = Logger(name=name)
         sess.add(log)
         sess.flush()
     else:
