@@ -74,6 +74,7 @@ def create_app(debug: bool = False) -> Flask:
     migrate.init_app(app, db)
     oauth.init_app(app)
     bcrypt.init_app(app)
+
     CORS(app, resources={r"/*": {"methods": "*"}})
     socketio.init_app(app)
 

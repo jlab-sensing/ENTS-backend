@@ -1,10 +1,13 @@
 import os
 from api.ttn.end_devices import EndDevice, EntsEndDevice, TTNApi
+from .conftest import requires_ttn
 
-import pytest
 
 # global API instance
-api = TTNApi()
+@requires_ttn()
+def test_create_api():
+    global api
+    api = TTNApi()
 
 # These tests exercise real TTN API calls. Skip by default unless valid creds are present.
 _ttn_key = (os.getenv("TTN_API_KEY") or "").strip()
@@ -18,6 +21,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+@requires_ttn()
 def test_create_end_device():
     """Test creating an End Device in the TTN registry."""
 
@@ -73,6 +77,7 @@ def test_create_end_device():
     assert "updated_at" in end_device.data
 
 
+@requires_ttn()
 def test_get_end_device():
     """Test retrieving an End Device from the TTN registry."""
 
@@ -92,6 +97,7 @@ def test_get_end_device():
     assert end_device.data["ids"]["join_eui"] == "0101010101010101"
 
 
+@requires_ttn()
 def test_get_all_end_device():
     """Test retrieving all End Devices from the TTN registry."""
 
@@ -100,6 +106,7 @@ def test_get_all_end_device():
     assert len(end_devices) > 0
 
 
+@requires_ttn()
 def test_get_list_end_device():
     """Test retrieving an End Device from the TTN registry."""
 
@@ -116,6 +123,7 @@ def test_get_list_end_device():
     # assert len(end_devices) == 1
 
 
+@requires_ttn()
 def test_update_end_device():
     """Test updating an End Device in the TTN registry."""
 
@@ -132,6 +140,7 @@ def test_update_end_device():
     assert updated is True
 
 
+@requires_ttn()
 def test_delete_end_device():
     """Test deleting an End Device in the TTN registry."""
 
@@ -149,7 +158,7 @@ def test_delete_end_device():
     assert deleted is True
 
 
-@pytest.mark.filterwarnings("ignore:ttn")
+@requires_ttn()
 def test_delete_end_device_not_found():
     """Test deleting an End Device that does not exist in the TTN registry."""
 
