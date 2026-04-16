@@ -175,6 +175,37 @@ function CellSelect({ selectedCells, setSelectedCells }) {
           autoFocus: false,
         }}
       >
+        {/* Selection Summary + Clear All */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1 }}>
+          <Typography variant="caption" sx={{ color: '#999', fontStyle: 'italic' }}>
+            {safeSelectedCells.length > 0
+              ? `${safeSelectedCells.length} cell${safeSelectedCells.length !== 1 ? 's' : ''} selected`
+              : 'Select cells from the list below'}
+          </Typography>
+          {safeSelectedCells.length > 0 && (
+            <Chip
+              label="Clear All"
+              size="small"
+              icon={<ClearIcon sx={{ fontSize: 14 }} />}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedCells([]);
+                setSelectedTags([]);
+                setSearchQuery('');
+              }}
+              sx={{
+                cursor: 'pointer',
+                backgroundColor: '#fce4ec',
+                color: '#c62828',
+                '& .MuiChip-icon': { color: '#c62828' },
+                '&:hover': { backgroundColor: '#ef9a9a' },
+              }}
+            />
+          )}
+        </Box>
+
+        <Divider />
+
         {/* Tag Filter Section */}
         <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0' }}>
           <Typography variant="subtitle2" sx={{ mb: 1, color: '#666' }}>
@@ -315,34 +346,6 @@ function CellSelect({ selectedCells, setSelectedCells }) {
             </MenuItem>
           )}
 
-        <Divider />
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 0.5 }}>
-          <Typography variant="caption" sx={{ color: '#999', fontStyle: 'italic' }}>
-            {safeSelectedCells.length > 0
-              ? `${safeSelectedCells.length} cell${safeSelectedCells.length !== 1 ? 's' : ''} selected`
-              : 'Select cells from the list above'}
-          </Typography>
-          {safeSelectedCells.length > 0 && (
-            <Chip
-              label="Clear All"
-              size="small"
-              icon={<ClearIcon sx={{ fontSize: 14 }} />}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedCells([]);
-                setSelectedTags([]);
-                setSearchQuery('');
-              }}
-              sx={{
-                cursor: 'pointer',
-                backgroundColor: '#fce4ec',
-                color: '#c62828',
-                '& .MuiChip-icon': { color: '#c62828' },
-                '&:hover': { backgroundColor: '#ef9a9a' },
-              }}
-            />
-          )}
-        </Box>
       </Select>
     </FormControl>
   );
