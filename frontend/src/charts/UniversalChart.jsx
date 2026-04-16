@@ -81,6 +81,7 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
             : {
               ticks: {
                 stepSize: leftYStep,
+                callback: (value) => +value.toPrecision(4),
               },
               min: leftYMin,
               max: leftYMax,
@@ -111,6 +112,7 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
           : {
             ticks: {
               stepSize: leftYStep,
+              callback: (value) => +value.toPrecision(4),
             },
             min: leftYMin,
             max: leftYMax,
@@ -129,6 +131,7 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
           : {
             ticks: {
               stepSize: rightYStep,
+              callback: (value) => +value.toPrecision(4),
             },
             min: rightYMin,
             max: rightYMax,

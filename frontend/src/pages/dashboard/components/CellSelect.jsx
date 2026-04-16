@@ -11,6 +11,7 @@ import {
   Divider,
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
+import ClearIcon from '@mui/icons-material/Clear';
 import PropTypes from 'prop-types';
 import { React, useMemo, useState, useEffect } from 'react';
 import { useCells } from '../../../services/cell';
@@ -315,20 +316,33 @@ function CellSelect({ selectedCells, setSelectedCells }) {
           )}
 
         <Divider />
-        <MenuItem
-          value="all"
-          disabled
-          sx={{
-            color: '#999',
-            fontStyle: 'italic',
-            py: 0.5,
-            fontSize: '0.75rem',
-          }}
-        >
-          {safeSelectedCells.length > 0 
-            ? `${safeSelectedCells.length} cell${safeSelectedCells.length !== 1 ? 's' : ''} selected`
-            : 'Select cells from the list above'}
-        </MenuItem>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 0.5 }}>
+          <Typography variant="caption" sx={{ color: '#999', fontStyle: 'italic' }}>
+            {safeSelectedCells.length > 0
+              ? `${safeSelectedCells.length} cell${safeSelectedCells.length !== 1 ? 's' : ''} selected`
+              : 'Select cells from the list above'}
+          </Typography>
+          {safeSelectedCells.length > 0 && (
+            <Chip
+              label="Clear All"
+              size="small"
+              icon={<ClearIcon sx={{ fontSize: 14 }} />}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedCells([]);
+                setSelectedTags([]);
+                setSearchQuery('');
+              }}
+              sx={{
+                cursor: 'pointer',
+                backgroundColor: '#fce4ec',
+                color: '#c62828',
+                '& .MuiChip-icon': { color: '#c62828' },
+                '&:hover': { backgroundColor: '#ef9a9a' },
+              }}
+            />
+          )}
+        </Box>
       </Select>
     </FormControl>
   );
