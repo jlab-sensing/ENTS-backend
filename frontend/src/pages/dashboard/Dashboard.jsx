@@ -448,7 +448,7 @@ useEffect(() => {
   const topSectionHasData = powerHasData || terosHasData;
 
   return (
-    <>
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <TopNav />
       <Box sx={{ flex: 1, overflowY: 'auto', background: '#FFFFFF' }}>
         <DateRangeNotification
@@ -860,7 +860,7 @@ useEffect(() => {
         <Box sx={{ height: { xs: '60px', sm: '80px', md: '100px' } }} />
         */}
       </Box>
-    </>
+    </Box>
   );
 }
 export default Dashboard;

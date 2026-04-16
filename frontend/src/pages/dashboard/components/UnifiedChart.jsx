@@ -4,24 +4,20 @@ import PropTypes from 'prop-types';
 import { React, useEffect, useState, useRef } from 'react';
 import { getSensorData } from '../../../services/sensor';
 import UniversalChart from '../../../charts/UniversalChart';
-import {
-  extractUnifiedStreamValue,
-  matchesSensorStreamType,
-  normalizeUnifiedStreamValue,
-} from './unifiedChartUtils';
+import { extractUnifiedStreamValue, matchesSensorStreamType, normalizeUnifiedStreamValue } from './unifiedChartUtils';
 
 const CHART_CONFIGS = {
   power_voltage: {
     sensor_name: 'POWER_VOLTAGE',
     measurements: ['Voltage'],
-    units: ['mV'],
+    units: ['V'],
     axisIds: ['y'],
     chartId: 'powerVoltage',
   },
   power_current: {
     sensor_name: 'POWER_CURRENT',
     measurements: ['Current'],
-    units: ['uA'],
+    units: ['A'],
     axisIds: ['y'],
     chartId: 'powerCurrent',
   },
@@ -210,9 +206,10 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
               const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) =>
                 DateTime.fromHTTP(dateTime).toMillis(),
               );
-              const normalizedData = sensor_name === 'TEROS12_VWC_ADJ' && meas === 'Volumetric Water Content'
-                ? measDataArray.map((value) => normalizeUnifiedStreamValue(sensor_name, meas, value))
-                : measDataArray;
+              const normalizedData =
+                sensor_name === 'TEROS12_VWC_ADJ' && meas === 'Volumetric Water Content'
+                  ? measDataArray.map((value) => normalizeUnifiedStreamValue(sensor_name, meas, value))
+                  : measDataArray;
               const measData = createDataset(timestamp, normalizedData);
               newSensorChartData.labels = timestamp;
               newSensorChartData.datasets.push({
@@ -327,7 +324,9 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
   useEffect(() => {
     if (stream && liveData && liveData.length > 0) {
       const sensorMeasurements = liveData.filter((measurement) => {
-        return matchesSensorStreamType(measurement.type, sensor_name) && cells.some((cell) => cell.id === measurement.cellId);
+        return (
+          matchesSensorStreamType(measurement.type, sensor_name) && cells.some((cell) => cell.id === measurement.cellId)
+        );
       });
 
       if (sensorMeasurements.length > 0) {
@@ -358,7 +357,6 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
           const timestamps = sortedMeasurements.map((m) => m.timestamp * 1000);
 
           measurements.forEach((meas, measIndex) => {
-
             const dataValues = sortedMeasurements.map((m) => {
               const rawValue = extractUnifiedStreamValue(sensor_name, meas, m.data);
               return normalizeUnifiedStreamValue(sensor_name, meas, rawValue);

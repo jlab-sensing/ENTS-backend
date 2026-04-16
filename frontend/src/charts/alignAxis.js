@@ -49,8 +49,10 @@ function calculateAxisBounds(tickCount, min, max, factor) {
   const axisRange = axisMax - axisMin;
   let step = axisRange / tickCount;
 
-  // Round step to nice numbers based on factor
-  if (factor > 0) {
+  // Round step to nice numbers based on factor, but only when the step is
+  // at least as large as the factor. For very small data ranges (e.g. milliamp
+  // currents) the factor would inflate the step by orders of magnitude.
+  if (factor > 0 && step >= factor) {
     step = Math.ceil(step / factor) * factor;
 
     // Recalculate bounds to align with step
