@@ -105,3 +105,62 @@ def test_get_sensor_obj(init_database):
 #     data_type = db.Column(db.Text(), nullable=False)
 #     unit = db.Column(db.Text())
 #     name = db.Column(db.Text(), nullable=False)
+
+
+def test_sensor_post_invalid_binary_returns_400(init_database):
+    """Bad octet-stream payloads must not become 500 (issue #498)."""
+    response = init_database.post(
+        "/api/sensor/",
+        data=b"\x00\x00\x00",
+        content_type="application/octet-stream",
+    )
+    assert response.status_code == 400
+    assert (
+        b"Error decoding measurement" in response.data
+        or b"Error processing measurement" in response.data
+    )
+
+
+def test_sensor_post_garbage_ascii_returns_400(init_database):
+    """Lenient protobuf decode + invalid dict must be 400, not 500 (issue #498)."""
+    response = init_database.post(
+        "/api/sensor/",
+        data=b"abc",
+        content_type="application/octet-stream",
+    )
+    assert response.status_code == 400
+    assert (
+        b"Error processing measurement" in response.data
+        or b"Error decoding" in response.data
+    )
+
+
+def test_sensor_post_empty_body_returns_400(init_database):
+    """An empty binary body should be rejected gracefully (issue #498)."""
+    response = init_database.post(
+        "/api/sensor/",
+        data=b"",
+        content_type="application/octet-stream",
+    )
+    assert response.status_code == 400
+
+
+def test_sensor_post_unsupported_content_type_returns_400(init_database):
+    """Unsupported Content-Type must return 400, not 500."""
+    response = init_database.post(
+        "/api/sensor/",
+        data=b"test",
+        content_type="text/plain",
+    )
+    assert response.status_code == 400
+    assert b"Unsupported Content-Type" in response.data
+
+
+def test_sensor_json_post_unsupported_content_type_returns_400(init_database):
+    """JSON sensor endpoint must reject non-JSON Content-Type with 400."""
+    response = init_database.post(
+        "/api/sensor_json/",
+        data=b"binary-data",
+        content_type="application/octet-stream",
+    )
+    assert response.status_code == 400
