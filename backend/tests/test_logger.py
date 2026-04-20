@@ -288,3 +288,49 @@ def test_integrity_error_duplicate_name_returns_400(monkeypatch):
 
     assert status == 400
     assert body["message"] == "Duplicate logger name"
+
+
+def test_put_duplicate_name_returns_400(monkeypatch):
+    """PUT /api/logger/:id with a name already used by another logger returns 400."""
+    existing_logger = StubLogger(logger_id=1)
+    target_logger = StubLogger(logger_id=2)
+
+    monkeypatch.setattr(
+        "api.resources.logger.LoggerModel.get",
+        lambda logger_id: target_logger,
+    )
+    monkeypatch.setattr(
+        "api.resources.logger.LoggerModel.find_by_name",
+        lambda name: existing_logger,  # name already taken by a different logger
+    )
+
+    app = _make_test_app()
+    with app.test_request_context(json={"name": "existing-name"}):
+        body, status = LoggerResource().put(None, logger_id=2)
+
+    assert status == 400
+    assert body["message"] == "Duplicate logger name"
+
+
+def test_put_same_name_returns_200(monkeypatch):
+    """PUT /api/logger/:id renaming to its own current name should succeed."""
+    stub_logger = StubLogger(logger_id=1)
+    stub_logger.name = "my-logger"
+    stub_logger.description = "desc"
+    stub_logger.type = ""
+    stub_logger.save = lambda: None
+
+    monkeypatch.setattr(
+        "api.resources.logger.LoggerModel.get",
+        lambda logger_id: stub_logger,
+    )
+    monkeypatch.setattr(
+        "api.resources.logger.LoggerModel.find_by_name",
+        lambda name: stub_logger,  # same logger — not a conflict
+    )
+
+    app = _make_test_app()
+    with app.test_request_context(json={"name": "my-logger"}):
+        body, status = LoggerResource().put(None, logger_id=1)
+
+    assert status == 200
