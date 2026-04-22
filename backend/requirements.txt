@@ -5,7 +5,7 @@ tqdm
 Flask>=3.0,<3.1
 Flask-RESTful
 flask_cors
-Flask-SocketIO>=5.3,<6.0
+Flask-SocketIO>=5.6.1,<6.0
 gunicorn
 marshmallow>=3.0,<4.0
 flask_marshmallow
