@@ -108,6 +108,7 @@ class TEROSData(db.Model):
         if end_time is None:
             end_time = datetime.now()
 
+
         data = {
             "timestamp": [],
             "vwc": [],

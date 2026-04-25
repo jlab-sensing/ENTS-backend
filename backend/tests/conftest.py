@@ -34,8 +34,6 @@ def requires_ttn():
     env = os.environ.get("TTN_API_KEY")
 
     return pytest.mark.skipif(env is None, reason="TTN_API_KEY not availble")
-
-
 # --------
 # Fixtures
 # --------
