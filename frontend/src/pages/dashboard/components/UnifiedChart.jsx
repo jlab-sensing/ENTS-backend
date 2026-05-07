@@ -6,6 +6,7 @@ import { getSensorData } from '../../../services/sensor';
 import UniversalChart from '../../../charts/UniversalChart';
 import { extractUnifiedStreamValue, matchesSensorStreamType, normalizeUnifiedStreamValue } from './unifiedChartUtils';
 
+
 const CHART_CONFIGS = {
   power_voltage: {
     sensor_name: 'POWER_VOLTAGE',
@@ -135,7 +136,7 @@ const CHART_CONFIGS = {
     chartId: 'waterFlow',
   },
 };
-function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange }) {
+function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange, cellSensorsById ={}, }) {
   const [resample, setResample] = useState('hour');
   const chartSettings = {
     label: [],
@@ -169,7 +170,18 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
       data[id] = {
         name: name,
       };
+      // get list of sensors that are associated with selected cells
+      const cellSensors = cellSensorsById || [];
       for (const meas of measurements) {
+        // verify sensor mathches one of the sensors from CHART_CONFIGS
+        const hasSensor = cellSensors.some((sensor) => {
+          return sensor.name === sensor_name && sensor.measurement === meas;
+        });
+        // if no matching sensor, skip this request
+        if (!hasSensor){
+          continue;
+        }
+
         data[id] = {
           ...data[id],
           [meas]: await getSensorData(sensor_name, id, meas, startDate.toHTTP(), endDate.toHTTP(), resample),
@@ -411,7 +423,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cells, stream, resample, startDate, endDate]);
+  }, [cells, stream, resample, startDate, endDate, cellSensorsById]);
 
   const handleResampleChange = (newResample) => {
     setResample(newResample);
@@ -461,6 +473,7 @@ UnifiedChart.propTypes = {
   liveData: PropTypes.array,
   processedData: PropTypes.object,
   onDataStatusChange: PropTypes.func,
+  cellSensorsById: PropTypes.object,
 };
 
 export default UnifiedChart;

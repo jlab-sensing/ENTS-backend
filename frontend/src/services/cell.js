@@ -20,6 +20,16 @@ export const getCells = () => {
     });
 };
 
+export const getCellSensors = (cellId) => {
+  return axios
+    .get(`${process.env.PUBLIC_URL}/api/cell/${cellId}/sensors`)
+    .then((res) => res.data)
+    .catch((error) => {
+      console.log('Error getting cell sensors:', error.response ? error.response.data : error.message);
+      throw(error);
+    });
+};
+
 // Get cells with their tags included
 export const getCellsWithTags = () => {
   return axios
