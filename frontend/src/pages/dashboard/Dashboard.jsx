@@ -406,20 +406,25 @@ useEffect(() => {
   }
 };
 
+  const selectedCellIds = useMemo(() => {
+    return selectedCells.map((cell) => cell.id.toString()).sort().join(',');
+  }, [selectedCells])
+
   useEffect(() => {
     const loadCellSensors = async () => {
       const sensorsById = {};
-      for (const cell of selectedCells) {
-        sensorsById[cell.id] = await getCellSensors(cell.id);
+      const cellIds = selectedCellIds.split(',').filter(Boolean);
+      for (const cellId of cellIds){
+        sensorsById[cellId] = await getCellSensors(cellId);
       }
       setCellSensorsById(sensorsById);
     };
-    if (selectedCells.length > 0){
+    if (selectedCellIds){
       loadCellSensors();
     } else {
       setCellSensorsById({});
     }
-  }, [selectedCells]);
+  }, [selectedCellIds]);
 
 
   useEffect(() => {
