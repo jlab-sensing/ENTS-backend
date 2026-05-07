@@ -26,7 +26,6 @@ export const getCellSensors = (cellId) => {
     .then((res) => res.data)
     .catch((error) => {
       console.log('Error getting cell sensors:', error.response ? error.response.data : error.message);
-      throw(error);
     });
 };
 
