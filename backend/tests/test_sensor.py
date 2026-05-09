@@ -106,6 +106,7 @@ def test_get_sensor_obj(init_database):
 #     unit = db.Column(db.Text())
 #     name = db.Column(db.Text(), nullable=False)
 
+
 def test_sensor_endpoint_returns_only_sensors(init_database):
     ts = 1705176162
     cell = Cell("test_cell_1", "", 1, 1, False, None)
@@ -125,7 +126,6 @@ def test_sensor_endpoint_returns_only_sensors(init_database):
     }
     data = Sensor.add_data("measurement_name", "measurement_unit", meas_dict)
     sensor = Sensor.query.get(data.sensor_id)
-
 
     response = init_database.get(f"/api/cell/{cell.id}/sensors")
 
