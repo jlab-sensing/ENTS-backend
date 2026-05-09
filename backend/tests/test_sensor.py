@@ -105,3 +105,33 @@ def test_get_sensor_obj(init_database):
 #     data_type = db.Column(db.Text(), nullable=False)
 #     unit = db.Column(db.Text())
 #     name = db.Column(db.Text(), nullable=False)
+
+def test_sensor_endpoint_returns_only_sensors(init_database):
+    ts = 1705176162
+    cell = Cell("test_cell_1", "", 1, 1, False, None)
+    cell.save()
+
+    meas_dict = {
+        "type": "measurement_type",
+        "cellId": cell.id,
+        "data": {
+            "measurement_name": 1,
+        },
+        # types: float, int, text
+        "data_type": {
+            "measurement_name": int,
+        },
+        "ts": ts,
+    }
+    data = Sensor.add_data("measurement_name", "measurement_unit", meas_dict)
+    sensor = Sensor.query.get(data.sensor_id)
+
+
+    response = init_database.get(f"/api/cell/{cell.id}/sensors")
+
+    assert response.status_code == 200
+    result = response.get_json()
+
+    returned_ids = [sensor["id"] for sensor in result]
+    assert sensor.id in returned_ids
+    assert all(sensors["cell_id"] == cell.id for sensors in result)
