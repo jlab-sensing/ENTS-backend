@@ -58,3 +58,48 @@ export function normalizeUnifiedStreamValue(sensorName, measurementLabel, value)
   }
   return value;
 }
+
+export const formatElectricalUnit = (value, type) => {
+  if (value === null || value === undefined) return 'N/A';
+
+  const absVal = Math.abs(value);
+
+  if (type === 'POWER_CURRENT') {
+    if (absVal < 0.001) return `${(value * 1000000).toFixed(3)} µA`;
+    if (absVal < 1) return `${(value * 1000).toFixed(3)} mA`;
+    return `${value.toFixed(3)} A`;
+  }
+
+  if (type === 'POWER_VOLTAGE') {
+    if (absVal < 1) return `${(value * 1000).toFixed(3)} mV`;
+    return `${value.toFixed(3)} V`;
+  }
+
+  return typeof value === 'number' ? value.toFixed(3) : value;
+};
+
+/**
+ * Dynamically scales and formats sensor values based on their magnitude.
+ * @param {number} value - The raw decimal value from the backend.
+ * @param {string} type - The sensor type (e.g., 'POWER_VOLTAGE', 'POWER_CURRENT').
+ * @returns {string} The formatted value with appropriate units.
+ */
+export const formatSensorValue = (value, type) => {
+  if (value === null || value === undefined) return '-';
+
+  const absValue = Math.abs(value);
+
+  if (type === 'POWER_CURRENT') {
+    if (absValue < 0.001) return `${(value * 1000000).toFixed(2)} µA`;
+    if (absValue < 1) return `${(value * 1000).toFixed(2)} mA`;
+    return `${value.toFixed(2)} A`;
+  }
+
+  if (type === 'POWER_VOLTAGE') {
+    if (absValue < 1) return `${(value * 1000).toFixed(2)} mV`;
+    return `${value.toFixed(2)} V`;
+  }
+
+  // Fallback for other sensor types (just limit decimals)
+  return typeof value === 'number' ? value.toFixed(2) : value;
+};

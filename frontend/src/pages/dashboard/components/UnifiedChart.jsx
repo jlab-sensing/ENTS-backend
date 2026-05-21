@@ -441,6 +441,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
         data={sensorChartData}
         stream={stream}
         chartId={chartId}
+        sensorName={sensor_name}
         measurements={measurements}
         units={units}
         axisIds={axisIds}
