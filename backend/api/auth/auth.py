@@ -59,7 +59,7 @@ def get_api_key_user():
         return None
     return User.query.filter_by(api_key=api_key).first()
 
-def authenticate_no_jwt(f):
+def authenticate_apikey_or_jwt(f):
     """Decorator for protecting resources from invalid/missing api keys"""
 
     @wraps(f)

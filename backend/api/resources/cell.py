@@ -1,7 +1,6 @@
 from flask_restful import Resource
 from flask import request, jsonify
-from ..auth.auth import authenticate
-from ..auth.auth import authenticate_no_jwt
+from ..auth.auth import authenticate_apikey_or_jwt
 from ..schemas.cell_schema import CellSchema
 
 # from ..conn import engine
@@ -16,9 +15,10 @@ add_cell_schema = AddCellSchema()
 
 class Cell(Resource):
     method_decorators = {
-        "get": [authenticate_no_jwt],
-        "put": [authenticate_no_jwt],
-        "delete": [authenticate_no_jwt],
+        "get": [authenticate_apikey_or_jwt],
+        "put": [authenticate_apikey_or_jwt],
+        "post": [authenticate_apikey_or_jwt],
+        "delete": [authenticate_apikey_or_jwt],
     }
 
     def get(self, user):
@@ -59,7 +59,7 @@ class Cell(Resource):
 
         return cells_schema.dump(cells)
 
-    def post(self):
+    def post(self, user):
         json_data = request.json
         cell_data = add_cell_schema.load(json_data)
         cell_name = cell_data["name"]
