@@ -18,7 +18,7 @@ When adding a new entry, please use the following format:
 
 ## Log
 
-- [2026-05-08] feature: Added /cell/id/sensors endpoint to query sensors associated with each cell
+- [2026-05-08] feature: Added /cell/id/sensors endpoint to query sensors associated with each cell [760](https://github.com/jlab-sensing/ENTS-backend/pull/760)
 - [2026-04-16] feature: added a clear all cells button to cell selection
 - [2026-04-16] fix: removed two scrollbars from dashboard, made power datapoints display as V and A, made data not truncate as often
 - [2026-03-30] fix: added test decorators to resolve lack of "TTN_API_KEY" on fork PR's. removed k6 from github actions. changed github action to utilize env-import.py as opposeed to directly accessing s3 bucket for env variables. [#736](https://github.com/jlab-sensing/ENTS-backend/pull/736)
