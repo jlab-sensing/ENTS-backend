@@ -53,11 +53,13 @@ def authenticate(f):
 
     return wrapper
 
+
 def get_api_key_user():
     api_key = request.headers.get("X-API-Key")
     if not api_key:
         return None
     return User.query.filter_by(api_key=api_key).first()
+
 
 def authenticate_apikey_or_jwt(f):
     """Decorator for protecting resources from invalid/missing api keys"""
@@ -81,14 +83,15 @@ def authenticate_apikey_or_jwt(f):
             except Exception as e:
                 print(f"Authentication error: {repr(e)}", flush=True)
                 return {"msg": "Authentication failed"}, 403
-        
+
         api_key_user = get_api_key_user()
         if api_key_user is not None:
             return f(api_key_user, *args, **kwargs)
-        
+
         return {"msg": "No token or API key provided"}, 401
-        
+
     return wrapper
+
 
 def handle_login(user: User):
     access_token = jwt.encode(

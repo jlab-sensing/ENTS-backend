@@ -63,9 +63,9 @@ class CellUserDetail(Resource):
     """Resource for managing individual user assignment to a cell"""
 
     method_decorators = {
-        "put": [authenticate_apikey_or_jwt], 
-        "delete": [authenticate_apikey_or_jwt]
-        }
+        "put": [authenticate_apikey_or_jwt],
+        "delete": [authenticate_apikey_or_jwt],
+    }
 
     def put(self, cell_id, user_id):
         """Add a specific user to a cell"""

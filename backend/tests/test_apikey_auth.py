@@ -3,6 +3,7 @@ import jwt
 from api.auth.auth import config
 from api.models.user import User
 
+
 def make_user(email="apikey-auth-test@x.com", api_key="test_apikey"):
     user = User(
         first_name="API",
@@ -14,6 +15,7 @@ def make_user(email="apikey-auth-test@x.com", api_key="test_apikey"):
     user.save()
     return user
 
+
 def make_jwt_header(user):
     config["accessToken"] = "test_access_token_secret_32_characters"
     token = jwt.encode(
@@ -23,12 +25,14 @@ def make_jwt_header(user):
     )
     return {"Authorization": f"Bearer {token}"}
 
+
 def request_apikey_endpoint(client, method="get", headers=None):
     request_method = getattr(client, method)
     response = request_method("/api/apikey/", headers=headers)
-    if (response.status_code != 404):
+    if response.status_code != 404:
         return response
     return request_method("/api/apikey", headers=headers)
+
 
 def test_apikey_endpoint_rejects_apikey(init_database):
     user = make_user(
@@ -36,10 +40,11 @@ def test_apikey_endpoint_rejects_apikey(init_database):
         api_key="valid-apikey-for-rejection_test",
     )
     response = request_apikey_endpoint(
-        init_database, 
+        init_database,
         headers={"X-API-Key": user.api_key},
     )
     assert response.status_code in (401, 403)
+
 
 def test_apikey_endpoint_accepts_jwt(init_database):
     user = make_user(
@@ -48,12 +53,13 @@ def test_apikey_endpoint_accepts_jwt(init_database):
     )
 
     response = request_apikey_endpoint(
-        init_database, 
+        init_database,
         headers=make_jwt_header(user),
     )
     assert response.status_code != 401
     assert response.status_code != 403
     assert response.status_code != 404
+
 
 def test_protected_cell_endpoint_accepts_apikey(init_database):
     user = make_user(
@@ -77,6 +83,7 @@ def test_protected_cell_endpoint_accepts_apikey(init_database):
     assert response.status_code == 200
     data = response.get_json()
     assert data["message"] == "Successfully added cell"
+
 
 def test_protected_cell_endpoint_rejects_invalid_apikey(init_database):
     response = init_database.post(

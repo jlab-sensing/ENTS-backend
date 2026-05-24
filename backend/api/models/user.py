@@ -17,7 +17,6 @@ class User(db.Model):
     cells = db.relationship(
         "Cell", secondary=Cell_User.__table__, back_populates="users"
     )
-    
 
     def set_token(self, access_token, refresh_token):
         token = OAuthToken.query.filter(OAuthToken.user_id == self.id).first()

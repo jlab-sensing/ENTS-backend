@@ -5,6 +5,7 @@ from ..auth.auth import authenticate
 from ..models import db
 from ..models.user import User
 
+
 class ApiKey(Resource):
     method_decorators = {
         "get": [authenticate],
@@ -35,4 +36,3 @@ class ApiKey(Resource):
         user.api_key = None
         db.session.commit()
         return {"message": "API key deleted"}, 200
-    

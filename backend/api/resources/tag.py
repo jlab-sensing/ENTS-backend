@@ -71,9 +71,9 @@ class Tag(Resource):
 
 class TagDetail(Resource):
     method_decorators = {
-        "put": [authenticate_apikey_or_jwt], 
-        "delete": [authenticate_apikey_or_jwt]
-        }
+        "put": [authenticate_apikey_or_jwt],
+        "delete": [authenticate_apikey_or_jwt],
+    }
 
     def get(self, tag_id):
         """Get specific tag by ID"""
