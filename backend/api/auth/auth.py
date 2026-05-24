@@ -53,6 +53,42 @@ def authenticate(f):
 
     return wrapper
 
+def get_api_key_user():
+    api_key = request.headers.get("X-API-Key")
+    if not api_key:
+        return None
+    return User.query.filter_by(api_key=api_key).first()
+
+def authenticate_no_jwt(f):
+    """Decorator for protecting resources from invalid/missing api keys"""
+
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        auth_header = request.headers.get("Authorization")
+
+        if auth_header:
+            try:
+                token = auth_header.split(" ")[1]
+                data = jwt.decode(token, config["accessToken"], algorithms=["HS256"])
+                user = User.query.get(UUID(data["uid"]))
+                if user is None:
+                    return {"msg": "User not found"}, 404
+                return f(user, *args, **kwargs)
+            except jwt.exceptions.ExpiredSignatureError:
+                return {"msg": "Token expired"}, 401
+            except jwt.exceptions.InvalidTokenError:
+                return {"msg": "Invalid token"}, 403
+            except Exception as e:
+                print(f"Authentication error: {repr(e)}", flush=True)
+                return {"msg": "Authentication failed"}, 403
+        
+        api_key_user = get_api_key_user()
+        if api_key_user is not None:
+            return f(api_key_user, *args, **kwargs)
+        
+        return {"msg": "No token or API key provided"}, 401
+        
+    return wrapper
 
 def handle_login(user: User):
     access_token = jwt.encode(

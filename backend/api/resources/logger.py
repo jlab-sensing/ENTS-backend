@@ -4,6 +4,7 @@ from flask_restful import Resource
 from flask import request
 from sqlalchemy.exc import IntegrityError
 from ..auth.auth import authenticate
+from ..auth.auth import authenticate_no_jwt
 from ..models import db
 from ..schemas.logger_schema import LoggerSchema
 from ..models.logger import Logger as LoggerModel
@@ -18,10 +19,10 @@ DUPLICATE_DEVICE_ID_MESSAGE = "There already exists a logger id with that device
 
 class Logger(Resource):
     method_decorators = {
-        "get": [authenticate],
-        "post": [authenticate],
-        "put": [authenticate],
-        "delete": [authenticate],
+        "get": [authenticate_no_jwt],
+        "post": [authenticate_no_jwt],
+        "put": [authenticate_no_jwt],
+        "delete": [authenticate_no_jwt],
     }
     ttn_api = TTNApi()
 

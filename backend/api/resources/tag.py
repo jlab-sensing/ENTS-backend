@@ -1,6 +1,7 @@
 from flask_restful import Resource
 from flask import request
 from ..auth.auth import authenticate
+from ..auth.auth import authenticate_no_jwt
 from ..models.cell import Tag as TagModel
 from ..schemas.tag_schema import (
     TagSchema,
@@ -18,7 +19,7 @@ tag_list_schema = TagListSchema(many=True)
 
 
 class Tag(Resource):
-    method_decorators = {"post": [authenticate]}
+    method_decorators = {"post": [authenticate_no_jwt]}
 
     def get(self):
         """Get all tags or filter by search"""

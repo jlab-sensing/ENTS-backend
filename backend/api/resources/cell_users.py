@@ -1,6 +1,7 @@
 from flask_restful import Resource
 from flask import request
 from ..auth.auth import authenticate
+from ..auth.auth import authenticate_no_jwt
 from ..models.cell import Cell as CellModel
 from ..models.user import User as UserModel
 from ..schemas.user_schema import UserSchema
@@ -13,7 +14,7 @@ user_schema = UserSchema()
 class CellUsers(Resource):
     """Resource for managing users associated with a specific cell"""
 
-    method_decorators = {"post": [authenticate]}
+    method_decorators = {"post": [authenticate_no_jwt]}
 
     def get(self, cell_id):
         """Get all users for a specific cell"""

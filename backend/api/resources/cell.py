@@ -1,6 +1,7 @@
 from flask_restful import Resource
 from flask import request, jsonify
 from ..auth.auth import authenticate
+from ..auth.auth import authenticate_no_jwt
 from ..schemas.cell_schema import CellSchema
 
 # from ..conn import engine
@@ -15,9 +16,9 @@ add_cell_schema = AddCellSchema()
 
 class Cell(Resource):
     method_decorators = {
-        "get": [authenticate],
-        "put": [authenticate],
-        "delete": [authenticate],
+        "get": [authenticate_no_jwt],
+        "put": [authenticate_no_jwt],
+        "delete": [authenticate_no_jwt],
     }
 
     def get(self, user):
