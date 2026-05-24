@@ -17,7 +17,12 @@ class ApiKey(Resource):
 
     def post(self, user):
         if user.api_key is not None:
-            return {"message": "API key already exists. Delete the existing key before creating a new one."}, 409
+            return {
+                "message": (
+                    "API key already exists. Delete existing key"
+                    " before creating a new one."
+                )
+            }, 409
         api_key = secrets.token_hex(32)
         while User.query.filter_by(api_key=api_key).first() is not None:
             api_key = secrets.token_hex(32)
