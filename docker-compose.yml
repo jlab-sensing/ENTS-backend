@@ -98,7 +98,7 @@ services:
     links:
       - valkey
     ports:
-      - '80:80'
+      - '6000:80'
 
 volumes:
   postgresql-16-data:
