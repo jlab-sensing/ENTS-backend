@@ -71,7 +71,7 @@ jobs:
             cd "$APP_DIR"
 
             git fetch origin
-            git checkout ${{ steps.pr.outputs.sha }}
+            git reset --hard ${{ steps.pr.outputs.sha }}
 
             python3 env-import.py
 
