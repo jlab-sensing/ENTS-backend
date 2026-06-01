@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // import AccountInfo from '../pages/profile/components/AccountInfo';
 import DeleteCellModal from '../pages/profile/components/DeleteCellModal';
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { updateCell, getCells, deleteCell, getUserCells, getCellSensors } from '../services/cell';
+import { updateCell, getCells, deleteCell, getUserCells } from '../services/cell';
 import { useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 vi.mock('axios');
@@ -332,27 +332,6 @@ describe('Cell Service API Functions', () => {
     expect(data).toEqual([{ id: 1, name: 'Mock User Cell' }]); // Uses partial mock
     expect(getUserCells).toHaveBeenCalledTimes(1);
   });
-
-  it('get cell sensors', async () => {
-    const mockResponse = [{ id: 1, name: 'Mock Cell' }];
-    axios.get.mockResolvedValue({ data: mockResponse});
-    const data = await getCellSensors(1);
-    expect(data).toEqual(mockResponse);
-    expect(axios.get).toHaveBeenCalledWith(`${process.env.PUBLIC_URL}/api/cell/1/sensors`);
-  });
-
-  it ('returns error when get cell sensors fails', async () =>{
-    const mockError = {
-      response: {
-        data: { error: 'Error getting cell sensors'},
-      },
-    };
-
-    axios.get.mockRejectedValueOnce(mockError);
-    const data = await getCellSensors(1);
-    expect(data).toBeUndefined();
-    expect(axios.get).toHaveBeenCalledWith(`${process.env.PUBLIC_URL}/api/cell/1/sensors`);
-  })
 
   // it('fetches cell data', async () => {
   //   const mockData = { result: 'Mock Cell Data' };

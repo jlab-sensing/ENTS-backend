@@ -6,7 +6,7 @@ import DateRangeNotification from '../../components/DateRangeNotification';
 import { useSmartDateRange } from '../../hooks/useSmartDateRange';
 import useAxiosPrivate from '../../auth/hooks/useAxiosPrivate';
 import useAuth from '../../auth/hooks/useAuth';
-import { useCells, getCellSensors } from '../../services/cell';
+import { useCells } from '../../services/cell';
 import ArchiveModal from './components/ArchiveModal';
 import BackBtn from './components/BackBtn';
 import CellSelect from './components/CellSelect';
@@ -35,7 +35,6 @@ function Dashboard() {
   const [powerHasData, setPowerHasData] = useState(false);
   const [terosHasData, setTerosHasData] = useState(false);
   const [liveData, setLiveData] = useState([]);
-  const [cellSensorsById, setCellSensorsById] = useState({});
 
   // Background streaming data - always collecting in background
   const backgroundStreamDataRef = useRef([]);
@@ -406,26 +405,6 @@ useEffect(() => {
   }
 };
 
-  const selectedCellIds = useMemo(() => {
-    return selectedCells.map((cell) => cell.id.toString()).sort().join(',');
-  }, [selectedCells])
-
-  useEffect(() => {
-    const loadCellSensors = async () => {
-      const sensorsById = {};
-      const cellIds = selectedCellIds.split(',').filter(Boolean);
-      for (const cellId of cellIds){
-        sensorsById[cellId] = await getCellSensors(cellId);
-      }
-      setCellSensorsById(sensorsById);
-    };
-    if (selectedCellIds){
-      loadCellSensors();
-    } else {
-      setCellSensorsById({});
-    }
-  }, [selectedCellIds]);
-
 
   useEffect(() => {
     if (selectedCells.length === 0) {
@@ -688,7 +667,6 @@ useEffect(() => {
                   stream={stream}
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
-                  cellSensorsById={cellSensorsById}
                 />
                 <UnifiedChart
                   type='power_current'
@@ -698,7 +676,6 @@ useEffect(() => {
                   stream={stream}
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
-                  cellSensorsById={cellSensorsById}
                 />
                 <UnifiedChart
                   type='teros12_vwc'
@@ -708,7 +685,6 @@ useEffect(() => {
                   stream={stream}
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
-                  cellSensorsById={cellSensorsById}
                 />
                 <UnifiedChart
                   type='teros12_vwc_adj'
@@ -718,7 +694,6 @@ useEffect(() => {
                   stream={stream}
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
-                  cellSensorsById={cellSensorsById}
                 />
                 <UnifiedChart
                   type='teros12_temp'
@@ -728,7 +703,6 @@ useEffect(() => {
                   stream={stream}
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
-                  cellSensorsById={cellSensorsById}
                 />
                 <UnifiedChart
                   type='teros12_ec'
@@ -738,7 +712,6 @@ useEffect(() => {
                   stream={stream}
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
-                  cellSensorsById={cellSensorsById}
                 />
                 <UnifiedChart
                   type='soilPot'
@@ -748,7 +721,6 @@ useEffect(() => {
                   stream={stream}
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
-                  cellSensorsById={cellSensorsById}
                 />
                 <UnifiedChart
                   type='presHum'
@@ -758,7 +730,6 @@ useEffect(() => {
                   stream={stream}
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
-                  cellSensorsById={cellSensorsById}
                 />
                 <UnifiedChart
                   type='sensor'
@@ -768,7 +739,6 @@ useEffect(() => {
                   stream={stream}
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
-                  cellSensorsById={cellSensorsById}
                 />
                 <UnifiedChart
                   type='co2'
@@ -778,7 +748,6 @@ useEffect(() => {
                   stream={stream}
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
-                  cellSensorsById={cellSensorsById}
                 />
                 <UnifiedChart
                   type='temperature'
@@ -788,7 +757,6 @@ useEffect(() => {
                   stream={stream}
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
-                  cellSensorsById={cellSensorsById}
                 />
                 <UnifiedChart
                   type='soilHum'
@@ -798,7 +766,6 @@ useEffect(() => {
                   stream={stream}
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
-                  cellSensorsById={cellSensorsById}
                 />
                 <UnifiedChart
                   type='waterPress'
@@ -808,7 +775,6 @@ useEffect(() => {
                   stream={stream}
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
-                  cellSensorsById={cellSensorsById}
                 />
                 <UnifiedChart
                   type='waterFlow'
@@ -818,7 +784,6 @@ useEffect(() => {
                   stream={stream}
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
-                  cellSensorsById={cellSensorsById}
                 />
                 <UnifiedChart
                   type='waterFlowD10'
@@ -828,7 +793,6 @@ useEffect(() => {
                   stream={stream}
                   liveData={liveData}
                   processedData={processedLiveData.sensors}
-                  cellSensorsById={cellSensorsById}
                 />
               </Stack>
             </>
