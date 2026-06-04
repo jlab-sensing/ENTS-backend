@@ -1,4 +1,4 @@
-import { Box, Divider, Grid, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { DateTime } from 'luxon';
 import { React, useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -12,10 +12,16 @@ import BackBtn from './components/BackBtn';
 import CellSelect from './components/CellSelect';
 import DateRangeSel from './components/DateRangeSel';
 import DownloadBtn from './components/DownloadBtn';
-import PowerCharts from './components/PowerCharts';
 import StreamToggle from './components/StreamToggle';
-import TerosCharts from './components/TerosCharts';
-import UnifiedChart from './components/UnifiedChart';
+import DashboardPanelGrid from './components/DashboardPanelGrid';
+import DashboardPanelActions from './components/DashboardPanelActions';
+import AddChartModal from './components/AddChartModal';
+import {
+  DEFAULT_DASHBOARD_PANEL_ORDER,
+  isKnownPanelId,
+  parseLayoutParam,
+  serializeLayoutParam,
+} from './catalog/dashboardCatalog';
 import { io } from 'socket.io-client';
 import TopNav from '../../components/TopNav';
 
@@ -56,6 +62,9 @@ function Dashboard() {
 
   const cells = useCells();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [panelOrder, setPanelOrder] = useState(DEFAULT_DASHBOARD_PANEL_ORDER);
+  const [panelColumns, setPanelColumns] = useState(2);
+  const [addChartOpen, setAddChartOpen] = useState(false);
 
   // data processing
   const processLiveData = useCallback((measurements) => {
@@ -140,6 +149,31 @@ function Dashboard() {
     }
     return processLiveData(liveData);
   }, [liveData, processLiveData]);
+
+  const panelChartProps = useMemo(
+    () => ({
+      cells: selectedCells,
+      startDate: hourlyStartDate,
+      endDate: hourlyEndDate,
+      stream,
+      liveData,
+      processedPower: processedLiveData.power,
+      processedTeros: processedLiveData.teros,
+      processedSensors: processedLiveData.sensors,
+      onPowerDataStatusChange: setPowerHasData,
+      onTerosDataStatusChange: setTerosHasData,
+    }),
+    [selectedCells, hourlyStartDate, hourlyEndDate, stream, liveData, processedLiveData],
+  );
+
+  const handleAddPanel = useCallback((panelId) => {
+    if (!isKnownPanelId(panelId)) return;
+    setPanelOrder((prev) => (prev.includes(panelId) ? prev : [...prev, panelId]));
+  }, []);
+
+  const handleRemovePanel = useCallback((panelId) => {
+    setPanelOrder((prev) => prev.filter((id) => id !== panelId));
+  }, []);
 
   // processing for WebSocket updates
   const processImmediateUpdate = useCallback(
@@ -243,6 +277,12 @@ function Dashboard() {
     const searchQueryCells = searchParams.get('cell_id');
     const searchQueryStartDate = searchParams.get('startDate');
     const searchQueryEndDate = searchParams.get('endDate');
+    const searchQueryLayout = searchParams.get('layout');
+
+    const parsedLayout = parseLayoutParam(searchQueryLayout);
+    if (parsedLayout.length > 0) {
+      setPanelOrder(parsedLayout);
+    }
 
     if (searchQueryCells && searchQueryCells.length > 0) {
       const selectedCellIds = searchQueryCells.split(',');
@@ -344,8 +384,21 @@ useEffect(() => {
     newParams.set('endDate', hourlyEndDate.toISO());
   }
 
+  const layoutSerialized = serializeLayoutParam(panelOrder);
+  if (layoutSerialized) {
+    newParams.set('layout', layoutSerialized);
+  }
+
   setSearchParams(newParams, { replace: true });
-}, [hourlyStartDate, hourlyEndDate, selectedCells, isInitialized, manualDateSelection, setSearchParams]);
+}, [
+  hourlyStartDate,
+  hourlyEndDate,
+  selectedCells,
+  panelOrder,
+  isInitialized,
+  manualDateSelection,
+  setSearchParams,
+]);
 
 
   const handleStartDateChange = (newStartDate) => {
@@ -445,7 +498,7 @@ useEffect(() => {
   }, [loggedIn, stream]);
 
   // Check if top section should be hidden
-  const topSectionHasData = powerHasData || terosHasData;
+  const topSectionHasData = powerHasData || terosHasData || panelOrder.length > 0;
 
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -620,181 +673,35 @@ useEffect(() => {
             </Box>
           ) : (
             <>
-              {/* Top section charts - always render but conditionally display */}
-              <Grid
-                container
-                spacing={3}
+              {/* Top charts: draggable panel grid + add/remove */}
+              <Box
                 sx={{
                   width: '100%',
                   p: topSectionHasData ? 2 : 0,
-                  height: topSectionHasData ? 'auto' : '0px',
+                  height: topSectionHasData ? 'auto' : 0,
                   overflow: 'hidden',
                 }}
-                alignItems='center'
-                justifyContent='space-evenly'
-                columns={{ xs: 4, sm: 8, md: 12 }}
               >
-                <PowerCharts
-                  cells={selectedCells}
-                  {...(!stream && { startDate: hourlyStartDate, endDate: hourlyEndDate })}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.power}
-                  onDataStatusChange={setPowerHasData}
+                <DashboardPanelActions
+                  onAddChart={() => setAddChartOpen(true)}
+                  panelColumns={panelColumns}
+                  onPanelColumnsChange={setPanelColumns}
                 />
-                <TerosCharts
-                  cells={selectedCells}
-                  {...(!stream && { startDate: hourlyStartDate, endDate: hourlyEndDate })}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.teros}
-                  onDataStatusChange={setTerosHasData}
+                <DashboardPanelGrid
+                  panelOrder={panelOrder}
+                  onPanelOrderChange={setPanelOrder}
+                  onRemovePanel={handleRemovePanel}
+                  panelColumns={panelColumns}
+                  chartProps={panelChartProps}
                 />
-              </Grid>
-
-              {/* Bottom section charts - always rendered */}
-              <Stack
-                direction='column'
-                divider={<Divider orientation='horizontal' flexItem />}
-                justifyContent='spaced-evently'
-                sx={{ width: '95%', boxSizing: 'border-box' }}
-              >
-                <UnifiedChart
-                  type='power_voltage'
-                  cells={selectedCells}
-                  startDate={hourlyStartDate}
-                  endDate={hourlyEndDate}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.sensors}
+                <AddChartModal
+                  open={addChartOpen}
+                  onClose={() => setAddChartOpen(false)}
+                  selectedCells={selectedCells}
+                  panelOrder={panelOrder}
+                  onAddPanel={handleAddPanel}
                 />
-                <UnifiedChart
-                  type='power_current'
-                  cells={selectedCells}
-                  startDate={hourlyStartDate}
-                  endDate={hourlyEndDate}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.sensors}
-                />
-                <UnifiedChart
-                  type='teros12_vwc'
-                  cells={selectedCells}
-                  startDate={hourlyStartDate}
-                  endDate={hourlyEndDate}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.sensors}
-                />
-                <UnifiedChart
-                  type='teros12_vwc_adj'
-                  cells={selectedCells}
-                  startDate={hourlyStartDate}
-                  endDate={hourlyEndDate}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.sensors}
-                />
-                <UnifiedChart
-                  type='teros12_temp'
-                  cells={selectedCells}
-                  startDate={hourlyStartDate}
-                  endDate={hourlyEndDate}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.sensors}
-                />
-                <UnifiedChart
-                  type='teros12_ec'
-                  cells={selectedCells}
-                  startDate={hourlyStartDate}
-                  endDate={hourlyEndDate}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.sensors}
-                />
-                <UnifiedChart
-                  type='soilPot'
-                  cells={selectedCells}
-                  startDate={hourlyStartDate}
-                  endDate={hourlyEndDate}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.sensors}
-                />
-                <UnifiedChart
-                  type='presHum'
-                  cells={selectedCells}
-                  startDate={hourlyStartDate}
-                  endDate={hourlyEndDate}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.sensors}
-                />
-                <UnifiedChart
-                  type='sensor'
-                  cells={selectedCells}
-                  startDate={hourlyStartDate}
-                  endDate={hourlyEndDate}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.sensors}
-                />
-                <UnifiedChart
-                  type='co2'
-                  cells={selectedCells}
-                  startDate={hourlyStartDate}
-                  endDate={hourlyEndDate}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.sensors}
-                />
-                <UnifiedChart
-                  type='temperature'
-                  cells={selectedCells}
-                  startDate={hourlyStartDate}
-                  endDate={hourlyEndDate}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.sensors}
-                />
-                <UnifiedChart
-                  type='soilHum'
-                  cells={selectedCells}
-                  startDate={hourlyStartDate}
-                  endDate={hourlyEndDate}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.sensors}
-                />
-                <UnifiedChart
-                  type='waterPress'
-                  cells={selectedCells}
-                  startDate={hourlyStartDate}
-                  endDate={hourlyEndDate}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.sensors}
-                />
-                <UnifiedChart
-                  type='waterFlow'
-                  cells={selectedCells}
-                  startDate={hourlyStartDate}
-                  endDate={hourlyEndDate}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.sensors}
-                />
-                <UnifiedChart
-                  type='waterFlowD10'
-                  cells={selectedCells}
-                  startDate={hourlyStartDate}
-                  endDate={hourlyEndDate}
-                  stream={stream}
-                  liveData={liveData}
-                  processedData={processedLiveData.sensors}
-                />
-              </Stack>
+              </Box>
             </>
           )}
         </Stack>

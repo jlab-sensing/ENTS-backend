@@ -1,4 +1,4 @@
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import { React, useEffect, useState } from 'react';
@@ -7,7 +7,7 @@ import VwcChart from '../../../charts/VwcChart/VwcChart';
 import { getTerosData } from '../../../services/teros';
 import { toPercentIfFraction } from '../../../charts/VwcChart/vwcValue';
 
-function TerosCharts({ cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange }) {
+function TerosCharts({ cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange, variant = 'both' }) {
   const [resample, setResample] = useState('hour');
   const chartSettings = {
     datasets: [],
@@ -259,26 +259,52 @@ function TerosCharts({ cells, startDate, endDate, stream, liveData, processedDat
   }, [hasData, onDataStatusChange]);
 
   if (!hasData) {
-    return <></>;
+    return null;
+  }
+
+  const chartHeight = { xs: '400px', md: '450px' };
+
+  const vwcChart = (
+    <VwcChart
+      data={vwcChartData}
+      stream={stream}
+      {...(!stream && { startDate, endDate })}
+      onResampleChange={handleResampleChange}
+    />
+  );
+
+  const tempChart = (
+    <TempChart
+      data={tempChartData}
+      stream={stream}
+      {...(!stream && { startDate, endDate })}
+      onResampleChange={handleResampleChange}
+    />
+  );
+
+  if (variant === 'vwc') {
+    return (
+      <Box sx={{ height: chartHeight, width: '100%', minWidth: 0 }}>
+        {vwcChart}
+      </Box>
+    );
+  }
+
+  if (variant === 'temp') {
+    return (
+      <Box sx={{ height: chartHeight, width: '100%', minWidth: 0 }}>
+        {tempChart}
+      </Box>
+    );
   }
 
   return (
     <>
-      <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={12} sm={12} md={stream ? 12 : 6} p={3}>
-        <VwcChart
-          data={vwcChartData}
-          stream={stream}
-          {...(!stream && { startDate, endDate })}
-          onResampleChange={handleResampleChange}
-        />
+      <Grid item sx={{ height: chartHeight }} xs={12} sm={12} md={stream ? 12 : 6} p={3}>
+        {vwcChart}
       </Grid>
-      <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={12} sm={12} md={stream ? 12 : 6} p={3}>
-        <TempChart
-          data={tempChartData}
-          stream={stream}
-          {...(!stream && { startDate, endDate })}
-          onResampleChange={handleResampleChange}
-        />
+      <Grid item sx={{ height: chartHeight }} xs={12} sm={12} md={stream ? 12 : 6} p={3}>
+        {tempChart}
       </Grid>
     </>
   );
@@ -292,6 +318,7 @@ TerosCharts.propTypes = {
   liveData: PropTypes.array,
   processedData: PropTypes.object,
   onDataStatusChange: PropTypes.func,
+  variant: PropTypes.oneOf(['both', 'vwc', 'temp']),
 };
 
 export default TerosCharts;

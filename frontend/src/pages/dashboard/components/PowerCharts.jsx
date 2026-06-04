@@ -1,11 +1,11 @@
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import { React, useEffect, useState } from 'react';
 import PwrChart from '../../../charts/PwrChart/PwrChart';
 import VChart from '../../../charts/VChart/VChart';
 import { getPowerData } from '../../../services/power';
-function PowerCharts({ cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange }) {
+function PowerCharts({ cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange, variant = 'both' }) {
   const [resample, setResample] = useState('hour');
   const chartSettings = {
     labels: [],
@@ -267,26 +267,52 @@ function PowerCharts({ cells, startDate, endDate, stream, liveData, processedDat
   }, [hasData, onDataStatusChange]);
 
   if (!hasData) {
-    return <></>;
+    return null;
+  }
+
+  const chartHeight = { xs: '400px', md: '450px' };
+
+  const voltageChart = (
+    <VChart
+      data={vChartData}
+      stream={stream}
+      {...(!stream && { startDate, endDate })}
+      onResampleChange={handleResampleChange}
+    />
+  );
+
+  const powerChart = (
+    <PwrChart
+      data={pwrChartData}
+      stream={stream}
+      {...(!stream && { startDate, endDate })}
+      onResampleChange={handleResampleChange}
+    />
+  );
+
+  if (variant === 'voltage') {
+    return (
+      <Box sx={{ height: chartHeight, width: '100%', minWidth: 0 }}>
+        {voltageChart}
+      </Box>
+    );
+  }
+
+  if (variant === 'power') {
+    return (
+      <Box sx={{ height: chartHeight, width: '100%', minWidth: 0 }}>
+        {powerChart}
+      </Box>
+    );
   }
 
   return (
     <>
-      <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={12} sm={12} md={stream ? 12 : 6} p={3}>
-        <VChart
-          data={vChartData}
-          stream={stream}
-          {...(!stream && { startDate, endDate })}
-          onResampleChange={handleResampleChange}
-        />
+      <Grid item sx={{ height: chartHeight }} xs={12} sm={12} md={stream ? 12 : 6} p={3}>
+        {voltageChart}
       </Grid>
-      <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={12} sm={12} md={stream ? 12 : 6} p={3}>
-        <PwrChart
-          data={pwrChartData}
-          stream={stream}
-          {...(!stream && { startDate, endDate })}
-          onResampleChange={handleResampleChange}
-        />
+      <Grid item sx={{ height: chartHeight }} xs={12} sm={12} md={stream ? 12 : 6} p={3}>
+        {powerChart}
       </Grid>
     </>
   );
@@ -300,6 +326,7 @@ PowerCharts.propTypes = {
   liveData: PropTypes.array,
   processedData: PropTypes.object,
   onDataStatusChange: PropTypes.func,
+  variant: PropTypes.oneOf(['both', 'voltage', 'power']),
 };
 
 export default PowerCharts;

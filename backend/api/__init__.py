@@ -167,6 +167,7 @@ def create_app(debug: bool = False) -> Flask:
     from .resources.users_data import User_Data
     from .resources.status import Status
     from .resources.data_availability import DataAvailability
+    from .resources.sensor_catalog import SensorCatalog
     from .resources.tag import Tag, TagDetail
     from .resources.cell_tags import CellTags, CellTagDetail, CellsByTag
     from .resources.cell_users import CellUsers, CellUserDetail, CellByUser, CellShare
@@ -184,6 +185,7 @@ def create_app(debug: bool = False) -> Flask:
     api.add_resource(SensorData, "/sensor/")
     api.add_resource(SensorData_Json, "/sensor_json/")
     api.add_resource(DataAvailability, "/data-availability/")
+    api.add_resource(SensorCatalog, "/catalog/sensors")
     api.add_resource(Session_r, "/session")
     api.add_resource(User_Data, "/user")
     api.add_resource(Status, "/status/<string:id>")
