@@ -171,7 +171,12 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
         name: name,
       };
       // get list of sensors that are associated with selected cells
-      const cellSensors = cellSensorsById || [];
+      if (Array.isArray(cellSensorsById[id])){
+        const cellSensors = cellSensorsById[id]
+      }
+      else{
+        const cellSensors = []
+      }
       for (const meas of measurements) {
         // verify sensor mathches one of the sensors from CHART_CONFIGS
         const hasSensor = cellSensors.some((sensor) => {
