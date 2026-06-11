@@ -14,7 +14,7 @@ COPY package.json /app/package.json
 COPY package-lock.json /app/package-lock.json
 COPY vite.config.js /app/vite.config.js
 
-RUN npm install
+RUN ["npm", "ci"]
 # RUN npm install nodemon --save-dev
 COPY index.html ./index.html
 COPY src ./src
@@ -27,7 +27,8 @@ CMD ["npm", "start", "--", "--port", "80"]
 EXPOSE 3000
 
 
-# Build Stage ####################
+
+# ############# Build Stage ####################
 # pull official base image
 FROM node:16.17.0-bullseye-slim AS builder
 ARG PUBLIC_URL
@@ -44,7 +45,7 @@ COPY package.json /package.json
 COPY package-lock.json /package-lock.json
 
 # Installs all node packages
-RUN npm install 
+RUN ["npm", "ci"]
 
 COPY src ./src
 COPY public ./public
@@ -54,7 +55,9 @@ COPY . ./
 
 RUN npm run build
 
-# Production Stage ####################
+
+
+# ############ Production Stage ####################
 # pull the official nginx:1.19.0 base image
 FROM nginx:1.19.0 AS production
 
@@ -69,3 +72,38 @@ COPY --from=builder /app/build/ /usr/share/nginx/html
 EXPOSE 3000 80
 
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
+
+
+#
+# CI Image
+#
+FROM node:16.17.0-bullseye-slim AS ci
+
+# set working directory
+WORKDIR /app
+
+# install app dependencies
+COPY package.json /app/package.json
+COPY package-lock.json /app/package-lock.json
+
+RUN ["npm", "ci"]
+
+# CI expects the files to be mounted
+#COPY src ./src
+#COPY public ./public
+#COPY index.html ./index.html
+#COPY vite.config.js ./vite.config.js
+
+
+
+#
+# ############# Test Stage ####################
+# 
+FROM ci AS test
+CMD ["npm", "run", "coverage"]
+
+
+
+# ############# Lint Stage ####################
+FROM ci AS lint
+CMD ["npm", "run", "lint"]
