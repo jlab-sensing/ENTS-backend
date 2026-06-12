@@ -1,7 +1,5 @@
 ---
 name: Lint and test
-permissions:
-  contents: read
 
 on:
   push:
@@ -11,8 +9,9 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
   merge_group:
-  env:
-    ENV_FILE: ci.env
+
+env:
+  ENV_FILE: ci.env
 
 permissions:
   contents: read
