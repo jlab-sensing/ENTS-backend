@@ -12,6 +12,9 @@ on:
     types: [opened, reopened, synchronize]
   merge_group:
 
+permissions:
+  contents: read
+
 jobs:
   backend-lint:
     runs-on: ubuntu-latest
