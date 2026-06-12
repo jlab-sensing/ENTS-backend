@@ -8,15 +8,17 @@ on:
       - dev
   pull_request:
     types: [opened, reopened, synchronize]
+  merge_group:
+
+env:
+  ENV_FILE: ci.env
+
+permissions:
+  contents: read
 
 jobs:
-  checks:
+  backend-format:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        container: [backend-lint, backend-test, frontend-lint, frontend-test]
-    env:
-      ENV_FILE: ci.env
 
     steps:
       - name: Checkout
@@ -26,12 +28,82 @@ jobs:
         run: docker compose --profile ci build
 
       - name: Lint backend
-        run: docker compose up ${{ matrix.container }} --abort-on-container-exit
+        run: docker compose up backend-format --abort-on-container-exit
+
+  backend-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build containers
+        run: docker compose --profile ci build
+
+      - name: Lint backend
+        run: docker compose up backend-lint --abort-on-container-exit
+
+  frontend-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build containers
+        run: docker compose --profile ci build
+
+      - name: Lint backend
+        run: docker compose up frontend-lint --abort-on-container-exit
+
+  backend-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build containers
+        run: docker compose --profile ci build
+
+      - name: Test backend
+        run: docker compose up backend-test --abort-on-container-exit
+
+      - name: Copy coverage report
+        run: docker compose cp backend-test:/app/coverage.xml ./coverage.xml
+
+      - name: Upload backend coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage.xml
+          flags: backend
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  frontend-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build containers
+        run: docker compose --profile ci build
+
+      - name: Lint backend
+        run: docker compose up frontend-test --abort-on-container-exit
+
+      - name: Copy coverage report
+        run: docker compose cp frontend-test:/app/coverage/coverage-final.json ./coverage-final.json
+
+      - name: Upload frontend coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage-final.json
+          flags: frontend
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   stack:
     runs-on: ubuntu-latest
-    env:
-      ENV_FILE: ci.env
 
     steps:
       - name: Checkout

@@ -130,7 +130,7 @@ ENTRYPOINT ["./migrate.sh", "-u"]
 # The test image runs pytest with coverage reporting for the backend
 FROM devbase AS test
 
-CMD ["pytest", "--cov", "-v", "-s"]
+CMD ["pytest", "--cov", "--cov-report=xml", "-v", "-s"]
 
 
 
@@ -140,3 +140,12 @@ CMD ["pytest", "--cov", "-v", "-s"]
 FROM devbase AS lint
 
 CMD ["ruff", "check"]
+
+
+
+#
+# Format image
+#
+FROM devbase AS format
+
+CMD ["ruff", "format", "--check"]

@@ -84,6 +84,20 @@ services:
       - ci
       - lint
 
+  backend-format:
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+      target: format
+    image: dirtviz-backend-format
+    env_file:
+      - ${ENV_FILE:-.env}
+    volumes:
+      - './backend:/app'
+    profiles:
+      - ci
+      - lint
+
   frontend-test:
     build:
       context: ./frontend
@@ -100,8 +114,6 @@ services:
       dockerfile: ./Dockerfile
       target: lint
     image: dirtviz-frontend-lint
-    volumes:
-      - './frontend/coverage:/app/coverage'
     profiles:
       - ci
       - lint
