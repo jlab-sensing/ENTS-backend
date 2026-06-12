@@ -10,8 +10,42 @@ on:
     types: [opened, reopened, synchronize]
 
 jobs:
-  lint:
+  build:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Create .env
+        run: cp ci.env .env
+
+      - name: Build all services
+        run: COMPOSE_PROFILES="*" docker compose build
+
+      - name: Save images
+        run: |
+          images=(
+            "dirtviz-frontend"
+            "dirtviz-frontend-lint"
+            "dirtviz-frontend-test"
+            "dirtviz-backend"
+            "dirtviz-backend-lint"
+            "dirtviz-backend-test"
+            "dirtviz-migration"
+          )
+          for image in "${images[@]}"; do
+            docker save "$image" | gzip > "${image}.tar.gz"
+          done
+
+      - name: Upload images
+        uses: actions/upload-artifact@v6
+        with:
+          name: docker-images
+          path: "*.tar.gz"
+
+
+  backend-lint:
+    runs-on: ubuntu-latest
+    needs: build
     env:
       ENV_FILE: ci.env
 
@@ -19,18 +53,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Build services
-        run:
-          docker compose --profile lint build
+      - name: Download images
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-images
+
+      - name: Load images
+        run: |
+          for f in *.tar.gz; do
+            docker load < "$f"
+          done
 
       - name: Lint backend
-        run: docker compose up backend-lint --abort-on-container-failure
+        run: docker compose up backend-lint --abort-on-container-exit
 
-      - name: Lint frontend
-        run: docker compose up frontend-lint --abort-on-container-failure
-
-  test:
+  frontend-lint:
     runs-on: ubuntu-latest
+    needs: build
     env:
       ENV_FILE: ci.env
 
@@ -38,9 +77,102 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Build services
-        run:
-          docker compose --profile test build
+      - name: Download images
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-images
+
+      - name: Load images
+        run: |
+          for f in *.tar.gz; do
+            docker load < "$f"
+          done
+
+      - name: Lint frontend
+        run: docker compose up frontend-lint --abort-on-container-exit
+
+  backend-test:
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      ENV_FILE: ci.env
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      
+      - name: Download images
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-images
+
+      - name: Load images
+        run: |
+          for f in *.tar.gz; do
+            docker load < "$f"
+          done
+
+      - name: Run backend tests
+        run: docker compose up backend-test --abort-on-container-exit
+
+      - name: Upload backend coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./backend/.coverage
+          flags: backend
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  frontend-test:
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      ENV_FILE: ci.env
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      
+      - name: Download images
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-images
+
+      - name: Load images
+        run: |
+          for f in *.tar.gz; do
+            docker load < "$f"
+          done
+
+      - name: Run frontend tests
+        run: docker compose up frontend-test --abort-on-container-exit
+
+      - name: Upload frontend coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./frontend/coverage/coverage-final.json
+          flags: frontend
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  stack:
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      ENV_FILE: ci.env
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      
+      - name: Download images
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-images
+
+      - name: Load images
+        run: |
+          for f in *.tar.gz; do
+            docker load < "$f"
+          done
 
       - name: Start services
         run:
@@ -52,12 +184,6 @@ jobs:
       - name: Save timestamp
         id: timestamp
         run: echo "start_time=$(date -Is)" >> $GITHUB_OUTPUT
-
-      - name: Run backend tests
-        run: docker compose up backend-test --abort-on-container-failure
-
-      - name: Run frontend tests
-        run: docker compose up frontend-test --abort-on-container-failure
 
       - name: Save all logs
         if: always()
@@ -84,17 +210,3 @@ jobs:
           path: |
             dirtviz.log
             dirtviz_short.log
-
-      - name: Upload backend coverage reports to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          files: ./backend/.coverage
-          flags: backend
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Upload frontend coverage reports to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          files: ./frontend/coverage/coverage-final.json
-          flags: frontend
-          token: ${{ secrets.CODECOV_TOKEN }}
