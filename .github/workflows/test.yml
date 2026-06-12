@@ -66,16 +66,16 @@ jobs:
       - name: Build containers
         run: docker compose --profile ci build
 
-      - name: Lint backend
+      - name: Test backend
         run: docker compose up backend-test --abort-on-container-exit
 
       - name: Copy coverage report
-        run: docker compose cp backend-test:/app/.coverage ./.coverage
+        run: docker compose cp backend-test:/app/coverage.xml ./coverage.xml
 
       - name: Upload backend coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
-          files: ./.coverage
+          files: ./coverage.xml
           flags: backend
           token: ${{ secrets.CODECOV_TOKEN }}
 
