@@ -61,10 +61,13 @@ jobs:
       - name: Lint backend
         run: docker compose up backend-test --abort-on-container-exit
 
+      - name: Copy coverage report
+        run: docker compose cp backend-test:/app/.coverage ./.coverage
+
       - name: Upload backend coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
-          files: ./backend/.coverage
+          files: ./.coverage
           flags: backend
           token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -83,10 +86,13 @@ jobs:
       - name: Lint backend
         run: docker compose up frontend-test --abort-on-container-exit
 
+      - name: Copy coverage report
+        run: docker compose cp frontend-test:/app/coverage/coverage-final.json ./coverage-final.json
+
       - name: Upload frontend coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
-          files: ./frontend/coverage/coverage-final.json
+          files: ./coverage-final.json
           flags: frontend
           token: ${{ secrets.CODECOV_TOKEN }}
 
