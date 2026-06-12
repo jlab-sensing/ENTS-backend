@@ -140,3 +140,12 @@ CMD ["pytest", "--cov", "-v", "-s"]
 FROM devbase AS lint
 
 CMD ["ruff", "check"]
+
+
+
+#
+# Format image
+#
+FROM devbase as format
+
+CMD ["ruff", "format", "--check"]
