@@ -82,17 +82,14 @@ FROM node:16.17.0-bullseye-slim AS ci
 # set working directory
 WORKDIR /app
 
+
 # install app dependencies
 COPY package.json /app/package.json
 COPY package-lock.json /app/package-lock.json
 
 RUN ["npm", "ci"]
 
-# CI expects the files to be mounted
-#COPY src ./src
-#COPY public ./public
-#COPY index.html ./index.html
-#COPY vite.config.js ./vite.config.js
+COPY . .
 
 
 

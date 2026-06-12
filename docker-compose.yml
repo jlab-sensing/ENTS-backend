@@ -90,11 +90,6 @@ services:
       dockerfile: ./Dockerfile
       target: test
     image: dirtviz-frontend-test
-    depends_on:
-      - backend
-    volumes:
-      - './frontend:/app'
-      - /app/node_modules
     profiles:
       - ci
       - test
@@ -106,8 +101,7 @@ services:
       target: lint
     image: dirtviz-frontend-lint
     volumes:
-      - './frontend:/app'
-      - /app/node_modules
+      - './frontend/coverage:/app/coverage'
     profiles:
       - ci
       - lint
