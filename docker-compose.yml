@@ -4,7 +4,7 @@ services:
     build:
       context: ./backend
       dockerfile: ./Dockerfile
-      target: Production
+      target: production
     image: dirtviz-backend
     env_file:
       - ${ENV_FILE:-.env}
@@ -12,6 +12,7 @@ services:
       - '8000:8000'
     depends_on:
       - postgresql
+      - migration
     volumes:
       - './backend:/app'
 
@@ -31,7 +32,7 @@ services:
     build:
       context: ./frontend
       dockerfile: ./Dockerfile
-      target: Production
+      target: production
     image: dirtviz-frontend
     env_file:
       - ${ENV_FILE:-.env}
@@ -52,6 +53,59 @@ services:
     depends_on:
       - postgresql
 
+  backend-test:
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+      target: test
+    image: dirtviz-backend-test
+    env_file:
+      - ${ENV_FILE:-.env}
+    depends_on:
+      - postgresql
+      - migration
+    volumes:
+      - './backend:/app'
+    profiles:
+      - ci
+      - test
+
+  backend-lint:
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+      target: lint
+    image: dirtviz-backend-lint
+    env_file:
+      - ${ENV_FILE:-.env}
+    volumes:
+      - './backend:/app'
+    profiles:
+      - ci
+      - lint
+
+  frontend-test:
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+      target: test
+    image: dirtviz-frontend-test
+    profiles:
+      - ci
+      - test
+
+  frontend-lint:
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+      target: lint
+    image: dirtviz-frontend-lint
+    volumes:
+      - './frontend/coverage:/app/coverage'
+    profiles:
+      - ci
+      - lint
+
   valkey:
     image: valkey/valkey:latest
     ports:
@@ -60,9 +114,9 @@ services:
   postgresql:
     image: postgres:16
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
-      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: dirtviz
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dirtviz
     ports:
       - '5432:5432'
     volumes:
