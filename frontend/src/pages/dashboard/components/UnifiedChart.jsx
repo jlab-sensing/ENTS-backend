@@ -5,137 +5,11 @@ import { React, useEffect, useState, useRef } from 'react';
 import { getSensorData } from '../../../services/sensor';
 import UniversalChart from '../../../charts/UniversalChart';
 import { extractUnifiedStreamValue, matchesSensorStreamType, normalizeUnifiedStreamValue } from './unifiedChartUtils';
+import { CHART_CONFIGS } from './chartConfigs';
 
-const CHART_CONFIGS = {
-  power_voltage: {
-    sensor_name: 'POWER_VOLTAGE',
-    measurements: ['Voltage'],
-    units: ['V'],
-    axisIds: ['y'],
-    chartId: 'powerVoltage',
-  },
-  power_current: {
-    sensor_name: 'POWER_CURRENT',
-    measurements: ['Current'],
-    units: ['A'],
-    axisIds: ['y'],
-    chartId: 'powerCurrent',
-  },
-  teros12_vwc: {
-    sensor_name: 'TEROS12_VWC',
-    measurements: ['Volumetric Water Content (Raw)'],
-    units: ['raw'],
-    axisIds: ['y'],
-    chartId: 'teros12VWC',
-  },
-  teros12_vwc_adj: {
-    sensor_name: 'TEROS12_VWC_ADJ',
-    measurements: ['Volumetric Water Content'],
-    units: ['%'],
-    axisIds: ['y'],
-    axisPolicy: 'vwcPercent',
-    chartId: 'teros12VWCADJ',
-  },
-  teros12_temp: {
-    sensor_name: 'TEROS12_TEMP',
-    measurements: ['Temperature'],
-    units: ['°C'],
-    axisIds: ['y'],
-    chartId: 'teros12Temp',
-  },
-  teros12_ec: {
-    sensor_name: 'TEROS12_EC',
-    measurements: ['Electrical Conductivity'],
-    units: ['µS/cm'],
-    axisIds: ['y'],
-    chartId: 'teros12EC',
-  },
-  temperature: {
-    sensor_name: 'bme280',
-    measurements: ['temperature'],
-    units: ['°C'],
-    axisIds: ['y'],
-    chartId: 'bme280',
-  },
-  bme280Temperature: {
-    sensor_name: 'bme280',
-    measurements: ['Temperature'],
-    units: ['°C'],
-    axisIds: ['y'],
-    chartId: 'bme280temp',
-  },
-  co2: {
-    sensor_name: 'co2',
-    measurements: ['co2'],
-    units: ['ppm'],
-    axisIds: ['y'],
-    chartId: 'co2',
-  },
-  presHum: {
-    sensor_name: 'bme280',
-    measurements: ['pressure', 'humidity'],
-    units: ['kPa', '%'],
-    axisIds: ['pressureAxis', 'humidityAxis'],
-    chartId: 'presHum',
-  },
-  bme280Pressure: {
-    sensor_name: 'bme280',
-    measurements: ['Pressure'],
-    units: ['kPa'],
-    axisIds: ['pressureAxis'],
-    chartId: 'bme280pressure',
-  },
-  bme280Humidity: {
-    sensor_name: 'bme280',
-    measurements: ['Humidity'],
-    units: ['%'],
-    axisIds: ['humidityAxis'],
-    chartId: 'bme280humidity',
-  },
-  sensor: {
-    sensor_name: 'phytos31',
-    measurements: ['dielectric_permittivity'],
-    units: ['1 (unitless)'],
-    axisIds: ['y'],
-    chartId: 'sensor',
-  },
-  soilPot: {
-    sensor_name: 'teros21',
-    measurements: ['soil_water_potential'],
-    units: ['kPa'],
-    axisIds: ['y'],
-    chartId: 'soilPot',
-  },
-  soilHum: {
-    sensor_name: 'sen0308',
-    measurements: ['humidity'],
-    units: ['%'],
-    axisIds: ['y'],
-    chartId: 'soilHum',
-  },
-  waterPress: {
-    sensor_name: 'sen0257',
-    measurements: ['pressure'],
-    units: ['kPa'],
-    axisIds: ['y'],
-    chartId: 'waterPress',
-  },
-  waterFlow: {
-    sensor_name: 'yfs210c',
-    measurements: ['flow'],
-    units: ['L/Min'],
-    axisIds: ['y'],
-    chartId: 'waterFlow',
-  },
-  waterFlowD10: {
-    sensor_name: 'D10',
-    measurements: ['flow'],
-    units: ['G/Min'],
-    axisIds: ['y'],
-    chartId: 'waterFlow',
-  },
-};
-function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange }) {
+
+
+function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange, cellSensorsById ={}, }) {
   const [resample, setResample] = useState('hour');
   const chartSettings = {
     label: [],
@@ -169,10 +43,23 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
       data[id] = {
         name: name,
       };
-      for (const meas of measurements) {
+      // get list of sensors that are associated with selected cells
+      let cellSensors = []
+      if (Array.isArray(cellSensorsById[id])){
+        cellSensors = cellSensorsById[id];
+      }
+
+      for (const sensor of cellSensors) {
+        const meas = sensor.measurement;
+
+        // if no matching sensor, skip this request
+        if (!sensor.name || !meas){
+          continue;
+        }
+
         data[id] = {
           ...data[id],
-          [meas]: await getSensorData(sensor_name, id, meas, startDate.toHTTP(), endDate.toHTTP(), resample),
+          [meas]: await getSensorData(sensor.name, id, meas, startDate.toHTTP(), endDate.toHTTP(), resample),
         };
       }
     }
@@ -411,7 +298,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cells, stream, resample, startDate, endDate]);
+  }, [cells, stream, resample, startDate, endDate, cellSensorsById]);
 
   const handleResampleChange = (newResample) => {
     setResample(newResample);
@@ -461,6 +348,7 @@ UnifiedChart.propTypes = {
   liveData: PropTypes.array,
   processedData: PropTypes.object,
   onDataStatusChange: PropTypes.func,
+  cellSensorsById: PropTypes.object,
 };
 
 export default UnifiedChart;

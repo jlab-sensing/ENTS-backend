@@ -171,6 +171,7 @@ def create_app(debug: bool = False) -> Flask:
     from .resources.cell_tags import CellTags, CellTagDetail, CellsByTag
     from .resources.cell_users import CellUsers, CellUserDetail, CellByUser, CellShare
     from .resources.logger import Logger
+    from .resources.cell_sensors import Cell_Sensors
     from .resources.apikey import ApiKey
 
     from .auth.routes import auth
@@ -188,6 +189,7 @@ def create_app(debug: bool = False) -> Flask:
     api.add_resource(Session_r, "/session")
     api.add_resource(User_Data, "/user")
     api.add_resource(Status, "/status/<string:id>")
+    api.add_resource(Cell_Sensors, "/cell/<int:cell_id>/sensors")
     api.add_resource(ApiKey, "/apikey/")
 
     # Tag management endpoints
