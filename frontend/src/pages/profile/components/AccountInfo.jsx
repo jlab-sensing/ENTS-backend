@@ -8,13 +8,15 @@ import {
   IconButton,
   Modal,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import EmailIcon from '@mui/icons-material/Email';
 import PersonIcon from '@mui/icons-material/Person';
-import { useState } from 'react';
+import KeyIcon from '@mui/icons-material/Key';
+import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import useAxiosPrivate from '../../../auth/hooks/useAxiosPrivate';
 
@@ -33,8 +35,85 @@ function AccountInfo() {
   });
   const [error, setError] = useState(null);
 
+  const [apiKey, setApiKey] = useState(null);
+  const [apiKeyLoading, setApiKeyLoading] = useState(false);
+  const [apiKeyError, setApiKeyError] = useState(null);
+
+  useEffect(() => {
+    const fetchApiKey = async () => {
+      try {
+        const response = await axiosPrivate.get('/apikey/');
+        setApiKey(response.data.api_key);
+      } catch (error) {
+        console.error('Error fetching API key:', error);
+        setApiKeyError('Failed to load API key');
+      }
+    };
+
+    if (user) {
+      fetchApiKey();
+    }
+  }, [axiosPrivate, user]);
+  
   if (!user) {
     return <></>;
+  }
+
+  /**
+   * Handles api key generation
+   */
+
+  const handleGenerateApiKey = async () => {
+    setApiKeyLoading(true);
+    setApiKeyError(null);
+
+    try {
+      const response = await axiosPrivate.post('/apikey/');
+      setApiKey(response.data.api_key);
+    } catch (error) {
+      console.error('Error generating API key:', error);
+      setApiKeyError('Failed to generate API key');
+    } finally {
+      setApiKeyLoading(false);
+    }
+  };
+
+  /**
+   * Handles deletion of current API key
+   */
+
+  const handleDeleteApiKey = async () => {
+    setApiKeyLoading(true);
+    setApiKeyError(null);
+
+    try {
+      await axiosPrivate.delete('/apikey/');
+      setApiKey(null);
+    } catch (error) {
+      console.error('Error deleting current API key', error);
+      setApiKeyError('Error deleting current API key');
+    } finally {
+      setApiKeyLoading(false);
+    }
+  }
+
+  /**
+   * Handles replacing current API key with new API key
+   */
+  const handleRegenerateApiKey = async () => {
+    setApiKeyLoading(true);
+    setApiKeyError(null);
+
+    try {
+      await axiosPrivate.delete('/apikey/');
+      const response = await axiosPrivate.post('/apikey/');
+      setApiKey(response.data.api_key);
+    } catch (error) {
+      console.error('Error regenerating API key', error);
+      setApiKeyError('Failed to regenerate API key');
+    } finally {
+      setApiKeyLoading(false);
+    }
   }
 
   /**
@@ -273,6 +352,136 @@ function AccountInfo() {
             </Box>
           </CardContent>
         </Card>
+
+        {/* Api Key Card */}
+        <Card 
+          sx={{
+            borderRadius: '12px',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+            border: '1px solid #e9ecef',
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              boxShadow: '0 6px 20px rgba(0, 0, 0, 0.12)',
+              transform: 'translateY(-2px)'
+            }
+          }}
+        >
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <KeyIcon sx={{ fontSize: '1.5rem', color: '#588157', mt: 0.5 }} />
+              <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column'}}>
+                <Typography 
+                  variant='body2' 
+                  sx={{ 
+                    color: '#666', 
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    mb: 0.5
+                  }}
+                >
+                  API Key
+                </Typography>
+
+                {apiKeyError && (
+                  <Alert severity='error' sx={{ mb: 2 }}>
+                    {apiKeyError}
+                  </Alert>
+                )}
+
+                {apiKey ? (
+                  <Tooltip title={apiKey} placement='top-start'>
+                    <Typography
+                      variant='body1'
+                      sx={{
+                        color: '#333',
+                        fontFamily: 'monospace',
+                        fontSize: '0.875rem',
+                        backgroundColor: '#f8f9fa',
+                        border: '1px solid #e9ecef',
+                        borderRadius: '8px',
+                        p: 1.5,
+                        mt: 0.5,
+                        mb: 2,
+                        width: '100%',
+                        boxSizing: 'border-box',
+                        overflowWrap: 'anywhere',
+                        wordBreak: 'break-all',
+                        whiteSpace: 'normal',
+                        display: 'block'
+                      }}
+                      >
+                        {apiKey}
+                      </Typography>
+                  </Tooltip>
+                ) : (
+                  <Typography
+                    variant='body1'
+                    sx={{
+                      color: '#666',
+                      backgroundColor: '#f8f9fa',
+                      border: '1px solid #e9ecef',
+                      borderRadius: '8px',
+                      p: 1.5,
+                      mb: 2
+                    }}
+                    >
+                      No API key generated
+                    </Typography>
+                )}
+
+                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mt: 1}}>
+                  {!apiKey ? (
+                    <Button
+                      variant='contained'
+                      onClick={handleGenerateApiKey}
+                      disabled={apiKeyLoading}
+                      sx={{
+                        backgroundColor: '#588157',
+                        '&:hover': {backgroundColor: '#3a5a40'},
+                        borderRadius: '8px'
+                      }}
+                    >
+                      {apiKeyLoading ? 'Generating' : 'Generate API key'}
+                    </Button>
+                  ) : (
+                    <>
+                    <Button
+                      variant='outlined'
+                      onClick={handleRegenerateApiKey}
+                      disabled={apiKeyLoading}
+                      sx={{
+                        borderColor: '#588157',
+                        color: '#588157',
+                        '&:hover': {
+                          borderColor: '#3a5a40',
+                          backgroundColor: 'rgba(88, 129, 87, 0.08)'
+                        },
+                        borderRadius: '8px'
+                      }}
+                    >
+                      {apiKeyLoading ? 'Regenerating' : 'Regenerate API key'}
+                    </Button>
+
+                    <Button
+                      variant='outlined'
+                      color='error'
+                      onClick={handleDeleteApiKey}
+                      disabled={apiKeyLoading}
+                      sx={{ borderRadius: '8px'}}
+                    >
+                      {apiKeyLoading ? 'Deleting' : 'Delete API key'}
+                    </Button>
+                  </>
+                  )}
+                </Box>
+
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+
       </Box>
 
       <Modal

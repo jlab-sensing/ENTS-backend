@@ -8,7 +8,6 @@ from ..models.sensor import Sensor  # noqa: F401
 from io import StringIO
 from celery import shared_task
 
-
 get_cell_data = GetCellDataSchema()
 
 

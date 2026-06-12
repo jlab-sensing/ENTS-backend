@@ -1,14 +1,14 @@
 from flask_restful import Resource
 from flask import request
 from ..models.user import User
-from ..auth.auth import authenticate
+from ..auth.auth import authenticate_apikey_or_jwt
 from ..schemas.user_data_schema import UserDataSchema
 
 user_schema = UserDataSchema(only=(["email", "first_name", "last_name"]))
 
 
 class User_Data(Resource):
-    method_decorators = [authenticate]
+    method_decorators = [authenticate_apikey_or_jwt]
 
     def get(self, user):
         try:
