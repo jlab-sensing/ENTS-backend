@@ -1,4 +1,6 @@
+#
 # Development image
+#
 # The development image expects the backend code to be mounted into the
 # container at /home/app/. This allows for hot reloading of the code for live
 # updates of the website.
@@ -19,11 +21,15 @@ EXPOSE 8000
 
 ENTRYPOINT ["/app/entrypoint.sh", "-d"]
 
+
+#
 # Base image
+# 
 # The base image contains the necessary dependencies to run the backend code.
 # It installs the necessary apt packages and installs the python dependencies. A new
 # user, "app", is created to run the code unprivileged.
 FROM python:3.11-slim AS base
+
 # set environment variables to have python print to stdout
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
@@ -38,15 +44,26 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 #RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
 # create new user and group to run the app with name "app"
-RUN adduser --system --group app
-USER app
-WORKDIR $HOME
+WORKDIR /app
 
 # copy files from source tree
 COPY . .
 
 
+#
+# Base development image
+# 
+# Has additional tools installed for deveopment
+FROM base AS devbase
+
+# install test dependencies
+COPY requirements-dev.txt /tmp/requirements-dev.txt
+RUN pip install --no-cache-dir -r /tmp/requirements-dev.txt
+
+
+#
 # Production image
+# 
 # The production images runs the flask api code. The container has all the
 # bacend code and dependencies installed. The code is run as the "app" user.
 FROM base AS production
@@ -54,16 +71,14 @@ FROM base AS production
 ENTRYPOINT ["./entrypoint.sh", "-p"]
 
 
+#
 # Development worker image
+# 
 # The developmet celery worker image is used to run the worker code in a development
 # with additional debug printouts and development dependencies. The backend
 # codebase should be mounted into the container at /home/app/ to allow for hot
 # reloading of the code.
-FROM base AS devworker
-
-# install development dependencies
-COPY requirements-dev.txt /tmp/requirements-dev.txt
-RUN pip install --no-cache-dir -r /tmp/requirements-dev.txt
+FROM devbase AS devworker
 
 # set environment variables
 ENV FLASK_DEBUG=1
@@ -81,7 +96,10 @@ EXPOSE 8000
 ENTRYPOINT ["./entrypoint.sh", "-w", "dev"]
 
 
+
+#
 # Production working image
+#
 # The production celery worker image .
 FROM base AS prodworker
 
@@ -96,8 +114,38 @@ EXPOSE 8000
 ENTRYPOINT ["./entrypoint.sh", "-w", "prod"]
 
 
+# 
+# Migration Image
+#
 FROM base AS migration
 # If you want to run the migrations locally and still run commands in the container, use this commented entrypoint instead of the current one. 
 #ENTRYPOINT ["sh", "-c", "./migrate.sh -u && sleep infinity"]
 
 ENTRYPOINT ["./migrate.sh", "-u"]
+
+
+#
+# Test image
+# 
+# The test image runs pytest with coverage reporting for the backend
+FROM devbase AS test
+
+CMD ["pytest", "--cov", "--cov-report=xml", "-v", "-s"]
+
+
+
+#
+# Lint image
+# 
+FROM devbase AS lint
+
+CMD ["ruff", "check"]
+
+
+
+#
+# Format image
+#
+FROM devbase AS format
+
+CMD ["ruff", "format", "--check"]
