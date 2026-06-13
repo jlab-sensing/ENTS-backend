@@ -13,6 +13,7 @@ class User(db.Model):
     last_name: str = db.Column(db.String(255))
     email: str = db.Column(db.String(255), unique=True)
     password: str = db.Column(db.String(72), nullable=False)
+    api_key: str = db.Column(db.String(64), unique=True, nullable=True)
     cells = db.relationship(
         "Cell", secondary=Cell_User.__table__, back_populates="users"
     )

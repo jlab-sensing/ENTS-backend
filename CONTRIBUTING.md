@@ -25,18 +25,24 @@ When contributing to this repository, please first discuss the change you wish t
 
 ## Code formatting
 
-DirtViz uses various formmaters and linters to maintain a standard of code.
+DirtViz uses various formmaters and linters to maintain a standard of code. We will not merge code that does not pass automated CI tests. 
 
 ### Formmater
 
 #### Black
 
-For Python files, DirtViz uses Black to format files to keep coding styles consistent throughout the code base.
+For Python files, DirtViz uses `ruff` to format files to keep coding styles consistent throughout the code base.
 
 To install run:
 
 ```bash
-pip install black
+ruff format --check .
+```
+
+OR
+
+```bash
+ENV_FILE=ci.env docker compose up backend-format
 ```
 
 #### Prettier
@@ -56,6 +62,12 @@ Run ruff with the following command:
 ruff check .
 ```
 
+OR
+
+```bash
+ENV_FILE=ci.env docker compose up backend-lint
+```
+
 #### ESLint
 
 For JSX files, DirtViz uses ESLint to lint for potential syntax/code errors.
@@ -63,6 +75,12 @@ Run ESLint with the following command while in the frontend folder:
 
 ```bash
 npm run lint
+```
+
+or
+
+```bash
+ENV_FILE=ci.env docker compose up frontend-lint
 ```
 
 ## Attribution

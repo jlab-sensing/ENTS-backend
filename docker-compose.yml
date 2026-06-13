@@ -4,14 +4,15 @@ services:
     build:
       context: ./backend
       dockerfile: ./Dockerfile
-      target: Production
+      target: production
     image: dirtviz-backend
     env_file:
-      - ${ENV_FILE:-.env.example}
+      - ${ENV_FILE:-.env}
     ports:
       - '8000:8000'
     depends_on:
       - postgresql
+      - migration
     volumes:
       - './backend:/app'
 
@@ -20,7 +21,7 @@ services:
       context: ./backend
       target: prodworker
     env_file:
-      - ${ENV_FILE:-.env.example}
+      - ${ENV_FILE:-.env}
     depends_on:
       - backend
       - valkey
@@ -31,10 +32,10 @@ services:
     build:
       context: ./frontend
       dockerfile: ./Dockerfile
-      target: Production
+      target: production
     image: dirtviz-frontend
     env_file:
-      - ${ENV_FILE:-.env.example}
+      - ${ENV_FILE:-.env}
     ports:
       - '3000:80'
     depends_on:
@@ -48,9 +49,74 @@ services:
       context: ./backend
       target: migration
     env_file:
-      - ${ENV_FILE:-.env.example}
+      - ${ENV_FILE:-.env}
     depends_on:
       - postgresql
+
+  backend-test:
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+      target: test
+    image: dirtviz-backend-test
+    env_file:
+      - ${ENV_FILE:-.env}
+    depends_on:
+      - postgresql
+      - migration
+    volumes:
+      - './backend:/app'
+    profiles:
+      - ci
+      - test
+
+  backend-lint:
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+      target: lint
+    image: dirtviz-backend-lint
+    env_file:
+      - ${ENV_FILE:-.env}
+    volumes:
+      - './backend:/app'
+    profiles:
+      - ci
+      - lint
+
+  backend-format:
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+      target: format
+    image: dirtviz-backend-format
+    env_file:
+      - ${ENV_FILE:-.env}
+    volumes:
+      - './backend:/app'
+    profiles:
+      - ci
+      - lint
+
+  frontend-test:
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+      target: test
+    image: dirtviz-frontend-test
+    profiles:
+      - ci
+      - test
+
+  frontend-lint:
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+      target: lint
+    image: dirtviz-frontend-lint
+    profiles:
+      - ci
+      - lint
 
   valkey:
     image: valkey/valkey:latest
@@ -60,9 +126,9 @@ services:
   postgresql:
     image: postgres:16
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
-      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: dirtviz
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dirtviz
     ports:
       - '5432:5432'
     volumes:
@@ -98,7 +164,7 @@ services:
     links:
       - valkey
     ports:
-      - '80:80'
+      - '6000:80'
 
 volumes:
   postgresql-16-data:
