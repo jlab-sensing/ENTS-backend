@@ -73,7 +73,7 @@ jobs:
         run: docker compose cp backend-test:/app/coverage.xml ./coverage.xml
 
       - name: Upload backend coverage reports to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: ./coverage.xml
           flags: backend
@@ -96,7 +96,7 @@ jobs:
         run: docker compose cp frontend-test:/app/coverage/coverage-final.json ./coverage-final.json
 
       - name: Upload frontend coverage reports to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: ./coverage-final.json
           flags: frontend
