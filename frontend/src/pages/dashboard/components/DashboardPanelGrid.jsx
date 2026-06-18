@@ -9,13 +9,25 @@ import { SortableContext, arrayMove, rectSortingStrategy } from '@dnd-kit/sortab
 import { Box } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useCallback, useMemo } from 'react';
-import { panelIdToUnifiedType } from '../catalog/dashboardCatalog';
+import { panelIdToUnifiedType, isDerivedPanelEntry } from '../catalog/dashboardCatalog';
+import DerivedEquationChart from './DerivedEquationChart';
 import PowerCharts from './PowerCharts';
 import SortableChartPanel from './SortableChartPanel';
 import TerosCharts from './TerosCharts';
 import UnifiedChart from './UnifiedChart';
 
 function DashboardPanelContent({ panelId, chartProps }) {
+  if (isDerivedPanelEntry(panelId)) {
+    return (
+      <DerivedEquationChart
+        expression={panelId}
+        startDate={chartProps.startDate}
+        endDate={chartProps.endDate}
+        stream={chartProps.stream}
+      />
+    );
+  }
+
   const shared = {
     cells: chartProps.cells,
     startDate: chartProps.startDate,
@@ -86,9 +98,14 @@ DashboardPanelContent.propTypes = {
   chartProps: PropTypes.object.isRequired,
 };
 
-function SortableDashboardPanel({ panelId, chartProps, onRemovePanel, panelColumns }) {
+function SortableDashboardPanel({ panelId, chartProps, onRemovePanel, onEditEquation, panelColumns }) {
   return (
-    <SortableChartPanel id={panelId} onRemove={onRemovePanel} panelColumns={panelColumns}>
+    <SortableChartPanel
+      id={panelId}
+      onRemove={onRemovePanel}
+      onEdit={isDerivedPanelEntry(panelId) ? onEditEquation : undefined}
+      panelColumns={panelColumns}
+    >
       <DashboardPanelContent panelId={panelId} chartProps={chartProps} />
     </SortableChartPanel>
   );
@@ -98,6 +115,7 @@ SortableDashboardPanel.propTypes = {
   panelId: PropTypes.string.isRequired,
   chartProps: PropTypes.object.isRequired,
   onRemovePanel: PropTypes.func.isRequired,
+  onEditEquation: PropTypes.func,
   panelColumns: PropTypes.oneOf([1, 2]).isRequired,
 };
 
@@ -105,6 +123,7 @@ export default function DashboardPanelGrid({
   panelOrder,
   onPanelOrderChange,
   onRemovePanel,
+  onEditEquation,
   chartProps,
   panelColumns,
 }) {
@@ -137,10 +156,11 @@ export default function DashboardPanelGrid({
           panelId={panelId}
           chartProps={chartProps}
           onRemovePanel={onRemovePanel}
+          onEditEquation={onEditEquation}
           panelColumns={panelColumns}
         />
       )),
-    [panelOrder, chartProps, onRemovePanel, panelColumns],
+    [panelOrder, chartProps, onRemovePanel, onEditEquation, panelColumns],
   );
 
   if (panelOrder.length === 0) {
@@ -172,6 +192,7 @@ DashboardPanelGrid.propTypes = {
   panelOrder: PropTypes.arrayOf(PropTypes.string).isRequired,
   onPanelOrderChange: PropTypes.func.isRequired,
   onRemovePanel: PropTypes.func.isRequired,
+  onEditEquation: PropTypes.func,
   panelColumns: PropTypes.oneOf([1, 2]).isRequired,
   chartProps: PropTypes.shape({
     cells: PropTypes.array,

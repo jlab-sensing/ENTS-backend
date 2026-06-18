@@ -16,9 +16,11 @@ import StreamToggle from './components/StreamToggle';
 import DashboardPanelGrid from './components/DashboardPanelGrid';
 import DashboardPanelActions from './components/DashboardPanelActions';
 import AddChartModal from './components/AddChartModal';
+import AddEquationModal from './components/AddEquationModal';
 import {
   DEFAULT_DASHBOARD_PANEL_ORDER,
   isKnownPanelId,
+  isDerivedPanelEntry,
   parseLayoutParam,
   serializeLayoutParam,
 } from './catalog/dashboardCatalog';
@@ -65,6 +67,9 @@ function Dashboard() {
   const [panelOrder, setPanelOrder] = useState(DEFAULT_DASHBOARD_PANEL_ORDER);
   const [panelColumns, setPanelColumns] = useState(2);
   const [addChartOpen, setAddChartOpen] = useState(false);
+  const [addEquationOpen, setAddEquationOpen] = useState(false);
+  const [equationModalMode, setEquationModalMode] = useState('add');
+  const [editingExpression, setEditingExpression] = useState('');
 
   // data processing
   const processLiveData = useCallback((measurements) => {
@@ -169,6 +174,40 @@ function Dashboard() {
   const handleAddPanel = useCallback((panelId) => {
     if (!isKnownPanelId(panelId)) return;
     setPanelOrder((prev) => (prev.includes(panelId) ? prev : [...prev, panelId]));
+  }, []);
+
+  const handleEditEquation = useCallback((currentExpression) => {
+    setEquationModalMode('edit');
+    setEditingExpression(currentExpression);
+    setAddEquationOpen(true);
+  }, []);
+
+  const handleSaveEquation = useCallback(
+    (expression) => {
+      if (!isDerivedPanelEntry(expression)) return;
+      if (equationModalMode === 'edit' && editingExpression) {
+        setPanelOrder((prev) =>
+          prev.map((entry) => (entry === editingExpression ? expression : entry)),
+        );
+      } else {
+        setPanelOrder((prev) => (prev.includes(expression) ? prev : [...prev, expression]));
+      }
+      setEditingExpression('');
+      setEquationModalMode('add');
+    },
+    [equationModalMode, editingExpression],
+  );
+
+  const handleOpenAddEquation = useCallback(() => {
+    setEquationModalMode('add');
+    setEditingExpression('');
+    setAddEquationOpen(true);
+  }, []);
+
+  const handleCloseEquationModal = useCallback(() => {
+    setAddEquationOpen(false);
+    setEditingExpression('');
+    setEquationModalMode('add');
   }, []);
 
   const handleRemovePanel = useCallback((panelId) => {
@@ -684,6 +723,7 @@ useEffect(() => {
               >
                 <DashboardPanelActions
                   onAddChart={() => setAddChartOpen(true)}
+                  onAddEquation={handleOpenAddEquation}
                   panelColumns={panelColumns}
                   onPanelColumnsChange={setPanelColumns}
                 />
@@ -691,6 +731,7 @@ useEffect(() => {
                   panelOrder={panelOrder}
                   onPanelOrderChange={setPanelOrder}
                   onRemovePanel={handleRemovePanel}
+                  onEditEquation={handleEditEquation}
                   panelColumns={panelColumns}
                   chartProps={panelChartProps}
                 />
@@ -700,6 +741,14 @@ useEffect(() => {
                   selectedCells={selectedCells}
                   panelOrder={panelOrder}
                   onAddPanel={handleAddPanel}
+                />
+                <AddEquationModal
+                  open={addEquationOpen}
+                  onClose={handleCloseEquationModal}
+                  onSave={handleSaveEquation}
+                  selectedCells={selectedCells}
+                  initialExpression={editingExpression}
+                  mode={equationModalMode}
                 />
               </Box>
             </>

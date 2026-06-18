@@ -1,4 +1,5 @@
 import AddIcon from '@mui/icons-material/Add';
+import FunctionsOutlinedIcon from '@mui/icons-material/FunctionsOutlined';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import ViewStreamOutlinedIcon from '@mui/icons-material/ViewStreamOutlined';
 import { Box, Button, Stack, Tooltip, Typography } from '@mui/material';
@@ -20,7 +21,7 @@ const layoutIconButtonSx = (selected) => ({
   },
 });
 
-function DashboardPanelActions({ onAddChart, panelColumns, onPanelColumnsChange }) {
+function DashboardPanelActions({ onAddChart, onAddEquation, panelColumns, onPanelColumnsChange }) {
   return (
     <Box
       sx={{
@@ -66,6 +67,9 @@ function DashboardPanelActions({ onAddChart, panelColumns, onPanelColumnsChange 
         <Button variant="outlined" size="small" startIcon={<AddIcon />} onClick={onAddChart}>
           Add chart
         </Button>
+        <Button variant="outlined" size="small" startIcon={<FunctionsOutlinedIcon />} onClick={onAddEquation}>
+          Add equation
+        </Button>
       </Stack>
     </Box>
   );
@@ -73,6 +77,7 @@ function DashboardPanelActions({ onAddChart, panelColumns, onPanelColumnsChange 
 
 DashboardPanelActions.propTypes = {
   onAddChart: PropTypes.func.isRequired,
+  onAddEquation: PropTypes.func.isRequired,
   panelColumns: PropTypes.oneOf([1, 2]).isRequired,
   onPanelColumnsChange: PropTypes.func.isRequired,
 };

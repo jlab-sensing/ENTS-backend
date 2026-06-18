@@ -2,6 +2,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import CloseIcon from '@mui/icons-material/Close';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import PropTypes from 'prop-types';
@@ -43,7 +44,7 @@ const baseHandleSx = {
 /**
  * Minimal sortable wrapper: hover-revealed ≡ handle top-left (Grafana/Linear-style).
  */
-function SortableChartPanelInner({ id, children, onRemove, panelColumns }) {
+function SortableChartPanelInner({ id, children, onRemove, onEdit, panelColumns }) {
   const {
     attributes,
     listeners,
@@ -126,6 +127,39 @@ function SortableChartPanelInner({ id, children, onRemove, panelColumns }) {
         </Box>
       </Tooltip>
 
+      {onEdit && (
+        <Tooltip title="Edit equation" placement="left" enterDelay={400} disableInteractive>
+          <IconButton
+            type="button"
+            className="panel-edit-btn"
+            aria-label="Edit equation"
+            size="small"
+            onClick={(event) => {
+              event.stopPropagation();
+              onEdit(id);
+            }}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 40,
+              zIndex: 2,
+              width: 26,
+              height: 26,
+              opacity: showHandle ? 1 : 0,
+              pointerEvents: showHandle ? 'auto' : 'none',
+              transition: 'opacity 0.18s ease',
+              bgcolor: (theme) => alpha(theme.palette.text.primary, 0.06),
+              '@media (hover: none)': {
+                opacity: showHandle ? 1 : 0.55,
+                pointerEvents: 'auto',
+              },
+            }}
+          >
+            <EditOutlinedIcon sx={{ fontSize: 16 }} />
+          </IconButton>
+        </Tooltip>
+      )}
+
       {onRemove && (
         <Tooltip title="Remove panel" placement="left" enterDelay={400} disableInteractive>
           <IconButton
@@ -177,16 +211,17 @@ SortableChartPanelInner.propTypes = {
   id: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
   onRemove: PropTypes.func,
+  onEdit: PropTypes.func,
   panelColumns: PropTypes.oneOf([1, 2]),
 };
 
-export default function SortableChartPanel({ id, children, onRemove, panelColumns = 2 }) {
+export default function SortableChartPanel({ id, children, onRemove, onEdit, panelColumns = 2 }) {
   if (children == null) {
     return null;
   }
 
   return (
-    <SortableChartPanelInner id={id} onRemove={onRemove} panelColumns={panelColumns}>
+    <SortableChartPanelInner id={id} onRemove={onRemove} onEdit={onEdit} panelColumns={panelColumns}>
       {children}
     </SortableChartPanelInner>
   );
@@ -196,5 +231,6 @@ SortableChartPanel.propTypes = {
   id: PropTypes.string.isRequired,
   children: PropTypes.node,
   onRemove: PropTypes.func,
+  onEdit: PropTypes.func,
   panelColumns: PropTypes.oneOf([1, 2]),
 };
