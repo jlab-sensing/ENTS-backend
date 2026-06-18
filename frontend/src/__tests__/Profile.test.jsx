@@ -350,7 +350,7 @@ describe('Cell Service API Functions', () => {
 
     axios.get.mockRejectedValueOnce(mockError);
     const data = await getCellSensors(1);
-    expect(data).toBeUndefined();
+    expect(data).toEqual([]);
     expect(axios.get).toHaveBeenCalledWith(`${process.env.PUBLIC_URL}/api/cell/1/sensors`);
   })
 

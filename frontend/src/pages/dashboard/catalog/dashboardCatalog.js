@@ -161,33 +161,7 @@ export function panelIdToUnifiedType(panelId) {
   return panelId.slice(2);
 }
 
-/**
- * @param {string | null | undefined} raw
- * @returns {string[]}
- */
-export function parseLayoutParam(raw) {
-  if (!raw || typeof raw !== 'string') return [];
-
-  const match = raw.match(/^v1:(.+)$/);
-  if (!match) return [];
-
-  const ids = match[1]
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-  const valid = ids.filter(isKnownPanelId);
-  return valid.length > 0 ? valid : [];
-}
-
-/**
- * @param {string[]} panelOrder
- */
-export function serializeLayoutParam(panelOrder) {
-  const valid = panelOrder.filter(isKnownPanelId);
-  if (valid.length === 0) return null;
-  return `${LAYOUT_VERSION}:${valid.join(',')}`;
-}
+export { isLayoutPanelEntry, parseLayoutParam, serializeLayoutParam } from './layoutPanels';
 
 /**
  * @param {string[]} panelOrder

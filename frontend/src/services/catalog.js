@@ -16,8 +16,13 @@ import axios from 'axios';
  * @returns {Promise<CatalogApiEntry[]>}
  */
 export async function getSensorCatalog(cellId) {
-  const res = await axios.get(`${process.env.PUBLIC_URL}/api/catalog/sensors`, {
-    params: { cell_id: cellId },
-  });
-  return res.data?.entries ?? [];
+  try {
+    const res = await axios.get(`${process.env.PUBLIC_URL}/api/catalog/sensors`, {
+      params: { cell_id: cellId },
+    });
+    return res.data?.entries ?? [];
+  } catch (error) {
+    console.error('Error getting sensor catalog:', error.response ? error.response.data : error.message);
+    return [];
+  }
 }

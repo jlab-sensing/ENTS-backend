@@ -3,7 +3,9 @@ import { DateTime } from 'luxon';
 import { React, useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import DateRangeNotification from '../../components/DateRangeNotification';
+import LayoutMismatchNotification from '../../components/LayoutMismatchNotification';
 import { useSmartDateRange } from '../../hooks/useSmartDateRange';
+import { useDashboardHistoricalData } from './hooks/useDashboardHistoricalData';
 import useAxiosPrivate from '../../auth/hooks/useAxiosPrivate';
 import useAuth from '../../auth/hooks/useAuth';
 import { useCells } from '../../services/cell';
@@ -22,6 +24,14 @@ import {
   parseLayoutParam,
   serializeLayoutParam,
 } from './catalog/dashboardCatalog';
+import {
+  availablePanelIdsForCells,
+  defaultPanelOrderFromFetched,
+  fetchCatalogPanelIdsForCells,
+  fetchCellSensorsForCells,
+  panelsMissingForCells,
+} from './catalog/cellSensorLayout';
+import { panelOrderNeedsPower, panelOrderNeedsTeros } from './catalog/historicalDataLoader';
 import { io } from 'socket.io-client';
 import TopNav from '../../components/TopNav';
 
@@ -38,8 +48,6 @@ function Dashboard() {
   const [manualDateSelection, setManualDateSelection] = useState(false);
   const smartDateRangeAppliedRef = useRef(false);
   const cancelSmartDateRef = useRef(null);
-  const [powerHasData, setPowerHasData] = useState(false);
-  const [terosHasData, setTerosHasData] = useState(false);
   const [liveData, setLiveData] = useState([]);
 
   // Background streaming data - always collecting in background
@@ -62,9 +70,15 @@ function Dashboard() {
 
   const cells = useCells();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [panelOrder, setPanelOrder] = useState(DEFAULT_DASHBOARD_PANEL_ORDER);
+  const layoutParam = searchParams.get('layout');
+  const [panelOrder, setPanelOrder] = useState([]);
   const [panelColumns, setPanelColumns] = useState(2);
   const [addChartOpen, setAddChartOpen] = useState(false);
+  const [cellSensorsById, setCellSensorsById] = useState({});
+  const [layoutMismatchOpen, setLayoutMismatchOpen] = useState(false);
+  const [layoutMismatchPanels, setLayoutMismatchPanels] = useState([]);
+  const [historicalDatesReady, setHistoricalDatesReady] = useState(false);
+  const [availablePanelIds, setAvailablePanelIds] = useState(null);
 
   // data processing
   const processLiveData = useCallback((measurements) => {
@@ -132,8 +146,6 @@ function Dashboard() {
     const clearTimeoutId = setTimeout(() => {
       setLiveData([]);
       backgroundStreamDataRef.current = [];
-      setPowerHasData(false);
-      setTerosHasData(false);
     }, 30 * 60 * 1000);
     clearTimeoutIdRef.current = clearTimeoutId;
   }, []);
@@ -150,6 +162,33 @@ function Dashboard() {
     return processLiveData(liveData);
   }, [liveData, processLiveData]);
 
+  const panelOrderForFetch = useMemo(() => {
+    if (!availablePanelIds) {
+      return panelOrder;
+    }
+    return panelOrder.filter((panelId) => availablePanelIds.has(panelId));
+  }, [panelOrder, availablePanelIds]);
+
+  const { historicalPowerByCell, historicalTerosByCell, historicalSensorByKey, historicalLoading } =
+    useDashboardHistoricalData({
+      cells: selectedCells,
+      panelOrder: panelOrderForFetch,
+      startDate: hourlyStartDate,
+      endDate: hourlyEndDate,
+      stream,
+      cellSensorsById,
+      enabled: historicalDatesReady && selectedCells.length > 0,
+    });
+
+  const centralHistoricalActive = useMemo(
+    () => ({
+      power: !stream && panelOrderNeedsPower(panelOrderForFetch),
+      teros: !stream && panelOrderNeedsTeros(panelOrderForFetch),
+      sensors: !stream && panelOrderForFetch.some((panelId) => panelId.startsWith('u:')),
+    }),
+    [stream, panelOrderForFetch],
+  );
+
   const panelChartProps = useMemo(
     () => ({
       cells: selectedCells,
@@ -160,10 +199,27 @@ function Dashboard() {
       processedPower: processedLiveData.power,
       processedTeros: processedLiveData.teros,
       processedSensors: processedLiveData.sensors,
-      onPowerDataStatusChange: setPowerHasData,
-      onTerosDataStatusChange: setTerosHasData,
+      cellSensorsById,
+      historicalPowerByCell,
+      historicalTerosByCell,
+      historicalSensorByKey,
+      historicalLoading,
+      centralHistoricalActive,
     }),
-    [selectedCells, hourlyStartDate, hourlyEndDate, stream, liveData, processedLiveData],
+    [
+      selectedCells,
+      hourlyStartDate,
+      hourlyEndDate,
+      stream,
+      liveData,
+      processedLiveData,
+      cellSensorsById,
+      historicalPowerByCell,
+      historicalTerosByCell,
+      historicalSensorByKey,
+      historicalLoading,
+      centralHistoricalActive,
+    ],
   );
 
   const handleAddPanel = useCallback((panelId) => {
@@ -172,7 +228,10 @@ function Dashboard() {
   }, []);
 
   const handleRemovePanel = useCallback((panelId) => {
-    setPanelOrder((prev) => prev.filter((id) => id !== panelId));
+    setPanelOrder((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.filter((id) => id !== panelId);
+    });
   }, []);
 
   // processing for WebSocket updates
@@ -270,6 +329,69 @@ function Dashboard() {
     showFallbackNotificationHandler,
     hideFallbackNotification,
   } = useSmartDateRange();
+
+  // Restore panel layout from URL only when the layout param changes (not on cells refetch).
+  useEffect(() => {
+    const parsedLayout = parseLayoutParam(layoutParam);
+    if (parsedLayout.length > 0) {
+      setPanelOrder(parsedLayout);
+    }
+  }, [layoutParam]);
+
+  const parsedUrlLayout = useMemo(() => parseLayoutParam(layoutParam), [layoutParam]);
+  const hasUrlLayout = parsedUrlLayout.length > 0;
+
+  // Cell sensors + catalog (once); default panel order when no URL layout.
+  useEffect(() => {
+    if (selectedCells.length === 0) {
+      setCellSensorsById({});
+      setAvailablePanelIds(null);
+      return undefined;
+    }
+
+    const cellIds = selectedCells.map((cell) => cell.id);
+    let cancelled = false;
+
+    Promise.all([fetchCellSensorsForCells(cellIds), fetchCatalogPanelIdsForCells(cellIds)]).then(
+      ([sensors, catalogIds]) => {
+        if (cancelled) return;
+        setCellSensorsById(sensors);
+        setAvailablePanelIds(availablePanelIdsForCells(sensors, cellIds, catalogIds));
+
+        if (!hasUrlLayout) {
+          const defaultOrder = defaultPanelOrderFromFetched(sensors, cellIds, catalogIds);
+          setPanelOrder(defaultOrder.length > 0 ? defaultOrder : DEFAULT_DASHBOARD_PANEL_ORDER);
+          setLayoutMismatchOpen(false);
+          setLayoutMismatchPanels([]);
+        }
+      },
+    );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCells, hasUrlLayout]);
+
+  // Warn when a URL layout includes panels unavailable for the selected cells.
+  useEffect(() => {
+    if (!hasUrlLayout || selectedCells.length === 0 || panelOrder.length === 0 || !availablePanelIds) {
+      if (!hasUrlLayout) {
+        setLayoutMismatchOpen(false);
+        setLayoutMismatchPanels([]);
+      }
+      return undefined;
+    }
+
+    const missing = panelsMissingForCells(panelOrder, availablePanelIds);
+    if (missing.length > 0) {
+      setLayoutMismatchPanels(missing);
+      setLayoutMismatchOpen(true);
+    } else {
+      setLayoutMismatchPanels([]);
+      setLayoutMismatchOpen(false);
+    }
+  }, [selectedCells, hasUrlLayout, panelOrder, availablePanelIds]);
+
   // Initialize state from URL parameters
   useEffect(() => {
     if (!cells.data) return;
@@ -277,12 +399,6 @@ function Dashboard() {
     const searchQueryCells = searchParams.get('cell_id');
     const searchQueryStartDate = searchParams.get('startDate');
     const searchQueryEndDate = searchParams.get('endDate');
-    const searchQueryLayout = searchParams.get('layout');
-
-    const parsedLayout = parseLayoutParam(searchQueryLayout);
-    if (parsedLayout.length > 0) {
-      setPanelOrder(parsedLayout);
-    }
 
     if (searchQueryCells && searchQueryCells.length > 0) {
       const selectedCellIds = searchQueryCells.split(',');
@@ -311,6 +427,7 @@ function Dashboard() {
       // Only block smart date range if this appears to be a genuine manual selection
       if (isManualSelection && searchQueryCells) {
         setManualDateSelection(true);
+        setHistoricalDatesReady(true);
       }
     }
 
@@ -331,6 +448,7 @@ useEffect(() => {
   cancelSmartDateRef.current = cancelToken;
 
   const applySmartDateRange = async () => {
+    setHistoricalDatesReady(false);
     try {
       const {
         startDate: smartStartDate,
@@ -346,6 +464,7 @@ useEffect(() => {
       setHourlyStartDate(smartStartDate);
       setHourlyEndDate(smartEndDate);
       smartDateRangeAppliedRef.current = true;
+      setHistoricalDatesReady(true);
 
       if (isFallback) {
         showFallbackNotificationHandler();
@@ -353,6 +472,7 @@ useEffect(() => {
     } catch (error) {
       if (!cancelToken.cancelled) {
         console.error('Error applying smart date range:', error);
+        setHistoricalDatesReady(true);
       }
     }
   };
@@ -408,6 +528,7 @@ useEffect(() => {
       setHourlyStartDate(newStartDate);
     }
     setManualDateSelection(true);
+    setHistoricalDatesReady(true);
     smartDateRangeAppliedRef.current = true;
   };
 
@@ -418,6 +539,7 @@ useEffect(() => {
       setHourlyEndDate(newEndDate);
     }
     setManualDateSelection(true);
+    setHistoricalDatesReady(true);
     smartDateRangeAppliedRef.current = true; // ✅ new
   };
 
@@ -455,11 +577,13 @@ useEffect(() => {
   setSelectedCells(newSelectedCells);
   if (!manualDateSelection) {
     smartDateRangeAppliedRef.current = false; // instant reset, no setTimeout race
+    setHistoricalDatesReady(false);
   }
 };
 
+
   useEffect(() => {
-    if (selectedCells.length === 0) {
+    if (selectedCells.length === 0 || panelOrder.length > 0) {
       setShowNoDataMessage(false);
       return;
     }
@@ -481,7 +605,7 @@ useEffect(() => {
       clearTimeout(timer2);
       clearTimeout(timer3);
     };
-  }, [selectedCells, startDate, endDate, stream]);
+  }, [selectedCells, startDate, endDate, stream, panelOrder]);
 
   // Disable streaming when user logs out
   useEffect(() => {
@@ -496,8 +620,7 @@ useEffect(() => {
     }
   }, [loggedIn, stream]);
 
-  // Check if top section should be hidden
-  const topSectionHasData = powerHasData || terosHasData || panelOrder.length > 0;
+  const showPanelSection = selectedCells.length > 0;
 
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -508,6 +631,11 @@ useEffect(() => {
           onClose={hideFallbackNotification}
           fallbackStartDate={fallbackDates.start}
           fallbackEndDate={fallbackDates.end}
+        />
+        <LayoutMismatchNotification
+          open={layoutMismatchOpen}
+          onClose={() => setLayoutMismatchOpen(false)}
+          missingPanelIds={layoutMismatchPanels}
         />
         <Stack
           direction='column'
@@ -662,7 +790,7 @@ useEffect(() => {
                 </Box>
               </Box>
             </Box>
-          ) : showNoDataMessage ? (
+          ) : showNoDataMessage && panelOrder.length === 0 ? (
             <Box display='flex' justifyContent='center' alignItems='center' sx={{ minHeight: 'calc(100vh - 120px)' }}>
               <Box textAlign='center'>
                 <Typography variant='body1' color='text.secondary'>
@@ -676,9 +804,8 @@ useEffect(() => {
               <Box
                 sx={{
                   width: '100%',
-                  p: topSectionHasData ? 2 : 0,
-                  height: topSectionHasData ? 'auto' : 0,
-                  overflow: 'hidden',
+                  p: showPanelSection ? 2 : 0,
+                  minHeight: showPanelSection ? 'auto' : 0,
                 }}
               >
                 <DashboardPanelActions

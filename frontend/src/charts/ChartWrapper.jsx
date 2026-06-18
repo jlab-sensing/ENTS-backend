@@ -270,7 +270,7 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
         alignItems: 'stretch',
       }}
     >
-      <Box sx={{ flex: 1, minWidth: 0, height: '100%', position: 'relative' }}>
+      <Box sx={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', position: 'relative' }}>
         <Line
           data-testid='chart-container'
           key={id}

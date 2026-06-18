@@ -61,7 +61,10 @@ function SortableChartPanelInner({ id, children, onRemove, panelColumns }) {
   const handleMouseEnter = useCallback(() => setHovered(true), []);
   const handleMouseLeave = useCallback((event) => {
     setHovered(false);
-    if (!event.currentTarget.contains(event.relatedTarget)) {
+    const related = event.relatedTarget;
+    const leftPanel =
+      related == null || !(related instanceof Node) || !event.currentTarget.contains(related);
+    if (leftPanel) {
       setHandleFocused(false);
       handleRef.current?.blur();
     }
@@ -84,6 +87,8 @@ function SortableChartPanelInner({ id, children, onRemove, panelColumns }) {
       onMouseLeave={handleMouseLeave}
       sx={{
         position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
         width: '100%',
         minWidth: 0,
         height:
@@ -161,10 +166,10 @@ function SortableChartPanelInner({ id, children, onRemove, panelColumns }) {
 
       <Box
         sx={{
+          flex: 1,
           width: '100%',
-          height: '100%',
           minWidth: 0,
-          overflow: 'hidden',
+          minHeight: 0,
         }}
       >
         {children}
