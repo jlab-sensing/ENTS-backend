@@ -4,7 +4,7 @@ import { DateTime } from 'luxon';
 
 export const getPowerData = (cellId, startTime = DateTime.now().minus({ months: 1 }), endTime = DateTime.now(), resample = 'hour') => {
   return axios
-    .get(`${process.env.PUBLIC_URL}/api/power/${cellId}?startTime=${startTime}&endTime=${endTime}&resample=${resample}`)
+    .get(`${process.env.PUBLIC_URL}/api/power/${cellId}?startTime=${startTime.toISO()}&endTime=${endTime.toISO()}&resample=${resample}`)
     .then((res) => res.data);
 };
 
@@ -15,6 +15,6 @@ export const streamPowerData = (
   stream,
 ) => {
   return axios
-    .get(`${process.env.PUBLIC_URL}/api/power/${cellId}?startTime=${startTime}&endTime=${endTime}&stream=${stream}`)
+    .get(`${process.env.PUBLIC_URL}/api/power/${cellId}?startTime=${startTime.toISO()}&endTime=${endTime.toISO()}&stream=${stream}`)
     .then((res) => res.data);
 };
