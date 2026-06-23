@@ -72,9 +72,9 @@ export const CHART_CONFIGS = {
   },
   bme280Pressure: {
     sensor_name: 'bme280',
-    measurements: ['Pressure'],
+    measurements: ['pressure'],
     units: ['kPa'],
-    axisIds: ['pressureAxis'],
+    axisIds: ['y'],
     chartId: 'bme280pressure',
   },
   bme280Humidity: {

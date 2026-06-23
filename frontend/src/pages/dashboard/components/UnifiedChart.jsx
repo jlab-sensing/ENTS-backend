@@ -1,23 +1,54 @@
-import { Grid } from '@mui/material';
+import { Box } from '@mui/material';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import { React, useEffect, useState, useRef } from 'react';
 import { getSensorData } from '../../../services/sensor';
 import UniversalChart from '../../../charts/UniversalChart';
-import { extractUnifiedStreamValue, matchesSensorStreamType, normalizeUnifiedStreamValue } from './unifiedChartUtils';
+import {
+  extractUnifiedStreamValue,
+  matchesSensorStreamType,
+  measurementMatches,
+  normalizeUnifiedStreamValue,
+} from './unifiedChartUtils';
 import { CHART_CONFIGS } from './chartConfigs';
+import { buildUnifiedChartDataFromCache } from '../catalog/historicalDataLoader';
+import ChartPanelPlaceholder from './ChartPanelPlaceholder';
 
+const EMPTY_CELL_SENSORS_BY_ID = {};
 
-
-function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange, cellSensorsById ={}, }) {
+function getCellMeasurementData(cellData, measurement) {
+  if (!cellData || !measurement) return null;
+  if (cellData[measurement]) return cellData[measurement];
+  const normalized = measurement.toLowerCase();
+  const matchedKey = Object.keys(cellData).find(
+    (key) => key !== 'name' && key.toLowerCase() === normalized,
+  );
+  return matchedKey ? cellData[matchedKey] : null;
+}
+function UnifiedChart({
+  type,
+  cells,
+  startDate,
+  endDate,
+  stream,
+  liveData,
+  processedData,
+  onDataStatusChange,
+  cellSensorsById,
+  historicalSensorByKey,
+  centralHistoricalActive = false,
+  historicalLoading = false,
+}) {
   const [resample, setResample] = useState('hour');
   const chartSettings = {
     label: [],
     datasets: [],
   };
   const [sensorChartData, setSensorChartData] = useState(chartSettings);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const debounceTimer = useRef(null);
+  const fetchGenerationRef = useRef(0);
+  const sensorsById = cellSensorsById ?? EMPTY_CELL_SENSORS_BY_ID;
 
   const config = CHART_CONFIGS[type];
   const { sensor_name, measurements, units, axisIds, chartId, axisPolicy } = config || {};
@@ -36,34 +67,60 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
   ];
 
   async function getCellChartData() {
-    const data = {};
-    // Always fetch data for all selected cells when cells change
-    let loadCells = cells;
-    for (const { id, name } of loadCells) {
-      data[id] = {
-        name: name,
-      };
-      // get list of sensors that are associated with selected cells
-      let cellSensors = []
-      if (Array.isArray(cellSensorsById[id])){
-        cellSensors = cellSensorsById[id];
+    if (centralHistoricalActive && resample === 'hour') {
+      if (historicalLoading || !historicalSensorByKey || Object.keys(historicalSensorByKey).length === 0) {
+        return {};
       }
-
-      for (const sensor of cellSensors) {
-        const meas = sensor.measurement;
-
-        // if no matching sensor, skip this request
-        if (!sensor.name || !meas){
-          continue;
-        }
-
-        data[id] = {
-          ...data[id],
-          [meas]: await getSensorData(sensor.name, id, meas, startDate.toHTTP(), endDate.toHTTP(), resample),
-        };
-      }
+      return buildUnifiedChartDataFromCache(cells, type, sensorsById, historicalSensorByKey);
     }
-    return data;
+
+    const cellEntries = await Promise.all(
+      cells.map(async ({ id, name }) => {
+        const cellSensors = Array.isArray(sensorsById[id]) ? sensorsById[id] : [];
+        const relevantSensors = cellSensors.filter(
+          (sensor) =>
+            sensor?.name === sensor_name && measurementMatches(sensor?.measurement, measurements),
+        );
+
+        const seenMeasurements = new Set();
+        const uniqueSensors = relevantSensors.filter((sensor) => {
+          const key = sensor.measurement.toLowerCase();
+          if (seenMeasurements.has(key)) return false;
+          seenMeasurements.add(key);
+          return true;
+        });
+
+        const sensorsToFetch =
+          uniqueSensors.length > 0
+            ? uniqueSensors
+            : measurements.map((meas) => ({ name: sensor_name, measurement: meas }));
+
+        const measEntries = await Promise.all(
+          sensorsToFetch.map(async (sensor) => {
+            const meas = sensor.measurement;
+            const payload = await getSensorData(
+              sensor.name,
+              id,
+              meas,
+              startDate.toHTTP(),
+              endDate.toHTTP(),
+              resample,
+            );
+            return [meas, payload];
+          }),
+        );
+
+        return [
+          id,
+          {
+            name,
+            ...Object.fromEntries(measEntries),
+          },
+        ];
+      }),
+    );
+
+    return Object.fromEntries(cellEntries);
   }
 
   function createDataset(x, y) {
@@ -75,22 +132,40 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     });
   }
 
+  function resolveCellEntry(cellChartData, cellId) {
+    return cellChartData[cellId] ?? cellChartData[String(cellId)];
+  }
+
   function updateCharts() {
+    if (centralHistoricalActive && resample === 'hour' && historicalLoading) {
+      setIsLoading(true);
+      return;
+    }
+
+    const fetchGeneration = ++fetchGenerationRef.current;
     setIsLoading(true);
     getCellChartData()
       .then((cellChartData) => {
-        const newSensorChartData = { labels: [], datasets: [] }; // fresh every time
+        if (fetchGeneration !== fetchGenerationRef.current) return;
+        const newSensorChartData = { labels: [], datasets: [] };
         let selectCounter = 0;
         // Always process all selected cells
         let loadCells = cells;
-        for (const { id } of loadCells) {
-          const cellid = id;
-          const name = cellChartData[cellid].name;
-          const measurements = Object.keys(cellChartData[cellid]).filter((k) => k != 'name');
+        for (const { id, name: cellName } of loadCells) {
+          const entry = resolveCellEntry(cellChartData, id);
+          if (!entry) {
+            selectCounter += 1;
+            continue;
+          }
+          const name = entry.name ?? cellName;
+          const plottedMeasurements = new Set();
           for (const [idx, meas] of measurements.entries()) {
-            const measDataArray = cellChartData[cellid][meas]['data'];
+            const normalizedMeas = meas.toLowerCase();
+            if (plottedMeasurements.has(normalizedMeas)) continue;
+            const measPayload = getCellMeasurementData(entry, meas);
+            const measDataArray = measPayload?.data;
             if (Array.isArray(measDataArray) && measDataArray.length > 0) {
-              const timestamp = cellChartData[cellid][meas]['timestamp'].map((dateTime) =>
+              const timestamp = measPayload.timestamp.map((dateTime) =>
                 DateTime.fromHTTP(dateTime).toMillis(),
               );
               const normalizedData =
@@ -109,15 +184,17 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
                 radius: 2,
                 pointRadius: 1,
               });
+              plottedMeasurements.add(normalizedMeas);
             }
           }
           selectCounter += 1;
         }
+        if (fetchGeneration !== fetchGenerationRef.current) return;
         setSensorChartData(newSensorChartData);
-        // Update loaded cells to track current selection
         setIsLoading(false);
       })
       .catch((error) => {
+        if (fetchGeneration !== fetchGenerationRef.current) return;
         console.error('Error updating charts:', error);
         setIsLoading(false);
       });
@@ -206,6 +283,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
       datasets: [],
     };
     setSensorChartData(Object.assign({}, newSensorChartData));
+    setIsLoading(false);
   }
 
   useEffect(() => {
@@ -298,7 +376,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cells, stream, resample, startDate, endDate, cellSensorsById]);
+  }, [cells, stream, resample, startDate, endDate, cellSensorsById, historicalSensorByKey, centralHistoricalActive, historicalLoading]);
 
   const handleResampleChange = (newResample) => {
     setResample(newResample);
@@ -308,22 +386,29 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
 
   // Notify parent component when data status changes
   useEffect(() => {
-    if (onDataStatusChange) {
+    if (onDataStatusChange && !isLoading) {
       onDataStatusChange(hasRenderableData);
     }
-  }, [hasRenderableData, onDataStatusChange]);
+  }, [hasRenderableData, isLoading, onDataStatusChange]);
 
   if (!config) {
     console.error(`Unknown chart type: ${type}`);
     return null;
   }
 
-  if (!hasRenderableData && !isLoading) {
+  if (isLoading) {
+    return <ChartPanelPlaceholder loading />;
+  }
+
+  if (!hasRenderableData) {
+    if (cells?.length) {
+      return <ChartPanelPlaceholder />;
+    }
     return null;
   }
 
   return (
-    <Grid item sx={{ height: '50%' }} xs={4} sm={4} md={5.5} p={0.25}>
+    <Box sx={{ height: '100%', width: '100%', minWidth: 0, minHeight: 0 }}>
       <UniversalChart
         data={sensorChartData}
         stream={stream}
@@ -335,7 +420,7 @@ function UnifiedChart({ type, cells, startDate, endDate, stream, liveData, proce
         {...(!stream && { startDate, endDate })}
         onResampleChange={handleResampleChange}
       />
-    </Grid>
+    </Box>
   );
 }
 
@@ -349,6 +434,9 @@ UnifiedChart.propTypes = {
   processedData: PropTypes.object,
   onDataStatusChange: PropTypes.func,
   cellSensorsById: PropTypes.object,
+  historicalSensorByKey: PropTypes.object,
+  centralHistoricalActive: PropTypes.bool,
+  historicalLoading: PropTypes.bool,
 };
 
 export default UnifiedChart;

@@ -4,6 +4,12 @@ function normalize(value) {
   return String(value || '').toLowerCase();
 }
 
+export function measurementMatches(sensorMeasurement, configMeasurements) {
+  if (!sensorMeasurement || !Array.isArray(configMeasurements)) return false;
+  const normalized = sensorMeasurement.toLowerCase();
+  return configMeasurements.some((measurement) => measurement.toLowerCase() === normalized);
+}
+
 export function matchesSensorStreamType(measurementType, sensorName) {
   const measurement = normalize(measurementType);
   const sensor = normalize(sensorName);

@@ -263,23 +263,29 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
     <Box
       sx={{
         display: 'flex',
-        gap: '1%',
+        gap: 1,
         height: '100%',
+        width: '100%',
+        minWidth: 0,
+        alignItems: 'stretch',
       }}
     >
-      <Line
-        data-testid='chart-container'
-        key={id}
-        ref={chartRef}
-        data={data}
-        options={{ ...optionsWithPlugins, ...globalChartOpts }}
-        plugins={[]}
-      ></Line>
+      <Box sx={{ flex: 1, minWidth: 0, minHeight: 0, height: '100%', position: 'relative' }}>
+        <Line
+          data-testid='chart-container'
+          key={id}
+          ref={chartRef}
+          data={data}
+          options={{ ...optionsWithPlugins, ...globalChartOpts }}
+          plugins={[]}
+        ></Line>
+      </Box>
       <Box
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '1%',
+          gap: 0.5,
+          flexShrink: 0,
         }}
       >
         <Tooltip

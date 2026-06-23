@@ -1,11 +1,24 @@
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
-import { React, useEffect, useState } from 'react';
+import { React, useEffect, useRef, useState } from 'react';
 import PwrChart from '../../../charts/PwrChart/PwrChart';
 import VChart from '../../../charts/VChart/VChart';
 import { getPowerData } from '../../../services/power';
-function PowerCharts({ cells, startDate, endDate, stream, liveData, processedData, onDataStatusChange }) {
+import ChartPanelPlaceholder from './ChartPanelPlaceholder';
+function PowerCharts({
+  cells,
+  startDate,
+  endDate,
+  stream,
+  liveData,
+  processedData,
+  onDataStatusChange,
+  variant = 'both',
+  historicalPowerByCell,
+  centralHistoricalActive = false,
+  historicalLoading = false,
+}) {
   const [resample, setResample] = useState('hour');
   const chartSettings = {
     labels: [],
@@ -17,6 +30,7 @@ function PowerCharts({ cells, startDate, endDate, stream, liveData, processedDat
   const [vChartData, setVChartData] = useState(chartSettings);
   const [pwrChartData, setPwrChartData] = useState(chartSettings);
   const [hasData, setHasData] = useState(false);
+  const fetchGenerationRef = useRef(0);
   
   // Initialize the combined chart data with empty datasets
 
@@ -25,17 +39,14 @@ function PowerCharts({ cells, startDate, endDate, stream, liveData, processedDat
   const iColors = ['#112E51', '#78909C', '#C1F7DC'];
 
   //** gets power data from backend */
-  async function getPowerChartData() {
-    const data = {};
-    // Always fetch data for all selected cells when cells change
-    let loadCells = cells;
-    for (const { id, name } of loadCells) {
-      data[id] = {
-        name: name,
-        powerData: await getPowerData(id, startDate.toHTTP(), endDate.toHTTP(), resample),
-      };
-    }
-    return data;
+  async function getPowerChartData(loadCells) {
+    const entries = await Promise.all(
+      loadCells.map(async ({ id, name }) => {
+        const powerData = await getPowerData(id, startDate.toHTTP(), endDate.toHTTP(), resample);
+        return [id, { name, powerData }];
+      }),
+    );
+    return Object.fromEntries(entries);
   }
 
   /** takes array x and array y  */
@@ -49,78 +60,111 @@ function PowerCharts({ cells, startDate, endDate, stream, liveData, processedDat
   }
 
   //** updates chart based on query */
-  function updateCharts() {
+  function resolveCellEntry(cellChartData, cellId) {
+    return cellChartData[cellId] ?? cellChartData[String(cellId)];
+  }
+
+  function applyCellChartData(cellChartData, loadCells) {
     const newVChartData = {
-      ...vChartData,
+      labels: [],
       datasets: [],
     };
     const newPwrChartData = {
-      ...pwrChartData,
+      labels: [],
       datasets: [],
     };
-    getPowerChartData().then((cellChartData) => {
-      let selectCounter = 0;
-      // Always process all selected cells
-      let loadCells = cells;
-      let hasAnyData = false;
-      for (const { id } of loadCells) {
-        const cellid = id;
-        const name = cellChartData[cellid].name;
-        const powerData = cellChartData[cellid].powerData;
 
-        if (
-          (Array.isArray(powerData.v) && powerData.v.length > 0) ||
-          (Array.isArray(powerData.i) && powerData.i.length > 0) ||
-          (Array.isArray(powerData.p) && powerData.p.length > 0)
-        ) {
-          hasAnyData = true;
+    let selectCounter = 0;
+    let hasAnyData = false;
+    for (const { id, name: cellName } of loadCells) {
+      const entry = resolveCellEntry(cellChartData, id);
+      if (!entry?.powerData) {
+        selectCounter += 1;
+        continue;
+      }
 
-          const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
-          newVChartData.labels = pTimestamp;
-          const vData = createDataset(pTimestamp, powerData.v);
-          const iData = createDataset(pTimestamp, powerData.i);
-          const pData = createDataset(pTimestamp, powerData.p);
-          newVChartData.datasets.push(
-            {
-              label: name + ' Voltage (mV)',
-              data: vData,
-              borderColor: vColors[selectCounter],
-              borderWidth: 2,
-              fill: false,
-              yAxisID: 'vAxis',
-              radius: 2,
-              pointRadius: 1,
-            },
-            {
-              label: name + ' Current (µA)',
-              data: iData,
-              borderColor: iColors[selectCounter],
-              borderWidth: 2,
-              fill: false,
-              yAxisID: 'cAxis',
-              radius: 2,
-              pointRadius: 1,
-            },
-          );
-          //power data
-          newPwrChartData.labels = pTimestamp;
-          newPwrChartData.datasets.push({
-            label: name + ' Power (µW)',
-            data: pData,
-            borderColor: pColors[selectCounter],
+      const name = entry.name ?? cellName;
+      const powerData = entry.powerData;
+
+      if (
+        (Array.isArray(powerData.v) && powerData.v.length > 0) ||
+        (Array.isArray(powerData.i) && powerData.i.length > 0) ||
+        (Array.isArray(powerData.p) && powerData.p.length > 0)
+      ) {
+        hasAnyData = true;
+
+        const pTimestamp = powerData.timestamp.map((dateTime) => DateTime.fromHTTP(dateTime).toMillis());
+        newVChartData.labels = pTimestamp;
+        const vData = createDataset(pTimestamp, powerData.v);
+        const iData = createDataset(pTimestamp, powerData.i);
+        const pData = createDataset(pTimestamp, powerData.p);
+        newVChartData.datasets.push(
+          {
+            label: name + ' Voltage (mV)',
+            data: vData,
+            borderColor: vColors[selectCounter],
             borderWidth: 2,
             fill: false,
+            yAxisID: 'vAxis',
             radius: 2,
             pointRadius: 1,
-          });
-        }
-        selectCounter += 1;
+          },
+          {
+            label: name + ' Current (µA)',
+            data: iData,
+            borderColor: iColors[selectCounter],
+            borderWidth: 2,
+            fill: false,
+            yAxisID: 'cAxis',
+            radius: 2,
+            pointRadius: 1,
+          },
+        );
+        newPwrChartData.labels = pTimestamp;
+        newPwrChartData.datasets.push({
+          label: name + ' Power (µW)',
+          data: pData,
+          borderColor: pColors[selectCounter],
+          borderWidth: 2,
+          fill: false,
+          radius: 2,
+          pointRadius: 1,
+        });
       }
-      setVChartData(newVChartData);
-      setPwrChartData(newPwrChartData);
-      // Update loaded cells to track current selection
-      setHasData(hasAnyData);
-    });
+      selectCounter += 1;
+    }
+
+    setVChartData(newVChartData);
+    setPwrChartData(newPwrChartData);
+    setHasData(hasAnyData);
+  }
+
+  function updateCharts() {
+    const fetchGeneration = ++fetchGenerationRef.current;
+    const loadCells = cells;
+
+    if (centralHistoricalActive && resample === 'hour') {
+      if (historicalLoading) return;
+      if (fetchGeneration !== fetchGenerationRef.current) return;
+      const cellChartData = historicalPowerByCell ?? {};
+      const hasCentralData = cells.some(({ id }) => resolveCellEntry(cellChartData, id));
+      if (!hasCentralData) return;
+      applyCellChartData(cellChartData, loadCells);
+      return;
+    }
+
+    const finish = (cellChartData) => {
+      if (fetchGeneration !== fetchGenerationRef.current) return;
+      applyCellChartData(cellChartData, loadCells);
+    };
+
+    getPowerChartData(loadCells)
+      .then(finish)
+      .catch((error) => {
+        if (fetchGeneration !== fetchGenerationRef.current) return;
+        console.error('Error updating power charts:', error);
+        setHasData(false);
+      });
   }
 
 
@@ -252,7 +296,7 @@ function PowerCharts({ cells, startDate, endDate, stream, liveData, processedDat
       clearCharts();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cells, stream, resample, startDate, endDate]); // Added back startDate, endDate dependencies
+  }, [cells, stream, resample, startDate, endDate, historicalPowerByCell, centralHistoricalActive, historicalLoading]);
 
 
   const handleResampleChange = (newResample) => {
@@ -267,26 +311,59 @@ function PowerCharts({ cells, startDate, endDate, stream, liveData, processedDat
   }, [hasData, onDataStatusChange]);
 
   if (!hasData) {
-    return <></>;
+    if (centralHistoricalActive && historicalLoading && !stream) {
+      return <ChartPanelPlaceholder loading />;
+    }
+    if (cells?.length) {
+      return <ChartPanelPlaceholder />;
+    }
+    return null;
+  }
+
+  const chartHeight = { xs: '400px', md: '450px' };
+  const panelChartSx = { height: '100%', width: '100%', minWidth: 0, minHeight: 0 };
+
+  const voltageChart = (
+    <VChart
+      data={vChartData}
+      stream={stream}
+      {...(!stream && { startDate, endDate })}
+      onResampleChange={handleResampleChange}
+    />
+  );
+
+  const powerChart = (
+    <PwrChart
+      data={pwrChartData}
+      stream={stream}
+      {...(!stream && { startDate, endDate })}
+      onResampleChange={handleResampleChange}
+    />
+  );
+
+  if (variant === 'voltage') {
+    return (
+      <Box sx={panelChartSx}>
+        {voltageChart}
+      </Box>
+    );
+  }
+
+  if (variant === 'power') {
+    return (
+      <Box sx={panelChartSx}>
+        {powerChart}
+      </Box>
+    );
   }
 
   return (
     <>
-      <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={12} sm={12} md={stream ? 12 : 6} p={3}>
-        <VChart
-          data={vChartData}
-          stream={stream}
-          {...(!stream && { startDate, endDate })}
-          onResampleChange={handleResampleChange}
-        />
+      <Grid item sx={{ height: chartHeight }} xs={12} sm={12} md={stream ? 12 : 6} p={3}>
+        {voltageChart}
       </Grid>
-      <Grid item sx={{ height: { xs: '400px', md: '450px' } }} xs={12} sm={12} md={stream ? 12 : 6} p={3}>
-        <PwrChart
-          data={pwrChartData}
-          stream={stream}
-          {...(!stream && { startDate, endDate })}
-          onResampleChange={handleResampleChange}
-        />
+      <Grid item sx={{ height: chartHeight }} xs={12} sm={12} md={stream ? 12 : 6} p={3}>
+        {powerChart}
       </Grid>
     </>
   );
@@ -300,6 +377,10 @@ PowerCharts.propTypes = {
   liveData: PropTypes.array,
   processedData: PropTypes.object,
   onDataStatusChange: PropTypes.func,
+  variant: PropTypes.oneOf(['both', 'voltage', 'power']),
+  historicalPowerByCell: PropTypes.object,
+  centralHistoricalActive: PropTypes.bool,
+  historicalLoading: PropTypes.bool,
 };
 
 export default PowerCharts;
