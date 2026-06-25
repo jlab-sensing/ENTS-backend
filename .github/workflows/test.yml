@@ -1,3 +1,4 @@
+---
 name: Lint and test
 
 on:
@@ -7,103 +8,106 @@ on:
       - dev
   pull_request:
     types: [opened, reopened, synchronize]
+  merge_group:
+
+env:
+  ENV_FILE: ci.env
+
+permissions:
+  contents: read
 
 jobs:
-  lint:
+  backend-format:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install backend dependencies
-        run: pip install -r ./backend/requirements.txt -r ./backend/requirements-dev.txt
+      - name: Build containers
+        run: docker compose --profile ci build
 
       - name: Lint backend
-        run: ruff check ./backend
+        run: docker compose up backend-format --abort-on-container-exit
 
-      - name: Black format check
-        uses: psf/black@stable
-        with:
-          options: '--check --verbose'
-          src: './backend'
-          version: '24.3.0'
-
-      - name: Install frontend packages
-        working-directory: ./frontend
-        run: npm ci
-
-      - name: Run tests on frontend
-        working-directory: ./frontend
-        run: npm run test
-
-      - name: Lint frontend
-        working-directory: ./frontend
-        run: npm run lint
-
-  test:
+  backend-lint:
     runs-on: ubuntu-latest
-    env:
-      CONFIG_TYPE: Production
-      DB_USER: dirtviz
-      DB_PASS: password
-      DB_HOST: localhost
-      DB_PORT: 5432
-      DB_DATABASE: dirtviz
-      PUBLIC_URL: http://localhost:3000
-      CELERY_BROKER_URL: redis://valkey:6379/0
-      CELERY_RESULT_BACKEND: redis://valkey:6379/0
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      OAUTH_REDIRECT_URI: http://localhost:3000/auth/callback
-      # keys/secrets are only for client side, fine to be exposed in tests
-      SECRET_KEY: eWlAZBMkE86Al_kZ0Uh2pw
-      REFRESH_TOKEN_SECRET: ZxgJO5ZMTX9FRvyHLbIjuw
-      ACCESS_TOKEN_SECRET: 0dyZbKf-C5ETM_gkBpznHQ
-      TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
-      TTN_APP_ID: soil-power-sensor
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup python
-        uses: actions/setup-python@v6
+      - name: Build containers
+        run: docker compose --profile ci build
+
+      - name: Lint backend
+        run: docker compose up backend-lint --abort-on-container-exit
+
+  frontend-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build containers
+        run: docker compose --profile ci build
+
+      - name: Lint backend
+        run: docker compose up frontend-lint --abort-on-container-exit
+
+  backend-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build containers
+        run: docker compose --profile ci build
+
+      - name: Test backend
+        run: docker compose up backend-test --abort-on-container-exit
+
+      - name: Copy coverage report
+        run: docker compose cp backend-test:/app/coverage.xml ./coverage.xml
+
+      - name: Upload backend coverage reports to Codecov
+        uses: codecov/codecov-action@v7
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          files: ./coverage.xml
+          flags: backend
+          token: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Install backend dependencies
-        run: pip install -r ./backend/requirements.txt -r ./backend/requirements-dev.txt
+  frontend-test:
+    runs-on: ubuntu-latest
 
-      - name: Install frontend packages
-        working-directory: ./frontend
-        run: npm ci
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
 
-      - name: Set AWS credentials
-        uses: aws-actions/configure-aws-credentials@v6
-        if: >
-          github.event.pull_request.head.repo.full_name == github.repository &&
-          github.actor != 'dependabot[bot]'
+      - name: Build containers
+        run: docker compose --profile ci build
+
+      - name: Lint backend
+        run: docker compose up frontend-test --abort-on-container-exit
+
+      - name: Copy coverage report
+        run: docker compose cp frontend-test:/app/coverage/coverage-final.json ./coverage-final.json
+
+      - name: Upload frontend coverage reports to Codecov
+        uses: codecov/codecov-action@v7
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
+          files: ./coverage-final.json
+          flags: frontend
+          token: ${{ secrets.CODECOV_TOKEN }}
 
-      #aws s3 cp s3://dirtviz-env-vars/dev.env ./.env
+  stack:
+    runs-on: ubuntu-latest
 
-      - name: Import environment variables
-        if: >
-          github.event.pull_request.head.repo.full_name == github.repository &&
-          github.actor != 'dependabot[bot]'
-        run:
-          python3 env-import.py
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
 
       - name: Start services
         run:
@@ -115,16 +119,6 @@ jobs:
       - name: Save timestamp
         id: timestamp
         run: echo "start_time=$(date -Is)" >> $GITHUB_OUTPUT
-
-      # - name: Apply migrations
-      #   run: flask --app backend.api db upgrade -d ./backend/api/migrations
-
-      - name: Run backend tests
-        run: pytest --cov -v -s
-
-      - name: Run frontend tests + coverage
-        working-directory: ./frontend
-        run: npm run coverage
 
       - name: Save all logs
         if: always()
@@ -145,22 +139,9 @@ jobs:
 
       - name: Upload log artifact
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: DirtViz Logs
           path: |
             dirtviz.log
             dirtviz_short.log
-
-      - name: Upload backend coverage reports to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          flags: backend
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Upload frontend coverage reports to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          files: ./frontend/coverage/coverage-final.json
-          flags: frontend
-          token: ${{ secrets.CODECOV_TOKEN }}

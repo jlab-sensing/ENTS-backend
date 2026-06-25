@@ -6,8 +6,8 @@ import {
 import { isDerivedLayoutEntry } from '../equation/equationParser';
 
 /**
- * John: layout=vwc,temp,2:vwc + 2:bme280
  * Short URL tokens for built-in panels (internal panel_id may differ).
+ * Also supports derived expressions like `1:vwc / 1:temp` in the layout string.
  */
 export const LAYOUT_NAME_TO_PANEL_ID = {
   vwc: 'teros',
@@ -110,7 +110,7 @@ export function isLayoutPanelEntry(entry) {
 }
 
 /**
- * Accepts John-style `vwc,temp,2:vwc + 2:bme280` and legacy `v1:teros,temp,...`.
+ * Accepts short names like `vwc,temp,1:vwc / 1:temp` and legacy `v1:teros,temp,...`.
  * @param {string | null | undefined} raw
  * @returns {string[]}
  */
@@ -130,7 +130,6 @@ export function parseLayoutParam(raw) {
 
 /**
  * Serializes to v1 + short tokens: v1:vwc,temp,1:vwc / 1:temp
- * (John's short names; v1: kept for schema versioning.)
  * @param {string[]} panelOrder
  * @returns {string | null}
  */

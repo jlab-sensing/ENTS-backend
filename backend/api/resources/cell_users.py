@@ -1,6 +1,6 @@
 from flask_restful import Resource
 from flask import request
-from ..auth.auth import authenticate
+from ..auth.auth import authenticate_apikey_or_jwt
 from ..models.cell import Cell as CellModel
 from ..models.user import User as UserModel
 from ..schemas.user_schema import UserSchema
@@ -13,7 +13,7 @@ user_schema = UserSchema()
 class CellUsers(Resource):
     """Resource for managing users associated with a specific cell"""
 
-    method_decorators = {"post": [authenticate]}
+    method_decorators = {"post": [authenticate_apikey_or_jwt]}
 
     def get(self, cell_id):
         """Get all users for a specific cell"""
@@ -62,7 +62,10 @@ class CellUsers(Resource):
 class CellUserDetail(Resource):
     """Resource for managing individual user assignment to a cell"""
 
-    method_decorators = {"put": [authenticate], "delete": [authenticate]}
+    method_decorators = {
+        "put": [authenticate_apikey_or_jwt],
+        "delete": [authenticate_apikey_or_jwt],
+    }
 
     def put(self, cell_id, user_id):
         """Add a specific user to a cell"""
@@ -135,7 +138,7 @@ class CellByUser(Resource):
 class CellShare(Resource):
     """Resource for sharing a cell with another user by email"""
 
-    method_decorators = [authenticate]
+    method_decorators = [authenticate_apikey_or_jwt]
 
     def post(self, authenticated_user, cell_id):
         """Share a cell with a user by their email"""

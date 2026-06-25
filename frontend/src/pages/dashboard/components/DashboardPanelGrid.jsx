@@ -47,6 +47,10 @@ function DashboardPanelContent({ panelId, chartProps }) {
         stream={chartProps.stream}
         liveData={chartProps.liveData}
         processedData={chartProps.processedSensors}
+        cellSensorsById={chartProps.cellSensorsById}
+        historicalSensorByKey={chartProps.historicalSensorByKey}
+        centralHistoricalActive={chartProps.centralHistoricalActive?.sensors}
+        historicalLoading={chartProps.historicalLoading}
       />
     );
   }
@@ -59,6 +63,9 @@ function DashboardPanelContent({ panelId, chartProps }) {
           variant='voltage'
           processedData={chartProps.processedPower}
           onDataStatusChange={chartProps.onPowerDataStatusChange}
+          historicalPowerByCell={chartProps.historicalPowerByCell}
+          centralHistoricalActive={chartProps.centralHistoricalActive?.power}
+          historicalLoading={chartProps.historicalLoading}
         />
       );
     case 'power-p':
@@ -68,6 +75,9 @@ function DashboardPanelContent({ panelId, chartProps }) {
           variant='power'
           processedData={chartProps.processedPower}
           onDataStatusChange={chartProps.onPowerDataStatusChange}
+          historicalPowerByCell={chartProps.historicalPowerByCell}
+          centralHistoricalActive={chartProps.centralHistoricalActive?.power}
+          historicalLoading={chartProps.historicalLoading}
         />
       );
     case 'teros':
@@ -77,6 +87,9 @@ function DashboardPanelContent({ panelId, chartProps }) {
           variant='vwc'
           processedData={chartProps.processedTeros}
           onDataStatusChange={chartProps.onTerosDataStatusChange}
+          historicalTerosByCell={chartProps.historicalTerosByCell}
+          centralHistoricalActive={chartProps.centralHistoricalActive?.teros}
+          historicalLoading={chartProps.historicalLoading}
         />
       );
     case 'temp':
@@ -86,6 +99,9 @@ function DashboardPanelContent({ panelId, chartProps }) {
           variant='temp'
           processedData={chartProps.processedTeros}
           onDataStatusChange={chartProps.onTerosDataStatusChange}
+          historicalTerosByCell={chartProps.historicalTerosByCell}
+          centralHistoricalActive={chartProps.centralHistoricalActive?.teros}
+          historicalLoading={chartProps.historicalLoading}
         />
       );
     default:
@@ -98,11 +114,18 @@ DashboardPanelContent.propTypes = {
   chartProps: PropTypes.object.isRequired,
 };
 
-function SortableDashboardPanel({ panelId, chartProps, onRemovePanel, onEditEquation, panelColumns }) {
+function SortableDashboardPanel({
+  panelId,
+  chartProps,
+  onRemovePanel,
+  onEditEquation,
+  panelColumns,
+  canRemove,
+}) {
   return (
     <SortableChartPanel
       id={panelId}
-      onRemove={onRemovePanel}
+      onRemove={canRemove ? onRemovePanel : undefined}
       onEdit={isDerivedPanelEntry(panelId) ? onEditEquation : undefined}
       panelColumns={panelColumns}
     >
@@ -117,6 +140,7 @@ SortableDashboardPanel.propTypes = {
   onRemovePanel: PropTypes.func.isRequired,
   onEditEquation: PropTypes.func,
   panelColumns: PropTypes.oneOf([1, 2]).isRequired,
+  canRemove: PropTypes.bool.isRequired,
 };
 
 export default function DashboardPanelGrid({
@@ -148,6 +172,8 @@ export default function DashboardPanelGrid({
     [onPanelOrderChange],
   );
 
+  const canRemovePanels = panelOrder.length > 1;
+
   const visiblePanels = useMemo(
     () =>
       panelOrder.map((panelId) => (
@@ -158,9 +184,10 @@ export default function DashboardPanelGrid({
           onRemovePanel={onRemovePanel}
           onEditEquation={onEditEquation}
           panelColumns={panelColumns}
+          canRemove={canRemovePanels}
         />
       )),
-    [panelOrder, chartProps, onRemovePanel, onEditEquation, panelColumns],
+    [panelOrder, chartProps, onRemovePanel, onEditEquation, panelColumns, canRemovePanels],
   );
 
   if (panelOrder.length === 0) {
@@ -203,6 +230,16 @@ DashboardPanelGrid.propTypes = {
     processedPower: PropTypes.object,
     processedTeros: PropTypes.object,
     processedSensors: PropTypes.object,
+    cellSensorsById: PropTypes.object,
+    historicalPowerByCell: PropTypes.object,
+    historicalTerosByCell: PropTypes.object,
+    historicalSensorByKey: PropTypes.object,
+    historicalLoading: PropTypes.bool,
+    centralHistoricalActive: PropTypes.shape({
+      power: PropTypes.bool,
+      teros: PropTypes.bool,
+      sensors: PropTypes.bool,
+    }),
     onPowerDataStatusChange: PropTypes.func,
     onTerosDataStatusChange: PropTypes.func,
   }).isRequired,

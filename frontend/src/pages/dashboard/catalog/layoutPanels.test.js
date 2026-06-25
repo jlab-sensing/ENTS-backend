@@ -23,7 +23,7 @@ describe('layoutPanels', () => {
     expect(parseLayoutEntry('co2')).toBe('u:co2');
   });
 
-  it('parseLayoutParam accepts John-style layout without v1 prefix', () => {
+  it('parseLayoutParam accepts layout with derived expressions', () => {
     const raw = 'vwc,temp,1:vwc / 1:temp,2:vwc + 2:bme280';
     expect(parseLayoutParam(raw)).toEqual([
       'teros',
@@ -35,17 +35,28 @@ describe('layoutPanels', () => {
 
   it('parseLayoutParam still accepts legacy v1 prefix', () => {
     expect(parseLayoutParam('v1:teros,temp,1:co2 * 2')).toEqual(['teros', 'temp', '1:co2 * 2']);
+    expect(parseLayoutParam('v1:teros,temp,presHum')).toEqual(['teros', 'temp', 'u:presHum']);
   });
 
   it('serializeLayoutParam uses v1 prefix and short names', () => {
     const order = ['power-vi', '1:vwc ^ 2', 'teros', 'temp'];
     expect(serializeLayoutParam(order)).toBe('v1:vi,1:vwc ^ 2,vwc,temp');
+
+    const catalogOrder = ['power-vi', 'teros', 'temp', 'u:presHum'];
+    expect(serializeLayoutParam(catalogOrder)).toBe('v1:vi,vwc,temp,presHum');
   });
 
   it('round-trips mixed layout with v1 and short names', () => {
     const order = ['teros', 'temp', '1:vwc / 1:temp'];
     const serialized = serializeLayoutParam(order);
     expect(serialized).toBe('v1:vwc,temp,1:vwc / 1:temp');
+    expect(parseLayoutParam(serialized)).toEqual(order);
+  });
+
+  it('round-trips catalog panel layout with v1 and short names', () => {
+    const order = ['teros', 'temp', 'u:co2'];
+    const serialized = serializeLayoutParam(order);
+    expect(serialized).toBe('v1:vwc,temp,co2');
     expect(parseLayoutParam(serialized)).toEqual(order);
   });
 
