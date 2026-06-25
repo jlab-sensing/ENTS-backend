@@ -17,7 +17,6 @@ class Cell(Resource):
     method_decorators = {
         "get": [authenticate_apikey_or_jwt],
         "put": [authenticate_apikey_or_jwt],
-        "post": [authenticate_apikey_or_jwt],
         "delete": [authenticate_apikey_or_jwt],
     }
 
@@ -59,7 +58,7 @@ class Cell(Resource):
 
         return cells_schema.dump(cells)
 
-    def post(self, user):
+    def post(self):
         json_data = request.json
         cell_data = add_cell_schema.load(json_data)
         cell_name = cell_data["name"]
