@@ -20,16 +20,36 @@ EQUATION_STREAMS: dict[str, dict[str, str]] = {
     "power": {"source": "power", "field": "p"},
     "p": {"source": "power", "field": "p"},
     "co2": {"source": "sensor", "sensor_name": "co2", "measurement": "co2"},
-    "bme280": {"source": "sensor", "sensor_name": "bme280", "measurement": "pressure"},
-    "pressure": {"source": "sensor", "sensor_name": "bme280", "measurement": "pressure"},
-    "humidity": {"source": "sensor", "sensor_name": "bme280", "measurement": "humidity"},
-    "temperature": {"source": "sensor", "sensor_name": "bme280", "measurement": "temperature"},
+    "bme280": {
+        "source": "sensor",
+        "sensor_name": "bme280",
+        "measurement": "pressure",
+    },
+    "pressure": {
+        "source": "sensor",
+        "sensor_name": "bme280",
+        "measurement": "pressure",
+    },
+    "humidity": {
+        "source": "sensor",
+        "sensor_name": "bme280",
+        "measurement": "humidity",
+    },
+    "temperature": {
+        "source": "sensor",
+        "sensor_name": "bme280",
+        "measurement": "temperature",
+    },
     "soil_water_potential": {
         "source": "sensor",
         "sensor_name": "teros21",
         "measurement": "soil_water_potential",
     },
-    "teros21": {"source": "sensor", "sensor_name": "teros21", "measurement": "soil_water_potential"},
+    "teros21": {
+        "source": "sensor",
+        "sensor_name": "teros21",
+        "measurement": "soil_water_potential",
+    },
     "flow": {"source": "sensor", "sensor_name": "yfs210c", "measurement": "flow"},
     "yfs210c": {"source": "sensor", "sensor_name": "yfs210c", "measurement": "flow"},
 }
@@ -85,7 +105,9 @@ def _tokenize(input_text: str) -> list[dict[str, Any]]:
             continue
 
         if ch.isalpha():
-            raise EquationValidationError("Use cell:stream tokens like 1:vwc (not bare names)")
+            raise EquationValidationError(
+                "Use cell:stream tokens like 1:vwc (not bare names)"
+            )
 
         if ch in "()":
             tokens.append({"type": ch})
@@ -145,21 +167,38 @@ def _parse_expression(tokens: list[dict[str, Any]]) -> dict[str, Any]:
 
     def parse_power() -> dict[str, Any]:
         node = parse_primary()
-        while peek() is not None and peek()["type"] == "operator" and peek()["value"] == "^":
+        while (
+            peek() is not None
+            and peek()["type"] == "operator"
+            and peek()["value"] == "^"
+        ):
             consume("operator")
-            node = {"type": "binary", "op": "^", "left": node, "right": parse_primary()}
+            node = {
+                "type": "binary",
+                "op": "^",
+                "left": node,
+                "right": parse_primary(),
+            }
         return node
 
     def parse_mul_div() -> dict[str, Any]:
         node = parse_power()
-        while peek() is not None and peek()["type"] == "operator" and peek()["value"] in ("*", "/"):
+        while (
+            peek() is not None
+            and peek()["type"] == "operator"
+            and peek()["value"] in ("*", "/")
+        ):
             op = consume("operator")["value"]
             node = {"type": "binary", "op": op, "left": node, "right": parse_power()}
         return node
 
     def parse_add_sub() -> dict[str, Any]:
         node = parse_mul_div()
-        while peek() is not None and peek()["type"] == "operator" and peek()["value"] in ("+", "-"):
+        while (
+            peek() is not None
+            and peek()["type"] == "operator"
+            and peek()["value"] in ("+", "-")
+        ):
             op = consume("operator")["value"]
             node = {"type": "binary", "op": op, "left": node, "right": parse_mul_div()}
         return node
@@ -182,7 +221,9 @@ def extract_stream_refs(expression: str) -> list[str]:
     return sorted(refs)
 
 
-def validate_expression(expression: str, selected_cell_ids: list[int] | None = None) -> dict[str, Any]:
+def validate_expression(
+    expression: str, selected_cell_ids: list[int] | None = None
+) -> dict[str, Any]:
     """
     Validate a dashboard equation expression.
 
@@ -203,7 +244,9 @@ def validate_expression(expression: str, selected_cell_ids: list[int] | None = N
     refs = extract_stream_refs(trimmed)
 
     if len(refs) > MAX_STREAM_REFS:
-        raise EquationValidationError(f"Too many stream references (max {MAX_STREAM_REFS})")
+        raise EquationValidationError(
+            f"Too many stream references (max {MAX_STREAM_REFS})"
+        )
 
     if selected_cell_ids is not None:
         allowed = {int(cell_id) for cell_id in selected_cell_ids}

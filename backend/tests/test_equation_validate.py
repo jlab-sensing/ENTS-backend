@@ -46,7 +46,7 @@ def test_equations_validate_endpoint_rejects_invalid(test_client, init_database)
     assert "error" in response.get_json()
 
 
-def test_equations_validate_endpoint_rejects_unselected_cell(test_client, init_database):
+def test_validate_endpoint_rejects_unselected_cell(test_client, init_database):
     response = test_client.post(
         "/api/equations/validate",
         json={"expression": "2:vwc / 2:temp", "cell_ids": [1]},

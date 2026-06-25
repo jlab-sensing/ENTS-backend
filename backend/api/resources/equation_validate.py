@@ -22,7 +22,9 @@ class EquationValidate(Resource):
                 return {"error": "cell_ids must be an array of integers"}, 400
 
         try:
-            result = validate_expression(expression, selected_cell_ids=selected_cell_ids)
+            result = validate_expression(
+                expression, selected_cell_ids=selected_cell_ids
+            )
         except EquationValidationError as exc:
             return {"error": str(exc)}, 400
 
