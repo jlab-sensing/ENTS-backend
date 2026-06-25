@@ -9,11 +9,33 @@ describe('DashboardPanelActions', () => {
     const onAddChart = vi.fn();
 
     render(
-      <DashboardPanelActions onAddChart={onAddChart} panelColumns={2} onPanelColumnsChange={vi.fn()} />,
+      <DashboardPanelActions
+        onAddChart={onAddChart}
+        onAddEquation={vi.fn()}
+        panelColumns={2}
+        onPanelColumnsChange={vi.fn()}
+      />,
     );
 
     await user.click(screen.getByRole('button', { name: 'Add chart' }));
     expect(onAddChart).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onAddEquation when Add equation is clicked', async () => {
+    const user = userEvent.setup();
+    const onAddEquation = vi.fn();
+
+    render(
+      <DashboardPanelActions
+        onAddChart={vi.fn()}
+        onAddEquation={onAddEquation}
+        panelColumns={2}
+        onPanelColumnsChange={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Add equation' }));
+    expect(onAddEquation).toHaveBeenCalledTimes(1);
   });
 
   it('switches column layout', async () => {
@@ -21,7 +43,12 @@ describe('DashboardPanelActions', () => {
     const onPanelColumnsChange = vi.fn();
 
     render(
-      <DashboardPanelActions onAddChart={vi.fn()} panelColumns={2} onPanelColumnsChange={onPanelColumnsChange} />,
+      <DashboardPanelActions
+        onAddChart={vi.fn()}
+        onAddEquation={vi.fn()}
+        panelColumns={2}
+        onPanelColumnsChange={onPanelColumnsChange}
+      />,
     );
 
     await user.click(screen.getByRole('button', { name: 'Single column wide' }));

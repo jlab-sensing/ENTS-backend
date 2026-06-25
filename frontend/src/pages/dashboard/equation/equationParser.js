@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define -- parser helpers are mutually recursive */
 import { resolveStreamSpec } from './equationStreams';
 
 /**

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  collectEquationRefsFromPanelOrder,
+  collectEquationSensorRequests,
   collectUnifiedSensorRequests,
   panelOrderNeedsPower,
   panelOrderNeedsTeros,
@@ -12,6 +14,18 @@ describe('historicalDataLoader', () => {
     expect(panelOrderNeedsPower(['teros', 'temp'])).toBe(false);
     expect(panelOrderNeedsTeros(['teros', 'power-p'])).toBe(true);
     expect(panelOrderNeedsTeros(['power-vi', 'u:co2'])).toBe(false);
+  });
+
+  it('detects teros needs from derived equation panels', () => {
+    expect(panelOrderNeedsTeros(['1:vwc / 1:temp'])).toBe(true);
+    expect(panelOrderNeedsPower(['1:voltage * 2'])).toBe(true);
+  });
+
+  it('collects stream refs from derived layout entries', () => {
+    expect(collectEquationRefsFromPanelOrder(['teros', '1:vwc / 2:temp'])).toEqual([
+      '1:vwc',
+      '2:temp',
+    ]);
   });
 
   it('dedupes unified sensor requests across panels and cells', () => {
@@ -34,5 +48,11 @@ describe('historicalDataLoader', () => {
     expect(keys).toContain(sensorDataCacheKey(1, 'bme280', 'pressure'));
     expect(keys).toContain(sensorDataCacheKey(1, 'bme280', 'humidity'));
     expect(keys).toContain(sensorDataCacheKey(2, 'co2', 'co2'));
+  });
+
+  it('collects equation sensor refs for derived panels', () => {
+    const requests = collectEquationSensorRequests(['1:co2 * 2']);
+    expect(requests).toHaveLength(1);
+    expect(requests[0].cacheKey).toBe(sensorDataCacheKey(1, 'co2', 'co2'));
   });
 });

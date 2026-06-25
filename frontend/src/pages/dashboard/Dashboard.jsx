@@ -171,7 +171,9 @@ function Dashboard() {
     if (!availablePanelIds) {
       return panelOrder;
     }
-    return panelOrder.filter((panelId) => availablePanelIds.has(panelId));
+    return panelOrder.filter(
+      (panelId) => isDerivedPanelEntry(panelId) || availablePanelIds.has(panelId),
+    );
   }, [panelOrder, availablePanelIds]);
 
   const { historicalPowerByCell, historicalTerosByCell, historicalSensorByKey, historicalLoading } =
@@ -190,6 +192,7 @@ function Dashboard() {
       power: !stream && panelOrderNeedsPower(panelOrderForFetch),
       teros: !stream && panelOrderNeedsTeros(panelOrderForFetch),
       sensors: !stream && panelOrderForFetch.some((panelId) => panelId.startsWith('u:')),
+      equations: !stream && panelOrderForFetch.some((panelId) => isDerivedPanelEntry(panelId)),
     }),
     [stream, panelOrderForFetch],
   );

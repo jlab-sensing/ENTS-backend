@@ -17,6 +17,7 @@ import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import { listEquationStreamKeys } from '../equation/equationStreams';
 import { validateEquationExpression } from '../equation/equationParser';
+import { validateEquationOnServer } from '../../../services/equation';
 
 const DEFAULT_EXAMPLES = ['1:vwc / 1:temp', '1:co2 * 2', '1:pressure - 1013', '1:vwc ^ 2'];
 
@@ -38,6 +39,7 @@ function AddEquationModal({
 }) {
   const [expression, setExpression] = useState('');
   const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -45,15 +47,30 @@ function AddEquationModal({
     setError(null);
   }, [open, initialExpression]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const trimmed = expression.trim();
     const validationError = validateEquationExpression(trimmed);
     if (validationError) {
       setError(validationError);
       return;
     }
-    onSave(trimmed);
-    onClose();
+
+    setSaving(true);
+    setError(null);
+    try {
+      const cellIds = selectedCells.map((cell) => cell.id);
+      const serverResult = await validateEquationOnServer(trimmed, cellIds);
+      if (serverResult.error) {
+        setError(serverResult.error);
+        return;
+      }
+      onSave(trimmed);
+      onClose();
+    } catch {
+      setError('Could not validate expression with the server.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const streamHint = listEquationStreamKeys().slice(0, 12).join(', ');
@@ -236,9 +253,11 @@ function AddEquationModal({
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={handleSave}>
-          {mode === 'edit' ? 'Save changes' : 'Add equation'}
+        <Button onClick={onClose} disabled={saving}>
+          Cancel
+        </Button>
+        <Button variant="contained" onClick={handleSave} disabled={saving}>
+          {saving ? 'Validating…' : mode === 'edit' ? 'Save changes' : 'Add equation'}
         </Button>
       </DialogActions>
     </Dialog>

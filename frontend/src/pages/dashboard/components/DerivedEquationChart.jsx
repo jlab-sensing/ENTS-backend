@@ -1,26 +1,52 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import UniversalChart from '../../../charts/UniversalChart';
 import { buildDerivedSeries, derivedSeriesToChartData } from '../equation/equationData';
 
-function DerivedEquationChart({ expression, startDate, endDate, stream }) {
+function DerivedEquationChart({
+  expression,
+  startDate,
+  endDate,
+  stream,
+  historicalPowerByCell,
+  historicalTerosByCell,
+  historicalSensorByKey,
+  historicalLoading = false,
+  centralHistoricalActive = false,
+}) {
   const [resample, setResample] = useState('hour');
   const [chartData, setChartData] = useState({ datasets: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const fetchGenerationRef = useRef(0);
 
   useEffect(() => {
     if (stream) return undefined;
 
+    const useCentralCache = centralHistoricalActive && resample === 'hour';
+    if (useCentralCache && historicalLoading) {
+      setIsLoading(true);
+      setError(null);
+      return undefined;
+    }
+
+    const fetchGeneration = ++fetchGenerationRef.current;
     let cancelled = false;
     setIsLoading(true);
     setError(null);
 
-    buildDerivedSeries(expression, startDate, endDate, resample)
+    buildDerivedSeries(expression, startDate, endDate, resample, {
+      useCentralCache,
+      historicalCache: {
+        historicalPowerByCell,
+        historicalTerosByCell,
+        historicalSensorByKey,
+      },
+    })
       .then((series) => {
-        if (cancelled) return;
+        if (cancelled || fetchGeneration !== fetchGenerationRef.current) return;
         if (!series || series.timestamps.length === 0) {
           setChartData({ datasets: [] });
           setError('No data for this expression in the selected date range.');
@@ -30,18 +56,31 @@ function DerivedEquationChart({ expression, startDate, endDate, stream }) {
         setError(null);
       })
       .catch((err) => {
-        if (cancelled) return;
+        if (cancelled || fetchGeneration !== fetchGenerationRef.current) return;
         setChartData({ datasets: [] });
         setError(err.message || 'Could not load derived series.');
       })
       .finally(() => {
-        if (!cancelled) setIsLoading(false);
+        if (!cancelled && fetchGeneration === fetchGenerationRef.current) {
+          setIsLoading(false);
+        }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [expression, startDate, endDate, resample, stream]);
+  }, [
+    expression,
+    startDate,
+    endDate,
+    resample,
+    stream,
+    historicalPowerByCell,
+    historicalTerosByCell,
+    historicalSensorByKey,
+    historicalLoading,
+    centralHistoricalActive,
+  ]);
 
   if (stream) {
     return (
@@ -101,6 +140,11 @@ DerivedEquationChart.propTypes = {
   startDate: PropTypes.instanceOf(DateTime).isRequired,
   endDate: PropTypes.instanceOf(DateTime).isRequired,
   stream: PropTypes.bool,
+  historicalPowerByCell: PropTypes.object,
+  historicalTerosByCell: PropTypes.object,
+  historicalSensorByKey: PropTypes.object,
+  historicalLoading: PropTypes.bool,
+  centralHistoricalActive: PropTypes.bool,
 };
 
 export default DerivedEquationChart;

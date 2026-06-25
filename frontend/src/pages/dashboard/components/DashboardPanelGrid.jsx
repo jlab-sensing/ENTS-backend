@@ -24,6 +24,11 @@ function DashboardPanelContent({ panelId, chartProps }) {
         startDate={chartProps.startDate}
         endDate={chartProps.endDate}
         stream={chartProps.stream}
+        historicalPowerByCell={chartProps.historicalPowerByCell}
+        historicalTerosByCell={chartProps.historicalTerosByCell}
+        historicalSensorByKey={chartProps.historicalSensorByKey}
+        historicalLoading={chartProps.historicalLoading}
+        centralHistoricalActive={chartProps.centralHistoricalActive?.equations}
       />
     );
   }
@@ -239,6 +244,7 @@ DashboardPanelGrid.propTypes = {
       power: PropTypes.bool,
       teros: PropTypes.bool,
       sensors: PropTypes.bool,
+      equations: PropTypes.bool,
     }),
     onPowerDataStatusChange: PropTypes.func,
     onTerosDataStatusChange: PropTypes.func,
