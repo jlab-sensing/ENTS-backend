@@ -161,7 +161,7 @@ export function panelIdToUnifiedType(panelId) {
   return panelId.slice(2);
 }
 
-export { isLayoutPanelEntry, parseLayoutParam, serializeLayoutParam } from './layoutPanels';
+export { isDerivedPanelEntry, isLayoutPanelEntry, parseLayoutParam, serializeLayoutParam } from './layoutPanels';
 
 /**
  * @param {string[]} panelOrder
