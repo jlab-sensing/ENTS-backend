@@ -61,40 +61,32 @@ def test_apikey_endpoint_accepts_jwt(init_database):
     assert response.status_code != 404
 
 
-def test_protected_cell_endpoint_accepts_apikey(init_database):
+def test_protected_tag_endpoint_accepts_apikey(init_database):
     user = make_user(
-        email="apikey-only-user@edx.com",
-        api_key="valid-apikey-for-cell_test",
+        email="apikey-only-user@tag.com",
+        api_key="valid-apikey-for-tag_test",
     )
 
     response = init_database.post(
-        "/api/cell/",
+        "/api/tag/",
         json={
-            "name": "API Key Test Cell",
-            "location": "Test Location",
-            "latitude": 0,
-            "longitude": 0,
-            "userEmail": user.email,
-            "archive": False,
+            "name": "API Key Test Tag",
+            "description": "Created with API key auth",
         },
         headers={"X-API-Key": user.api_key},
         content_type="application/json",
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     data = response.get_json()
-    assert data["message"] == "Successfully added cell"
+    assert data["message"] == "Tag created successfully"
 
 
-def test_protected_cell_endpoint_rejects_invalid_apikey(init_database):
+def test_protected_tag_endpoint_rejects_invalid_apikey(init_database):
     response = init_database.post(
-        "/api/cell/",
+        "/api/tag/",
         json={
-            "name": "Bad API Key Cell",
-            "location": "Test Location",
-            "latitude": 0,
-            "longitude": 0,
-            "userEmail": "missing@x.com",
-            "archive": False,
+            "name": "Bad API Key Tag",
+            "description": "Should not be created",
         },
         headers={"X-API-Key": "not-real-key"},
         content_type="application/json",
