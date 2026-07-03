@@ -108,10 +108,6 @@ class Logger(Resource):
         if LoggerModel.find_by_name(logger_name):
             return {"message": "Duplicate logger name"}, 400
 
-        # Check for duplicate device EUI when provided
-        if LoggerModel.find_by_device_eui(device_eui):
-            return {"message": DUPLICATE_DEVICE_ID_MESSAGE}, 400
-
         # Create database entry first to get logger_id
         try:
             new_logger = LoggerModel.add_logger_by_user_email(
@@ -123,8 +119,6 @@ class Logger(Resource):
 
             if LoggerModel.find_by_name(logger_name):
                 return {"message": "Duplicate logger name"}, 400
-            if LoggerModel.find_by_device_eui(device_eui):
-                return {"message": DUPLICATE_DEVICE_ID_MESSAGE}, 400
             return {"message": "Error adding logger to database"}, 400
 
         if not new_logger:
