@@ -66,6 +66,7 @@ function Nav({ user, setUser, loggedIn, setLoggedIn }) {
     dashboard: location.pathname.startsWith('/dashboard'),
     map: location.pathname.startsWith('/map'),
     docs: location.pathname.startsWith('/docs'),
+    profile: location.pathname.startsWith('/profile'),
   }), [location.pathname]);
 
   return (
@@ -101,6 +102,9 @@ function Nav({ user, setUser, loggedIn, setLoggedIn }) {
               </ListItemButton>
               <ListItemButton onClick={() => { navigate('/docs'); closeDrawer(); }}>
                 <ListItemText primary='Docs' />
+              </ListItemButton>
+              <ListItemButton onClick={() => { navigate('/profile'); closeDrawer(); }}>
+                <ListItemText primary='Profile' />
               </ListItemButton>
             </List>
             <Divider />
@@ -160,6 +164,12 @@ function Nav({ user, setUser, loggedIn, setLoggedIn }) {
               backgroundColor: isActive.docs ? '#0F172A' : 'transparent',
               '&:hover': { backgroundColor: isActive.docs ? '#111827' : 'rgba(0,0,0,0.04)' }
             }}>Docs</Button>
+            <Button onClick={() => navigate('/profile')} sx={{
+              textTransform: 'none', borderRadius: '999px', px: 1.75, py: 0.5, fontWeight: 700,
+              color: isActive.profile ? '#FFFFFF' : '#0F172A',
+              backgroundColor: isActive.profile ? '#0F172A' : 'transparent',
+              '&:hover': { backgroundColor: isActive.profile ? '#111827' : 'rgba(0,0,0,0.04)' }
+            }}>Profile</Button>
           </Box>
         </Box>
 
@@ -175,7 +185,6 @@ function Nav({ user, setUser, loggedIn, setLoggedIn }) {
                 Hi, {user?.first_name}
               </Button>
               <Menu id='user-menu' anchorEl={anchorElProfileMenu} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} keepMounted transformOrigin={{ vertical: 'top', horizontal: 'left' }} open={Boolean(anchorElProfileMenu)} onClose={handleCloseProfileMenu}>
-                <MenuItem onClick={() => navigate('/profile')}>Profile</MenuItem>
                 <MenuItem onClick={() => logout()}>Logout</MenuItem>
               </Menu>
             </>
