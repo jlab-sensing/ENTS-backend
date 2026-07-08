@@ -1,6 +1,6 @@
 """Logger and cell boostrap script.
 
-Create a new logger and 
+Create a new logger and
 
 Examples:
 
@@ -15,22 +15,25 @@ from ..conn import engine
 from ..models.logger import Logger
 from ..models.cell import Cell
 
+
 def generate_mac_address() -> str:
     """Generate a random MAC address."""
     # Set the first byte to have locally administered bit set (02)
     # and unicast (least significant bit of first octet = 0)
-    mac = [0x02, 
-           random.randint(0x00, 0xff),
-           random.randint(0x00, 0xff),
-           random.randint(0x00, 0xff),
-           random.randint(0x00, 0xff),
-           random.randint(0x00, 0xff)]
+    mac = [
+        0x02,
+        random.randint(0x00, 0xFF),
+        random.randint(0x00, 0xFF),
+        random.randint(0x00, 0xFF),
+        random.randint(0x00, 0xFF),
+        random.randint(0x00, 0xFF),
+    ]
 
-    return ':'.join(f'{octet:02x}' for octet in mac)
+    return ":".join(f"{octet:02x}" for octet in mac)
+
 
 def bootstrap() -> tuple[int, int]:
     """Boostrap a logger and cell combination."""
-
 
     with Session(engine) as sess:
         # Generate fake MAC address
@@ -66,6 +69,7 @@ def bootstrap() -> tuple[int, int]:
 
     return (logger_id, cell_id)
 
+
 def entry():
     """Entrypoint for the cli call."""
 
@@ -75,6 +79,7 @@ def entry():
         print(logger)
 
         print(cell)
+
 
 if __name__ == "__main__":
     entry()
