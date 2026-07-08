@@ -27,6 +27,9 @@ jobs:
       )
 
     runs-on: ubuntu-latest
+    environment:
+      name: development
+      url: http://${{ vars.DEV_HOST }}:3000/
 
     steps:
       - name: Get PR info
