@@ -44,6 +44,7 @@ def bootstrap() -> tuple[int, int]:
             description="Test Logger",
         )
         sess.add(logger)
+        sess.flush()
 
         # Add cell
         # Location is UCSC for map testing
