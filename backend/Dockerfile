@@ -149,3 +149,11 @@ CMD ["ruff", "check"]
 FROM devbase AS format
 
 CMD ["ruff", "format", "--check"]
+
+
+#
+# Bootstrap image
+#
+FROM devbase AS bootstrap
+
+CMD ["python", "-m", "api.utils.bootstrap"]

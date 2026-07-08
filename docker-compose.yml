@@ -118,6 +118,20 @@ services:
       - ci
       - lint
 
+  bootstrap:
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+      target: bootstrap
+    image: dirtviz-backend-bootstrap
+    env_file:
+      - ${ENV_FILE:-.env}
+    depends_on:
+      - postgresql
+    profiles:
+      - ci
+      - bootstrap
+
   valkey:
     image: valkey/valkey:latest
     ports:
