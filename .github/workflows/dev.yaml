@@ -50,11 +50,11 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.DEV_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.DEV_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ vars.DEV_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy via SSH
         run: |
-          ssh ${{ secrets.DEV_USER }}@${{ secrets.DEV_HOST }} << 'EOF'
+          ssh ${{ secrets.DEV_USER }}@${{ vars.DEV_HOST }} << 'EOF'
             set -e
 
             export AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}"
@@ -63,6 +63,8 @@ jobs:
 
             APP_DIR="${{ steps.pr.outputs.owner }}/${{ steps.pr.outputs.repo }}"
             REPO_URL="${{ steps.pr.outputs.clone_url }}"
+
+            docker system prune -af --volumes
 
             if [ ! -d "$APP_DIR" ]; then
               git clone "$REPO_URL" "$APP_DIR"
@@ -75,7 +77,7 @@ jobs:
 
             python3 env-import.py
 
-            sed -i "s/localhost/${{ secrets.DEV_HOST }}/g" .env
+            sed -i "s/localhost/${{ vars.DEV_HOST }}/g" .env
             sed -i "s|^GOOGLE_CLIENT_ID=.*|GOOGLE_CLIENT_ID=\"${{ secrets.DEV_GOOGLE_CLIENT_ID }}\"|" .env
             sed -i "s|^GOOGLE_CLIENT_SECRET=.*|GOOGLE_CLIENT_SECRET=\"${{ secrets.DEV_GOOGLE_CLIENT_SECRET }}\"|" .env
 
@@ -92,6 +94,14 @@ jobs:
             echo "-------------------------"
             docker compose pull --ignore-buildable
             docker compose up -d --build
+            sleep 5
+
+            echo ""
+            echo "-----------"
+            echo "Adding data"
+            echo "-----------"
+            docker compose --profile bootstrap up -d --build
+            docker compose --profile upload up -d --build
             sleep 15
 
             echo ""
@@ -107,6 +117,8 @@ jobs:
         with:
           script: |
             const body = `PR deployed to development server
+
+            URL: http://${{ vars.DEV_HOST }}:3000/
 
             Commit: ${context.payload.issue.number}
             SHA: ${{ steps.pr.outputs.sha }}
