@@ -60,6 +60,9 @@ jobs:
           ssh ${{ secrets.DEV_USER }}@${{ vars.DEV_HOST }} << 'EOF'
             set -e
 
+            export COMPOSE_PROGRESS=plain
+            export NO_COLOR=1
+
             export AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}"
             export AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}"
             export AWS_DEFAULT_REGION=us-west-2
@@ -67,51 +70,44 @@ jobs:
             APP_DIR="${{ steps.pr.outputs.owner }}/${{ steps.pr.outputs.repo }}"
             REPO_URL="${{ steps.pr.outputs.clone_url }}"
 
-            docker system prune -af --volumes
-
+            echo "::group::Cloning repository"
             if [ ! -d "$APP_DIR" ]; then
               git clone "$REPO_URL" "$APP_DIR"
             fi
-
             cd "$APP_DIR"
 
             git fetch origin
             git reset --hard ${{ steps.pr.outputs.sha }}
+            echo "::endgroup::"
 
+            echo "::group::Importing secrets"
             python3 env-import.py
-
             sed -i "s/localhost/${{ vars.DEV_HOST }}/g" .env
             sed -i "s|^GOOGLE_CLIENT_ID=.*|GOOGLE_CLIENT_ID=\"${{ secrets.DEV_GOOGLE_CLIENT_ID }}\"|" .env
             sed -i "s|^GOOGLE_CLIENT_SECRET=.*|GOOGLE_CLIENT_SECRET=\"${{ secrets.DEV_GOOGLE_CLIENT_SECRET }}\"|" .env
+            echo "::endgroup::"
 
-            echo ""
-            echo "-------------------------------------------"
-            echo "Stopping and removing all docker containers"
-            echo "-------------------------------------------"
+            echo "::group::Remove previous deployment"
             docker ps -aq | xargs -r docker stop
             docker ps -aq | xargs -r docker rm
+            docker system prune -af --volumes
+            echo "::endgroup::"
 
-            echo ""
-            echo "-------------------------"
-            echo "Starting docker instances"
-            echo "-------------------------"
+            echo "::group::Starting services"
             docker compose pull --ignore-buildable
             docker compose up -d --build
             sleep 5
+            echo "::endgroup::"
 
-            echo ""
-            echo "-----------"
-            echo "Adding data"
-            echo "-----------"
+            echo "::group::Adding data"
             docker compose --profile bootstrap up -d --build
             docker compose --profile upload up -d --build
             sleep 15
+            echo "::endgroup::"
 
-            echo ""
-            echo "-------------"
-            echo "Logs from 15s"
-            echo "-------------"
-            docker compose logs
+            echo "::group::Startup logs"
+            docker compose logs --no-color
+            echo "::endgroup::"
           EOF
 
       - name: Comment deployment result
