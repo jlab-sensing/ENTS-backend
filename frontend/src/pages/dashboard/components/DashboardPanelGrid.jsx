@@ -9,13 +9,30 @@ import { SortableContext, arrayMove, rectSortingStrategy } from '@dnd-kit/sortab
 import { Box } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useCallback, useMemo } from 'react';
-import { panelIdToUnifiedType } from '../catalog/dashboardCatalog';
+import { panelIdToUnifiedType, isDerivedPanelEntry } from '../catalog/dashboardCatalog';
+import DerivedEquationChart from './DerivedEquationChart';
 import PowerCharts from './PowerCharts';
 import SortableChartPanel from './SortableChartPanel';
 import TerosCharts from './TerosCharts';
 import UnifiedChart from './UnifiedChart';
 
 function DashboardPanelContent({ panelId, chartProps }) {
+  if (isDerivedPanelEntry(panelId)) {
+    return (
+      <DerivedEquationChart
+        expression={panelId}
+        startDate={chartProps.startDate}
+        endDate={chartProps.endDate}
+        stream={chartProps.stream}
+        historicalPowerByCell={chartProps.historicalPowerByCell}
+        historicalTerosByCell={chartProps.historicalTerosByCell}
+        historicalSensorByKey={chartProps.historicalSensorByKey}
+        historicalLoading={chartProps.historicalLoading}
+        centralHistoricalActive={chartProps.centralHistoricalActive?.equations}
+      />
+    );
+  }
+
   const shared = {
     cells: chartProps.cells,
     startDate: chartProps.startDate,
@@ -102,11 +119,19 @@ DashboardPanelContent.propTypes = {
   chartProps: PropTypes.object.isRequired,
 };
 
-function SortableDashboardPanel({ panelId, chartProps, onRemovePanel, panelColumns, canRemove }) {
+function SortableDashboardPanel({
+  panelId,
+  chartProps,
+  onRemovePanel,
+  onEditEquation,
+  panelColumns,
+  canRemove,
+}) {
   return (
     <SortableChartPanel
       id={panelId}
       onRemove={canRemove ? onRemovePanel : undefined}
+      onEdit={isDerivedPanelEntry(panelId) ? onEditEquation : undefined}
       panelColumns={panelColumns}
     >
       <DashboardPanelContent panelId={panelId} chartProps={chartProps} />
@@ -118,6 +143,7 @@ SortableDashboardPanel.propTypes = {
   panelId: PropTypes.string.isRequired,
   chartProps: PropTypes.object.isRequired,
   onRemovePanel: PropTypes.func.isRequired,
+  onEditEquation: PropTypes.func,
   panelColumns: PropTypes.oneOf([1, 2]).isRequired,
   canRemove: PropTypes.bool.isRequired,
 };
@@ -126,6 +152,7 @@ export default function DashboardPanelGrid({
   panelOrder,
   onPanelOrderChange,
   onRemovePanel,
+  onEditEquation,
   chartProps,
   panelColumns,
 }) {
@@ -160,11 +187,12 @@ export default function DashboardPanelGrid({
           panelId={panelId}
           chartProps={chartProps}
           onRemovePanel={onRemovePanel}
+          onEditEquation={onEditEquation}
           panelColumns={panelColumns}
           canRemove={canRemovePanels}
         />
       )),
-    [panelOrder, chartProps, onRemovePanel, panelColumns, canRemovePanels],
+    [panelOrder, chartProps, onRemovePanel, onEditEquation, panelColumns, canRemovePanels],
   );
 
   if (panelOrder.length === 0) {
@@ -196,6 +224,7 @@ DashboardPanelGrid.propTypes = {
   panelOrder: PropTypes.arrayOf(PropTypes.string).isRequired,
   onPanelOrderChange: PropTypes.func.isRequired,
   onRemovePanel: PropTypes.func.isRequired,
+  onEditEquation: PropTypes.func,
   panelColumns: PropTypes.oneOf([1, 2]).isRequired,
   chartProps: PropTypes.shape({
     cells: PropTypes.array,
@@ -215,6 +244,7 @@ DashboardPanelGrid.propTypes = {
       power: PropTypes.bool,
       teros: PropTypes.bool,
       sensors: PropTypes.bool,
+      equations: PropTypes.bool,
     }),
     onPowerDataStatusChange: PropTypes.func,
     onTerosDataStatusChange: PropTypes.func,

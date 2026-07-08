@@ -2,6 +2,7 @@ import { CHART_CONFIGS } from '../components/chartConfigs';
 import { getSensorCatalog } from '../../../services/catalog';
 import { getCellSensors } from '../../../services/cell';
 import { measurementMatches } from '../components/unifiedChartUtils';
+import { isDerivedLayoutEntry } from '../equation/equationParser';
 import { BUILTIN_CATALOG, UNIFIED_CATALOG, isKnownPanelId } from './dashboardCatalog';
 
 /** Map UnifiedChart config keys to dashboard panel IDs. */
@@ -174,5 +175,7 @@ export function availablePanelIdsForCells(cellSensorsById, cellIds, catalogPanel
  * @returns {string[]}
  */
 export function panelsMissingForCells(panelOrder, availablePanelIds) {
-  return panelOrder.filter((panelId) => !availablePanelIds.has(panelId));
+  return panelOrder.filter(
+    (panelId) => !isDerivedLayoutEntry(panelId) && !availablePanelIds.has(panelId),
+  );
 }

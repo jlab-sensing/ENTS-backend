@@ -4,11 +4,96 @@ import { getSensorData } from '../../../services/sensor';
 import { CHART_CONFIGS } from '../components/chartConfigs';
 import { panelIdToUnifiedType } from './dashboardCatalog';
 import { measurementMatches } from '../components/unifiedChartUtils';
+import { extractCellStreamRefs, isDerivedLayoutEntry } from '../equation/equationParser';
+import { resolveStreamSpec } from '../equation/equationStreams';
 
 export { measurementMatches };
 
 export function sensorDataCacheKey(cellId, sensorName, measurement) {
   return `${cellId}:${sensorName}:${measurement}`.toLowerCase();
+}
+
+/**
+ * @param {string} ref - e.g. "2:vwc"
+ * @returns {{ cellId: number, streamKey: string } | null}
+ */
+export function parseCellStreamRef(ref) {
+  const match = ref.match(/^(\d+):([a-zA-Z][a-zA-Z0-9_]*)$/);
+  if (!match) return null;
+  return { cellId: Number(match[1]), streamKey: match[2] };
+}
+
+/**
+ * @param {string[]} panelOrder
+ * @returns {string[]}
+ */
+export function collectEquationRefsFromPanelOrder(panelOrder) {
+  const refs = new Set();
+  panelOrder.forEach((entry) => {
+    if (!isDerivedLayoutEntry(entry)) return;
+    try {
+      extractCellStreamRefs(entry).forEach((ref) => refs.add(ref));
+    } catch {
+      // ignore invalid derived entries already in layout
+    }
+  });
+  return [...refs];
+}
+
+/**
+ * @param {Array<{ id: string|number, name?: string }>} cells
+ * @param {string[]} panelOrder
+ * @returns {Array<{ id: string|number, name: string }>}
+ */
+export function cellsForHistoricalFetch(cells, panelOrder) {
+  const byId = new Map(
+    cells.map((cell) => [String(cell.id), { id: cell.id, name: cell.name ?? `Cell-${cell.id}` }]),
+  );
+
+  collectEquationRefsFromPanelOrder(panelOrder).forEach((ref) => {
+    const parsed = parseCellStreamRef(ref);
+    if (!parsed) return;
+    const key = String(parsed.cellId);
+    if (!byId.has(key)) {
+      byId.set(key, { id: parsed.cellId, name: `Cell-${parsed.cellId}` });
+    }
+  });
+
+  return [...byId.values()];
+}
+
+function equationRefsNeedSource(panelOrder, source) {
+  return collectEquationRefsFromPanelOrder(panelOrder).some((ref) => {
+    const parsed = parseCellStreamRef(ref);
+    const spec = parsed && resolveStreamSpec(parsed.streamKey);
+    return spec?.source === source;
+  });
+}
+
+/**
+ * @param {string[]} panelOrder
+ */
+export function collectEquationSensorRequests(panelOrder) {
+  const requests = [];
+  const seen = new Set();
+
+  collectEquationRefsFromPanelOrder(panelOrder).forEach((ref) => {
+    const parsed = parseCellStreamRef(ref);
+    const spec = parsed && resolveStreamSpec(parsed.streamKey);
+    if (!spec || spec.source !== 'sensor') return;
+
+    const cacheKey = sensorDataCacheKey(parsed.cellId, spec.sensorName, spec.measurement);
+    if (seen.has(cacheKey)) return;
+    seen.add(cacheKey);
+    requests.push({
+      cacheKey,
+      cellId: parsed.cellId,
+      name: spec.sensorName,
+      measurement: spec.measurement,
+    });
+  });
+
+  return requests;
 }
 
 /**
@@ -37,11 +122,17 @@ export function resolveSensorsToFetch(cellSensors, config) {
 }
 
 export function panelOrderNeedsPower(panelOrder) {
-  return panelOrder.some((panelId) => panelId === 'power-vi' || panelId === 'power-p');
+  if (panelOrder.some((panelId) => panelId === 'power-vi' || panelId === 'power-p')) {
+    return true;
+  }
+  return equationRefsNeedSource(panelOrder, 'power');
 }
 
 export function panelOrderNeedsTeros(panelOrder) {
-  return panelOrder.some((panelId) => panelId === 'teros' || panelId === 'temp');
+  if (panelOrder.some((panelId) => panelId === 'teros' || panelId === 'temp')) {
+    return true;
+  }
+  return equationRefsNeedSource(panelOrder, 'teros');
 }
 
 /**
@@ -140,6 +231,7 @@ export async function fetchDashboardHistoricalData({
     };
   }
 
+  const fetchCells = cellsForHistoricalFetch(cells, panelOrder);
   const startHTTP = startDate.toHTTP();
   const endHTTP = endDate.toHTTP();
   const tasks = [];
@@ -147,7 +239,7 @@ export async function fetchDashboardHistoricalData({
   if (panelOrderNeedsPower(panelOrder)) {
     tasks.push(
       Promise.all(
-        cells.map(async ({ id, name }) => {
+        fetchCells.map(async ({ id, name }) => {
           const powerData = await getPowerData(id, startHTTP, endHTTP, resample);
           return [id, { name, powerData }];
         }),
@@ -158,7 +250,7 @@ export async function fetchDashboardHistoricalData({
   if (panelOrderNeedsTeros(panelOrder)) {
     tasks.push(
       Promise.all(
-        cells.map(async ({ id, name }) => {
+        fetchCells.map(async ({ id, name }) => {
           const terosData = await getTerosData(id, startHTTP, endHTTP, resample);
           return [id, { name, terosData }];
         }),
@@ -166,11 +258,20 @@ export async function fetchDashboardHistoricalData({
     );
   }
 
-  const sensorRequests = collectUnifiedSensorRequests(panelOrder, cells, cellSensorsById);
-  if (sensorRequests.length > 0) {
+  const sensorRequests = [
+    ...collectUnifiedSensorRequests(panelOrder, cells, cellSensorsById),
+    ...collectEquationSensorRequests(panelOrder),
+  ];
+  const seen = new Set();
+  const dedupedSensorRequests = sensorRequests.filter((request) => {
+    if (seen.has(request.cacheKey)) return false;
+    seen.add(request.cacheKey);
+    return true;
+  });
+  if (dedupedSensorRequests.length > 0) {
     tasks.push(
       Promise.all(
-        sensorRequests.map(async ({ cacheKey, cellId, name, measurement }) => {
+        dedupedSensorRequests.map(async ({ cacheKey, cellId, name, measurement }) => {
           const payload = await getSensorData(name, cellId, measurement, startHTTP, endHTTP, resample);
           return [cacheKey, payload];
         }),
@@ -210,6 +311,7 @@ export async function fetchDashboardPowerTerosData({
     return { historicalPowerByCell: {}, historicalTerosByCell: {} };
   }
 
+  const fetchCells = cellsForHistoricalFetch(cells, panelOrder);
   const startHTTP = startDate.toHTTP();
   const endHTTP = endDate.toHTTP();
   const tasks = [];
@@ -217,7 +319,7 @@ export async function fetchDashboardPowerTerosData({
   if (panelOrderNeedsPower(panelOrder)) {
     tasks.push(
       Promise.all(
-        cells.map(async ({ id, name }) => {
+        fetchCells.map(async ({ id, name }) => {
           const powerData = await getPowerData(id, startHTTP, endHTTP, resample);
           return [id, { name, powerData }];
         }),
@@ -228,7 +330,7 @@ export async function fetchDashboardPowerTerosData({
   if (panelOrderNeedsTeros(panelOrder)) {
     tasks.push(
       Promise.all(
-        cells.map(async ({ id, name }) => {
+        fetchCells.map(async ({ id, name }) => {
           const terosData = await getTerosData(id, startHTTP, endHTTP, resample);
           return [id, { name, terosData }];
         }),
@@ -268,14 +370,23 @@ export async function fetchDashboardSensorData({
 
   const startHTTP = startDate.toHTTP();
   const endHTTP = endDate.toHTTP();
-  const sensorRequests = collectUnifiedSensorRequests(panelOrder, cells, cellSensorsById);
+  const sensorRequests = [
+    ...collectUnifiedSensorRequests(panelOrder, cells, cellSensorsById),
+    ...collectEquationSensorRequests(panelOrder),
+  ];
+  const seen = new Set();
+  const dedupedSensorRequests = sensorRequests.filter((request) => {
+    if (seen.has(request.cacheKey)) return false;
+    seen.add(request.cacheKey);
+    return true;
+  });
 
-  if (sensorRequests.length === 0) {
+  if (dedupedSensorRequests.length === 0) {
     return { historicalSensorByKey: {} };
   }
 
   const entries = await Promise.all(
-    sensorRequests.map(async ({ cacheKey, cellId, name, measurement }) => {
+    dedupedSensorRequests.map(async ({ cacheKey, cellId, name, measurement }) => {
       const payload = await getSensorData(name, cellId, measurement, startHTTP, endHTTP, resample);
       return [cacheKey, payload];
     }),

@@ -3,9 +3,11 @@ import {
   LAYOUT_VERSION,
   panelIdToUnifiedType,
 } from './dashboardCatalog';
+import { isDerivedLayoutEntry } from '../equation/equationParser';
 
 /**
  * Short URL tokens for built-in panels (internal panel_id may differ).
+ * Also supports derived expressions like `1:vwc / 1:temp` in the layout string.
  */
 export const LAYOUT_NAME_TO_PANEL_ID = {
   vwc: 'teros',
@@ -74,6 +76,8 @@ export function resolveLayoutTokenToPanelId(token) {
  * @returns {string}
  */
 export function panelIdToLayoutToken(panelId) {
+  if (isDerivedLayoutEntry(panelId)) return panelId;
+
   if (PANEL_ID_TO_LAYOUT_NAME[panelId]) {
     return PANEL_ID_TO_LAYOUT_NAME[panelId];
   }
@@ -92,6 +96,8 @@ export function parseLayoutEntry(entry) {
   const trimmed = entry?.trim();
   if (!trimmed) return null;
 
+  if (isDerivedLayoutEntry(trimmed)) return trimmed;
+
   return resolveLayoutTokenToPanelId(trimmed);
 }
 
@@ -104,7 +110,7 @@ export function isLayoutPanelEntry(entry) {
 }
 
 /**
- * Accepts short names like `vwc,temp,presHum` and legacy `v1:teros,temp,...`.
+ * Accepts short names like `vwc,temp,1:vwc / 1:temp` and legacy `v1:teros,temp,...`.
  * @param {string | null | undefined} raw
  * @returns {string[]}
  */
@@ -123,12 +129,20 @@ export function parseLayoutParam(raw) {
 }
 
 /**
- * Serializes to v1 + short tokens: v1:vi,vwc,presHum
+ * Serializes to v1 + short tokens: v1:vwc,temp,1:vwc / 1:temp
  * @param {string[]} panelOrder
  * @returns {string | null}
  */
 export function serializeLayoutParam(panelOrder) {
-  const valid = panelOrder.filter((entry) => isKnownPanelId(entry));
+  const valid = panelOrder.filter((entry) => parseLayoutEntry(entry) === entry);
   if (valid.length === 0) return null;
   return `${LAYOUT_VERSION}:${valid.map(panelIdToLayoutToken).join(',')}`;
+}
+
+/**
+ * @param {string} entry
+ * @returns {boolean}
+ */
+export function isDerivedPanelEntry(entry) {
+  return isDerivedLayoutEntry(entry);
 }
