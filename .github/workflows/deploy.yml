@@ -16,6 +16,9 @@ concurrency: production
 jobs:
   build-and-deploy-frontend:
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://dirtviz.jlab.ucsc.edu/
     permissions:
       packages: write
     env:
@@ -85,6 +88,9 @@ jobs:
 
   build-and-deploy-backend:
     name: Deploy backend to aws
+    environment:
+      name: production
+      url: https://dirtviz.jlab.ucsc.edu/
     runs-on: ubuntu-latest
     env:
       AWS_DEFAULT_REGION: us-west-2
@@ -153,6 +159,9 @@ jobs:
   build-and-deploy-worker:
     name: Deploy celery worker to aws
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://dirtviz.jlab.ucsc.edu/
     env:
       AWS_DEFAULT_REGION: us-west-2
       AWS_ECR_REPOSITORY_NAME: dirtviz-worker
@@ -214,6 +223,9 @@ jobs:
   apply-db-migrations:
     name: Apply database migrations
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://dirtviz.jlab.ucsc.edu/
     env:
       AWS_DEFAULT_REGION: us-west-2
       AWS_ECR_REPOSITORY_NAME: dirtviz-migration

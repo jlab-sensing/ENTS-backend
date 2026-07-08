@@ -118,6 +118,168 @@ services:
       - ci
       - lint
 
+  bootstrap:
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+      target: bootstrap
+    image: dirtviz-backend-bootstrap
+    env_file:
+      - ${ENV_FILE:-.env}
+    depends_on:
+      - postgresql
+    profiles:
+      - ci
+      - bootstrap
+
+  upload-batch-voltage:
+    command: 
+      - "ents"
+      - "sim_generic"
+      - "batch"
+      - "-v"
+      - "--url"
+      - "http://backend:8000/api/sensor/"
+      - "--sensor"
+      - "POWER_VOLTAGE"
+      - "--cell"
+      - "1"
+      - "--logger"
+      - "1"
+      - "--start"
+      - "2026-03-01"
+      - "--end"
+      - "2026-03-20"
+      - "--freq"
+      - "3600"
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+      target: base
+    image: dirtviz-backend-upload
+    env_file:
+      - ${ENV_FILE:-.env}
+    depends_on:
+      - backend
+    profiles:
+      - upload
+
+  upload-batch-bme280:
+    command: 
+      - "ents"
+      - "sim_generic"
+      - "batch"
+      - "-v"
+      - "--url"
+      - "http://backend:8000/api/sensor/"
+      - "--sensor"
+      - "BME280_TEMP"
+      - "--cell"
+      - "1"
+      - "--logger"
+      - "1"
+      - "--start"
+      - "2026-03-01"
+      - "--end"
+      - "2026-03-20"
+      - "--freq"
+      - "3600"
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+      target: base
+    image: dirtviz-backend-upload
+    env_file:
+      - ${ENV_FILE:-.env}
+    depends_on:
+      - backend
+    profiles:
+      - upload
+
+  upload-stream-voltage:
+    command: 
+      - "ents"
+      - "sim_generic"
+      - "stream"
+      - "-v"
+      - "--url"
+      - "http://backend:8000/api/sensor/"
+      - "--sensor"
+      - "POWER_VOLTAGE"
+      - "--cell"
+      - "2"
+      - "--logger"
+      - "2"
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+      target: base
+    image: dirtviz-backend-upload
+    env_file:
+      - ${ENV_FILE:-.env}
+    depends_on:
+      - backend
+    profiles:
+      - upload
+
+  upload-stream-bme280:
+    command: 
+      - "ents"
+      - "sim_generic"
+      - "stream"
+      - "-v"
+      - "--url"
+      - "http://backend:8000/api/sensor/"
+      - "--sensor"
+      - "BME280_TEMP"
+      - "--cell"
+      - "2"
+      - "--logger"
+      - "2"
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+      target: base
+    image: dirtviz-backend-upload
+    env_file:
+      - ${ENV_FILE:-.env}
+    depends_on:
+      - backend
+    profiles:
+      - upload
+
+  upload-batch-old:
+    command: 
+      - "ents"
+      - "sim"
+      - "--mode"
+      - "batch"
+      - "--url"
+      - "http://backend:8000/api/sensor/"
+      - "--cell"
+      - "3"
+      - "--logger"
+      - "3"
+      - "--sensor"
+      - "power"
+      - "--start"
+      - "2026-03-10"
+      - "--end"
+      - "2026-03-26"
+      - "--freq"
+      - "3600"
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+      target: base
+    image: dirtviz-backend-upload
+    env_file:
+      - ${ENV_FILE:-.env}
+    depends_on:
+      - backend
+    profiles:
+      - upload
+
   valkey:
     image: valkey/valkey:latest
     ports:
