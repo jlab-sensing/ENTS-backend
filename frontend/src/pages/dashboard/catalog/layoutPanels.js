@@ -1,5 +1,6 @@
 import {
   isKnownPanelId,
+  isSensorPanelEntry,
   LAYOUT_VERSION,
   panelIdToUnifiedType,
 } from './dashboardCatalog';
@@ -60,7 +61,7 @@ export function splitLayoutEntries(body) {
  */
 export function resolveLayoutTokenToPanelId(token) {
   if (!token) return null;
-  if (isKnownPanelId(token)) return token;
+  if (isSensorPanelEntry(token) || isKnownPanelId(token)) return token;
 
   const alias = LAYOUT_NAME_TO_PANEL_ID[token] ?? LAYOUT_NAME_TO_PANEL_ID[token.toLowerCase()];
   if (alias && isKnownPanelId(alias)) return alias;

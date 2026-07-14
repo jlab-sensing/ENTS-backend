@@ -23,6 +23,7 @@ import {
   DEFAULT_DASHBOARD_PANEL_ORDER,
   isKnownPanelId,
   isDerivedPanelEntry,
+  isSensorPanelEntry,
   parseLayoutParam,
   serializeLayoutParam,
 } from './catalog/dashboardCatalog';
@@ -191,7 +192,9 @@ function Dashboard() {
     () => ({
       power: !stream && panelOrderNeedsPower(panelOrderForFetch),
       teros: !stream && panelOrderNeedsTeros(panelOrderForFetch),
-      sensors: !stream && panelOrderForFetch.some((panelId) => panelId.startsWith('u:')),
+      sensors:
+        !stream &&
+        panelOrderForFetch.some((panelId) => panelId.startsWith('u:') || isSensorPanelEntry(panelId)),
       equations: !stream && panelOrderForFetch.some((panelId) => isDerivedPanelEntry(panelId)),
     }),
     [stream, panelOrderForFetch],

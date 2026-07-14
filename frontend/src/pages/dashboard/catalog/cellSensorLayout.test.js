@@ -19,12 +19,13 @@ import { getCellSensors } from '../../../services/cell';
 import { getSensorCatalog } from '../../../services/catalog';
 
 describe('panelIdsFromCellSensors', () => {
-  it('maps bme280 sensor rows to unified panel ids', () => {
+  it('maps bme280 sensor rows to unified panel ids and s:{id} panels', () => {
     const cellSensorsById = {
-      '1': [{ name: 'co2', measurement: 'co2' }],
+      '1': [{ id: 12, name: 'co2', measurement: 'co2' }],
     };
     const ids = panelIdsFromCellSensors(cellSensorsById, [1]);
     expect(ids.has('u:co2')).toBe(true);
+    expect(ids.has('s:12')).toBe(true);
   });
 });
 
@@ -59,10 +60,17 @@ describe('buildDefaultPanelOrder', () => {
   });
 
   it('merges catalog and sensor-derived panels with power-vi first', async () => {
-    getCellSensors.mockResolvedValue([{ name: 'co2', measurement: 'co2' }]);
+    getCellSensors.mockResolvedValue([{ id: 5, name: 'co2', measurement: 'co2' }]);
     getSensorCatalog.mockResolvedValue([
       { panel_id: 'power-vi', label: 'Voltage & Current' },
       { panel_id: 'teros', label: 'VWC & EC' },
+      {
+        panel_id: 's:5',
+        kind: 'sensor',
+        sensor_id: 5,
+        sensor_name: 'co2',
+        measurement: 'co2',
+      },
     ]);
 
     const { panelOrder, cellSensorsById } = await buildDefaultPanelOrder([1]);
@@ -70,6 +78,7 @@ describe('buildDefaultPanelOrder', () => {
     expect(panelOrder[0]).toBe('power-vi');
     expect(panelOrder).toContain('teros');
     expect(panelOrder).toContain('u:co2');
+    expect(panelOrder).toContain('s:5');
     expect(cellSensorsById['1']).toHaveLength(1);
   });
 });
