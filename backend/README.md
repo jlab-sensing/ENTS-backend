@@ -14,7 +14,7 @@ The ENTS backend API doesn’t support bulk updates. You can work on only one ob
 
 The ENTS API handles users authentication using a [refresh token flow](https://cloudentity.com/developers/basics/oauth-grant-types/refresh-token-flow/). Users are given an access token to the API and a refresh token to designate access time. Currently, still under construction
 
-For external devices ENTS backend plans utilize API Keys to authenticate requests
+For external devices ENTS backend utilizes API Keys to authenticate requests
 
 The authentication module is located under `auth`
 
