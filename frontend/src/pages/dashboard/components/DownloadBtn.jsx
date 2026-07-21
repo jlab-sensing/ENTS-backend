@@ -1,79 +1,67 @@
-// import { useEffect } from 'react';
 import { Button } from '@mui/material';
 import PropTypes from 'prop-types';
-import { getCellData, pollCellDataResult } from '../../../services/cell';
 import { useState } from 'react';
-function DownloadBtn({ cells, startDate, endDate }) {
+import {
+  buildDashboardCsv,
+  defaultCsvFilename,
+  triggerCsvDownload,
+} from '../catalog/dashboardCsv';
+
+/**
+ * Export currently loaded dashboard chart series to CSV in the browser.
+ * Does not call the backend Celery export path (see #468 / #668).
+ */
+function DownloadBtn({
+  cells,
+  panelOrder,
+  historicalPowerByCell,
+  historicalTerosByCell,
+  historicalSensorByKey,
+  historicalLoading = false,
+  disabled = false,
+}) {
   const [downloadStatus, setDownloadStatus] = useState(false);
 
-  const INTERVAL = 2000;
-  const BACKOFF = 2000;
-  let pendingResponses = 0;
+  const exportToCsv = (event) => {
+    event.preventDefault();
+    if (disabled || historicalLoading || downloadStatus || !cells?.length) return;
 
-  const pollTaskStatus = async (taskId, fileName, pollDuration) => {
+    setDownloadStatus(true);
     try {
-      const { state, status } = await pollCellDataResult(taskId);
-      if (state === 'SUCCESS') {
-        const blob = new Blob([status], { type: 'text/csv' });
-        const a = document.createElement('a');
-        a.download = fileName;
-        a.href = window.URL.createObjectURL(blob);
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setDownloadStatus(false);
-      } else {
-        setTimeout(() => {
-          pendingResponses += 1;
-          pollDuration = BACKOFF * pendingResponses + pollDuration;
-          return pollTaskStatus(taskId, fileName, pollDuration);
-        }, pollDuration);
-      }
+      const csvText = buildDashboardCsv({
+        cells,
+        panelOrder,
+        historicalPowerByCell,
+        historicalTerosByCell,
+        historicalSensorByKey,
+      });
+      triggerCsvDownload(defaultCsvFilename(cells), csvText);
     } catch (error) {
-      console.error('Error polling the task status', error);
+      console.error('CSV export failed', error);
+    } finally {
+      setDownloadStatus(false);
     }
   };
 
-  const downloadFile = () => {
-    for (const { id, name } of cells) {
-      setDownloadStatus(true);
-      const fileName = name + '.csv';
-      const resample = 'none';
-      getCellData(id, resample, startDate, endDate).then((data) => {
-        const { result_id } = data;
-        pollTaskStatus(result_id, fileName, INTERVAL);
-      });
-    }
-  };
-  /** 
-    exports cell data from json obj to csv.
-    runs with static number of headers
-  **/
-  const exportToCsv = (e) => {
-    e.preventDefault();
-    downloadFile();
-  };
+  const isDisabled = disabled || historicalLoading || downloadStatus || !cells?.length;
+
   return (
     <div className='DownloadBtn'>
-      {downloadStatus ? (
-        <Button disabled={true} variant='outlined' onClick={exportToCsv}>
-          DOWNLOADING...
-        </Button>
-      ) : (
-        <Button disabled={false} variant='outlined' onClick={exportToCsv}>
-          Export to CSV
-        </Button>
-      )}
+      <Button disabled={isDisabled} variant='outlined' onClick={exportToCsv}>
+        {downloadStatus || historicalLoading ? 'DOWNLOADING...' : 'Export to CSV'}
+      </Button>
     </div>
   );
 }
 
 DownloadBtn.propTypes = {
   cells: PropTypes.array,
-  startDate: PropTypes.any,
-  endDate: PropTypes.any,
+  panelOrder: PropTypes.arrayOf(PropTypes.string),
+  historicalPowerByCell: PropTypes.object,
+  historicalTerosByCell: PropTypes.object,
+  historicalSensorByKey: PropTypes.object,
+  historicalLoading: PropTypes.bool,
   disabled: PropTypes.bool,
-  setDBtnDisabled: PropTypes.func.isRequired,
 };
 
 export default DownloadBtn;
