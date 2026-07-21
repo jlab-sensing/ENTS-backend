@@ -36,6 +36,13 @@ describe('sortPanelIds', () => {
     expect(ordered).toContain('power-p');
     expect(ordered.indexOf('power-vi')).toBeLessThan(ordered.indexOf('u:co2'));
   });
+
+  it('appends s: panels after builtins and unified, sorted numerically', () => {
+    const ordered = sortPanelIds(new Set(['s:12', 'u:co2', 's:2', 'power-vi']));
+    expect(ordered[0]).toBe('power-vi');
+    expect(ordered.indexOf('u:co2')).toBeLessThan(ordered.indexOf('s:2'));
+    expect(ordered.indexOf('s:2')).toBeLessThan(ordered.indexOf('s:12'));
+  });
 });
 
 describe('panelsMissingForCells', () => {

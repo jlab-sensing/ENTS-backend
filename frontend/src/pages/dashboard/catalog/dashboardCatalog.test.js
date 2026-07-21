@@ -4,8 +4,10 @@ import {
   getCatalogEntry,
   getUnifiedTypesInPanelOrder,
   isKnownPanelId,
+  isSensorPanelEntry,
   panelIdToUnifiedType,
   parseLayoutParam,
+  sensorPanelIdToSensorId,
   serializeLayoutParam,
   unifiedTypeToPanelId,
 } from './dashboardCatalog';
@@ -113,5 +115,30 @@ describe('catalogEntriesFromApi', () => {
       measurement: 'soil_moisture',
       unit: '%',
     });
+  });
+
+  it('treats s: panel_id as sensor even without kind and falls back for labels', () => {
+    const [entry] = catalogEntriesFromApi([
+      {
+        panel_id: 's:7',
+        sensor_id: 7,
+        sensor_name: 'bootstrap',
+        measurement: 'raw',
+      },
+    ]);
+    expect(entry).toMatchObject({
+      panelId: 's:7',
+      kind: 'sensor',
+      label: 'raw',
+      unit: '',
+      sensorName: 'bootstrap',
+    });
+  });
+
+  it('parses sensor panel ids', () => {
+    expect(isSensorPanelEntry('s:42')).toBe(true);
+    expect(isSensorPanelEntry(42)).toBe(false);
+    expect(sensorPanelIdToSensorId('s:42')).toBe(42);
+    expect(sensorPanelIdToSensorId('u:co2')).toBeNull();
   });
 });
