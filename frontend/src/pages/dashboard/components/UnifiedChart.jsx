@@ -27,6 +27,7 @@ function getCellMeasurementData(cellData, measurement) {
 }
 function UnifiedChart({
   type,
+  sensorSpec = null,
   cells,
   startDate,
   endDate,
@@ -50,8 +51,24 @@ function UnifiedChart({
   const fetchGenerationRef = useRef(0);
   const sensorsById = cellSensorsById ?? EMPTY_CELL_SENSORS_BY_ID;
 
-  const config = CHART_CONFIGS[type];
-  const { sensor_name, measurements, units, axisIds, chartId, axisPolicy } = config || {};
+  const config = sensorSpec
+    ? {
+        sensor_name: sensorSpec.sensor_name,
+        measurements: sensorSpec.measurements,
+        units: sensorSpec.units ?? [''],
+        axisIds: sensorSpec.axisIds ?? ['y'],
+        chartId: sensorSpec.chartId ?? `db-sensor-${sensorSpec.sensor_name}`,
+        axisPolicy: sensorSpec.axisPolicy,
+      }
+    : CHART_CONFIGS[type];
+  const { sensor_name, measurements, units, axisIds, chartId, axisPolicy } = config || {
+    sensor_name: undefined,
+    measurements: [],
+    units: [],
+    axisIds: ['y'],
+    chartId: 'missing',
+    axisPolicy: undefined,
+  };
 
   const meas_colors = [
     '#26C6DA',
@@ -71,7 +88,13 @@ function UnifiedChart({
       if (historicalLoading || !historicalSensorByKey || Object.keys(historicalSensorByKey).length === 0) {
         return {};
       }
-      return buildUnifiedChartDataFromCache(cells, type, sensorsById, historicalSensorByKey);
+      return buildUnifiedChartDataFromCache(
+        cells,
+        type,
+        sensorsById,
+        historicalSensorByKey,
+        sensorSpec,
+      );
     }
 
     const cellEntries = await Promise.all(
@@ -396,6 +419,10 @@ function UnifiedChart({
     return null;
   }
 
+  if (!config) {
+    return <ChartPanelPlaceholder />;
+  }
+
   if (isLoading) {
     return <ChartPanelPlaceholder loading />;
   }
@@ -425,7 +452,15 @@ function UnifiedChart({
 }
 
 UnifiedChart.propTypes = {
-  type: PropTypes.oneOf(Object.keys(CHART_CONFIGS)).isRequired,
+  type: PropTypes.oneOf(Object.keys(CHART_CONFIGS)),
+  sensorSpec: PropTypes.shape({
+    sensor_name: PropTypes.string.isRequired,
+    measurements: PropTypes.arrayOf(PropTypes.string).isRequired,
+    units: PropTypes.arrayOf(PropTypes.string),
+    axisIds: PropTypes.arrayOf(PropTypes.string),
+    chartId: PropTypes.string,
+    axisPolicy: PropTypes.string,
+  }),
   cells: PropTypes.array,
   startDate: PropTypes.any,
   endDate: PropTypes.any,

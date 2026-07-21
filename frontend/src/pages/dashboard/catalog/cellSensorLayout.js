@@ -3,7 +3,12 @@ import { getSensorCatalog } from '../../../services/catalog';
 import { getCellSensors } from '../../../services/cell';
 import { measurementMatches } from '../components/unifiedChartUtils';
 import { isDerivedLayoutEntry } from '../equation/equationParser';
-import { BUILTIN_CATALOG, UNIFIED_CATALOG, isKnownPanelId } from './dashboardCatalog';
+import {
+  BUILTIN_CATALOG,
+  UNIFIED_CATALOG,
+  isKnownPanelId,
+  isSensorPanelEntry,
+} from './dashboardCatalog';
 
 /** Map UnifiedChart config keys to dashboard panel IDs. */
 const CHART_TYPE_TO_PANEL_ID = {
@@ -47,6 +52,12 @@ export function panelIdsFromCellSensors(cellSensorsById, selectedCellIds) {
   Object.entries(cellSensorsById).forEach(([cellId, sensors]) => {
     if (!selectedSet.has(cellId) || !Array.isArray(sensors)) return;
 
+    sensors.forEach((sensor) => {
+      if (sensor?.id != null) {
+        panelIds.add(`s:${sensor.id}`);
+      }
+    });
+
     Object.entries(CHART_CONFIGS).forEach(([chartType, config]) => {
       const matches = sensors.some(
         (sensor) =>
@@ -86,6 +97,11 @@ export function sortPanelIds(panelSet) {
       ordered.push(entry.panelId);
     }
   });
+
+  [...panelSet]
+    .filter((panelId) => isSensorPanelEntry(panelId) && !ordered.includes(panelId))
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+    .forEach((panelId) => ordered.push(panelId));
 
   return ordered;
 }
@@ -130,10 +146,6 @@ export async function fetchCatalogPanelIdsForCells(cellIds) {
   return sortPanelIds(seen);
 }
 
-/**
- * @param {Array<string|number>} cellIds
- * @returns {Promise<{ panelOrder: string[], cellSensorsById: Record<string, unknown[]> }>}
- */
 /**
  * @param {Record<string, unknown[]>} cellSensorsById
  * @param {Array<string|number>} cellIds

@@ -1,16 +1,28 @@
-import { getPowerData } from '../../../services/power';
-import { getTerosData } from '../../../services/teros';
-import { getSensorData } from '../../../services/sensor';
-import { CHART_CONFIGS } from '../components/chartConfigs';
-import { panelIdToUnifiedType } from './dashboardCatalog';
+import { panelIdToUnifiedType, isSensorPanelEntry, sensorPanelIdToSensorId } from './dashboardCatalog';
 import { measurementMatches } from '../components/unifiedChartUtils';
 import { extractCellStreamRefs, isDerivedLayoutEntry } from '../equation/equationParser';
 import { resolveStreamSpec } from '../equation/equationStreams';
+import { CHART_CONFIGS } from '../components/chartConfigs';
+import { getPowerData } from '../../../services/power';
+import { getTerosData } from '../../../services/teros';
+import { getSensorData } from '../../../services/sensor';
 
 export { measurementMatches };
 
 export function sensorDataCacheKey(cellId, sensorName, measurement) {
   return `${cellId}:${sensorName}:${measurement}`.toLowerCase();
+}
+
+/**
+ * @param {string} panelId
+ * @param {Record<string, unknown[]>} cellSensorsById
+ */
+export function findSensorByPanelId(cellSensorsById, panelId) {
+  const sensorId = sensorPanelIdToSensorId(panelId);
+  if (sensorId == null) return null;
+  return Object.values(cellSensorsById || {})
+    .flatMap((sensors) => (Array.isArray(sensors) ? sensors : []))
+    .find((sensor) => Number(sensor?.id) === sensorId);
 }
 
 /**
@@ -174,13 +186,58 @@ export function collectUnifiedSensorRequests(panelOrder, cells, cellSensorsById)
 }
 
 /**
+ * @param {string[]} panelOrder
+ * @param {Array<{ id: string|number }>} cells
+ * @param {Record<string, unknown[]>} cellSensorsById
+ */
+export function collectDbSensorPanelRequests(panelOrder, cells, cellSensorsById) {
+  const requests = [];
+  const seen = new Set();
+
+  panelOrder.forEach((panelId) => {
+    if (!isSensorPanelEntry(panelId)) return;
+    const sensor = findSensorByPanelId(cellSensorsById, panelId);
+    if (!sensor?.name || !sensor?.measurement) return;
+
+    cells.forEach((cell) => {
+      const cellSensors = cellSensorsById[String(cell.id)] || [];
+      if (!cellSensors.some((row) => Number(row?.id) === Number(sensor.id))) return;
+
+      const cacheKey = sensorDataCacheKey(cell.id, sensor.name, sensor.measurement);
+      if (seen.has(cacheKey)) return;
+      seen.add(cacheKey);
+      requests.push({
+        cacheKey,
+        cellId: cell.id,
+        name: sensor.name,
+        measurement: sensor.measurement,
+      });
+    });
+  });
+
+  return requests;
+}
+
+/**
  * @param {Array<{ id: string|number, name: string }>} cells
  * @param {string} unifiedType
  * @param {Record<string, unknown[]>} cellSensorsById
  * @param {Record<string, unknown>} historicalSensorByKey
+ * @param {{ sensor_name: string, measurements: string[] } | null} [sensorSpec]
  */
-export function buildUnifiedChartDataFromCache(cells, unifiedType, cellSensorsById, historicalSensorByKey) {
-  const config = CHART_CONFIGS[unifiedType];
+export function buildUnifiedChartDataFromCache(
+  cells,
+  unifiedType,
+  cellSensorsById,
+  historicalSensorByKey,
+  sensorSpec = null,
+) {
+  const config = sensorSpec
+    ? {
+        sensor_name: sensorSpec.sensor_name,
+        measurements: sensorSpec.measurements,
+      }
+    : CHART_CONFIGS[unifiedType];
   if (!config) return {};
 
   const entries = cells.map(({ id, name }) => {
@@ -260,6 +317,7 @@ export async function fetchDashboardHistoricalData({
 
   const sensorRequests = [
     ...collectUnifiedSensorRequests(panelOrder, cells, cellSensorsById),
+    ...collectDbSensorPanelRequests(panelOrder, cells, cellSensorsById),
     ...collectEquationSensorRequests(panelOrder),
   ];
   const seen = new Set();
@@ -372,6 +430,7 @@ export async function fetchDashboardSensorData({
   const endHTTP = endDate.toHTTP();
   const sensorRequests = [
     ...collectUnifiedSensorRequests(panelOrder, cells, cellSensorsById),
+    ...collectDbSensorPanelRequests(panelOrder, cells, cellSensorsById),
     ...collectEquationSensorRequests(panelOrder),
   ];
   const seen = new Set();
