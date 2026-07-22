@@ -43,7 +43,6 @@ function Dashboard() {
   const { loggedIn } = useAuth();
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
   const [endDate, setEndDate] = useState(DateTime.now());
-  const [dBtnDisabled, setDBtnDisabled] = useState(true);
   const [selectedCells, setSelectedCells] = useState([]);
   const [stream, setStream] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -741,11 +740,12 @@ useEffect(() => {
                     {!stream && !cells.isLoading && !cells.isError && <ArchiveModal cells={cells} />}
                     {!stream && (
                       <DownloadBtn
-                        disabled={dBtnDisabled}
-                        setDBtnDisabled={setDBtnDisabled}
                         cells={selectedCells}
-                        startDate={hourlyStartDate}
-                        endDate={hourlyEndDate}
+                        panelOrder={panelOrderForFetch}
+                        historicalPowerByCell={historicalPowerByCell}
+                        historicalTerosByCell={historicalTerosByCell}
+                        historicalSensorByKey={historicalSensorByKey}
+                        historicalLoading={historicalLoading}
                       />
                     )}
                     <StreamToggle isStreaming={stream} onToggle={handleStreamToggle} />
@@ -793,11 +793,12 @@ useEffect(() => {
                 {!stream && (!cells.isLoading && !cells.isError ? <ArchiveModal cells={cells} /> : <span />)}
                 {!stream && (
                   <DownloadBtn
-                    disabled={dBtnDisabled}
-                    setDBtnDisabled={setDBtnDisabled}
                     cells={selectedCells}
-                    startDate={hourlyStartDate}
-                    endDate={hourlyEndDate}
+                    panelOrder={panelOrderForFetch}
+                    historicalPowerByCell={historicalPowerByCell}
+                    historicalTerosByCell={historicalTerosByCell}
+                    historicalSensorByKey={historicalSensorByKey}
+                    historicalLoading={historicalLoading}
                   />
                 )}
                 <StreamToggle isStreaming={stream} onToggle={handleStreamToggle} />
@@ -813,26 +814,6 @@ useEffect(() => {
                 <Typography variant='h6' color='text.secondary'>
                   Please select one or more cells above to view environmental sensor data
                 </Typography>
-                <Box
-                  sx={{
-                    backgroundColor: '#d32f2f',
-                    color: 'white',
-                    px: 2,
-                    py: 1.5,
-                    textAlign: 'center',
-                    fontFamily: 'sans-serif',
-                  }}
-                >
-                  CSV export is currently non-functional. See the issue for updates:{' '}
-                  <a
-                    href='https://github.com/jlab-sensing/ENTS-backend/issues/668'
-                    target='_blank'
-                    rel='noreferrer'
-                    style={{ color: '#ffffff', textDecoration: 'underline', fontWeight: 'bold' }}
-                  >
-                    GitHub Issue #668
-                  </a>
-                </Box>
               </Box>
             </Box>
           ) : showNoDataMessage && panelOrder.length === 0 ? (
