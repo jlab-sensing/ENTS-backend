@@ -9,12 +9,26 @@ import { SortableContext, arrayMove, rectSortingStrategy } from '@dnd-kit/sortab
 import { Box } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useCallback, useMemo } from 'react';
-import { panelIdToUnifiedType, isDerivedPanelEntry } from '../catalog/dashboardCatalog';
+import {
+  panelIdToUnifiedType,
+  isDerivedPanelEntry,
+  isSensorPanelEntry,
+  sensorPanelIdToSensorId,
+} from '../catalog/dashboardCatalog';
+import ChartPanelPlaceholder from './ChartPanelPlaceholder';
 import DerivedEquationChart from './DerivedEquationChart';
 import PowerCharts from './PowerCharts';
 import SortableChartPanel from './SortableChartPanel';
 import TerosCharts from './TerosCharts';
 import UnifiedChart from './UnifiedChart';
+
+function findSensorByPanelId(cellSensorsById, panelId) {
+  const sensorId = sensorPanelIdToSensorId(panelId);
+  if (sensorId == null) return null;
+  return Object.values(cellSensorsById || {})
+    .flatMap((sensors) => (Array.isArray(sensors) ? sensors : []))
+    .find((sensor) => Number(sensor?.id) === sensorId);
+}
 
 function DashboardPanelContent({ panelId, chartProps }) {
   if (isDerivedPanelEntry(panelId)) {
@@ -40,6 +54,33 @@ function DashboardPanelContent({ panelId, chartProps }) {
     stream: chartProps.stream,
     liveData: chartProps.liveData,
   };
+
+  if (isSensorPanelEntry(panelId)) {
+    const sensor = findSensorByPanelId(chartProps.cellSensorsById, panelId);
+    if (!sensor?.name || !sensor?.measurement) {
+      return <ChartPanelPlaceholder />;
+    }
+    return (
+      <UnifiedChart
+        sensorSpec={{
+          sensor_name: sensor.name,
+          measurements: [sensor.measurement],
+          units: [sensor.unit || ''],
+          chartId: `db-sensor-${sensor.id}`,
+        }}
+        cells={chartProps.cells}
+        startDate={chartProps.startDate}
+        endDate={chartProps.endDate}
+        stream={chartProps.stream}
+        liveData={chartProps.liveData}
+        processedData={chartProps.processedSensors}
+        cellSensorsById={chartProps.cellSensorsById}
+        historicalSensorByKey={chartProps.historicalSensorByKey}
+        centralHistoricalActive={chartProps.centralHistoricalActive?.sensors}
+        historicalLoading={chartProps.historicalLoading}
+      />
+    );
+  }
 
   const unifiedType = panelIdToUnifiedType(panelId);
   if (unifiedType) {

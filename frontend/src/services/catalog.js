@@ -6,8 +6,12 @@ import axios from 'axios';
  * @property {string} label
  * @property {string} description
  * @property {string} category
- * @property {'builtin' | 'unified'} kind
+ * @property {'builtin' | 'unified' | 'sensor'} kind
  * @property {string} [unified_type]
+ * @property {number} [sensor_id]
+ * @property {string} [sensor_name]
+ * @property {string} [measurement]
+ * @property {string} [unit]
  */
 
 /**

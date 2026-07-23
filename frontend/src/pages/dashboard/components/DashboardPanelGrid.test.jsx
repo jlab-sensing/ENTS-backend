@@ -11,7 +11,13 @@ vi.mock('./TerosCharts', () => ({
 }));
 
 vi.mock('./UnifiedChart', () => ({
-  default: () => <div>Unified chart panel</div>,
+  default: ({ type, sensorSpec }) => (
+    <div>
+      {sensorSpec
+        ? `DB sensor chart: ${sensorSpec.sensor_name}/${sensorSpec.measurements.join(',')}`
+        : `Unified chart panel: ${type}`}
+    </div>
+  ),
 }));
 
 vi.mock('./DerivedEquationChart', () => ({
@@ -48,7 +54,49 @@ describe('DashboardPanelGrid', () => {
     );
 
     expect(screen.getByText('Power chart panel')).toBeInTheDocument();
-    expect(screen.getByText('Unified chart panel')).toBeInTheDocument();
+    expect(screen.getByText('Unified chart panel: co2')).toBeInTheDocument();
+  });
+
+  it('renders db sensor panels via UnifiedChart sensorSpec', () => {
+    render(
+      <DashboardPanelGrid
+        panelOrder={['s:37']}
+        onPanelOrderChange={vi.fn()}
+        onRemovePanel={vi.fn()}
+        panelColumns={2}
+        chartProps={{
+          ...chartProps,
+          cellSensorsById: {
+            1: [
+              {
+                id: 37,
+                name: 'rocketlogger',
+                measurement: 'soil_moisture',
+                unit: '%',
+              },
+            ],
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByText('DB sensor chart: rocketlogger/soil_moisture')).toBeInTheDocument();
+  });
+
+  it('shows a placeholder when a db sensor panel has no metadata', () => {
+    render(
+      <DashboardPanelGrid
+        panelOrder={['s:37']}
+        onPanelOrderChange={vi.fn()}
+        onRemovePanel={vi.fn()}
+        panelColumns={2}
+        chartProps={chartProps}
+      />,
+    );
+
+    expect(
+      screen.getByText('No data for the selected cells or date range.'),
+    ).toBeInTheDocument();
   });
 
   it('renders derived equation panels', () => {
