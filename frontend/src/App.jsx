@@ -41,6 +41,15 @@ function App() {
     },
   });
 
+  const RequireAuth =({children}) => {
+    const { user } = useContext(AuthContext);
+
+    if (!user) {
+      return <Navigate to="/" replace />;
+    }
+    return children;
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <div className='App container-fluid px-0'>
@@ -49,7 +58,10 @@ function App() {
             <Routes>
               <Route path='/auth/callback' exact element={<Callback />} />
               <Route path='/profile' exact element={<Navigate replace to='/profile/cells' />} />
-              <Route path='/profile' exact element={<Profile />}>
+              <Route path='/profile' exact element={
+                <RequireAuth>
+                <Profile />
+                </RequireAuth>}>
                 <Route path='account' element={<AccountInfo />} />
                 <Route path='cells' element={<CellsList />} />
                 <Route path='loggers' element={<LoggersList />} />
