@@ -17,6 +17,7 @@ function DownloadBtn({
   historicalPowerByCell,
   historicalTerosByCell,
   historicalSensorByKey,
+  cellSensorsById = {},
   historicalLoading = false,
   disabled = false,
 }) {
@@ -34,6 +35,7 @@ function DownloadBtn({
         historicalPowerByCell,
         historicalTerosByCell,
         historicalSensorByKey,
+        cellSensorsById,
       });
       triggerCsvDownload(defaultCsvFilename(cells), csvText);
     } catch (error) {
@@ -60,6 +62,7 @@ DownloadBtn.propTypes = {
   historicalPowerByCell: PropTypes.object,
   historicalTerosByCell: PropTypes.object,
   historicalSensorByKey: PropTypes.object,
+  cellSensorsById: PropTypes.object,
   historicalLoading: PropTypes.bool,
   disabled: PropTypes.bool,
 };

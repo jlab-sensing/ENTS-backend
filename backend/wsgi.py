@@ -8,7 +8,6 @@ import api
 
 # Create the Flask app
 app = api.create_app()
-celery_app = app.extensions["celery"]
 
 # Get the socketio instance that was initialized with the app
 socketio = api.socketio

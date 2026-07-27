@@ -745,6 +745,7 @@ useEffect(() => {
                         historicalPowerByCell={historicalPowerByCell}
                         historicalTerosByCell={historicalTerosByCell}
                         historicalSensorByKey={historicalSensorByKey}
+                        cellSensorsById={cellSensorsById}
                         historicalLoading={historicalLoading}
                       />
                     )}
@@ -798,6 +799,7 @@ useEffect(() => {
                     historicalPowerByCell={historicalPowerByCell}
                     historicalTerosByCell={historicalTerosByCell}
                     historicalSensorByKey={historicalSensorByKey}
+                    cellSensorsById={cellSensorsById}
                     historicalLoading={historicalLoading}
                   />
                 )}

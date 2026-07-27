@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 import { CHART_CONFIGS } from '../components/chartConfigs';
-import { panelIdToUnifiedType } from './dashboardCatalog';
-import { sensorDataCacheKey } from './historicalDataLoader';
+import { isSensorPanelEntry, panelIdToUnifiedType } from './dashboardCatalog';
+import { findSensorByPanelId, sensorDataCacheKey } from './historicalDataLoader';
 
 /** Missing aligned values in exported rows (per mentor CSV format). */
 export const CSV_MISSING = 'NAN';
@@ -20,7 +20,15 @@ function resolveCellEntry(cellMap, cellId) {
 }
 
 /**
- * @param {unknown[]} timestamps
+ * Convert API timestamps to epoch milliseconds.
+ *
+ * The API serializes datetimes as RFC-1123 GMT strings (Flask jsonify), which is
+ * the same format the charts parse with DateTime.fromHTTP. ISO/SQL fallbacks
+ * default naive strings to UTC: the backend stores naive-UTC datetimes, and
+ * parsing them in the browser's local zone would shift series against each
+ * other, misaligning rows (spurious NAN gaps, offset timestamps).
+ *
+ * @param {unknown[]} timestamps raw timestamps (numbers are treated as epoch ms)
  * @returns {number[]}
  */
 export function timestampsToMillis(timestamps) {
@@ -29,8 +37,10 @@ export function timestampsToMillis(timestamps) {
     const text = String(raw);
     const http = DateTime.fromHTTP(text);
     if (http.isValid) return http.toMillis();
-    const iso = DateTime.fromISO(text);
-    return iso.isValid ? iso.toMillis() : Number.NaN;
+    const iso = DateTime.fromISO(text, { zone: 'utc' });
+    if (iso.isValid) return iso.toMillis();
+    const sql = DateTime.fromSQL(text, { zone: 'utc' });
+    return sql.isValid ? sql.toMillis() : Number.NaN;
   });
 }
 
@@ -159,6 +169,35 @@ function addSensorColumns(columnsByKey, cell, config, historicalSensorByKey, mul
   });
 }
 
+function addDbSensorPanelColumn(
+  columnsByKey,
+  cell,
+  panelId,
+  cellSensorsById,
+  historicalSensorByKey,
+  multiCell,
+) {
+  const sensor = findSensorByPanelId(cellSensorsById, panelId);
+  if (!sensor?.name || !sensor?.measurement) return;
+
+  const cellSensors = cellSensorsById?.[String(cell.id)] || [];
+  if (!cellSensors.some((row) => Number(row?.id) === Number(sensor.id))) return;
+
+  const cacheKey = sensorDataCacheKey(cell.id, sensor.name, sensor.measurement);
+  const payload = historicalSensorByKey?.[cacheKey];
+  if (!payload?.timestamp?.length) return;
+
+  const label = sensor.measurement || sensor.name;
+  const type = String(sensor.name || sensor.measurement).toUpperCase();
+  addColumn(columnsByKey, {
+    key: `${cell.id}:db-sensor:${sensor.id}`,
+    name: columnDisplayName(label, cell.name, multiCell),
+    unit: sensor.unit || payload.unit || '',
+    type,
+    valuesByTs: seriesToValueMap(timestampsToMillis(payload.timestamp), payload.data || []),
+  });
+}
+
 /**
  * Collect export columns from currently loaded dashboard historical caches.
  *
@@ -168,6 +207,7 @@ function addSensorColumns(columnsByKey, cell, config, historicalSensorByKey, mul
  * @param {Record<string, { name?: string, powerData?: object }>} [params.historicalPowerByCell]
  * @param {Record<string, { name?: string, terosData?: object }>} [params.historicalTerosByCell]
  * @param {Record<string, object>} [params.historicalSensorByKey]
+ * @param {Record<string, unknown[]>} [params.cellSensorsById]
  * @returns {CsvColumn[]}
  */
 export function collectExportColumns({
@@ -176,6 +216,7 @@ export function collectExportColumns({
   historicalPowerByCell = {},
   historicalTerosByCell = {},
   historicalSensorByKey = {},
+  cellSensorsById = {},
 }) {
   const columnsByKey = new Map();
   const loadCells = (Array.isArray(cells) ? cells : []).map((cell) => ({
@@ -205,6 +246,18 @@ export function collectExportColumns({
       if (panelId === 'temp') {
         const entry = resolveCellEntry(historicalTerosByCell, cell.id);
         addTerosColumns(columnsByKey, cell, entry?.terosData, ['temp'], multiCell);
+        return;
+      }
+
+      if (isSensorPanelEntry(panelId)) {
+        addDbSensorPanelColumn(
+          columnsByKey,
+          cell,
+          panelId,
+          cellSensorsById,
+          historicalSensorByKey,
+          multiCell,
+        );
         return;
       }
 

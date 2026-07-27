@@ -6,9 +6,32 @@ import {
   defaultCsvFilename,
   escapeCsvField,
   seriesToValueMap,
+  timestampsToMillis,
 } from './dashboardCsv';
 
 describe('dashboardCsv helpers', () => {
+  it('parses HTTP, naive ISO, and SQL timestamps to the same UTC instant', () => {
+    const expected = Date.UTC(2026, 0, 1, 16, 0, 0);
+    const [http, naiveIso, zonedIso, sql] = timestampsToMillis([
+      'Thu, 01 Jan 2026 16:00:00 GMT',
+      '2026-01-01T16:00:00',
+      '2026-01-01T16:00:00Z',
+      '2026-01-01 16:00:00',
+    ]);
+    // Naive strings must be treated as UTC; parsing them in the browser's
+    // local zone would shift series apart and fill rows with NAN.
+    expect(http).toBe(expected);
+    expect(naiveIso).toBe(expected);
+    expect(zonedIso).toBe(expected);
+    expect(sql).toBe(expected);
+  });
+
+  it('marks unparseable timestamps as NaN so their rows are dropped', () => {
+    const [bad, num] = timestampsToMillis(['not-a-date', 1234]);
+    expect(Number.isNaN(bad)).toBe(true);
+    expect(num).toBe(1234);
+  });
+
   it('escapes csv fields that contain commas or quotes', () => {
     expect(escapeCsvField('plain')).toBe('plain');
     expect(escapeCsvField('a,b')).toBe('"a,b"');
@@ -127,5 +150,94 @@ describe('buildDashboardCsv', () => {
       historicalPowerByCell: {},
     });
     expect(csv).toBe('timestamp\ns\nTIME\n');
+  });
+
+  it('exports db sensor panels from #795 s:{id} layout entries', () => {
+    const csv = buildDashboardCsv({
+      cells: [{ id: 1, name: 'Cell A' }],
+      panelOrder: ['s:37'],
+      cellSensorsById: {
+        1: [{ id: 37, name: 'rocketlogger', measurement: 'soil_moisture', unit: '%' }],
+      },
+      historicalSensorByKey: {
+        '1:rocketlogger:soil_moisture': {
+          timestamp: powerTs,
+          data: [12.5, 13.1],
+          unit: '%',
+        },
+      },
+    });
+
+    const lines = csv.trimEnd().split('\n');
+    expect(lines[0]).toBe('timestamp,soil_moisture');
+    expect(lines[1]).toBe('s,%');
+    expect(lines[2]).toBe('TIME,ROCKETLOGGER');
+    expect(lines[3]).toContain('12.5');
+  });
+
+  it('fills NAN when power and teros timestamps are intentionally misaligned', () => {
+    const csv = buildDashboardCsv({
+      cells: [{ id: 1, name: 'Cell A' }],
+      panelOrder: ['power-vi', 'teros'],
+      historicalPowerByCell: {
+        1: {
+          powerData: {
+            timestamp: ['Thu, 01 Jan 2026 00:00:00 GMT'],
+            v: [1],
+            i: [2],
+          },
+        },
+      },
+      historicalTerosByCell: {
+        1: {
+          terosData: {
+            timestamp: ['Thu, 01 Jan 2026 00:30:00 GMT'],
+            vwc: [40],
+            ec: [100],
+            vwc_unit: '%',
+          },
+        },
+      },
+    });
+
+    const lines = csv.trimEnd().split('\n');
+    expect(lines).toHaveLength(5); // 3 header + 2 data
+    const powerOnly = lines[3].split(',');
+    const terosOnly = lines[4].split(',');
+    expect(powerOnly[1]).toBe('1');
+    expect(powerOnly[3]).toBe(CSV_MISSING); // VWC missing on power timestamp
+    expect(terosOnly[1]).toBe(CSV_MISSING); // Voltage missing on teros timestamp
+    expect(terosOnly[3]).toBe('40');
+  });
+});
+
+describe('buildDashboardCsv scale', () => {
+  it('builds a large aligned export within a reproducible budget', () => {
+    const pointCount = 50_000;
+    const timestamps = Array.from({ length: pointCount }, (_, i) => i * 1000);
+    const values = Array.from({ length: pointCount }, (_, i) => i * 0.01);
+
+    const started = performance.now();
+    const csv = buildDashboardCsv({
+      cells: [{ id: 1, name: 'Cell A' }],
+      panelOrder: ['power-vi', 'power-p'],
+      historicalPowerByCell: {
+        1: {
+          powerData: {
+            timestamp: timestamps,
+            v: values,
+            i: values,
+            p: values,
+          },
+        },
+      },
+    });
+    const elapsedMs = performance.now() - started;
+
+    const lines = csv.trimEnd().split('\n');
+    expect(lines).toHaveLength(3 + pointCount);
+    expect(lines[0]).toContain('Voltage');
+    // Keep this generous so CI flakes are unlikely, but still catches catastrophic regressions.
+    expect(elapsedMs).toBeLessThan(15_000);
   });
 });
