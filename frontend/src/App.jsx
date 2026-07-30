@@ -1,4 +1,4 @@
-import { React } from 'react';
+import React, { useContext } from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import Dashboard from './pages/dashboard/Dashboard';
 import Profile from './pages/profile/Profile';
@@ -8,11 +8,12 @@ import Contact from './pages/contact/Contact';
 import Home from './pages/home/Home';
 import Docs from './pages/docs/Docs';
 import Callback from './auth/Callback';
-import AuthContextProvider from './auth/AuthContextProvider';
+import AuthContextProvider, {AuthContext} from './auth/AuthContextProvider';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import AccountInfo from './pages/profile/components/AccountInfo';
 import CellsList from './pages/profile/components/CellsList';
 import LoggersList from './pages/profile/components/LoggersList';
+import PropTypes from 'prop-types';
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,19 @@ function App() {
     },
   });
 
+  const RequireAuth =({children}) => {
+    const { user } = useContext(AuthContext);
+
+    if (!user) {
+      return <Navigate to="/" replace />;
+    }
+    return children;
+  };
+
+  RequireAuth.propTypes = {
+    children: PropTypes.node.isRequired,
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <div className='App container-fluid px-0'>
@@ -49,7 +63,10 @@ function App() {
             <Routes>
               <Route path='/auth/callback' exact element={<Callback />} />
               <Route path='/profile' exact element={<Navigate replace to='/profile/cells' />} />
-              <Route path='/profile' exact element={<Profile />}>
+              <Route path='/profile' exact element={
+                <RequireAuth>
+                <Profile />
+                </RequireAuth>}>
                 <Route path='account' element={<AccountInfo />} />
                 <Route path='cells' element={<CellsList />} />
                 <Route path='loggers' element={<LoggersList />} />
