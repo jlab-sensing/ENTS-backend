@@ -17,9 +17,43 @@ Then goto [http://localhost:3000/](http://localhost:3000/) for the website. Logi
 docker compose logs -f backend
 ```
 
+**Bootstap and upload data**
+
+First add the necessary cells and data.
+
+```bash
+docker compose --profile bootstrap up --build -d
+```
+
+Then insert the data and stream to the created cells.
+
+```bash
+docker compose --profile upload up --build -d
+```
+
+You can also only test a single upload instance
+
+```bash
+docker compose up --build upload-stream-voltage
+```
+
+**Check CICD pipeline locally**
+
+```bash
+docker compose --profile cicd up --build -d
+```
+
+You can also only run a single aspect with
+
+```bash
+docker compose up --build frontend-test
+```
+
 ## General Information
 
 ### Installing Dependencies
+
+> This is for running a development instance directly on your machine. It is recommended that you use docker for development.
 
 **Frontend**
 
