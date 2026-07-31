@@ -91,6 +91,7 @@ jobs:
             docker ps -aq | xargs -r docker stop
             docker ps -aq | xargs -r docker rm
             docker system prune -af --volumes
+            docker volume prune -a -f
             echo "::endgroup::"
 
             echo "::group::Starting services"
