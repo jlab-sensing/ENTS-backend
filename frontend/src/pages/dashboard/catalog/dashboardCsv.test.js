@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   CSV_MISSING,
   buildDashboardCsv,
+  buildDashboardCsvExports,
   collectExportColumns,
+  csvFilenameForCell,
   defaultCsvFilename,
   escapeCsvField,
   seriesToValueMap,
@@ -46,6 +48,8 @@ describe('dashboardCsv helpers', () => {
   });
 
   it('builds default filenames from selected cells', () => {
+    expect(csvFilenameForCell({ id: 1, name: 'Cell A' })).toBe('Cell_A.csv');
+    expect(csvFilenameForCell({ id: 2 })).toBe('cell_2.csv');
     expect(defaultCsvFilename([{ id: 1, name: 'Cell A' }])).toBe('Cell_A.csv');
     expect(defaultCsvFilename([{ id: 1 }, { id: 2 }])).toBe('dirtviz-export.csv');
   });
@@ -121,6 +125,30 @@ describe('buildDashboardCsv', () => {
     });
 
     expect(columns.map((column) => column.name)).toEqual(['A Power', 'B Power']);
+  });
+
+  it('builds one csv export file per selected cell', () => {
+    const exports = buildDashboardCsvExports({
+      cells: [
+        { id: 1, name: 'Cell A' },
+        { id: 2, name: 'Cell B' },
+      ],
+      panelOrder: ['power-p'],
+      historicalPowerByCell: {
+        1: { powerData: { timestamp: powerTs, p: [1, 2] } },
+        2: { powerData: { timestamp: powerTs, p: [3, 4] } },
+      },
+    });
+
+    expect(exports).toHaveLength(2);
+    expect(exports[0].filename).toBe('Cell_A.csv');
+    expect(exports[1].filename).toBe('Cell_B.csv');
+    // Per-cell files omit the cell-name column prefix.
+    expect(exports[0].csvText.split('\n')[0]).toBe('timestamp,Power');
+    expect(exports[1].csvText.split('\n')[0]).toBe('timestamp,Power');
+    expect(exports[0].csvText).toContain('1');
+    expect(exports[1].csvText).toContain('3');
+    expect(exports[0].csvText).not.toContain('3');
   });
 
   it('includes unified sensor panels from the historical sensor cache', () => {

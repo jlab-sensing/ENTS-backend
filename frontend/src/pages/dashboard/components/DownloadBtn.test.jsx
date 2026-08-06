@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, act } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import DownloadBtn from './DownloadBtn';
 
@@ -7,6 +7,7 @@ describe('DownloadBtn', () => {
   let revokeObjectURL;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     createObjectURL = vi.fn(() => 'blob:csv');
     revokeObjectURL = vi.fn();
     window.URL.createObjectURL = createObjectURL;
@@ -14,6 +15,7 @@ describe('DownloadBtn', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -40,6 +42,9 @@ describe('DownloadBtn', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: /Export to CSV/i }));
+    act(() => {
+      vi.runAllTimers();
+    });
 
     expect(createObjectURL).toHaveBeenCalled();
     const blob = createObjectURL.mock.calls[0][0];
@@ -47,6 +52,50 @@ describe('DownloadBtn', () => {
     expect(blob.type).toContain('text/csv');
     expect(clickSpy).toHaveBeenCalled();
     expect(revokeObjectURL).toHaveBeenCalled();
+  });
+
+  it('downloads one csv file per selected cell', () => {
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const appendSpy = vi.spyOn(document.body, 'appendChild');
+
+    render(
+      <DownloadBtn
+        cells={[
+          { id: 1, name: 'Cell A' },
+          { id: 2, name: 'Cell B' },
+        ]}
+        panelOrder={['power-p']}
+        historicalPowerByCell={{
+          1: {
+            powerData: {
+              timestamp: ['Thu, 01 Jan 2026 00:00:00 GMT'],
+              p: [1],
+            },
+          },
+          2: {
+            powerData: {
+              timestamp: ['Thu, 01 Jan 2026 00:00:00 GMT'],
+              p: [2],
+            },
+          },
+        }}
+        historicalTerosByCell={{}}
+        historicalSensorByKey={{}}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Export to CSV/i }));
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(createObjectURL).toHaveBeenCalledTimes(2);
+    expect(clickSpy).toHaveBeenCalledTimes(2);
+
+    const anchors = appendSpy.mock.calls
+      .map(([node]) => node)
+      .filter((node) => node?.tagName === 'A');
+    expect(anchors.map((a) => a.download)).toEqual(['Cell_A.csv', 'Cell_B.csv']);
   });
 
   it('disables export while historical data is loading', () => {

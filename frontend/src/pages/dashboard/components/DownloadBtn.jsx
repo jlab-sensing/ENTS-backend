@@ -2,14 +2,16 @@ import { Button } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import {
-  buildDashboardCsv,
-  defaultCsvFilename,
+  buildDashboardCsvExports,
   triggerCsvDownload,
 } from '../catalog/dashboardCsv';
 
+/** Stagger multi-file downloads so browsers do not collapse them into one save. */
+const MULTI_DOWNLOAD_STAGGER_MS = 150;
+
 /**
  * Export currently loaded dashboard chart series to CSV in the browser.
- * Does not call the backend Celery export path (see #468 / #668).
+ * One file per selected cell (e.g. Cell_A.csv, Cell_B.csv).
  */
 function DownloadBtn({
   cells,
@@ -29,7 +31,7 @@ function DownloadBtn({
 
     setDownloadStatus(true);
     try {
-      const csvText = buildDashboardCsv({
+      const exports = buildDashboardCsvExports({
         cells,
         panelOrder,
         historicalPowerByCell,
@@ -37,10 +39,22 @@ function DownloadBtn({
         historicalSensorByKey,
         cellSensorsById,
       });
-      triggerCsvDownload(defaultCsvFilename(cells), csvText);
+
+      if (exports.length === 0) {
+        setDownloadStatus(false);
+        return;
+      }
+
+      exports.forEach(({ filename, csvText }, index) => {
+        window.setTimeout(() => {
+          triggerCsvDownload(filename, csvText);
+          if (index === exports.length - 1) {
+            setDownloadStatus(false);
+          }
+        }, index * MULTI_DOWNLOAD_STAGGER_MS);
+      });
     } catch (error) {
       console.error('CSV export failed', error);
-    } finally {
       setDownloadStatus(false);
     }
   };

@@ -309,17 +309,42 @@ export function buildDashboardCsv(params) {
 }
 
 /**
+ * @param {{ id: string|number, name?: string }} cell
+ * @returns {string}
+ */
+export function csvFilenameForCell(cell) {
+  if (!cell) return 'cell.csv';
+  const raw = String(cell.name || `cell_${cell.id}`);
+  const safe = raw.replace(/[^\w.-]+/g, '_');
+  return `${safe || `cell_${cell.id}`}.csv`;
+}
+
+/**
  * @param {Array<{ id: string|number, name?: string }>} cells
  * @returns {string}
  */
 export function defaultCsvFilename(cells) {
   if (!Array.isArray(cells) || cells.length === 0) return 'dirtviz-export.csv';
-  if (cells.length === 1) {
-    const raw = String(cells[0].name || `cell-${cells[0].id}`);
-    const safe = raw.replace(/[^\w.-]+/g, '_');
-    return `${safe || 'cell'}.csv`;
-  }
+  if (cells.length === 1) return csvFilenameForCell(cells[0]);
   return 'dirtviz-export.csv';
+}
+
+/**
+ * Build one CSV export per selected cell (mentor request on #797).
+ *
+ * @param {object} params same as buildDashboardCsv
+ * @returns {Array<{ filename: string, csvText: string, cell: { id: string|number, name?: string } }>}
+ */
+export function buildDashboardCsvExports(params) {
+  const cells = Array.isArray(params?.cells) ? params.cells : [];
+  return cells.map((cell) => ({
+    cell,
+    filename: csvFilenameForCell(cell),
+    csvText: buildDashboardCsv({
+      ...params,
+      cells: [cell],
+    }),
+  }));
 }
 
 /**
