@@ -107,24 +107,37 @@ class SensorData(Resource):
             Response indicating success or failure. See util.process_measurement
             for full description.
         """
+        
+        if ("uplink_message" in uplink_json and "f_port" in uplink_json["uplink_message"]):
 
-        if uplink_json["uplink_message"]["f_port"] == 1:
-            # get payload
-            payload_str = uplink_json["uplink_message"]["frm_payload"]
-            payload = base64.b64decode(payload_str)
+            if uplink_json["uplink_message"]["f_port"] == 1:
+                # get payload
+                payload_str = uplink_json["uplink_message"]["frm_payload"]
+                payload = base64.b64decode(payload_str)
 
-            resp = process_measurement(payload)
+                resp = process_measurement(payload)
 
-        elif uplink_json["uplink_message"]["f_port"] == 2:
-            payload_str = uplink_json["uplink_message"]["frm_payload"]
-            payload = base64.b64decode(payload_str)
+            elif uplink_json["uplink_message"]["f_port"] == 2:
+                payload_str = uplink_json["uplink_message"]["frm_payload"]
+                payload = base64.b64decode(payload_str)
 
-            resp = process_generic_measurement(payload)
+                resp = process_generic_measurement(payload)
+
+            elif uplink_json["uplink_message"]["f_port"] == 202:
+                resp = Response()
+                resp.status_code = 200
+                resp.set_data("Ignoring timesync request.")
+
+            else:
+                # don't process and return success
+                resp = Response()
+                resp.status_code = 404
+                resp.set_data("f_port not recognized.")
 
         else:
-            # don't process and return success
             resp = Response()
-            resp.status_code = 404
+            resp.status_code = 200
+            resp.set_data("Missing uplink_message or f_port.")
 
         return resp
 
