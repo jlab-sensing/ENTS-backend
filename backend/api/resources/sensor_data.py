@@ -107,8 +107,11 @@ class SensorData(Resource):
             Response indicating success or failure. See util.process_measurement
             for full description.
         """
-        
-        if ("uplink_message" in uplink_json and "f_port" in uplink_json["uplink_message"]):
+
+        if (
+            "uplink_message" in uplink_json
+            and "f_port" in uplink_json["uplink_message"]
+        ):
 
             if uplink_json["uplink_message"]["f_port"] == 1:
                 # get payload
