@@ -16,18 +16,6 @@ services:
     volumes:
       - './backend:/app'
 
-  worker:
-    build:
-      context: ./backend
-      target: prodworker
-    env_file:
-      - ${ENV_FILE:-.env}
-    depends_on:
-      - backend
-      - valkey
-    volumes:
-      - './backend:/app'
-
   frontend:
     build:
       context: ./frontend
@@ -280,11 +268,6 @@ services:
     profiles:
       - upload
 
-  valkey:
-    image: valkey/valkey:latest
-    ports:
-      - '6379:6379'
-
   postgresql:
     image: postgres:16
     environment:
@@ -315,18 +298,6 @@ services:
       PGADMIN_DEFAULT_PASSWORD: strong-password
     volumes:
       - pgadmin-data:/var/lib/pgadmin
-
-  phpredisadmin:
-    image: erikdubbelboer/phpredisadmin
-    environment:
-      - ADMIN_USER=admin
-      - ADMIN_PASS=admin
-      - REDIS_1_HOST=valkey
-      - REDIS_1_PORT=6379
-    links:
-      - valkey
-    ports:
-      - '6000:80'
 
 volumes:
   postgresql-16-data:

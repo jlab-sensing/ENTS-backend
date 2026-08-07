@@ -45,9 +45,11 @@ Resource authentication is handled by utilzing a [resource decorator](https://ma
 
 For validatiaon, ENTS API utilizes [marshmallow](https://marshmallow.readthedocs.io/en/stable/index.html) to check if the request is formmated correctly and with the correct types. [Schemas](https://marshmallow.readthedocs.io/en/stable/quickstart.html#declaring-schemas) are created under the `schemas` folder and imported into various resources as needed.
 
-## Async Workers
+## CSV export
 
-To handle long running tasks, ENTS API uses [Celery](https://docs.celeryq.dev/en/stable/getting-started/introduction.html) as a task queue and [Valkey](https://valkey.io/) as a message broker. A Celery worker configuration is handled under `backend/__init__.py` and is built under a seperate flag in the dockerfile named, prodworker and devworker.
+Dashboard CSV download is implemented in the frontend from already-loaded chart caches
+(see `frontend/src/pages/dashboard/catalog/dashboardCsv.js`). There is no backend Celery /
+Valkey export worker.
 
 ## Testing
 
@@ -459,56 +461,6 @@ Returns information about available data ranges for intelligent date selection.
 }
 ```
 
-### Export Endpoints
-
-#### Export Cell Data as CSV
-```
-GET /api/cell/datas?cell_ids={cellIds}&startTime={startTime}&endTime={endTime}
-```
-Initiates an asynchronous CSV export of all data for specified cells.
-
-**Query Parameters:**
-- `cell_ids` (required): Comma-separated list of cell IDs
-- `startTime` (optional): ISO 8601 timestamp for range start
-- `endTime` (optional): ISO 8601 timestamp for range end
-
-**Response:**
-```json
-{
-  "task_id": "550e8400-e29b-41d4-a716-446655440000"
-}
-```
-
-#### Check Export Status
-```
-GET /api/status/{task_id}
-```
-Checks the status of an asynchronous task.
-
-**Path Parameters:**
-- `task_id` (required): Task ID from export endpoint
-
-**Response (Pending):**
-```json
-{
-  "state": "PENDING",
-  "current": 0,
-  "total": 1,
-  "status": "Pending..."
-}
-```
-
-**Response (Success):**
-```json
-{
-  "state": "SUCCESS",
-  "current": 1,
-  "total": 1,
-  "status": "Task completed!",
-  "result": "timestamp,cell_name,voltage,current,vwc_1,...\n2024-01-15 10:00:00,Cell-001,12.5,2.3,0.25,..."
-}
-```
-
 ### User Endpoints
 
 #### Get User Profile
@@ -632,12 +584,7 @@ Cell >─< Tag (many-to-many)
 2. System performs time-series queries with optional aggregation
 3. Supports streaming mode for real-time data
 4. Returns data in consistent JSON format
-
-### Asynchronous Processing
-1. Long-running tasks (e.g., CSV export) create Celery tasks
-2. Tasks processed by Celery workers with Redis message broker
-3. Clients poll task status via `/api/status/{task_id}`
-4. Completed tasks return results in status response
+5. Dashboard CSV export serializes already-loaded chart series in the browser
 
 ### Error Handling
 - Standard HTTP status codes used throughout

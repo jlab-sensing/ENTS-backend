@@ -1,16 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
-export const getCellData = (cellIds, resample, startTime, endTime) => {
-  return axios
-    .get(
-      `${
-        process.env.PUBLIC_URL
-      }/api/cell/datas?cellIds=${cellIds.toString()}&resample=${resample}&startTime=${startTime.toHTTP()}&endTime=${endTime.toHTTP()}`,
-    )
-    .then((res) => res.data);
-};
-
 export const getCells = () => {
   return axios
     .get(`${process.env.PUBLIC_URL}/api/cell/id`)
@@ -154,11 +144,5 @@ export const useSetCellArchive = () => {
     onError: (error) => {
       console.error('Error setting cell archive:', error);
     },
-  });
-};
-
-export const pollCellDataResult = (taskId) => {
-  return axios.get(`${process.env.PUBLIC_URL}/api/status/${taskId}`).then((res) => {
-    return res.data;
   });
 };

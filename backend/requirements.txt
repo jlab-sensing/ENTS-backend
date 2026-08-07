@@ -13,7 +13,6 @@ marshmallow_sqlalchemy
 flask_sqlalchemy
 Flask-Migrate
 python-dateutil
-pandas
 Authlib
 flask-bcrypt
 flask-session
@@ -24,4 +23,3 @@ google-auth
 ents==2.3.11
 gevent
 eventlet
-celery[redis,gevent,sqlalchemy,sqs]

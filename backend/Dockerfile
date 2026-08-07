@@ -90,49 +90,6 @@ FROM base AS production
 ENTRYPOINT ["./entrypoint.sh", "-p"]
 
 
-#
-# Development worker image
-# 
-# The developmet celery worker image is used to run the worker code in a development
-# with additional debug printouts and development dependencies. The backend
-# codebase should be mounted into the container at /home/app/ to allow for hot
-# reloading of the code.
-FROM devbase AS devworker
-
-# set environment variables
-ENV FLASK_DEBUG=1
-ENV FLASK_RUN_HOST=0.0.0.0
-ENV FLASK_APP=api
-
-# default tries to process task before quiting (warm shutdown)
-# instead terminate instantly so when AWS kills the worker
-# the task is put back into queue
-# https://github.com/sayanarijit/remap-sigterm
-ENV REMAP_SIGTERM SIGQUIT
-
-EXPOSE 8000
-
-ENTRYPOINT ["./entrypoint.sh", "-w", "dev"]
-
-
-
-#
-# Production working image
-#
-# The production celery worker image .
-FROM base AS prodworker
-
-# default tries to process task before quiting (warm shutdown)
-# instead terminate instantly so when AWS kills the worker
-# the task is put back into queue
-# https://github.com/sayanarijit/remap-sigterm
-ENV REMAP_SIGTERM SIGQUIT
-
-EXPOSE 8000
-
-ENTRYPOINT ["./entrypoint.sh", "-w", "prod"]
-
-
 # 
 # Migration Image
 #
