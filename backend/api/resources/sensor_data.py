@@ -112,7 +112,6 @@ class SensorData(Resource):
             "uplink_message" in uplink_json
             and "f_port" in uplink_json["uplink_message"]
         ):
-
             if uplink_json["uplink_message"]["f_port"] == 1:
                 # get payload
                 payload_str = uplink_json["uplink_message"]["frm_payload"]
