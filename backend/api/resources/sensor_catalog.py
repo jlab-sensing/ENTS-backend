@@ -14,7 +14,6 @@ from ..models.power_data import PowerData
 from ..models.sensor import Sensor
 from ..models.teros_data import TEROSData
 
-
 _BUILTIN_SPECS = [
     {
         "panel_id": "power-vi",
