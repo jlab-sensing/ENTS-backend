@@ -27,7 +27,7 @@ jobs:
       - name: Build containers
         run: docker compose --profile ci build
 
-      - name: Lint backend
+      - name: Format backend
         run: docker compose up backend-format --abort-on-container-exit
 
   backend-lint:
@@ -53,7 +53,7 @@ jobs:
       - name: Build containers
         run: docker compose --profile ci build
 
-      - name: Lint backend
+      - name: Lint frontend
         run: docker compose up frontend-lint --abort-on-container-exit
 
   backend-test:
