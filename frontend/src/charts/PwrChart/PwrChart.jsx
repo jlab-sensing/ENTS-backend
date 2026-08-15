@@ -6,7 +6,7 @@ import { getAxisBoundsAndStepValues } from '../alignAxis';
 import { getNonStreamTimeDomain } from '../timeDomain';
 import ChartWrapper from '../ChartWrapper';
 
-export default function PwrChart({ data, stream, startDate, endDate, onResampleChange }) {
+export default function PwrChart({ data, stream, startDate, endDate, onResampleChange, resample }) {
   const { leftYMin, leftYMax, leftYStep } = getAxisBoundsAndStepValues(data.datasets, [], 10, 5);
   const nonStreamXDomain = getNonStreamTimeDomain(stream, startDate, endDate);
 
@@ -105,6 +105,7 @@ export default function PwrChart({ data, stream, startDate, endDate, onResampleC
       options={stream ? streamChartOptions : chartOptions}
       stream={stream}
       onResampleChange={onResampleChange}
+      resample={resample}
     />
   );
 }
@@ -115,4 +116,5 @@ PwrChart.propTypes = {
   startDate: PropTypes.object,
   endDate: PropTypes.object,
   onResampleChange: PropTypes.func,
+  resample: PropTypes.oneOf(['none', 'hour', 'day']),
 };

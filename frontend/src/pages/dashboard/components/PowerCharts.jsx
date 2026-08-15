@@ -18,8 +18,11 @@ function PowerCharts({
   historicalPowerByCell,
   centralHistoricalActive = false,
   historicalLoading = false,
+  resample: resampleProp,
+  onResampleChange,
 }) {
-  const [resample, setResample] = useState('hour');
+  const [localResample, setLocalResample] = useState('hour');
+  const resample = resampleProp ?? localResample;
   const chartSettings = {
     labels: [],
     datasets: [],
@@ -139,16 +142,36 @@ function PowerCharts({
     setHasData(hasAnyData);
   }
 
+  //** clearing all chart settings */
+  function clearCharts() {
+    const newVChartData = {
+      ...vChartData,
+      labels: [],
+      datasets: [],
+    };
+    const newPwrChartData = {
+      ...pwrChartData,
+      labels: [],
+      datasets: [],
+    };
+    setVChartData(Object.assign({}, newVChartData));
+    setPwrChartData(Object.assign({}, newPwrChartData));
+    setHasData(false);
+  }
+
   function updateCharts() {
     const fetchGeneration = ++fetchGenerationRef.current;
     const loadCells = cells;
 
-    if (centralHistoricalActive && resample === 'hour') {
+    if (centralHistoricalActive) {
       if (historicalLoading) return;
       if (fetchGeneration !== fetchGenerationRef.current) return;
       const cellChartData = historicalPowerByCell ?? {};
       const hasCentralData = cells.some(({ id }) => resolveCellEntry(cellChartData, id));
-      if (!hasCentralData) return;
+      if (!hasCentralData) {
+        clearCharts();
+        return;
+      }
       applyCellChartData(cellChartData, loadCells);
       return;
     }
@@ -165,24 +188,6 @@ function PowerCharts({
         console.error('Error updating power charts:', error);
         setHasData(false);
       });
-  }
-
-
-  //** clearing all chart settings */
-  function clearCharts() {
-    const newVChartData = {
-      ...vChartData,
-      labels: [],
-      datasets: [],
-    };
-    const newPwrChartData = {
-      ...pwrChartData,
-      labels: [],
-      datasets: [],
-    };
-    setVChartData(Object.assign({}, newVChartData));
-    setPwrChartData(Object.assign({}, newPwrChartData));
-    setHasData(false);
   }
 
   // Removed unused clearChartDatasets function
@@ -300,7 +305,8 @@ function PowerCharts({
 
 
   const handleResampleChange = (newResample) => {
-    setResample(newResample);
+    if (onResampleChange) onResampleChange(newResample);
+    else setLocalResample(newResample);
   };
 
   // Notify parent component when data status changes
@@ -310,10 +316,11 @@ function PowerCharts({
     }
   }, [hasData, onDataStatusChange]);
 
+  if (centralHistoricalActive && historicalLoading && !stream) {
+    return <ChartPanelPlaceholder loading />;
+  }
+
   if (!hasData) {
-    if (centralHistoricalActive && historicalLoading && !stream) {
-      return <ChartPanelPlaceholder loading />;
-    }
     if (cells?.length) {
       return <ChartPanelPlaceholder />;
     }
@@ -329,6 +336,7 @@ function PowerCharts({
       stream={stream}
       {...(!stream && { startDate, endDate })}
       onResampleChange={handleResampleChange}
+      resample={resample}
     />
   );
 
@@ -338,6 +346,7 @@ function PowerCharts({
       stream={stream}
       {...(!stream && { startDate, endDate })}
       onResampleChange={handleResampleChange}
+      resample={resample}
     />
   );
 
@@ -381,6 +390,8 @@ PowerCharts.propTypes = {
   historicalPowerByCell: PropTypes.object,
   centralHistoricalActive: PropTypes.bool,
   historicalLoading: PropTypes.bool,
+  resample: PropTypes.oneOf(['none', 'hour', 'day']),
+  onResampleChange: PropTypes.func,
 };
 
 export default PowerCharts;

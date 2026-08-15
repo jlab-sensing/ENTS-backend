@@ -6,7 +6,7 @@ import { getAxisBoundsAndStepValues } from '../alignAxis';
 import { getNonStreamTimeDomain } from '../timeDomain';
 import ChartWrapper from '../ChartWrapper';
 
-export default function VChart({ data, stream, startDate, endDate, onResampleChange }) {
+export default function VChart({ data, stream, startDate, endDate, onResampleChange, resample }) {
   const { leftYMin, leftYMax, leftYStep, rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
     data.datasets.filter((_, i) => i % 2 == 0),
     data.datasets.filter((_, i) => i % 2 == 1),
@@ -138,6 +138,7 @@ export default function VChart({ data, stream, startDate, endDate, onResampleCha
       options={stream ? streamChartOptions : chartOptions}
       stream={stream}
       onResampleChange={onResampleChange}
+      resample={resample}
     />
   );
 }
@@ -148,4 +149,5 @@ VChart.propTypes = {
   startDate: PropTypes.object,
   endDate: PropTypes.object,
   onResampleChange: PropTypes.func,
+  resample: PropTypes.oneOf(['none', 'hour', 'day']),
 };

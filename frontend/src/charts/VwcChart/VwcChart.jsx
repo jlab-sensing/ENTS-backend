@@ -7,7 +7,7 @@ import { getNonStreamTimeDomain } from '../timeDomain';
 import ChartWrapper from '../ChartWrapper';
 import { getVwcAxisBounds } from './vwcAxis';
 
-export default function VwcChart({ data, stream, startDate, endDate, onResampleChange }) {
+export default function VwcChart({ data, stream, startDate, endDate, onResampleChange, resample }) {
   const vwcDatasets = data.datasets.filter((_, i) => i % 2 == 0);
   const { rightYMin, rightYMax, rightYStep } = getAxisBoundsAndStepValues(
     vwcDatasets,
@@ -148,6 +148,7 @@ export default function VwcChart({ data, stream, startDate, endDate, onResampleC
       options={stream ? streamChartOptions : chartOptions}
       stream={stream}
       onResampleChange={onResampleChange}
+      resample={resample}
     />
   );
 }
@@ -158,4 +159,5 @@ VwcChart.propTypes = {
   startDate: PropTypes.object,
   endDate: PropTypes.object,
   onResampleChange: PropTypes.func,
+  resample: PropTypes.oneOf(['none', 'hour', 'day']),
 };

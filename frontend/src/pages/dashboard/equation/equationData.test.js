@@ -97,6 +97,42 @@ describe('equationData', () => {
     expect(result?.timestamps).toEqual([ts]);
   });
 
+  it('buildDerivedSeries uses cache for none resample when central cache is active', async () => {
+    const start = DateTime.fromISO('2026-06-01T00:00:00');
+    const end = DateTime.fromISO('2026-06-02T00:00:00');
+
+    const result = await buildDerivedSeries('1:vwc / 1:temp', start, end, 'none', {
+      useCentralCache: true,
+      historicalCache: {
+        historicalTerosByCell: {
+          1: {
+            terosData: {
+              timestamp: ['Thu, 18 Jun 2026 00:00:00 GMT'],
+              vwc: [20],
+              temp: [2],
+            },
+          },
+        },
+      },
+    });
+
+    expect(getTerosData).not.toHaveBeenCalled();
+    expect(result?.values).toEqual([10]);
+  });
+
+  it('buildDerivedSeries does not network-fetch when central cache is active but empty', async () => {
+    const start = DateTime.fromISO('2026-06-01T00:00:00');
+    const end = DateTime.fromISO('2026-06-02T00:00:00');
+
+    const result = await buildDerivedSeries('1:vwc / 1:temp', start, end, 'none', {
+      useCentralCache: true,
+      historicalCache: {},
+    });
+
+    expect(getTerosData).not.toHaveBeenCalled();
+    expect(result).toBeNull();
+  });
+
   it('buildDerivedSeries fetches when cache is disabled', async () => {
     const start = DateTime.fromISO('2026-06-01T00:00:00');
     const end = DateTime.fromISO('2026-06-02T00:00:00');

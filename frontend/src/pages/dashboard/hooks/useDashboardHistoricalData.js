@@ -7,6 +7,55 @@ import {
 const EMPTY = {};
 
 /**
+ * @param {string} powerRequestKey
+ * @param {string} sensorRequestKey
+ * @param {string|null} powerCacheKey
+ * @param {string|null} sensorCacheKey
+ * @param {boolean} powerLoading
+ * @param {boolean} sensorLoading
+ * @returns {boolean}
+ */
+export function isHistoricalCacheReady(
+  powerRequestKey,
+  sensorRequestKey,
+  powerCacheKey,
+  sensorCacheKey,
+  powerLoading,
+  sensorLoading,
+) {
+  return (
+    !powerLoading &&
+    !sensorLoading &&
+    powerCacheKey === powerRequestKey &&
+    sensorCacheKey === sensorRequestKey
+  );
+}
+
+/**
+ * Never hand callers a cache that belongs to a different resample/range/selection.
+ * CSV and charts must see empty objects until both halves match the request.
+ *
+ * @param {boolean} ready
+ * @param {Record<string, unknown>} power
+ * @param {Record<string, unknown>} teros
+ * @param {Record<string, unknown>} sensors
+ */
+export function selectPublishedHistoricalCaches(ready, power, teros, sensors) {
+  if (!ready) {
+    return {
+      historicalPowerByCell: EMPTY,
+      historicalTerosByCell: EMPTY,
+      historicalSensorByKey: EMPTY,
+    };
+  }
+  return {
+    historicalPowerByCell: power,
+    historicalTerosByCell: teros,
+    historicalSensorByKey: sensors,
+  };
+}
+
+/**
  * Central historical loader for dashboard panels (catalog-gated, deduped, stale-safe).
  */
 export function useDashboardHistoricalData({
@@ -24,6 +73,8 @@ export function useDashboardHistoricalData({
   const [historicalSensorByKey, setHistoricalSensorByKey] = useState(EMPTY);
   const [powerTerosLoading, setPowerTerosLoading] = useState(false);
   const [sensorLoading, setSensorLoading] = useState(false);
+  const [powerCacheKey, setPowerCacheKey] = useState(null);
+  const [sensorCacheKey, setSensorCacheKey] = useState(null);
 
   const cellIdsKey = useMemo(() => cells.map((cell) => cell.id).join(','), [cells]);
   const panelOrderKey = useMemo(() => panelOrder.join(','), [panelOrder]);
@@ -32,13 +83,22 @@ export function useDashboardHistoricalData({
     [startDate, endDate],
   );
   const sensorInputsKey = useMemo(() => JSON.stringify(cellSensorsById ?? {}), [cellSensorsById]);
+  const powerRequestKey = `${resample}|${rangeKey}|${cellIdsKey}|${panelOrderKey}`;
+  const sensorRequestKey = `${powerRequestKey}|${sensorInputsKey}`;
   const cellSnapshot = useMemo(
     () => cells.map(({ id, name }) => ({ id, name })),
     [cells],
   );
   const panelOrderSnapshot = useMemo(() => [...panelOrder], [panelOrder]);
   const sensorInputs = useMemo(() => cellSensorsById ?? {}, [cellSensorsById]);
-  const historicalLoading = powerTerosLoading || sensorLoading;
+  const historicalLoading = !isHistoricalCacheReady(
+    powerRequestKey,
+    sensorRequestKey,
+    powerCacheKey,
+    sensorCacheKey,
+    powerTerosLoading,
+    sensorLoading,
+  );
 
   useEffect(() => {
     if (!enabled || stream) {
@@ -47,6 +107,8 @@ export function useDashboardHistoricalData({
       setHistoricalPowerByCell(EMPTY);
       setHistoricalTerosByCell(EMPTY);
       setHistoricalSensorByKey(EMPTY);
+      setPowerCacheKey(null);
+      setSensorCacheKey(null);
       return undefined;
     }
 
@@ -56,6 +118,7 @@ export function useDashboardHistoricalData({
       setHistoricalPowerByCell(EMPTY);
       setHistoricalTerosByCell(EMPTY);
       setHistoricalSensorByKey(EMPTY);
+      setPowerCacheKey(powerRequestKey);
       return undefined;
     }
 
@@ -82,18 +145,24 @@ export function useDashboardHistoricalData({
       })
       .finally(() => {
         if (cancelled) return;
+        setPowerCacheKey(powerRequestKey);
         setPowerTerosLoading(false);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [enabled, stream, cellIdsKey, panelOrderKey, rangeKey, resample, cellSnapshot, panelOrderSnapshot, startDate, endDate]);
+  }, [enabled, stream, cellIdsKey, panelOrderKey, rangeKey, resample, powerRequestKey, cellSnapshot, panelOrderSnapshot, startDate, endDate]);
 
   useEffect(() => {
-    if (!enabled || stream || !cellIdsKey || !panelOrderKey) {
+    if (!enabled || stream) {
+      return undefined;
+    }
+
+    if (!cellIdsKey || !panelOrderKey) {
       setSensorLoading(false);
       setHistoricalSensorByKey(EMPTY);
+      setSensorCacheKey(sensorRequestKey);
       return undefined;
     }
 
@@ -119,6 +188,7 @@ export function useDashboardHistoricalData({
       })
       .finally(() => {
         if (cancelled) return;
+        setSensorCacheKey(sensorRequestKey);
         setSensorLoading(false);
       });
 
@@ -132,6 +202,7 @@ export function useDashboardHistoricalData({
     panelOrderKey,
     rangeKey,
     resample,
+    sensorRequestKey,
     sensorInputsKey,
     sensorInputs,
     cellSnapshot,
@@ -140,5 +211,17 @@ export function useDashboardHistoricalData({
     endDate,
   ]);
 
-  return { historicalPowerByCell, historicalTerosByCell, historicalSensorByKey, historicalLoading };
+  const published = selectPublishedHistoricalCaches(
+    !historicalLoading,
+    historicalPowerByCell,
+    historicalTerosByCell,
+    historicalSensorByKey,
+  );
+
+  return {
+    historicalPowerByCell: published.historicalPowerByCell,
+    historicalTerosByCell: published.historicalTerosByCell,
+    historicalSensorByKey: published.historicalSensorByKey,
+    historicalLoading,
+  };
 }

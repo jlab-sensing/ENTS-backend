@@ -168,4 +168,30 @@ describe('historicalDataLoader', () => {
       sensorDataCacheKey(1, 'rocketlogger', 'soil_moisture'),
     );
   });
+
+  it('forwards none/day resample to sensor fetches used by CSV export', async () => {
+    getSensorData.mockResolvedValue({ timestamp: [], data: [1] });
+    const start = DateTime.fromISO('2026-06-01T00:00:00');
+    const end = DateTime.fromISO('2026-06-02T00:00:00');
+
+    await fetchDashboardSensorData({
+      cells: [{ id: 1, name: 'Cell A' }],
+      panelOrder: ['s:37'],
+      startDate: start,
+      endDate: end,
+      resample: 'none',
+      cellSensorsById: {
+        1: [{ id: 37, name: 'rocketlogger', measurement: 'soil_moisture' }],
+      },
+    });
+
+    expect(getSensorData).toHaveBeenCalledWith(
+      'rocketlogger',
+      1,
+      'soil_moisture',
+      start.toHTTP(),
+      end.toHTTP(),
+      'none',
+    );
+  });
 });

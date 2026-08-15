@@ -39,8 +39,11 @@ function UnifiedChart({
   historicalSensorByKey,
   centralHistoricalActive = false,
   historicalLoading = false,
+  resample: resampleProp,
+  onResampleChange,
 }) {
-  const [resample, setResample] = useState('hour');
+  const [localResample, setLocalResample] = useState('hour');
+  const resample = resampleProp ?? localResample;
   const chartSettings = {
     label: [],
     datasets: [],
@@ -84,7 +87,7 @@ function UnifiedChart({
   ];
 
   async function getCellChartData() {
-    if (centralHistoricalActive && resample === 'hour') {
+    if (centralHistoricalActive) {
       if (historicalLoading || !historicalSensorByKey || Object.keys(historicalSensorByKey).length === 0) {
         return {};
       }
@@ -160,7 +163,7 @@ function UnifiedChart({
   }
 
   function updateCharts() {
-    if (centralHistoricalActive && resample === 'hour' && historicalLoading) {
+    if (centralHistoricalActive && historicalLoading) {
       setIsLoading(true);
       return;
     }
@@ -381,6 +384,12 @@ function UnifiedChart({
   }, [stream, liveData, cells, processedData, type, sensor_name, measurements, units, axisIds]);
 
   useEffect(() => {
+    if (!stream && centralHistoricalActive && historicalLoading) {
+      setIsLoading(true);
+    }
+  }, [stream, centralHistoricalActive, historicalLoading]);
+
+  useEffect(() => {
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
@@ -402,7 +411,8 @@ function UnifiedChart({
   }, [cells, stream, resample, startDate, endDate, cellSensorsById, historicalSensorByKey, centralHistoricalActive, historicalLoading]);
 
   const handleResampleChange = (newResample) => {
-    setResample(newResample);
+    if (onResampleChange) onResampleChange(newResample);
+    else setLocalResample(newResample);
   };
 
   const hasRenderableData = sensorChartData.datasets.some((ds) => Array.isArray(ds.data) && ds.data.length > 0);
@@ -446,6 +456,7 @@ function UnifiedChart({
         axisPolicy={axisPolicy}
         {...(!stream && { startDate, endDate })}
         onResampleChange={handleResampleChange}
+        resample={resample}
       />
     </Box>
   );
@@ -472,6 +483,8 @@ UnifiedChart.propTypes = {
   historicalSensorByKey: PropTypes.object,
   centralHistoricalActive: PropTypes.bool,
   historicalLoading: PropTypes.bool,
+  resample: PropTypes.oneOf(['none', 'hour', 'day']),
+  onResampleChange: PropTypes.func,
 };
 
 export default UnifiedChart;

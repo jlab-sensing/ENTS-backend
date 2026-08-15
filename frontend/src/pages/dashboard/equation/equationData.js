@@ -118,11 +118,12 @@ async function fetchRefMap(ref, startDate, endDate, resample, cache = null, useC
   const cellId = Number(match[1]);
   const streamKey = match[2];
 
-  if (useCache && cache) {
+  if (useCache) {
     const cachedSeries = streamSeriesFromHistoricalCache(cellId, streamKey, cache);
     if (cachedSeries) {
       return seriesToRefMap(cachedSeries);
     }
+    return new Map();
   }
 
   const { timestamps, values } = await fetchStreamSeries(cellId, streamKey, startDate, endDate, resample);
@@ -139,7 +140,7 @@ async function fetchRefMap(ref, startDate, endDate, resample, cache = null, useC
  */
 export async function buildDerivedSeries(expression, startDate, endDate, resample = 'hour', options = {}) {
   const { useCentralCache = false, historicalCache = null } = options;
-  const useCache = useCentralCache && resample === 'hour' && historicalCache != null;
+  const useCache = Boolean(useCentralCache);
 
   const refs = extractCellStreamRefs(expression);
   if (refs.length === 0) return null;

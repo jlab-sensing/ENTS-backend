@@ -813,6 +813,27 @@ describe('testing side button events', () => {
     expect(mockOnResampleChange).toHaveBeenCalledWith('day');
   });
 
+  it('marks the resample prop as the selected downsample option', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ChartWrapper
+        id='vwc-none'
+        data={data}
+        options={chartOptions}
+        stream={false}
+        resample='none'
+      />,
+    );
+
+    const downsampleBtnElement = await screen.findByLabelText(/Downsample/i);
+    await user.click(downsampleBtnElement);
+
+    const noneMenuItems = await screen.findAllByText('None');
+    const selected = noneMenuItems.some((item) => item.closest('.Mui-selected'));
+    expect(selected).toBe(true);
+  });
+
   it('should show all resample menu items', async () => {
     const user = userEvent.setup();
 
