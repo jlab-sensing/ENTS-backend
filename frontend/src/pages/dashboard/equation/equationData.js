@@ -9,7 +9,7 @@ import {
 } from '../components/unifiedChartUtils';
 import { sensorDataCacheKey } from '../catalog/historicalDataLoader';
 import { evaluateEquationAt, extractCellStreamRefs } from './equationParser';
-import { resolveStreamSpec } from './equationStreams';
+import { resolveGenericStreamType, resolveStreamSpec } from './equationStreams';
 
 /** Max live points kept for derived equation charts (matches dashboard live buffer). */
 export const LIVE_DERIVED_MAX_POINTS = 100;
@@ -65,6 +65,34 @@ export function streamSeriesFromHistoricalCache(cellId, streamKey, cache) {
 }
 
 /**
+ * Read a generic `ents` packet (one SensorType, one value) for a stream spec.
+ *
+ * A generic packet carries a single measurement, so composite fields such as
+ * power `p` (voltage times current) cannot be satisfied by one and are treated
+ * as not applicable rather than missing.
+ *
+ * @param {import('./equationStreams').EquationStreamSpec} spec
+ * @param {import('./equationStreams').GenericStreamType} generic
+ * @param {object} data
+ * @returns {number | null | undefined}
+ */
+function genericValueForStreamSpec(spec, generic, data) {
+  if (spec.source !== generic.source) return undefined;
+
+  if (spec.source === 'sensor') {
+    if (spec.sensorName?.toLowerCase() !== generic.sensorName?.toLowerCase()) return undefined;
+    if (spec.measurement?.toLowerCase() !== generic.measurement?.toLowerCase()) return undefined;
+  } else if (spec.field !== generic.field) {
+    return undefined;
+  }
+
+  const raw = data[generic.dataKey];
+  if (raw == null || raw === '') return null;
+  const n = Number(generic.field === 'vwc' ? toPercentIfFraction(raw) : raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
  * Extract a numeric value for an equation ref from one live websocket measurement.
  * Returns `undefined` when the packet does not apply to this ref (wrong cell/type).
  * Returns `null` when it applies but the value is missing.
@@ -86,6 +114,11 @@ export function liveValueForEquationRef(ref, measurement) {
   if (!spec) return undefined;
 
   const data = measurement.data || {};
+
+  const generic = resolveGenericStreamType(measurement.type);
+  if (generic) {
+    return genericValueForStreamSpec(spec, generic, data);
+  }
 
   if (spec.source === 'power') {
     if (measurement.type !== 'power') return undefined;
