@@ -76,4 +76,37 @@ describe('AddChartModal', () => {
 
     expect(await screen.findByText('Cell')).toBeInTheDocument();
   });
+
+  it('hides a same-type sensor chart that is already on the dashboard from another cell', async () => {
+    getSensorCatalog.mockResolvedValue([
+      {
+        panel_id: 's:2030',
+        kind: 'sensor',
+        sensor_id: 2030,
+        sensor_name: 'watermark',
+        measurement: 'soil_tension',
+        label: 'Soil Tension',
+      },
+    ]);
+
+    render(
+      <AddChartModal
+        open
+        onClose={vi.fn()}
+        selectedCells={[
+          { id: 407, name: 'Cell A' },
+          { id: 408, name: 'Cell B' },
+        ]}
+        panelOrder={['s:2029']}
+        cellSensorsById={{
+          407: [{ id: 2029, name: 'watermark', measurement: 'soil_tension' }],
+          408: [{ id: 2030, name: 'watermark', measurement: 'soil_tension' }],
+        }}
+        onAddPanel={vi.fn()}
+      />,
+    );
+
+    expect(await screen.findByText('All available charts are already on the dashboard.')).toBeInTheDocument();
+    expect(screen.queryByText('Soil Tension')).not.toBeInTheDocument();
+  });
 });

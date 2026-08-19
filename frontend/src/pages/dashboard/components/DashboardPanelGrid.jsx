@@ -38,6 +38,7 @@ function DashboardPanelContent({ panelId, chartProps }) {
         startDate={chartProps.startDate}
         endDate={chartProps.endDate}
         stream={chartProps.stream}
+        liveData={chartProps.liveData}
         historicalPowerByCell={chartProps.historicalPowerByCell}
         historicalTerosByCell={chartProps.historicalTerosByCell}
         historicalSensorByKey={chartProps.historicalSensorByKey}

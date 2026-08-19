@@ -9,6 +9,7 @@ import {
   isKnownPanelId,
   isSensorPanelEntry,
 } from './dashboardCatalog';
+import { findSensorByPanelId } from './historicalDataLoader';
 
 /** Map UnifiedChart config keys to dashboard panel IDs. */
 const CHART_TYPE_TO_PANEL_ID = {
@@ -37,6 +38,93 @@ function withoutRedundantPanels(panelIds) {
   if (next.has('u:presHum')) {
     next.delete('u:bme280Pressure');
   }
+  return next;
+}
+
+function normalizeChartKey(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+/**
+ * Map a DB sensor row onto a builtin/unified panel when CHART_CONFIGS matches.
+ *
+ * @param {{ name?: string, measurement?: string }} sensor
+ * @returns {string | null}
+ */
+export function unifiedPanelIdForSensor(sensor) {
+  if (!sensor?.name) return null;
+
+  const match = Object.entries(CHART_CONFIGS).find(
+    ([, config]) =>
+      sensor.name === config.sensor_name &&
+      measurementMatches(sensor.measurement, config.measurements),
+  );
+  if (!match) return null;
+
+  const panelId = CHART_TYPE_TO_PANEL_ID[match[0]];
+  return panelId && isKnownPanelId(panelId) ? panelId : null;
+}
+
+/**
+ * Stable identity so Soil Tension on cell A (`s:2029`) and cell B (`s:2030`)
+ * occupy one chart. Unified types reuse their panel id; unmatched sensors
+ * group by name + measurement.
+ *
+ * @param {string} panelId
+ * @param {Record<string, unknown[]>} [cellSensorsById]
+ * @returns {string}
+ */
+export function chartIdentityForPanel(panelId, cellSensorsById) {
+  if (!panelId) return '';
+  if (isDerivedLayoutEntry(panelId)) return `eq:${panelId}`;
+  if (!isSensorPanelEntry(panelId)) return panelId;
+
+  const sensor = findSensorByPanelId(cellSensorsById, panelId);
+  if (!sensor?.name) return panelId;
+
+  const unified = unifiedPanelIdForSensor(sensor);
+  if (unified) return unified;
+  return `sensor:${normalizeChartKey(sensor.name)}:${normalizeChartKey(sensor.measurement)}`;
+}
+
+/**
+ * @param {{ panelId: string, kind?: string, sensorName?: string, measurement?: string }} entry
+ * @returns {string}
+ */
+export function chartIdentityForCatalogEntry(entry) {
+  if (!entry?.panelId) return '';
+  if (entry.kind === 'sensor' || isSensorPanelEntry(entry.panelId)) {
+    if (entry.sensorName) {
+      const unified = unifiedPanelIdForSensor({
+        name: entry.sensorName,
+        measurement: entry.measurement,
+      });
+      if (unified) return unified;
+      return `sensor:${normalizeChartKey(entry.sensorName)}:${normalizeChartKey(entry.measurement)}`;
+    }
+  }
+  return entry.panelId;
+}
+
+/**
+ * Keep the first panel of each chart identity. Later `s:` ids for the same
+ * measurement are dropped — UnifiedChart already overlays all selected cells.
+ *
+ * @param {string[]} panelOrder
+ * @param {Record<string, unknown[]>} [cellSensorsById]
+ * @returns {string[]}
+ */
+export function dedupeEquivalentPanels(panelOrder, cellSensorsById) {
+  if (!Array.isArray(panelOrder) || panelOrder.length === 0) return [];
+
+  const seen = new Set();
+  const next = [];
+  panelOrder.forEach((panelId) => {
+    const identity = chartIdentityForPanel(panelId, cellSensorsById);
+    if (seen.has(identity)) return;
+    seen.add(identity);
+    next.push(panelId);
+  });
   return next;
 }
 
@@ -155,7 +243,7 @@ export async function fetchCatalogPanelIdsForCells(cellIds) {
 export function defaultPanelOrderFromFetched(cellSensorsById, cellIds, catalogPanelIds = []) {
   const fromSensors = panelIdsFromCellSensors(cellSensorsById, cellIds);
   const panelSet = withoutRedundantPanels([...catalogPanelIds, ...fromSensors]);
-  return sortPanelIds(panelSet);
+  return dedupeEquivalentPanels(sortPanelIds(panelSet), cellSensorsById);
 }
 
 export async function buildDefaultPanelOrder(cellIds) {

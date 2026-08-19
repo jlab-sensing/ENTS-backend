@@ -1,10 +1,18 @@
 import { DateTime } from 'luxon';
+import { toPercentIfFraction } from '../../../charts/VwcChart/vwcValue';
 import { getPowerData } from '../../../services/power';
 import { getSensorData } from '../../../services/sensor';
 import { getTerosData } from '../../../services/teros';
+import {
+  extractUnifiedStreamValue,
+  matchesSensorStreamType,
+} from '../components/unifiedChartUtils';
 import { sensorDataCacheKey } from '../catalog/historicalDataLoader';
 import { evaluateEquationAt, extractCellStreamRefs } from './equationParser';
-import { resolveStreamSpec } from './equationStreams';
+import { resolveGenericStreamType, resolveStreamSpec } from './equationStreams';
+
+/** Max live points kept for derived equation charts (matches dashboard live buffer). */
+export const LIVE_DERIVED_MAX_POINTS = 100;
 
 /**
  * @typedef {object} HistoricalCache
@@ -53,6 +61,163 @@ export function streamSeriesFromHistoricalCache(cellId, streamKey, cache) {
   return {
     timestamps: payload.timestamp.map((t) => DateTime.fromHTTP(t).toMillis()),
     values: payload.data || [],
+  };
+}
+
+/**
+ * Read a generic `ents` packet (one SensorType, one value) for a stream spec.
+ *
+ * A generic packet carries a single measurement, so composite fields such as
+ * power `p` (voltage times current) cannot be satisfied by one and are treated
+ * as not applicable rather than missing.
+ *
+ * @param {import('./equationStreams').EquationStreamSpec} spec
+ * @param {import('./equationStreams').GenericStreamType} generic
+ * @param {object} data
+ * @returns {number | null | undefined}
+ */
+function genericValueForStreamSpec(spec, generic, data) {
+  if (spec.source !== generic.source) return undefined;
+
+  if (spec.source === 'sensor') {
+    if (spec.sensorName?.toLowerCase() !== generic.sensorName?.toLowerCase()) return undefined;
+    if (spec.measurement?.toLowerCase() !== generic.measurement?.toLowerCase()) return undefined;
+  } else if (spec.field !== generic.field) {
+    return undefined;
+  }
+
+  const raw = data[generic.dataKey];
+  if (raw == null || raw === '') return null;
+  const n = Number(generic.field === 'vwc' ? toPercentIfFraction(raw) : raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Extract a numeric value for an equation ref from one live websocket measurement.
+ * Returns `undefined` when the packet does not apply to this ref (wrong cell/type).
+ * Returns `null` when it applies but the value is missing.
+ *
+ * @param {string} ref - e.g. "3:vwc"
+ * @param {{ type?: string, cellId?: number|string, data?: object }} measurement
+ * @returns {number | null | undefined}
+ */
+export function liveValueForEquationRef(ref, measurement) {
+  if (!measurement || typeof ref !== 'string') return undefined;
+  const match = ref.match(/^(\d+):([a-zA-Z][a-zA-Z0-9_]*)$/);
+  if (!match) return undefined;
+
+  const cellId = Number(match[1]);
+  const streamKey = match[2];
+  if (Number(measurement.cellId) !== cellId) return undefined;
+
+  const spec = resolveStreamSpec(streamKey);
+  if (!spec) return undefined;
+
+  const data = measurement.data || {};
+
+  const generic = resolveGenericStreamType(measurement.type);
+  if (generic) {
+    return genericValueForStreamSpec(spec, generic, data);
+  }
+
+  if (spec.source === 'power') {
+    if (measurement.type !== 'power') return undefined;
+    if (spec.field === 'v') {
+      const n = Number(data.voltage);
+      return Number.isFinite(n) ? n : null;
+    }
+    if (spec.field === 'i') {
+      const n = Number(data.current);
+      return Number.isFinite(n) ? n : null;
+    }
+    if (spec.field === 'p') {
+      const v = Number(data.voltage);
+      const i = Number(data.current);
+      return Number.isFinite(v) && Number.isFinite(i) ? v * i : null;
+    }
+    return undefined;
+  }
+
+  if (spec.source === 'teros') {
+    if (measurement.type !== 'teros12') return undefined;
+    if (spec.field === 'vwc') {
+      const n = Number(toPercentIfFraction(data.vwcAdj));
+      return Number.isFinite(n) ? n : null;
+    }
+    if (spec.field === 'temp') {
+      const n = Number(data.temp);
+      return Number.isFinite(n) ? n : null;
+    }
+    if (spec.field === 'ec') {
+      const n = Number(data.ec);
+      return Number.isFinite(n) ? n : null;
+    }
+    return undefined;
+  }
+
+  if (spec.source === 'sensor') {
+    if (!matchesSensorStreamType(measurement.type, spec.sensorName)) return undefined;
+    const raw = extractUnifiedStreamValue(spec.sensorName, spec.measurement, data);
+    if (raw == null || raw === '') return null;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  return undefined;
+}
+
+/**
+ * Build a derived series from live websocket packets using latest-value semantics.
+ *
+ * Operands often arrive in separate packets (or the same packet for teros vwc+temp).
+ * When any needed ref updates, if all refs have a known value, evaluate at that
+ * packet's timestamp. This is the reliable approach for live multi-sensor formulas
+ * (exact timestamp intersection almost never lines up across sensor families).
+ *
+ * @param {string} expression
+ * @param {Array<{ type?: string, cellId?: number|string, timestamp?: number, data?: object }>} liveData
+ * @param {{ maxPoints?: number }} [options]
+ * @returns {{ timestamps: number[], values: (number | null)[] } | null}
+ */
+export function buildDerivedSeriesFromLiveData(expression, liveData, options = {}) {
+  const maxPoints = options.maxPoints ?? LIVE_DERIVED_MAX_POINTS;
+  const refs = extractCellStreamRefs(expression);
+  if (refs.length === 0) return null;
+
+  /** @type {Record<string, number | null>} */
+  const latest = Object.fromEntries(refs.map((ref) => [ref, null]));
+  const timestamps = [];
+  const values = [];
+
+  const packets = Array.isArray(liveData) ? [...liveData] : [];
+  packets.sort((a, b) => Number(a?.timestamp) - Number(b?.timestamp));
+
+  packets.forEach((measurement) => {
+    let touched = false;
+    refs.forEach((ref) => {
+      const next = liveValueForEquationRef(ref, measurement);
+      if (next !== undefined) {
+        latest[ref] = next;
+        touched = true;
+      }
+    });
+    if (!touched) return;
+    if (refs.some((ref) => latest[ref] == null || Number.isNaN(latest[ref]))) return;
+
+    const tsSec = Number(measurement.timestamp);
+    if (!Number.isFinite(tsSec)) return;
+
+    timestamps.push(tsSec * 1000);
+    values.push(evaluateEquationAt(expression, { ...latest }));
+  });
+
+  if (timestamps.length === 0) return null;
+  if (timestamps.length <= maxPoints) {
+    return { timestamps, values };
+  }
+  return {
+    timestamps: timestamps.slice(-maxPoints),
+    values: values.slice(-maxPoints),
   };
 }
 

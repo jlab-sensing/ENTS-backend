@@ -29,7 +29,9 @@ import {
 } from './catalog/dashboardCatalog';
 import {
   availablePanelIdsForCells,
+  chartIdentityForPanel,
   defaultPanelOrderFromFetched,
+  dedupeEquivalentPanels,
   fetchCatalogPanelIdsForCells,
   fetchCellSensorsForCells,
   panelsMissingForCells,
@@ -238,10 +240,21 @@ function Dashboard() {
     ],
   );
 
-  const handleAddPanel = useCallback((panelId) => {
-    if (!isKnownPanelId(panelId)) return;
-    setPanelOrder((prev) => (prev.includes(panelId) ? prev : [...prev, panelId]));
-  }, []);
+  const handleAddPanel = useCallback(
+    (panelId) => {
+      if (!isKnownPanelId(panelId)) return;
+      setPanelOrder((prev) => {
+        if (prev.includes(panelId)) return prev;
+        const identity = chartIdentityForPanel(panelId, cellSensorsById);
+        const alreadyShown = prev.some(
+          (existing) => chartIdentityForPanel(existing, cellSensorsById) === identity,
+        );
+        if (alreadyShown) return prev;
+        return [...prev, panelId];
+      });
+    },
+    [cellSensorsById],
+  );
 
   const handleEditEquation = useCallback((currentExpression) => {
     setEquationModalMode('edit');
@@ -326,11 +339,13 @@ function Dashboard() {
   );
 
   useEffect(() => {
-    // Auto-detect local development: uses localhost if running on localhost, otherwise production
-    const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const backendUrl = isLocalDev ? 'http://localhost:8000' : 'https://dirtviz.jlab.ucsc.edu';
+    // Local Vite dev proxies /api but not /socket.io — connect to Flask directly.
+    // Deployed builds (DirtViz, EC2 preview) proxy /socket.io/ on the same origin as the UI.
+    const isLocalDev =
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const socketUrl = isLocalDev ? 'http://localhost:8000' : window.location.origin;
 
-    const socket = io(backendUrl, {
+    const socket = io(socketUrl, {
       transports: ['websocket'],
       upgrade: false,
       timeout: 20000,
@@ -413,6 +428,8 @@ function Dashboard() {
           setPanelOrder(defaultOrder.length > 0 ? defaultOrder : DEFAULT_DASHBOARD_PANEL_ORDER);
           setLayoutMismatchOpen(false);
           setLayoutMismatchPanels([]);
+        } else {
+          setPanelOrder((prev) => dedupeEquivalentPanels(prev, sensors));
         }
       },
     );
@@ -861,6 +878,7 @@ useEffect(() => {
                   onClose={() => setAddChartOpen(false)}
                   selectedCells={selectedCells}
                   panelOrder={panelOrder}
+                  cellSensorsById={cellSensorsById}
                   onAddPanel={handleAddPanel}
                 />
                 <AddEquationModal

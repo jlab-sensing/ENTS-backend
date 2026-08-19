@@ -3,14 +3,23 @@ import { DateTime } from 'luxon';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import DerivedEquationChart from './DerivedEquationChart';
 
-vi.mock('../equation/equationData', () => ({
-  buildDerivedSeries: vi.fn(),
-  derivedSeriesToChartData: vi.fn(() => ({
-    datasets: [{ label: '1:vwc / 1:temp', data: [{ x: 1, y: 2 }] }],
-  })),
-}));
+vi.mock('../equation/equationData', async () => {
+  const actual = await vi.importActual('../equation/equationData');
+  return {
+    ...actual,
+    buildDerivedSeries: vi.fn(),
+    derivedSeriesToChartData: vi.fn((expression, timestamps, values) => ({
+      datasets: [
+        {
+          label: expression,
+          data: timestamps.map((x, i) => ({ x, y: values[i] })),
+        },
+      ],
+    })),
+  };
+});
 
-import { buildDerivedSeries } from '../equation/equationData';
+import { buildDerivedSeries, buildDerivedSeriesFromLiveData } from '../equation/equationData';
 
 describe('DerivedEquationChart', () => {
   const startDate = DateTime.fromISO('2026-06-01T00:00:00');
@@ -55,17 +64,60 @@ describe('DerivedEquationChart', () => {
     });
   });
 
-  it('shows live mode placeholder', () => {
+  it('renders live derived series from websocket packets', async () => {
     render(
       <DerivedEquationChart
-        expression="1:vwc / 1:temp"
+        expression="3:vwc / 3:temp"
         startDate={startDate}
         endDate={endDate}
         stream
+        liveData={[
+          {
+            type: 'teros12',
+            cellId: 3,
+            timestamp: 1_700_000_000,
+            data: { vwcAdj: 0.4, temp: 20, ec: 1 },
+          },
+        ]}
       />,
     );
 
-    expect(screen.getByText(/not available in live stream mode/i)).toBeInTheDocument();
+    expect(buildDerivedSeries).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(screen.queryByText(/Waiting for live data/i)).not.toBeInTheDocument();
+    });
+    expect(screen.queryByText(/not available in live stream mode/i)).not.toBeInTheDocument();
+    expect(
+      buildDerivedSeriesFromLiveData('3:vwc / 3:temp', [
+        {
+          type: 'teros12',
+          cellId: 3,
+          timestamp: 1_700_000_000,
+          data: { vwcAdj: 0.4, temp: 20, ec: 1 },
+        },
+      ])?.values,
+    ).toEqual([2]);
+  });
+
+  it('shows waiting message in live mode until all operands arrive', () => {
+    render(
+      <DerivedEquationChart
+        expression="3:voltage / 3:temp"
+        startDate={startDate}
+        endDate={endDate}
+        stream
+        liveData={[
+          {
+            type: 'power',
+            cellId: 3,
+            timestamp: 100,
+            data: { voltage: 12, current: 1 },
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText(/Waiting for live data for all equation inputs/i)).toBeInTheDocument();
     expect(buildDerivedSeries).not.toHaveBeenCalled();
   });
 
