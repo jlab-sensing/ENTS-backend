@@ -3,13 +3,18 @@ import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import { useEffect, useRef, useState } from 'react';
 import UniversalChart from '../../../charts/UniversalChart';
-import { buildDerivedSeries, derivedSeriesToChartData } from '../equation/equationData';
+import {
+  buildDerivedSeries,
+  buildDerivedSeriesFromLiveData,
+  derivedSeriesToChartData,
+} from '../equation/equationData';
 
 function DerivedEquationChart({
   expression,
   startDate,
   endDate,
   stream,
+  liveData = [],
   historicalPowerByCell,
   historicalTerosByCell,
   historicalSensorByKey,
@@ -22,6 +27,28 @@ function DerivedEquationChart({
   const [error, setError] = useState(null);
   const fetchGenerationRef = useRef(0);
 
+  // Live mode: evaluate from websocket packets with latest-value semantics.
+  useEffect(() => {
+    if (!stream) return undefined;
+
+    setIsLoading(false);
+    try {
+      const series = buildDerivedSeriesFromLiveData(expression, liveData);
+      if (!series || series.timestamps.length === 0) {
+        setChartData({ datasets: [] });
+        setError('Waiting for live data for all equation inputs…');
+        return undefined;
+      }
+      setChartData(derivedSeriesToChartData(expression, series.timestamps, series.values));
+      setError(null);
+    } catch (err) {
+      setChartData({ datasets: [] });
+      setError(err.message || 'Could not evaluate live derived series.');
+    }
+    return undefined;
+  }, [stream, expression, liveData]);
+
+  // Historical mode: fetch / use central caches.
   useEffect(() => {
     if (stream) return undefined;
 
@@ -82,16 +109,6 @@ function DerivedEquationChart({
     centralHistoricalActive,
   ]);
 
-  if (stream) {
-    return (
-      <Box display="flex" alignItems="center" justifyContent="center" height="100%">
-        <Typography variant="body2" color="text.secondary">
-          Derived equations are not available in live stream mode yet.
-        </Typography>
-      </Box>
-    );
-  }
-
   if (isLoading) {
     return (
       <Box display="flex" alignItems="center" justifyContent="center" height="100%">
@@ -128,9 +145,8 @@ function DerivedEquationChart({
       measurements={['derived']}
       units={['']}
       axisIds={['y']}
-      startDate={startDate}
-      endDate={endDate}
-      onResampleChange={setResample}
+      {...(!stream && { startDate, endDate })}
+      onResampleChange={stream ? undefined : setResample}
     />
   );
 }
@@ -140,6 +156,7 @@ DerivedEquationChart.propTypes = {
   startDate: PropTypes.instanceOf(DateTime).isRequired,
   endDate: PropTypes.instanceOf(DateTime).isRequired,
   stream: PropTypes.bool,
+  liveData: PropTypes.array,
   historicalPowerByCell: PropTypes.object,
   historicalTerosByCell: PropTypes.object,
   historicalSensorByKey: PropTypes.object,

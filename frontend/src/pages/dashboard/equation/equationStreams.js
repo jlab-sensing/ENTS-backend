@@ -50,6 +50,71 @@ export function resolveStreamSpec(streamKey) {
   return EQUATION_STREAMS[streamKey.toLowerCase()];
 }
 
+/**
+ * Live packets arrive in two shapes. Legacy protobuf ingest tags them by sensor
+ * family (`power`, `teros12`) with lowercase field keys. Generic `ents` ingest
+ * tags them by SensorType (`POWER_VOLTAGE`) and keys the payload by the
+ * measurement's display name (`Voltage`), per the `ents` SENSOR_DATA table.
+ *
+ * `dataKey` is that display name; `source`/`field`/`sensorName`/`measurement`
+ * identify which EquationStreamSpec the packet can satisfy.
+ *
+ * @typedef {object} GenericStreamType
+ * @property {StreamSource} source
+ * @property {string} dataKey
+ * @property {string} [field]
+ * @property {string} [sensorName]
+ * @property {string} [measurement]
+ */
+
+/** @type {Record<string, GenericStreamType>} */
+export const GENERIC_STREAM_TYPES = {
+  power_voltage: { source: 'power', field: 'v', dataKey: 'Voltage' },
+  power_current: { source: 'power', field: 'i', dataKey: 'Current' },
+  teros12_vwc_adj: { source: 'teros', field: 'vwc', dataKey: 'Volumetric Water Content' },
+  teros12_temp: { source: 'teros', field: 'temp', dataKey: 'Temperature' },
+  teros12_ec: { source: 'teros', field: 'ec', dataKey: 'Electrical Conductivity' },
+  bme280_temp: {
+    source: 'sensor',
+    sensorName: 'bme280',
+    measurement: 'temperature',
+    dataKey: 'Temperature',
+  },
+  bme280_pressure: {
+    source: 'sensor',
+    sensorName: 'bme280',
+    measurement: 'pressure',
+    dataKey: 'Pressure',
+  },
+  bme280_humidity: {
+    source: 'sensor',
+    sensorName: 'bme280',
+    measurement: 'humidity',
+    dataKey: 'Humidity',
+  },
+  teros21_matric_pot: {
+    source: 'sensor',
+    sensorName: 'teros21',
+    measurement: 'soil_water_potential',
+    dataKey: 'Matric Potential',
+  },
+  yfs210c_flow: {
+    source: 'sensor',
+    sensorName: 'yfs210c',
+    measurement: 'flow',
+    dataKey: 'Flow Rate',
+  },
+};
+
+/**
+ * @param {string} measurementType
+ * @returns {GenericStreamType | undefined}
+ */
+export function resolveGenericStreamType(measurementType) {
+  if (!measurementType || typeof measurementType !== 'string') return undefined;
+  return GENERIC_STREAM_TYPES[measurementType.toLowerCase()];
+}
+
 /** @returns {string[]} */
 export function listEquationStreamKeys() {
   return Object.keys(EQUATION_STREAMS).sort();

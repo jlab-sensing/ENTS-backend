@@ -320,11 +320,13 @@ function Dashboard() {
   );
 
   useEffect(() => {
-    // Auto-detect local development: uses localhost if running on localhost, otherwise production
-    const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const backendUrl = isLocalDev ? 'http://localhost:8000' : 'https://dirtviz.jlab.ucsc.edu';
+    // Local Vite dev proxies /api but not /socket.io — connect to Flask directly.
+    // Deployed builds (DirtViz, EC2 preview) proxy /socket.io/ on the same origin as the UI.
+    const isLocalDev =
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const socketUrl = isLocalDev ? 'http://localhost:8000' : window.location.origin;
 
-    const socket = io(backendUrl, {
+    const socket = io(socketUrl, {
       transports: ['websocket'],
       upgrade: false,
       timeout: 20000,
