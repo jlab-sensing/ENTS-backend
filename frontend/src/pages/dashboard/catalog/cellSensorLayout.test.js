@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   buildDefaultPanelOrder,
+  chartIdentityForCatalogEntry,
+  chartIdentityForPanel,
+  dedupeEquivalentPanels,
   panelIdsFromCellSensors,
   sortPanelIds,
   panelsMissingForCells,
@@ -85,7 +88,51 @@ describe('buildDefaultPanelOrder', () => {
     expect(panelOrder[0]).toBe('power-vi');
     expect(panelOrder).toContain('teros');
     expect(panelOrder).toContain('u:co2');
-    expect(panelOrder).toContain('s:5');
+    expect(panelOrder).not.toContain('s:5');
     expect(cellSensorsById['1']).toHaveLength(1);
+  });
+});
+
+describe('chart identity / equivalent panel dedupe', () => {
+  const soilTension = (id, cellId) => ({
+    id,
+    name: 'watermark',
+    measurement: 'soil_tension',
+    cellId,
+  });
+
+  it('groups per-cell s: panels of the same sensor type', () => {
+    const cellSensorsById = {
+      407: [soilTension(2029, 407)],
+      408: [soilTension(2030, 408)],
+      2578: [soilTension(2028, 2578)],
+    };
+
+    expect(chartIdentityForPanel('s:2029', cellSensorsById)).toBe('sensor:watermark:soil_tension');
+    expect(chartIdentityForPanel('s:2030', cellSensorsById)).toBe(
+      chartIdentityForPanel('s:2029', cellSensorsById),
+    );
+    expect(
+      dedupeEquivalentPanels(['s:2029', 's:2030', 's:2028', 's:118'], cellSensorsById),
+    ).toEqual(['s:2029', 's:118']);
+  });
+
+  it('collapses a db sensor panel onto its unified catalog counterpart', () => {
+    const cellSensorsById = {
+      1: [{ id: 12, name: 'co2', measurement: 'co2' }],
+    };
+    expect(chartIdentityForPanel('s:12', cellSensorsById)).toBe('u:co2');
+    expect(dedupeEquivalentPanels(['u:co2', 's:12'], cellSensorsById)).toEqual(['u:co2']);
+  });
+
+  it('treats a catalog row for another cell as the same chart', () => {
+    expect(
+      chartIdentityForCatalogEntry({
+        panelId: 's:2030',
+        kind: 'sensor',
+        sensorName: 'watermark',
+        measurement: 'soil_tension',
+      }),
+    ).toBe('sensor:watermark:soil_tension');
   });
 });

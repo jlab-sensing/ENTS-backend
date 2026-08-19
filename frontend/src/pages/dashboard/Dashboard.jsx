@@ -29,7 +29,9 @@ import {
 } from './catalog/dashboardCatalog';
 import {
   availablePanelIdsForCells,
+  chartIdentityForPanel,
   defaultPanelOrderFromFetched,
+  dedupeEquivalentPanels,
   fetchCatalogPanelIdsForCells,
   fetchCellSensorsForCells,
   panelsMissingForCells,
@@ -232,10 +234,21 @@ function Dashboard() {
     ],
   );
 
-  const handleAddPanel = useCallback((panelId) => {
-    if (!isKnownPanelId(panelId)) return;
-    setPanelOrder((prev) => (prev.includes(panelId) ? prev : [...prev, panelId]));
-  }, []);
+  const handleAddPanel = useCallback(
+    (panelId) => {
+      if (!isKnownPanelId(panelId)) return;
+      setPanelOrder((prev) => {
+        if (prev.includes(panelId)) return prev;
+        const identity = chartIdentityForPanel(panelId, cellSensorsById);
+        const alreadyShown = prev.some(
+          (existing) => chartIdentityForPanel(existing, cellSensorsById) === identity,
+        );
+        if (alreadyShown) return prev;
+        return [...prev, panelId];
+      });
+    },
+    [cellSensorsById],
+  );
 
   const handleEditEquation = useCallback((currentExpression) => {
     setEquationModalMode('edit');
@@ -409,6 +422,8 @@ function Dashboard() {
           setPanelOrder(defaultOrder.length > 0 ? defaultOrder : DEFAULT_DASHBOARD_PANEL_ORDER);
           setLayoutMismatchOpen(false);
           setLayoutMismatchPanels([]);
+        } else {
+          setPanelOrder((prev) => dedupeEquivalentPanels(prev, sensors));
         }
       },
     );
@@ -857,6 +872,7 @@ useEffect(() => {
                   onClose={() => setAddChartOpen(false)}
                   selectedCells={selectedCells}
                   panelOrder={panelOrder}
+                  cellSensorsById={cellSensorsById}
                   onAddPanel={handleAddPanel}
                 />
                 <AddEquationModal

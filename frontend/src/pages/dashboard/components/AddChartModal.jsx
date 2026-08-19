@@ -19,8 +19,16 @@ import PropTypes from 'prop-types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getSensorCatalog } from '../../../services/catalog';
 import { catalogEntriesFromApi, FULL_CATALOG } from '../catalog/dashboardCatalog';
+import { chartIdentityForCatalogEntry, chartIdentityForPanel } from '../catalog/cellSensorLayout';
 
-function AddChartModal({ open, onClose, selectedCells, panelOrder, onAddPanel }) {
+function AddChartModal({
+  open,
+  onClose,
+  selectedCells,
+  panelOrder,
+  cellSensorsById = {},
+  onAddPanel,
+}) {
   const [pickCellId, setPickCellId] = useState(null);
   const [catalogEntries, setCatalogEntries] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -62,10 +70,15 @@ function AddChartModal({ open, onClose, selectedCells, panelOrder, onAddPanel })
     }
   }, [open, activeCellId, loadCatalog]);
 
-  const addableEntries = useMemo(
-    () => catalogEntries.filter((entry) => !panelOrder.includes(entry.panelId)),
-    [catalogEntries, panelOrder],
-  );
+  const addableEntries = useMemo(() => {
+    const occupied = new Set(
+      panelOrder.map((panelId) => chartIdentityForPanel(panelId, cellSensorsById)),
+    );
+    return catalogEntries.filter((entry) => {
+      if (panelOrder.includes(entry.panelId)) return false;
+      return !occupied.has(chartIdentityForCatalogEntry(entry));
+    });
+  }, [catalogEntries, panelOrder, cellSensorsById]);
 
   const handleSelect = (panelId) => {
     onAddPanel(panelId);
@@ -171,6 +184,7 @@ AddChartModal.propTypes = {
     }),
   ).isRequired,
   panelOrder: PropTypes.arrayOf(PropTypes.string).isRequired,
+  cellSensorsById: PropTypes.object,
   onAddPanel: PropTypes.func.isRequired,
 };
 
