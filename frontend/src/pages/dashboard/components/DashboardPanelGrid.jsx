@@ -44,6 +44,8 @@ function DashboardPanelContent({ panelId, chartProps }) {
         historicalSensorByKey={chartProps.historicalSensorByKey}
         historicalLoading={chartProps.historicalLoading}
         centralHistoricalActive={chartProps.centralHistoricalActive?.equations}
+        resample={chartProps.resample}
+        onResampleChange={chartProps.onResampleChange}
       />
     );
   }
@@ -54,6 +56,8 @@ function DashboardPanelContent({ panelId, chartProps }) {
     endDate: chartProps.endDate,
     stream: chartProps.stream,
     liveData: chartProps.liveData,
+    resample: chartProps.resample,
+    onResampleChange: chartProps.onResampleChange,
   };
 
   if (isSensorPanelEntry(panelId)) {
@@ -79,6 +83,8 @@ function DashboardPanelContent({ panelId, chartProps }) {
         historicalSensorByKey={chartProps.historicalSensorByKey}
         centralHistoricalActive={chartProps.centralHistoricalActive?.sensors}
         historicalLoading={chartProps.historicalLoading}
+        resample={chartProps.resample}
+        onResampleChange={chartProps.onResampleChange}
       />
     );
   }
@@ -98,6 +104,8 @@ function DashboardPanelContent({ panelId, chartProps }) {
         historicalSensorByKey={chartProps.historicalSensorByKey}
         centralHistoricalActive={chartProps.centralHistoricalActive?.sensors}
         historicalLoading={chartProps.historicalLoading}
+        resample={chartProps.resample}
+        onResampleChange={chartProps.onResampleChange}
       />
     );
   }
@@ -282,6 +290,8 @@ DashboardPanelGrid.propTypes = {
     historicalTerosByCell: PropTypes.object,
     historicalSensorByKey: PropTypes.object,
     historicalLoading: PropTypes.bool,
+    resample: PropTypes.oneOf(['none', 'hour', 'day']),
+    onResampleChange: PropTypes.func,
     centralHistoricalActive: PropTypes.shape({
       power: PropTypes.bool,
       teros: PropTypes.bool,

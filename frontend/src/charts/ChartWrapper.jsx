@@ -30,7 +30,7 @@ import usePrevious from '../hooks/usePrevious';
 ChartJS.register(LineController, LineElement, PointElement, LinearScale, chartTooltip, Legend, TimeScale, zoomPlugin);
 
 //** Wrapper for chart functionality and state */
-function ChartWrapper({ id, data, options, stream, onResampleChange }) {
+function ChartWrapper({ id, data, options, stream, onResampleChange, resample = 'hour' }) {
   const [resetSelected] = useState(false);
   const [zoomSelected, setZoomSelected] = useState(false);
   const [panSelected, setPanSelected] = useState(true);
@@ -39,10 +39,14 @@ function ChartWrapper({ id, data, options, stream, onResampleChange }) {
   const handleClose = () => setOpen(false);
 
   const [resampleAnchor, setResampleAnchor] = useState(null);
-  const [selectedResample, setSelectedResample] = useState('hour');
+  const [selectedResample, setSelectedResample] = useState(resample);
   const [scaleRef, setScaleRef] = useState({});
   const [prevData, setPrevData] = useState(data);
   const prevScaleRef = usePrevious(scaleRef);
+
+  useEffect(() => {
+    setSelectedResample(resample);
+  }, [resample]);
 
   //** defines axis for charts, charts may have different axis names/
   const axes = Object.keys(options.scales);
@@ -756,4 +760,5 @@ ChartWrapper.propTypes = {
   options: PropTypes.object,
   stream: PropTypes.bool,
   onResampleChange: PropTypes.func,
+  resample: PropTypes.oneOf(['none', 'hour', 'day']),
 };

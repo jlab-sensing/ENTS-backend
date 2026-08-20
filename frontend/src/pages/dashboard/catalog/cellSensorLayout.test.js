@@ -125,6 +125,21 @@ describe('chart identity / equivalent panel dedupe', () => {
     expect(dedupeEquivalentPanels(['u:co2', 's:12'], cellSensorsById)).toEqual(['u:co2']);
   });
 
+  it('does not collapse generic POWER_VOLTAGE onto builtin power-vi', () => {
+    const cellSensorsById = {
+      1: [
+        { id: 7, name: 'POWER_VOLTAGE', measurement: 'Voltage' },
+        { id: 8, name: 'BME280_TEMP', measurement: 'Temperature' },
+      ],
+    };
+
+    expect(chartIdentityForPanel('s:7', cellSensorsById)).toBe('sensor:power_voltage:voltage');
+    expect(panelIdsFromCellSensors(cellSensorsById, [1]).has('power-vi')).toBe(false);
+    expect(
+      dedupeEquivalentPanels(['power-vi', 's:7', 's:8'], cellSensorsById),
+    ).toEqual(['power-vi', 's:7', 's:8']);
+  });
+
   it('treats a catalog row for another cell as the same chart', () => {
     expect(
       chartIdentityForCatalogEntry({

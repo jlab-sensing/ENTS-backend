@@ -8,7 +8,7 @@ import ChartWrapper from './ChartWrapper';
 import { chartPlugins } from './plugins';
 import { getVwcAxisBounds } from './VwcChart/vwcAxis';
 
-export default function UniversalChart({ data, stream, chartId, measurements, units, axisIds, axisPolicy, startDate, endDate, onResampleChange }) {
+export default function UniversalChart({ data, stream, chartId, measurements, units, axisIds, axisPolicy, startDate, endDate, onResampleChange, resample }) {
   // Build chart options dynamically based on measurements
   const buildChartOptions = () => {
     const nonStreamXDomain = getNonStreamTimeDomain(stream, startDate, endDate);
@@ -151,7 +151,7 @@ export default function UniversalChart({ data, stream, chartId, measurements, un
   const chartOptions = buildChartOptions();
 
   return (
-    <ChartWrapper id={chartId} data={data} options={chartOptions} stream={stream} onResampleChange={onResampleChange} />
+    <ChartWrapper id={chartId} data={data} options={chartOptions} stream={stream} onResampleChange={onResampleChange} resample={resample} />
   );
 }
 
@@ -166,4 +166,5 @@ UniversalChart.propTypes = {
   startDate: PropTypes.object,
   endDate: PropTypes.object,
   onResampleChange: PropTypes.func,
+  resample: PropTypes.oneOf(['none', 'hour', 'day']),
 };

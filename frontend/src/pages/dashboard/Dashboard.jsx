@@ -67,6 +67,8 @@ function Dashboard() {
 
   const [hourlyStartDate, setHourlyStartDate] = useState(DateTime.now().minus({ days: 14 }));
   const [hourlyEndDate, setHourlyEndDate] = useState(DateTime.now());
+  // Shared downsample for charts + CSV export (#813). Default matches prior hourly caches.
+  const [historicalResample, setHistoricalResample] = useState('hour');
 
   // Mobile responsive detection
   const theme = useTheme();
@@ -186,6 +188,7 @@ function Dashboard() {
       endDate: hourlyEndDate,
       stream,
       cellSensorsById,
+      resample: historicalResample,
       enabled: historicalDatesReady && selectedCells.length > 0,
     });
 
@@ -217,6 +220,8 @@ function Dashboard() {
       historicalSensorByKey,
       historicalLoading,
       centralHistoricalActive,
+      resample: historicalResample,
+      onResampleChange: setHistoricalResample,
     }),
     [
       selectedCells,
@@ -231,6 +236,7 @@ function Dashboard() {
       historicalSensorByKey,
       historicalLoading,
       centralHistoricalActive,
+      historicalResample,
     ],
   );
 

@@ -20,8 +20,11 @@ function DerivedEquationChart({
   historicalSensorByKey,
   historicalLoading = false,
   centralHistoricalActive = false,
+  resample: resampleProp,
+  onResampleChange,
 }) {
-  const [resample, setResample] = useState('hour');
+  const [localResample, setLocalResample] = useState('hour');
+  const resample = resampleProp ?? localResample;
   const [chartData, setChartData] = useState({ datasets: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -52,10 +55,11 @@ function DerivedEquationChart({
   useEffect(() => {
     if (stream) return undefined;
 
-    const useCentralCache = centralHistoricalActive && resample === 'hour';
+    const useCentralCache = Boolean(centralHistoricalActive);
     if (useCentralCache && historicalLoading) {
       setIsLoading(true);
       setError(null);
+      setChartData({ datasets: [] });
       return undefined;
     }
 
@@ -146,7 +150,8 @@ function DerivedEquationChart({
       units={['']}
       axisIds={['y']}
       {...(!stream && { startDate, endDate })}
-      onResampleChange={stream ? undefined : setResample}
+      onResampleChange={stream ? undefined : (onResampleChange || setLocalResample)}
+      resample={resample}
     />
   );
 }
@@ -162,6 +167,8 @@ DerivedEquationChart.propTypes = {
   historicalSensorByKey: PropTypes.object,
   historicalLoading: PropTypes.bool,
   centralHistoricalActive: PropTypes.bool,
+  resample: PropTypes.oneOf(['none', 'hour', 'day']),
+  onResampleChange: PropTypes.func,
 };
 
 export default DerivedEquationChart;

@@ -20,8 +20,11 @@ function TerosCharts({
   historicalTerosByCell,
   centralHistoricalActive = false,
   historicalLoading = false,
+  resample: resampleProp,
+  onResampleChange,
 }) {
-  const [resample, setResample] = useState('hour');
+  const [localResample, setLocalResample] = useState('hour');
+  const resample = resampleProp ?? localResample;
   const chartSettings = {
     datasets: [],
   };
@@ -137,16 +140,36 @@ function TerosCharts({
     setHasData(hasAnyData);
   }
 
+  //** clearing all chart settings */
+  function clearCharts() {
+    const newVwcChartData = {
+      ...vwcChartData,
+      labels: [],
+      datasets: [],
+    };
+    const newTempChartData = {
+      ...tempChartData,
+      labels: [],
+      datasets: [],
+    };
+    setVwcChartData(Object.assign({}, newVwcChartData));
+    setTempChartData(Object.assign({}, newTempChartData));
+    setHasData(false);
+  }
+
   function updateCharts() {
     const fetchGeneration = ++fetchGenerationRef.current;
     const loadCells = cells;
 
-    if (centralHistoricalActive && resample === 'hour') {
+    if (centralHistoricalActive) {
       if (historicalLoading) return;
       if (fetchGeneration !== fetchGenerationRef.current) return;
       const cellChartData = historicalTerosByCell ?? {};
       const hasCentralData = cells.some(({ id }) => resolveCellEntry(cellChartData, id));
-      if (!hasCentralData) return;
+      if (!hasCentralData) {
+        clearCharts();
+        return;
+      }
       applyCellChartData(cellChartData, loadCells);
       return;
     }
@@ -163,23 +186,6 @@ function TerosCharts({
         console.error('Error updating TEROS charts:', error);
         setHasData(false);
       });
-  }
-
-  //** clearing all chart settings */
-  function clearCharts() {
-    const newVwcChartData = {
-      ...vwcChartData,
-      labels: [],
-      datasets: [],
-    };
-    const newTempChartData = {
-      ...tempChartData,
-      labels: [],
-      datasets: [],
-    };
-    setVwcChartData(Object.assign({}, newVwcChartData));
-    setTempChartData(Object.assign({}, newTempChartData));
-    setHasData(false);
   }
 
   // Removed unused clearChartDatasets function
@@ -293,7 +299,8 @@ function TerosCharts({
   }, [cells, stream, resample, startDate, endDate, historicalTerosByCell, centralHistoricalActive, historicalLoading]);
 
   const handleResampleChange = (newResample) => {
-    setResample(newResample);
+    if (onResampleChange) onResampleChange(newResample);
+    else setLocalResample(newResample);
   };
 
   // Notify parent component when data status changes
@@ -303,10 +310,11 @@ function TerosCharts({
     }
   }, [hasData, onDataStatusChange]);
 
+  if (centralHistoricalActive && historicalLoading && !stream) {
+    return <ChartPanelPlaceholder loading />;
+  }
+
   if (!hasData) {
-    if (centralHistoricalActive && historicalLoading && !stream) {
-      return <ChartPanelPlaceholder loading />;
-    }
     if (cells?.length) {
       return <ChartPanelPlaceholder />;
     }
@@ -322,6 +330,7 @@ function TerosCharts({
       stream={stream}
       {...(!stream && { startDate, endDate })}
       onResampleChange={handleResampleChange}
+      resample={resample}
     />
   );
 
@@ -331,6 +340,7 @@ function TerosCharts({
       stream={stream}
       {...(!stream && { startDate, endDate })}
       onResampleChange={handleResampleChange}
+      resample={resample}
     />
   );
 
@@ -374,6 +384,8 @@ TerosCharts.propTypes = {
   historicalTerosByCell: PropTypes.object,
   centralHistoricalActive: PropTypes.bool,
   historicalLoading: PropTypes.bool,
+  resample: PropTypes.oneOf(['none', 'hour', 'day']),
+  onResampleChange: PropTypes.func,
 };
 
 export default TerosCharts;

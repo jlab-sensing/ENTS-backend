@@ -46,7 +46,12 @@ function normalizeChartKey(value) {
 }
 
 /**
- * Map a DB sensor row onto a builtin/unified panel when CHART_CONFIGS matches.
+ * Map a DB sensor row onto a UnifiedChart panel (`u:…`) when CHART_CONFIGS matches.
+ *
+ * Never maps onto builtin power/teros panels (`power-vi`, `teros`, `temp`). Those
+ * read legacy tables; generic SensorType rows (`POWER_VOLTAGE`, `TEROS12_*`) live
+ * in the sensor table. Collapsing them onto builtins drops the working `s:` chart
+ * and leaves an empty Voltage & Current panel (#815 / #816 regression).
  *
  * @param {{ name?: string, measurement?: string }} sensor
  * @returns {string | null}
@@ -62,7 +67,8 @@ export function unifiedPanelIdForSensor(sensor) {
   if (!match) return null;
 
   const panelId = CHART_TYPE_TO_PANEL_ID[match[0]];
-  return panelId && isKnownPanelId(panelId) ? panelId : null;
+  if (!panelId || !isKnownPanelId(panelId) || !panelId.startsWith('u:')) return null;
+  return panelId;
 }
 
 /**
@@ -153,7 +159,9 @@ export function panelIdsFromCellSensors(cellSensorsById, selectedCellIds) {
       );
       if (matches) {
         const panelId = CHART_TYPE_TO_PANEL_ID[chartType];
-        if (panelId && isKnownPanelId(panelId)) {
+        // Only auto-add UnifiedChart panels. Builtin power/teros come from the
+        // catalog when legacy PowerData/TEROSData rows exist.
+        if (panelId && isKnownPanelId(panelId) && panelId.startsWith('u:')) {
           panelIds.add(panelId);
         }
       }
