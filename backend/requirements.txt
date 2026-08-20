@@ -20,6 +20,6 @@ redis
 PyJWT
 Requests
 google-auth
-ents==2.3.11
+ents==2.3.12
 gevent
 eventlet
