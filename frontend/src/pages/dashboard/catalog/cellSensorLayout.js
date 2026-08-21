@@ -298,6 +298,25 @@ export function mergePanelsForAddedCells(prevOrder, newAvailablePanelIds, sensor
 }
 
 /**
+ * Returns true when the user has replaced their entire cell selection with a
+ * completely different set (no overlap). Used to trigger a fresh panel order
+ * instead of keeping stale panels from the previous selection.
+ *
+ * False on initial load (prevCellIds is null), when cells share any overlap
+ * with the previous selection, and when the next set is empty.
+ *
+ * @param {Set<string> | null} prevCellIds
+ * @param {string[]} nextCellIds
+ * @returns {boolean}
+ */
+export function isCompleteCellSwap(prevCellIds, nextCellIds) {
+  if (!prevCellIds || prevCellIds.size === 0) return false;
+  const nextSet = new Set(nextCellIds.map(String));
+  if (nextSet.size === 0) return false;
+  return ![...prevCellIds].some((id) => nextSet.has(id));
+}
+
+/**
  * Returns true only when the user has interactively added cells to an existing
  * selection. False on initial load (prevCellIds is null), when cells are removed
  * or swapped, and when called with an empty previous set.

@@ -4,6 +4,7 @@ import {
   chartIdentityForCatalogEntry,
   chartIdentityForPanel,
   dedupeEquivalentPanels,
+  isCompleteCellSwap,
   isInteractiveCellAdd,
   mergePanelsForAddedCells,
   panelIdsFromCellSensors,
@@ -52,6 +53,40 @@ describe('mergePanelsForAddedCells', () => {
     const result = mergePanelsForAddedCells([], new Set(['power-vi', 'teros']), {});
     expect(result).toContain('power-vi');
     expect(result).toContain('teros');
+  });
+});
+
+describe('isCompleteCellSwap', () => {
+  it('returns false on initial load (prevCellIds is null)', () => {
+    expect(isCompleteCellSwap(null, ['3'])).toBe(false);
+  });
+
+  it('returns false when prev is empty', () => {
+    expect(isCompleteCellSwap(new Set(), ['3'])).toBe(false);
+  });
+
+  it('returns true when all previous cells are replaced with entirely new cells', () => {
+    expect(isCompleteCellSwap(new Set(['1']), ['3'])).toBe(true);
+  });
+
+  it('returns true when multi-cell selection is fully replaced', () => {
+    expect(isCompleteCellSwap(new Set(['1', '2']), ['3', '4'])).toBe(true);
+  });
+
+  it('returns false when any cell overlaps (add case)', () => {
+    expect(isCompleteCellSwap(new Set(['1']), ['1', '3'])).toBe(false);
+  });
+
+  it('returns false when any cell overlaps (partial swap)', () => {
+    expect(isCompleteCellSwap(new Set(['1', '2']), ['1', '3'])).toBe(false);
+  });
+
+  it('returns false when next set is empty', () => {
+    expect(isCompleteCellSwap(new Set(['1']), [])).toBe(false);
+  });
+
+  it('handles numeric and string IDs consistently', () => {
+    expect(isCompleteCellSwap(new Set(['1']), [3])).toBe(true);
   });
 });
 
