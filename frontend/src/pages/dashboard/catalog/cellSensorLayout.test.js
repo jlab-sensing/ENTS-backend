@@ -4,6 +4,8 @@ import {
   chartIdentityForCatalogEntry,
   chartIdentityForPanel,
   dedupeEquivalentPanels,
+  isInteractiveCellAdd,
+  mergePanelsForAddedCells,
   panelIdsFromCellSensors,
   sortPanelIds,
   panelsMissingForCells,
@@ -20,6 +22,68 @@ vi.mock('../../../services/catalog', () => ({
 
 import { getCellSensors } from '../../../services/cell';
 import { getSensorCatalog } from '../../../services/catalog';
+
+describe('mergePanelsForAddedCells', () => {
+  it('appends panels from the new cell that are not yet in prevOrder', () => {
+    const prev = ['power-vi', 'teros'];
+    const newAvailable = new Set(['power-vi', 'teros', 'temp']);
+    const result = mergePanelsForAddedCells(prev, newAvailable, {});
+    expect(result).toContain('temp');
+    expect(result.indexOf('power-vi')).toBeLessThan(result.indexOf('temp'));
+  });
+
+  it('does not duplicate panels already in prevOrder', () => {
+    const prev = ['power-vi', 'teros'];
+    const newAvailable = new Set(['power-vi', 'teros']);
+    const result = mergePanelsForAddedCells(prev, newAvailable, {});
+    expect(result.filter((p) => p === 'power-vi')).toHaveLength(1);
+    expect(result.filter((p) => p === 'teros')).toHaveLength(1);
+  });
+
+  it('preserves original panel order before appended panels', () => {
+    const prev = ['teros', 'power-vi'];
+    const newAvailable = new Set(['teros', 'power-vi', 'temp']);
+    const result = mergePanelsForAddedCells(prev, newAvailable, {});
+    expect(result[0]).toBe('teros');
+    expect(result[1]).toBe('power-vi');
+  });
+
+  it('returns only new panels when prevOrder is empty', () => {
+    const result = mergePanelsForAddedCells([], new Set(['power-vi', 'teros']), {});
+    expect(result).toContain('power-vi');
+    expect(result).toContain('teros');
+  });
+});
+
+describe('isInteractiveCellAdd', () => {
+  it('returns false on initial load (prevCellIds is null)', () => {
+    expect(isInteractiveCellAdd(null, ['1', '2'])).toBe(false);
+  });
+
+  it('returns false when prev is empty', () => {
+    expect(isInteractiveCellAdd(new Set(), ['1'])).toBe(false);
+  });
+
+  it('returns true when new cell is added to existing selection', () => {
+    expect(isInteractiveCellAdd(new Set(['1']), ['1', '3'])).toBe(true);
+  });
+
+  it('returns false when cell is removed (shrinking selection)', () => {
+    expect(isInteractiveCellAdd(new Set(['1', '3']), ['1'])).toBe(false);
+  });
+
+  it('returns false when cells are swapped (different set)', () => {
+    expect(isInteractiveCellAdd(new Set(['1']), ['3'])).toBe(false);
+  });
+
+  it('returns false when same cells re-selected (no change in size)', () => {
+    expect(isInteractiveCellAdd(new Set(['1', '3']), ['1', '3'])).toBe(false);
+  });
+
+  it('handles numeric and string cell IDs consistently', () => {
+    expect(isInteractiveCellAdd(new Set(['1']), [1, 3])).toBe(true);
+  });
+});
 
 describe('panelIdsFromCellSensors', () => {
   it('maps bme280 sensor rows to unified panel ids and s:{id} panels', () => {

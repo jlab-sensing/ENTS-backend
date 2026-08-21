@@ -21,11 +21,11 @@ import AddChartModal from './components/AddChartModal';
 import AddEquationModal from './components/AddEquationModal';
 import {
   DEFAULT_DASHBOARD_PANEL_ORDER,
+  applyLayoutToParams,
   isKnownPanelId,
   isDerivedPanelEntry,
   isSensorPanelEntry,
   parseLayoutParam,
-  serializeLayoutParam,
 } from './catalog/dashboardCatalog';
 import {
   availablePanelIdsForCells,
@@ -34,6 +34,8 @@ import {
   dedupeEquivalentPanels,
   fetchCatalogPanelIdsForCells,
   fetchCellSensorsForCells,
+  isInteractiveCellAdd,
+  mergePanelsForAddedCells,
   panelsMissingForCells,
 } from './catalog/cellSensorLayout';
 import { panelOrderNeedsPower, panelOrderNeedsTeros } from './catalog/historicalDataLoader';
@@ -51,6 +53,8 @@ function Dashboard() {
   const [showNoDataMessage, setShowNoDataMessage] = useState(false);
   const [manualDateSelection, setManualDateSelection] = useState(false);
   const smartDateRangeAppliedRef = useRef(false);
+  // Tracks which cell IDs were last loaded. null = never loaded (initial load).
+  const prevLoadedCellIdsRef = useRef(null);
   const cancelSmartDateRef = useRef(null);
   const [liveData, setLiveData] = useState([]);
 
@@ -411,10 +415,16 @@ function Dashboard() {
     if (selectedCells.length === 0) {
       setCellSensorsById({});
       setAvailablePanelIds(null);
+      prevLoadedCellIdsRef.current = null;
       return undefined;
     }
 
     const cellIds = selectedCells.map((cell) => cell.id);
+    const currentCellIdSet = new Set(cellIds.map(String));
+
+    const isAddingCells = isInteractiveCellAdd(prevLoadedCellIdsRef.current, cellIds);
+    prevLoadedCellIdsRef.current = currentCellIdSet;
+
     let cancelled = false;
 
     Promise.all([fetchCellSensorsForCells(cellIds), fetchCatalogPanelIdsForCells(cellIds)]).then(
@@ -428,8 +438,15 @@ function Dashboard() {
           setPanelOrder(defaultOrder.length > 0 ? defaultOrder : DEFAULT_DASHBOARD_PANEL_ORDER);
           setLayoutMismatchOpen(false);
           setLayoutMismatchPanels([]);
+        } else if (isAddingCells) {
+          // User added a new cell interactively. Append its new panels while
+          // preserving the existing layout order, then dedupe equivalents.
+          const newAvailable = availablePanelIdsForCells(sensors, cellIds, catalogIds);
+          setPanelOrder((prevOrder) => mergePanelsForAddedCells(prevOrder, newAvailable, sensors));
         } else {
-          setPanelOrder((prev) => dedupeEquivalentPanels(prev, sensors));
+          // Initial load with URL layout, or cell swap/remove: respect existing
+          // layout and only dedupe equivalents.
+          setPanelOrder((prevOrder) => dedupeEquivalentPanels(prevOrder, sensors));
         }
       },
     );
@@ -571,10 +588,9 @@ useEffect(() => {
     newParams.set('endDate', hourlyEndDate.toISO());
   }
 
-  const layoutSerialized = serializeLayoutParam(panelOrder);
-  if (layoutSerialized) {
-    newParams.set('layout', layoutSerialized);
-  }
+  // Only persist layout when at least one cell is selected.
+  // Deselecting all cells clears it so stale panels don't appear on reload.
+  applyLayoutToParams(newParams, selectedCells, panelOrder);
 
   setSearchParams(newParams, { replace: true });
 }, [
