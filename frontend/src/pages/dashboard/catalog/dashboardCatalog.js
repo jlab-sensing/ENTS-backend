@@ -185,6 +185,7 @@ export function panelIdToUnifiedType(panelId) {
 }
 
 export { isDerivedPanelEntry, isLayoutPanelEntry, parseLayoutParam, serializeLayoutParam } from './layoutPanels';
+import { serializeLayoutParam } from './layoutPanels';
 
 /**
  * @param {string[]} panelOrder
@@ -194,9 +195,22 @@ export function getUnifiedTypesInPanelOrder(panelOrder) {
 }
 
 /**
- * @param {import('../../../services/catalog').CatalogApiEntry[]} apiEntries
- * @returns {CatalogEntry[]}
+ * Writes the serialized panel layout into URLSearchParams when at least one
+ * cell is selected. Skips the write when cells are empty so deselecting all
+ * cells clears the layout param from the URL.
+ *
+ * @param {URLSearchParams} params - params object to mutate in place
+ * @param {Array} selectedCells
+ * @param {string[]} panelOrder
  */
+export function applyLayoutToParams(params, selectedCells, panelOrder) {
+  if (selectedCells.length === 0) return;
+  const serialized = serializeLayoutParam(panelOrder);
+  if (serialized) {
+    params.set('layout', serialized);
+  }
+}
+
 export function catalogEntriesFromApi(apiEntries) {
   if (!Array.isArray(apiEntries)) return [...ALL_ENTRIES];
 

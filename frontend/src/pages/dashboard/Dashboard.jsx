@@ -21,11 +21,11 @@ import AddChartModal from './components/AddChartModal';
 import AddEquationModal from './components/AddEquationModal';
 import {
   DEFAULT_DASHBOARD_PANEL_ORDER,
+  applyLayoutToParams,
   isKnownPanelId,
   isDerivedPanelEntry,
   isSensorPanelEntry,
   parseLayoutParam,
-  serializeLayoutParam,
 } from './catalog/dashboardCatalog';
 import {
   availablePanelIdsForCells,
@@ -34,6 +34,9 @@ import {
   dedupeEquivalentPanels,
   fetchCatalogPanelIdsForCells,
   fetchCellSensorsForCells,
+  isCompleteCellSwap,
+  isInteractiveCellAdd,
+  mergePanelsForAddedCells,
   panelsMissingForCells,
 } from './catalog/cellSensorLayout';
 import { panelOrderNeedsPower, panelOrderNeedsTeros } from './catalog/historicalDataLoader';
@@ -51,6 +54,8 @@ function Dashboard() {
   const [showNoDataMessage, setShowNoDataMessage] = useState(false);
   const [manualDateSelection, setManualDateSelection] = useState(false);
   const smartDateRangeAppliedRef = useRef(false);
+  // Tracks which cell IDs were last loaded. null = never loaded (initial load).
+  const prevLoadedCellIdsRef = useRef(null);
   const cancelSmartDateRef = useRef(null);
   const [liveData, setLiveData] = useState([]);
 
@@ -405,31 +410,59 @@ function Dashboard() {
 
   const parsedUrlLayout = useMemo(() => parseLayoutParam(layoutParam), [layoutParam]);
   const hasUrlLayout = parsedUrlLayout.length > 0;
+  // Depend on the selected IDs rather than the selectedCells array identity.
+  // URL initialization can recreate the same cell objects after every query-param
+  // update; treating that as a selection change cancels the active catalog fetch.
+  const selectedCellIdsKey = useMemo(
+    () => selectedCells.map((cell) => String(cell.id)).join(','),
+    [selectedCells],
+  );
 
   // Cell sensors + catalog (once); default panel order when no URL layout.
   useEffect(() => {
-    if (selectedCells.length === 0) {
+    if (!selectedCellIdsKey) {
       setCellSensorsById({});
       setAvailablePanelIds(null);
+      prevLoadedCellIdsRef.current = null;
       return undefined;
     }
 
-    const cellIds = selectedCells.map((cell) => cell.id);
+    const cellIds = selectedCellIdsKey.split(',');
+    const currentCellIdSet = new Set(cellIds);
+
+    const prev = prevLoadedCellIdsRef.current;
+    const isAddingCells = isInteractiveCellAdd(prev, cellIds);
+    const isSwappingCells = isCompleteCellSwap(prev, cellIds);
+
     let cancelled = false;
 
     Promise.all([fetchCellSensorsForCells(cellIds), fetchCatalogPanelIdsForCells(cellIds)]).then(
       ([sensors, catalogIds]) => {
         if (cancelled) return;
+        // Publish the selection only after this request wins. URL synchronization
+        // can restart the effect before the catalog request settles; updating the
+        // ref earlier makes that restart forget an in-progress cell addition.
+        prevLoadedCellIdsRef.current = currentCellIdSet;
         setCellSensorsById(sensors);
         setAvailablePanelIds(availablePanelIdsForCells(sensors, cellIds, catalogIds));
 
-        if (!hasUrlLayout) {
+        if (!hasUrlLayout || isSwappingCells) {
+          // No URL layout, or user replaced all cells with a completely different
+          // set: compute the default panel order for the new selection so stale
+          // panels from the previous cells don't linger.
           const defaultOrder = defaultPanelOrderFromFetched(sensors, cellIds, catalogIds);
           setPanelOrder(defaultOrder.length > 0 ? defaultOrder : DEFAULT_DASHBOARD_PANEL_ORDER);
           setLayoutMismatchOpen(false);
           setLayoutMismatchPanels([]);
+        } else if (isAddingCells) {
+          // User added a new cell interactively. Append its new panels while
+          // preserving the existing layout order, then dedupe equivalents.
+          const newAvailable = availablePanelIdsForCells(sensors, cellIds, catalogIds);
+          setPanelOrder((prevOrder) => mergePanelsForAddedCells(prevOrder, newAvailable, sensors));
         } else {
-          setPanelOrder((prev) => dedupeEquivalentPanels(prev, sensors));
+          // Initial load with URL layout, or partial cell removal: respect existing
+          // layout and only dedupe equivalents.
+          setPanelOrder((prevOrder) => dedupeEquivalentPanels(prevOrder, sensors));
         }
       },
     );
@@ -437,7 +470,7 @@ function Dashboard() {
     return () => {
       cancelled = true;
     };
-  }, [selectedCells, hasUrlLayout]);
+  }, [selectedCellIdsKey, hasUrlLayout]);
 
   // Warn when a URL layout includes panels unavailable for the selected cells.
   useEffect(() => {
@@ -571,10 +604,9 @@ useEffect(() => {
     newParams.set('endDate', hourlyEndDate.toISO());
   }
 
-  const layoutSerialized = serializeLayoutParam(panelOrder);
-  if (layoutSerialized) {
-    newParams.set('layout', layoutSerialized);
-  }
+  // Only persist layout when at least one cell is selected.
+  // Deselecting all cells clears it so stale panels don't appear on reload.
+  applyLayoutToParams(newParams, selectedCells, panelOrder);
 
   setSearchParams(newParams, { replace: true });
 }, [
