@@ -1,5 +1,6 @@
-import { Box, Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { DateTime } from 'luxon';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { React, useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import DateRangeNotification from '../../components/DateRangeNotification';
@@ -641,12 +642,37 @@ useEffect(() => {
 
   // Handle cell selection changes
   const handleCellSelectionChange = (newSelectedCells) => {
-  setSelectedCells(newSelectedCells);
-  if (!manualDateSelection) {
-    smartDateRangeAppliedRef.current = false; // instant reset, no setTimeout race
+    setSelectedCells(newSelectedCells);
+    if (!manualDateSelection) {
+      smartDateRangeAppliedRef.current = false; // instant reset, no setTimeout race
+      setHistoricalDatesReady(false);
+    }
+  };
+
+  // Reset dashboard layout and selection to default state
+  const handleResetLayout = () => {
+    setSelectedCells([]);
+    setPanelOrder([]);
+    setManualDateSelection(false);
+    smartDateRangeAppliedRef.current = false;
     setHistoricalDatesReady(false);
-  }
-};
+
+    // Clear cell, layout, and date parameters from the URL
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('cell_id');
+    newParams.delete('layout');
+    newParams.delete('startDate');
+    newParams.delete('endDate');
+    setSearchParams(newParams);
+
+    // Reset date range to defaults
+    const defaultStart = DateTime.now().minus({ days: 14 });
+    const defaultEnd = DateTime.now();
+    setStartDate(defaultStart);
+    setEndDate(defaultEnd);
+    setHourlyStartDate(defaultStart);
+    setHourlyEndDate(defaultEnd);
+  };
 
 
   useEffect(() => {
@@ -725,6 +751,17 @@ useEffect(() => {
                       axiosPrivate={axiosPrivate}
                     />
                   </Box>
+                  {selectedCells.length > 0 && (
+                    <Button
+                      variant='outlined'
+                      color='secondary'
+                      size='small'
+                      startIcon={<RestartAltIcon />}
+                      onClick={handleResetLayout}
+                    >
+                      Reset
+                    </Button>
+                  )}
                 </Stack>
 
                 {/* Second bar: Date Range + Controls */}
@@ -788,6 +825,17 @@ useEffect(() => {
                   axiosPrivate={axiosPrivate}
                 />
               </Box>
+              {selectedCells.length > 0 && (
+                <Button
+                  variant='outlined'
+                  color='secondary'
+                  startIcon={<RestartAltIcon />}
+                  onClick={handleResetLayout}
+                  sx={{ height: 40 }}
+                >
+                  Reset Layout
+                </Button>
+              )}
               <Box display='flex' justifyContent='center' alignItems='center'>
                 {!stream ? (
                   <DateRangeSel
