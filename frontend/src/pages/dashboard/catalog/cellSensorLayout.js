@@ -278,6 +278,64 @@ export function availablePanelIdsForCells(cellSensorsById, cellIds, catalogPanel
 }
 
 /**
+ * Merges newly available panel IDs into an existing panel order without reordering,
+ * then deduplicates equivalent panels. Used to auto-append panels when a new cell
+ * is added interactively while preserving the user's current panel arrangement.
+ *
+ * @param {string[]} prevOrder - the existing panel order
+ * @param {Set<string>} newAvailablePanelIds - all panels available for the current cell set
+ * @param {object} sensors - cellSensorsById map (passed to dedupeEquivalentPanels)
+ * @returns {string[]}
+ */
+export function mergePanelsForAddedCells(prevOrder, newAvailablePanelIds, sensors) {
+  const merged = [...prevOrder];
+  newAvailablePanelIds.forEach((panelId) => {
+    if (!merged.includes(panelId)) {
+      merged.push(panelId);
+    }
+  });
+  return dedupeEquivalentPanels(merged, sensors);
+}
+
+/**
+ * Returns true when the user has replaced their entire cell selection with a
+ * completely different set (no overlap). Used to trigger a fresh panel order
+ * instead of keeping stale panels from the previous selection.
+ *
+ * False on initial load (prevCellIds is null), when cells share any overlap
+ * with the previous selection, and when the next set is empty.
+ *
+ * @param {Set<string> | null} prevCellIds
+ * @param {string[]} nextCellIds
+ * @returns {boolean}
+ */
+export function isCompleteCellSwap(prevCellIds, nextCellIds) {
+  if (!prevCellIds || prevCellIds.size === 0) return false;
+  const nextSet = new Set(nextCellIds.map(String));
+  if (nextSet.size === 0) return false;
+  return ![...prevCellIds].some((id) => nextSet.has(id));
+}
+
+/**
+ * Returns true only when the user has interactively added cells to an existing
+ * selection. False on initial load (prevCellIds is null), when cells are removed
+ * or swapped, and when called with an empty previous set.
+ *
+ * Used to decide whether to auto-append new panels or preserve the existing layout.
+ *
+ * @param {Set<string> | null} prevCellIds - cell IDs from the previous render, or
+ *   null when sensors have never been loaded (initial page load).
+ * @param {string[]} nextCellIds - the IDs from the current selectedCells.
+ * @returns {boolean}
+ */
+export function isInteractiveCellAdd(prevCellIds, nextCellIds) {
+  if (!prevCellIds || prevCellIds.size === 0) return false;
+  const nextSet = new Set(nextCellIds.map(String));
+  if (nextSet.size <= prevCellIds.size) return false;
+  return [...prevCellIds].every((id) => nextSet.has(id));
+}
+
+/**
  * @param {string[]} panelOrder
  * @param {Set<string>} availablePanelIds
  * @returns {string[]}

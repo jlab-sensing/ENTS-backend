@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  applyLayoutToParams,
   catalogEntriesFromApi,
   getCatalogEntry,
   getUnifiedTypesInPanelOrder,
@@ -140,5 +141,26 @@ describe('catalogEntriesFromApi', () => {
     expect(isSensorPanelEntry(42)).toBe(false);
     expect(sensorPanelIdToSensorId('s:42')).toBe(42);
     expect(sensorPanelIdToSensorId('u:co2')).toBeNull();
+  });
+});
+
+describe('applyLayoutToParams', () => {
+  it('does not set layout when selectedCells is empty', () => {
+    const params = new URLSearchParams();
+    applyLayoutToParams(params, [], ['power-vi', 'teros']);
+    expect(params.has('layout')).toBe(false);
+  });
+
+  it('sets layout when cells are selected and panelOrder is non-empty', () => {
+    const params = new URLSearchParams();
+    applyLayoutToParams(params, [{ id: 1 }], ['power-vi', 'teros']);
+    expect(params.has('layout')).toBe(true);
+    expect(params.get('layout')).toBe('v1:vi,vwc');
+  });
+
+  it('does not set layout when panelOrder serializes to empty', () => {
+    const params = new URLSearchParams();
+    applyLayoutToParams(params, [{ id: 1 }], []);
+    expect(params.has('layout')).toBe(false);
   });
 });
