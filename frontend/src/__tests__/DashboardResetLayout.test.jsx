@@ -58,6 +58,10 @@ const queryClient = new QueryClient({
 describe('Dashboard Reset Layout Button', () => {
     afterEach(() => {
         vi.clearAllMocks();
+        mockSearchParams.delete('cell_id');
+        mockSearchParams.delete('layout');
+        mockSearchParams.delete('startDate');
+        mockSearchParams.delete('endDate');
     });
 
     const mockCells = [
@@ -65,9 +69,7 @@ describe('Dashboard Reset Layout Button', () => {
         { id: 2, name: 'Cell 2' },
     ];
 
-    it('should show reset button when cells are selected and reset parameters when clicked', async () => {
-        const user = userEvent.setup();
-
+    const renderDashboard = () => {
         CellService.useCells.mockReturnValue({
             data: mockCells,
             isLoading: false,
@@ -80,19 +82,41 @@ describe('Dashboard Reset Layout Button', () => {
             has_recent_data: true,
         });
 
+        return render(
+            <QueryClientProvider client={queryClient}>
+                <Dashboard />
+            </QueryClientProvider>,
+        );
+    };
+
+    it('keeps reset controls visible and disabled with no selected cells', async () => {
+        renderDashboard();
+
+        const resetButtons = await screen.findAllByRole('button', { name: /Reset/i });
+
+        expect(resetButtons).toHaveLength(1);
+        resetButtons.forEach((button) => {
+            expect(button).toBeDisabled();
+            expect(button.className).toContain('MuiButton-outlinedPrimary');
+        });
+    });
+
+    it('should show reset button when cells are selected and reset parameters when clicked', async () => {
+        const user = userEvent.setup();
+
         mockSearchParams.set('cell_id', '1,2');
         mockSearchParams.set('layout', 'custom_layout');
         mockSearchParams.set('startDate', '2023-01-01T00:00:00Z');
         mockSearchParams.set('endDate', '2023-01-31T00:00:00Z');
 
-        render(
-            <QueryClientProvider client={queryClient}>
-                <Dashboard />
-            </QueryClientProvider>
-        );
+        renderDashboard();
 
         const resetButtons = await screen.findAllByRole('button', { name: /Reset/i });
-        expect(resetButtons.length).toBeGreaterThan(0);
+        expect(resetButtons).toHaveLength(1);
+        resetButtons.forEach((button) => {
+            expect(button).toBeEnabled();
+            expect(button.className).toContain('MuiButton-outlinedPrimary');
+        });
 
         // Clear previous calls from initial render
         mockSetSearchParams.mockClear();

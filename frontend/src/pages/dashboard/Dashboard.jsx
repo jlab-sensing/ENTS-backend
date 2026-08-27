@@ -751,17 +751,16 @@ useEffect(() => {
                       axiosPrivate={axiosPrivate}
                     />
                   </Box>
-                  {selectedCells.length > 0 && (
-                    <Button
-                      variant='outlined'
-                      color='secondary'
-                      size='small'
-                      startIcon={<RestartAltIcon />}
-                      onClick={handleResetLayout}
-                    >
-                      Reset
-                    </Button>
-                  )}
+                  <Button
+                    variant='outlined'
+                    color='primary'
+                    size='small'
+                    startIcon={<RestartAltIcon />}
+                    onClick={handleResetLayout}
+                    disabled={selectedCells.length === 0}
+                  >
+                    Reset
+                  </Button>
                 </Stack>
 
                 {/* Second bar: Date Range + Controls */}
@@ -825,17 +824,16 @@ useEffect(() => {
                   axiosPrivate={axiosPrivate}
                 />
               </Box>
-              {selectedCells.length > 0 && (
-                <Button
-                  variant='outlined'
-                  color='secondary'
-                  startIcon={<RestartAltIcon />}
-                  onClick={handleResetLayout}
-                  sx={{ height: 40 }}
-                >
-                  Reset Layout
-                </Button>
-              )}
+              <Button
+                variant='outlined'
+                color='primary'
+                startIcon={<RestartAltIcon />}
+                onClick={handleResetLayout}
+                disabled={selectedCells.length === 0}
+                sx={{ height: 40 }}
+              >
+                Reset Layout
+              </Button>
               <Box display='flex' justifyContent='center' alignItems='center'>
                 {!stream ? (
                   <DateRangeSel
