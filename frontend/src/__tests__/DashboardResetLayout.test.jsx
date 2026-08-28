@@ -89,10 +89,10 @@ describe('Dashboard Reset Layout Button', () => {
         );
     };
 
-    it('keeps reset controls visible and disabled with no selected cells', async () => {
+    it('keeps reset controls visible and disabled with no selected cells on desktop', async () => {
         renderDashboard();
 
-        const resetButtons = await screen.findAllByRole('button', { name: /Reset/i });
+        const resetButtons = await screen.findAllByRole('button', { name: /Reset Layout/i });
 
         expect(resetButtons).toHaveLength(1);
         resetButtons.forEach((button) => {
@@ -101,7 +101,7 @@ describe('Dashboard Reset Layout Button', () => {
         });
     });
 
-    it('should show reset button when cells are selected and reset parameters when clicked', async () => {
+    it('should enable reset button when cells are selected and clear all parameters when clicked', async () => {
         const user = userEvent.setup();
 
         mockSearchParams.set('cell_id', '1,2');
@@ -111,12 +111,10 @@ describe('Dashboard Reset Layout Button', () => {
 
         renderDashboard();
 
-        const resetButtons = await screen.findAllByRole('button', { name: /Reset/i });
+        const resetButtons = await screen.findAllByRole('button', { name: /Reset Layout/i });
         expect(resetButtons).toHaveLength(1);
-        resetButtons.forEach((button) => {
-            expect(button).toBeEnabled();
-            expect(button.className).toContain('MuiButton-outlinedPrimary');
-        });
+        expect(resetButtons[0]).toBeEnabled();
+        expect(resetButtons[0].className).toContain('MuiButton-outlinedPrimary');
 
         // Clear previous calls from initial render
         mockSetSearchParams.mockClear();
@@ -132,5 +130,25 @@ describe('Dashboard Reset Layout Button', () => {
         expect(newParams.has('layout')).toBe(false);
         expect(newParams.has('startDate')).toBe(false);
         expect(newParams.has('endDate')).toBe(false);
+    });
+
+    it('handles reset button action properly when clicked with active cell selections', async () => {
+        const user = userEvent.setup();
+
+        mockSearchParams.set('cell_id', '1');
+        mockSearchParams.set('layout', 'cell-1-power');
+
+        renderDashboard();
+
+        const resetButton = await screen.findByRole('button', { name: /Reset Layout/i });
+        expect(resetButton).toBeEnabled();
+
+        mockSetSearchParams.mockClear();
+        await user.click(resetButton);
+
+        expect(mockSetSearchParams).toHaveBeenCalled();
+        const lastCallArg = mockSetSearchParams.mock.lastCall[0];
+        expect(lastCallArg.toString()).not.toContain('cell_id');
+        expect(lastCallArg.toString()).not.toContain('layout');
     });
 });
