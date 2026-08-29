@@ -61,8 +61,8 @@
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",
     "@vitejs/plugin-react": "^4.0.4",
-    "@vitest/coverage-istanbul": "^0.34.3",
-    "@vitest/ui": "^0.34.3",
+    "@vitest/coverage-istanbul": "^4.1.10",
+    "@vitest/ui": "^4.1.10",
     "eslint": "^8.48.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^8.8.0",
@@ -76,7 +76,7 @@
     "msw": "^1.2.5",
     "prettier": "^2.8.7",
     "vite": "^4.5.14",
-    "vitest": "^0.34.3",
+    "vitest": "^4.1.10",
     "vitest-canvas-mock": "^0.3.3"
   },
   "type": "module"
