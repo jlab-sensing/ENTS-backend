@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -8,147 +8,271 @@ import { DateTime } from 'luxon';
 import * as DataAvailabilityService from '../services/dataAvailability';
 import * as CellService from '../services/cell';
 
+// Mock router state used by Dashboard URL sync logic.
 const mockSetSearchParams = vi.fn();
-const mockSearchParams = new URLSearchParams();
+let mockSearchParams = new URLSearchParams();
+
+// Keep responsive branch testing deterministic for desktop/mobile layouts.
+const { mockUseMediaQuery } = vi.hoisted(() => ({
+  mockUseMediaQuery: vi.fn(() => false),
+}));
 
 vi.mock('react-router-dom', () => ({
-    useSearchParams: () => [mockSearchParams, mockSetSearchParams],
-    useNavigate: () => vi.fn(),
-    useLocation: () => ({ pathname: '/dashboard' }),
+  useSearchParams: () => [mockSearchParams, mockSetSearchParams],
+  useNavigate: () => vi.fn(),
+  useLocation: () => ({ pathname: '/dashboard' }),
 }));
 
 vi.mock('../components/TopNav', () => ({
-    default: () => <div data-testid="top-nav">TopNav</div>,
+  default: () => <div data-testid='top-nav'>TopNav</div>,
 }));
 
-vi.mock('../auth/hooks/useAxiosPrivate', () => ({
-    default: () => ({ get: vi.fn(), post: vi.fn() }),
+vi.mock('../components/DateRangeNotification', () => ({
+  default: () => <div data-testid='date-range-notification' />,
 }));
 
-vi.mock('../auth/hooks/useAuth', () => ({
-    default: () => ({ loggedIn: true }),
+vi.mock('../pages/dashboard/components/LayoutMismatchNotification', () => ({
+  default: () => <div data-testid='layout-mismatch-notification' />,
 }));
 
-vi.mock('../pages/dashboard/components/PowerCharts', () => ({
-    default: () => <div data-testid="power-charts">PowerCharts</div>,
+vi.mock('../components/BackBtn', () => ({
+  default: () => <button>Back</button>,
 }));
 
-vi.mock('../pages/dashboard/components/TerosCharts', () => ({
-    default: () => <div data-testid="teros-charts">TerosCharts</div>,
+vi.mock('../components/DownloadBtn', () => ({
+  default: () => <button>Download</button>,
 }));
 
-vi.mock('../pages/dashboard/components/UnifiedChart', () => ({
-    default: () => <div data-testid="unified-chart">UnifiedChart</div>,
+vi.mock('../components/StreamToggle', () => ({
+  default: () => <button>Stream</button>,
+}));
+
+vi.mock('../components/DateRangeSel', () => ({
+  default: () => <div>DateRangeSel</div>,
+}));
+
+vi.mock('../pages/dashboard/components/DashboardPanelGrid', () => ({
+  default: () => <div>DashboardPanelGrid</div>,
+}));
+
+vi.mock('../pages/dashboard/components/AddChartModal', () => ({
+  default: () => <div>AddChartModal</div>,
+}));
+
+vi.mock('../pages/dashboard/components/AddEquationModal', () => ({
+  default: () => <div>AddEquationModal</div>,
+}));
+
+vi.mock('../pages/dashboard/components/CellSelect', () => ({
+  default: ({ setSelectedCells }) => (
+    <button type='button' data-testid='cell-select-mock' onClick={() => setSelectedCells([{ id: 1, name: 'Cell 1' }])}>
+      CellSelect
+    </button>
+  ),
+}));
+
+vi.mock('@mui/material', async (importOriginal) => {
+  const actual = await importOriginal();
+  return { ...actual, useMediaQuery: mockUseMediaQuery };
+});
+
+vi.mock('socket.io-client', () => {
+  const mockSocket = {
+    on: vi.fn(),
+    off: vi.fn(),
+    emit: vi.fn(),
+    disconnect: vi.fn(),
+    connected: false,
+  };
+
+  return { io: vi.fn(() => mockSocket) };
+});
+
+vi.mock('../pages/dashboard/hooks/useDashboardHistoricalData', () => ({
+  useDashboardHistoricalData: vi.fn(() => ({
+    historicalPowerByCell: {},
+    historicalTerosByCell: {},
+    historicalSensorByKey: {},
+    historicalLoading: false,
+  })),
+}));
+
+vi.mock('../pages/dashboard/catalog/cellSensorLayout', () => ({
+  availablePanelIdsForCells: vi.fn(() => new Set()),
+  chartIdentityForPanel: vi.fn((id) => id),
+  defaultPanelOrderFromFetched: vi.fn(() => []),
+  dedupeEquivalentPanels: vi.fn((panels) => panels),
+  fetchCatalogPanelIdsForCells: vi.fn(() => Promise.resolve(new Set())),
+  fetchCellSensorsForCells: vi.fn(() => Promise.resolve({})),
+  panelsMissingForCells: vi.fn(() => []),
+}));
+
+vi.mock('../pages/dashboard/catalog/dashboardCatalog', () => ({
+  DEFAULT_DASHBOARD_PANEL_ORDER: ['power-vi', 'power-p', 'teros', 'temp'],
+  LAYOUT_VERSION: 'v1',
+  isKnownPanelId: vi.fn(() => true),
+  isDerivedPanelEntry: vi.fn(() => false),
+  isSensorPanelEntry: vi.fn(() => false),
+  parseLayoutParam: vi.fn((param) => (param ? param.split(',') : [])),
+  serializeLayoutParam: vi.fn((order) => (order && order.length ? order.join(',') : '')),
+}));
+
+vi.mock('../pages/dashboard/catalog/historicalDataLoader', () => ({
+  panelOrderNeedsPower: vi.fn(() => false),
+  panelOrderNeedsTeros: vi.fn(() => false),
 }));
 
 vi.mock('../services/cell', () => ({
-    useCells: vi.fn(),
-    useSetCellArchive: vi.fn(),
-    getCellSensors: vi.fn(() => Promise.resolve([])),
+  useCells: vi.fn(),
+  useSetCellArchive: vi.fn(),
+  getCellSensors: vi.fn(() => Promise.resolve([])),
 }));
 
 vi.mock('../services/dataAvailability', () => ({
-    getDataAvailability: vi.fn(),
+  getDataAvailability: vi.fn(),
 }));
 
+vi.mock('../auth/hooks/useAxiosPrivate', () => ({
+  default: () => ({
+    get: vi.fn(),
+    post: vi.fn(),
+  }),
+}));
+
+vi.mock('../auth/hooks/useAuth', () => ({
+  default: () => ({ loggedIn: true }),
+}));
+
+// Shared query client for all dashboard renders in this file.
 const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
 });
 
-describe('Dashboard Reset Layout Button', () => {
-    afterEach(() => {
-        vi.clearAllMocks();
-        mockSearchParams.delete('cell_id');
-        mockSearchParams.delete('layout');
-        mockSearchParams.delete('startDate');
-        mockSearchParams.delete('endDate');
-    });
+const mockCells = [
+  { id: 1, name: 'Cell 1' },
+  { id: 2, name: 'Cell 2' },
+];
 
-    const mockCells = [
-        { id: 1, name: 'Cell 1' },
-        { id: 2, name: 'Cell 2' },
-    ];
+const setupServices = () => {
+  CellService.useCells.mockReturnValue({
+    data: mockCells,
+    isLoading: false,
+    isError: false,
+  });
+  CellService.useSetCellArchive.mockReturnValue({ mutate: vi.fn() });
+  DataAvailabilityService.getDataAvailability.mockResolvedValue({
+    latest_timestamp: DateTime.now().toISO(),
+    earliest_timestamp: DateTime.now().minus({ months: 1 }).toISO(),
+    has_recent_data: true,
+  });
+};
 
-    const renderDashboard = () => {
-        CellService.useCells.mockReturnValue({
-            data: mockCells,
-            isLoading: false,
-            isError: false,
-        });
-        CellService.useSetCellArchive.mockReturnValue({ mutate: vi.fn() });
-        DataAvailabilityService.getDataAvailability.mockResolvedValue({
-            latest_timestamp: DateTime.now().toISO(),
-            earliest_timestamp: DateTime.now().minus({ months: 1 }).toISO(),
-            has_recent_data: true,
-        });
+const renderDashboard = () =>
+  render(
+    <QueryClientProvider client={queryClient}>
+      <Dashboard />
+    </QueryClientProvider>,
+  );
 
-        return render(
-            <QueryClientProvider client={queryClient}>
-                <Dashboard />
-            </QueryClientProvider>,
-        );
-    };
+describe('Dashboard reset layout', () => {
+  // Targeted coverage for the PR reset-related branches.
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
 
-    it('keeps reset controls visible and disabled with no selected cells on desktop', async () => {
-        renderDashboard();
+  beforeEach(() => {
+    mockSearchParams = new URLSearchParams();
+    mockSetSearchParams.mockClear();
+    mockUseMediaQuery.mockReturnValue(false);
+    setupServices();
+  });
 
-        const resetButtons = await screen.findAllByRole('button', { name: /Reset Layout/i });
+  it('handles cell selection changes', async () => {
+    const user = userEvent.setup();
+    renderDashboard();
 
-        expect(resetButtons).toHaveLength(1);
-        resetButtons.forEach((button) => {
-            expect(button).toBeDisabled();
-            expect(button.className).toContain('MuiButton-outlinedPrimary');
-        });
-    });
+    await user.click(screen.getByTestId('cell-select-mock'));
+    expect(await screen.findByRole('button', { name: /Reset Layout/i })).toBeEnabled();
+  });
 
-    it('should enable reset button when cells are selected and clear all parameters when clicked', async () => {
-        const user = userEvent.setup();
+  it('renders desktop reset layout disabled when no cells are selected', async () => {
+    renderDashboard();
 
-        mockSearchParams.set('cell_id', '1,2');
-        mockSearchParams.set('layout', 'custom_layout');
-        mockSearchParams.set('startDate', '2023-01-01T00:00:00Z');
-        mockSearchParams.set('endDate', '2023-01-31T00:00:00Z');
+    const button = await screen.findByRole('button', { name: /Reset Layout/i });
+    expect(button).toBeDisabled();
+  });
 
-        renderDashboard();
+  it('renders desktop reset layout enabled when cells are selected', async () => {
+    mockSearchParams.set('cell_id', '1,2');
+    renderDashboard();
 
-        const resetButtons = await screen.findAllByRole('button', { name: /Reset Layout/i });
-        expect(resetButtons).toHaveLength(1);
-        expect(resetButtons[0]).toBeEnabled();
-        expect(resetButtons[0].className).toContain('MuiButton-outlinedPrimary');
+    const button = await screen.findByRole('button', { name: /Reset Layout/i });
+    expect(button).toBeEnabled();
+  });
 
-        // Clear previous calls from initial render
-        mockSetSearchParams.mockClear();
+  it('resets dashboard and clears URL parameters on desktop', async () => {
+    const user = userEvent.setup();
+    mockSearchParams.set('cell_id', '1,2');
+    mockSearchParams.set('layout', 'custom');
+    mockSearchParams.set('startDate', '2023-01-01');
+    mockSearchParams.set('endDate', '2023-01-31');
 
-        await user.click(resetButtons[0]);
+    renderDashboard();
+    const button = await screen.findByRole('button', { name: /Reset Layout/i });
 
-        expect(mockSetSearchParams).toHaveBeenCalled();
-        
-        // Grab the parameters passed to the latest setSearchParams call
-        const newParams = mockSetSearchParams.mock.lastCall[0];
-        
-        expect(newParams.has('cell_id')).toBe(false);
-        expect(newParams.has('layout')).toBe(false);
-        expect(newParams.has('startDate')).toBe(false);
-        expect(newParams.has('endDate')).toBe(false);
-    });
+    mockSetSearchParams.mockClear();
+    await user.click(button);
 
-    it('handles reset button action properly when clicked with active cell selections', async () => {
-        const user = userEvent.setup();
+    expect(mockSetSearchParams).toHaveBeenCalled();
 
-        mockSearchParams.set('cell_id', '1');
-        mockSearchParams.set('layout', 'cell-1-power');
+    const newParams = mockSetSearchParams.mock.calls.at(-1)[0];
+    expect(newParams.has('cell_id')).toBe(false);
+    expect(newParams.has('layout')).toBe(false);
+    expect(newParams.has('startDate')).toBe(false);
+    expect(newParams.has('endDate')).toBe(false);
+  });
 
-        renderDashboard();
+  it('renders mobile reset button disabled when no cells are selected', async () => {
+    mockUseMediaQuery.mockReturnValue(true);
+    renderDashboard();
 
-        const resetButton = await screen.findByRole('button', { name: /Reset Layout/i });
-        expect(resetButton).toBeEnabled();
+    const button = await screen.findByRole('button', { name: /^Reset$/i });
+    expect(button).toBeDisabled();
+  });
 
-        mockSetSearchParams.mockClear();
-        await user.click(resetButton);
+  it('renders mobile reset button enabled when cells are selected', async () => {
+    mockUseMediaQuery.mockReturnValue(true);
+    mockSearchParams.set('cell_id', '1');
+    renderDashboard();
 
-        expect(mockSetSearchParams).toHaveBeenCalled();
-        const lastCallArg = mockSetSearchParams.mock.lastCall[0];
-        expect(lastCallArg.toString()).not.toContain('cell_id');
-        expect(lastCallArg.toString()).not.toContain('layout');
-    });
+    const button = await screen.findByRole('button', { name: /^Reset$/i });
+    expect(button).toBeEnabled();
+  });
+
+  it('resets dashboard and clears URL parameters on mobile', async () => {
+    const user = userEvent.setup();
+    mockUseMediaQuery.mockReturnValue(true);
+    mockSearchParams.set('cell_id', '1');
+    mockSearchParams.set('layout', 'cell-1-power');
+    mockSearchParams.set('startDate', '2023-01-01');
+    mockSearchParams.set('endDate', '2023-01-31');
+
+    renderDashboard();
+    const button = await screen.findByRole('button', { name: /^Reset$/i });
+
+    mockSetSearchParams.mockClear();
+    await user.click(button);
+
+    expect(mockSetSearchParams).toHaveBeenCalled();
+
+    const newParams = mockSetSearchParams.mock.calls.at(-1)[0];
+    expect(newParams.has('cell_id')).toBe(false);
+    expect(newParams.has('layout')).toBe(false);
+    expect(newParams.has('startDate')).toBe(false);
+    expect(newParams.has('endDate')).toBe(false);
+  });
 });
