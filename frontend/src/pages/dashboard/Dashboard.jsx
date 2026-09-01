@@ -1,5 +1,6 @@
-import { Box, Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { DateTime } from 'luxon';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { React, useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import DateRangeNotification from '../../components/DateRangeNotification';
@@ -680,6 +681,23 @@ useEffect(() => {
   }
 };
 
+  // Reset dashboard layout and selection to default state
+  const handleResetLayout = () => {
+    setSelectedCells([]);
+    setPanelOrder([]);
+    setManualDateSelection(false);
+    smartDateRangeAppliedRef.current = false;
+    setHistoricalDatesReady(false);
+
+    // Clear cell, layout, and date parameters from the URL
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('cell_id');
+    newParams.delete('layout');
+    newParams.delete('startDate');
+    newParams.delete('endDate');
+    setSearchParams(newParams);
+  };
+
 
   useEffect(() => {
     if (selectedCells.length === 0 || panelOrder.length > 0) {
@@ -757,6 +775,7 @@ useEffect(() => {
                       axiosPrivate={axiosPrivate}
                     />
                   </Box>
+                  <Button variant='outlined' color='primary' size='small' startIcon={<RestartAltIcon />} onClick={handleResetLayout} disabled={selectedCells.length === 0}>Reset</Button>
                 </Stack>
 
                 {/* Second bar: Date Range + Controls */}
@@ -820,6 +839,7 @@ useEffect(() => {
                   axiosPrivate={axiosPrivate}
                 />
               </Box>
+              <Button variant='outlined' color='primary' startIcon={<RestartAltIcon />} onClick={handleResetLayout} disabled={selectedCells.length === 0} sx={{ height: 40 }}>Reset Layout</Button>
               <Box display='flex' justifyContent='center' alignItems='center'>
                 {!stream ? (
                   <DateRangeSel
