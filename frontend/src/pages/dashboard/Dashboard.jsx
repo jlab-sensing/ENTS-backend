@@ -642,12 +642,12 @@ useEffect(() => {
 
   // Handle cell selection changes
   const handleCellSelectionChange = (newSelectedCells) => {
-    setSelectedCells(newSelectedCells);
-    if (!manualDateSelection) {
-      smartDateRangeAppliedRef.current = false; // instant reset, no setTimeout race
-      setHistoricalDatesReady(false);
-    }
-  };
+  setSelectedCells(newSelectedCells);
+  if (!manualDateSelection) {
+    smartDateRangeAppliedRef.current = false; // instant reset, no setTimeout race
+    setHistoricalDatesReady(false);
+  }
+};
 
   // Reset dashboard layout and selection to default state
   const handleResetLayout = () => {
@@ -664,14 +664,6 @@ useEffect(() => {
     newParams.delete('startDate');
     newParams.delete('endDate');
     setSearchParams(newParams);
-
-    // Reset date range to defaults
-    const defaultStart = DateTime.now().minus({ days: 14 });
-    const defaultEnd = DateTime.now();
-    setStartDate(defaultStart);
-    setEndDate(defaultEnd);
-    setHourlyStartDate(defaultStart);
-    setHourlyEndDate(defaultEnd);
   };
 
 
@@ -715,32 +707,6 @@ useEffect(() => {
 
   const showPanelSection = selectedCells.length > 0;
 
-  const mobileResetButton = (
-    <Button
-      variant='outlined'
-      color='primary'
-      size='small'
-      startIcon={<RestartAltIcon />}
-      onClick={handleResetLayout}
-      disabled={selectedCells.length === 0}
-    >
-      Reset
-    </Button>
-  );
-
-  const desktopResetButton = (
-    <Button
-      variant='outlined'
-      color='primary'
-      startIcon={<RestartAltIcon />}
-      onClick={handleResetLayout}
-      disabled={selectedCells.length === 0}
-      sx={{ height: 40 }}
-    >
-      Reset Layout
-    </Button>
-  );
-
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <TopNav />
@@ -777,7 +743,7 @@ useEffect(() => {
                       axiosPrivate={axiosPrivate}
                     />
                   </Box>
-                  {mobileResetButton}
+                  <Button variant='outlined' color='primary' size='small' startIcon={<RestartAltIcon />} onClick={handleResetLayout} disabled={selectedCells.length === 0}>Reset</Button>
                 </Stack>
 
                 {/* Second bar: Date Range + Controls */}
@@ -841,7 +807,7 @@ useEffect(() => {
                   axiosPrivate={axiosPrivate}
                 />
               </Box>
-              {desktopResetButton}
+              <Button variant='outlined' color='primary' startIcon={<RestartAltIcon />} onClick={handleResetLayout} disabled={selectedCells.length === 0} sx={{ height: 40 }}>Reset Layout</Button>
               <Box display='flex' justifyContent='center' alignItems='center'>
                 {!stream ? (
                   <DateRangeSel

@@ -88,29 +88,15 @@ vi.mock('../pages/dashboard/hooks/useDashboardHistoricalData', () => ({
   })),
 }));
 
-vi.mock('../pages/dashboard/catalog/cellSensorLayout', () => ({
-  availablePanelIdsForCells: vi.fn(() => new Set()),
-  chartIdentityForPanel: vi.fn((id) => id),
-  defaultPanelOrderFromFetched: vi.fn(() => []),
-  dedupeEquivalentPanels: vi.fn((panels) => panels),
-  fetchCatalogPanelIdsForCells: vi.fn(() => Promise.resolve([])),
-  fetchCellSensorsForCells: vi.fn(() => Promise.resolve({})),
-  isInteractiveCellAdd: vi.fn(() => false),
-  panelsMissingForCells: vi.fn(() => []),
-}));
+vi.mock('../pages/dashboard/catalog/cellSensorLayout', async () => {
+  const actual = await vi.importActual('../pages/dashboard/catalog/cellSensorLayout');
+  return { ...actual };
+});
 
-vi.mock('../pages/dashboard/catalog/dashboardCatalog', () => ({
-  DEFAULT_DASHBOARD_PANEL_ORDER: ['power-vi', 'power-p', 'teros', 'temp'],
-  BUILTIN_CATALOG: [],
-  UNIFIED_CATALOG: [],
-  LAYOUT_VERSION: 'v1',
-  isKnownPanelId: vi.fn(() => true),
-  isDerivedPanelEntry: vi.fn(() => false),
-  isSensorPanelEntry: vi.fn(() => false),
-  isLayoutPanelEntry: vi.fn(() => true),
-  parseLayoutParam: vi.fn((param) => (param ? param.split(',') : [])),
-  serializeLayoutParam: vi.fn((order) => (order && order.length ? order.join(',') : '')),
-}));
+vi.mock('../pages/dashboard/catalog/dashboardCatalog', async () => {
+  const actual = await vi.importActual('../pages/dashboard/catalog/dashboardCatalog');
+  return { ...actual };
+});
 
 vi.mock('../pages/dashboard/catalog/historicalDataLoader', () => ({
   panelOrderNeedsPower: vi.fn(() => false),
