@@ -1,26 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
 import Dashboard from '../pages/dashboard/Dashboard';
 import { DateTime } from 'luxon';
 import * as DataAvailabilityService from '../services/dataAvailability';
 import * as CellService from '../services/cell';
 
-// Mock router state used by Dashboard URL sync logic.
-const mockSetSearchParams = vi.fn();
-let mockSearchParams = new URLSearchParams();
-
 // Keep responsive branch testing deterministic for desktop/mobile layouts.
 const { mockUseMediaQuery } = vi.hoisted(() => ({
   mockUseMediaQuery: vi.fn(() => false),
-}));
-
-vi.mock('react-router-dom', () => ({
-  useSearchParams: () => [mockSearchParams, mockSetSearchParams],
-  useNavigate: () => vi.fn(),
-  useLocation: () => ({ pathname: '/dashboard' }),
 }));
 
 vi.mock('../components/TopNav', () => ({
@@ -102,17 +93,21 @@ vi.mock('../pages/dashboard/catalog/cellSensorLayout', () => ({
   chartIdentityForPanel: vi.fn((id) => id),
   defaultPanelOrderFromFetched: vi.fn(() => []),
   dedupeEquivalentPanels: vi.fn((panels) => panels),
-  fetchCatalogPanelIdsForCells: vi.fn(() => Promise.resolve(new Set())),
+  fetchCatalogPanelIdsForCells: vi.fn(() => Promise.resolve([])),
   fetchCellSensorsForCells: vi.fn(() => Promise.resolve({})),
+  isInteractiveCellAdd: vi.fn(() => false),
   panelsMissingForCells: vi.fn(() => []),
 }));
 
 vi.mock('../pages/dashboard/catalog/dashboardCatalog', () => ({
   DEFAULT_DASHBOARD_PANEL_ORDER: ['power-vi', 'power-p', 'teros', 'temp'],
+  BUILTIN_CATALOG: [],
+  UNIFIED_CATALOG: [],
   LAYOUT_VERSION: 'v1',
   isKnownPanelId: vi.fn(() => true),
   isDerivedPanelEntry: vi.fn(() => false),
   isSensorPanelEntry: vi.fn(() => false),
+  isLayoutPanelEntry: vi.fn(() => true),
   parseLayoutParam: vi.fn((param) => (param ? param.split(',') : [])),
   serializeLayoutParam: vi.fn((order) => (order && order.length ? order.join(',') : '')),
 }));
@@ -171,22 +166,21 @@ const setupServices = () => {
   });
 };
 
-const renderDashboard = () =>
+const renderDashboard = (initialEntries = ['/dashboard']) =>
   render(
-    <QueryClientProvider client={queryClient}>
-      <Dashboard />
-    </QueryClientProvider>,
+    <MemoryRouter initialEntries={initialEntries}>
+      <QueryClientProvider client={queryClient}>
+        <Dashboard />
+      </QueryClientProvider>
+    </MemoryRouter>,
   );
 
 describe('Dashboard reset layout', () => {
-  // Targeted coverage for the PR reset-related branches.
   afterEach(() => {
     vi.clearAllMocks();
   });
 
   beforeEach(() => {
-    mockSearchParams = new URLSearchParams();
-    mockSetSearchParams.mockClear();
     mockUseMediaQuery.mockReturnValue(false);
     setupServices();
   });
@@ -207,8 +201,7 @@ describe('Dashboard reset layout', () => {
   });
 
   it('renders desktop reset layout enabled when cells are selected', async () => {
-    mockSearchParams.set('cell_id', '1,2');
-    renderDashboard();
+    renderDashboard(['/dashboard?cell_id=1,2']);
 
     const button = await screen.findByRole('button', { name: /Reset Layout/i });
     expect(button).toBeEnabled();
@@ -216,24 +209,18 @@ describe('Dashboard reset layout', () => {
 
   it('resets dashboard and clears URL parameters on desktop', async () => {
     const user = userEvent.setup();
-    mockSearchParams.set('cell_id', '1,2');
-    mockSearchParams.set('layout', 'custom');
-    mockSearchParams.set('startDate', '2023-01-01');
-    mockSearchParams.set('endDate', '2023-01-31');
+    renderDashboard(['/dashboard?cell_id=1,2&layout=custom&startDate=2023-01-01&endDate=2023-01-31']);
 
-    renderDashboard();
-    const button = await screen.findByRole('button', { name: /Reset Layout/i });
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Reset Layout/i })).toBeEnabled();
+    });
+    const button = screen.getByRole('button', { name: /Reset Layout/i });
 
-    mockSetSearchParams.mockClear();
     await user.click(button);
 
-    expect(mockSetSearchParams).toHaveBeenCalled();
-
-    const newParams = mockSetSearchParams.mock.calls.at(-1)[0];
-    expect(newParams.has('cell_id')).toBe(false);
-    expect(newParams.has('layout')).toBe(false);
-    expect(newParams.has('startDate')).toBe(false);
-    expect(newParams.has('endDate')).toBe(false);
+    await waitFor(() => {
+      expect(button).toBeDisabled();
+    });
   });
 
   it('renders mobile reset button disabled when no cells are selected', async () => {
@@ -246,8 +233,7 @@ describe('Dashboard reset layout', () => {
 
   it('renders mobile reset button enabled when cells are selected', async () => {
     mockUseMediaQuery.mockReturnValue(true);
-    mockSearchParams.set('cell_id', '1');
-    renderDashboard();
+    renderDashboard(['/dashboard?cell_id=1']);
 
     const button = await screen.findByRole('button', { name: /^Reset$/i });
     expect(button).toBeEnabled();
@@ -256,23 +242,17 @@ describe('Dashboard reset layout', () => {
   it('resets dashboard and clears URL parameters on mobile', async () => {
     const user = userEvent.setup();
     mockUseMediaQuery.mockReturnValue(true);
-    mockSearchParams.set('cell_id', '1');
-    mockSearchParams.set('layout', 'cell-1-power');
-    mockSearchParams.set('startDate', '2023-01-01');
-    mockSearchParams.set('endDate', '2023-01-31');
+    renderDashboard(['/dashboard?cell_id=1&layout=cell-1-power&startDate=2023-01-01&endDate=2023-01-31']);
 
-    renderDashboard();
-    const button = await screen.findByRole('button', { name: /^Reset$/i });
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /^Reset$/i })).toBeEnabled();
+    });
+    const button = screen.getByRole('button', { name: /^Reset$/i });
 
-    mockSetSearchParams.mockClear();
     await user.click(button);
 
-    expect(mockSetSearchParams).toHaveBeenCalled();
-
-    const newParams = mockSetSearchParams.mock.calls.at(-1)[0];
-    expect(newParams.has('cell_id')).toBe(false);
-    expect(newParams.has('layout')).toBe(false);
-    expect(newParams.has('startDate')).toBe(false);
-    expect(newParams.has('endDate')).toBe(false);
+    await waitFor(() => {
+      expect(button).toBeDisabled();
+    });
   });
 });

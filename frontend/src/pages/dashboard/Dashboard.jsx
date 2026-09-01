@@ -715,6 +715,32 @@ useEffect(() => {
 
   const showPanelSection = selectedCells.length > 0;
 
+  const mobileResetButton = (
+    <Button
+      variant='outlined'
+      color='primary'
+      size='small'
+      startIcon={<RestartAltIcon />}
+      onClick={handleResetLayout}
+      disabled={selectedCells.length === 0}
+    >
+      Reset
+    </Button>
+  );
+
+  const desktopResetButton = (
+    <Button
+      variant='outlined'
+      color='primary'
+      startIcon={<RestartAltIcon />}
+      onClick={handleResetLayout}
+      disabled={selectedCells.length === 0}
+      sx={{ height: 40 }}
+    >
+      Reset Layout
+    </Button>
+  );
+
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <TopNav />
@@ -751,16 +777,7 @@ useEffect(() => {
                       axiosPrivate={axiosPrivate}
                     />
                   </Box>
-                  <Button
-                    variant='outlined'
-                    color='primary'
-                    size='small'
-                    startIcon={<RestartAltIcon />}
-                    onClick={handleResetLayout}
-                    disabled={selectedCells.length === 0}
-                  >
-                    Reset
-                  </Button>
+                  {mobileResetButton}
                 </Stack>
 
                 {/* Second bar: Date Range + Controls */}
@@ -824,16 +841,7 @@ useEffect(() => {
                   axiosPrivate={axiosPrivate}
                 />
               </Box>
-              <Button
-                variant='outlined'
-                color='primary'
-                startIcon={<RestartAltIcon />}
-                onClick={handleResetLayout}
-                disabled={selectedCells.length === 0}
-                sx={{ height: 40 }}
-              >
-                Reset Layout
-              </Button>
+              {desktopResetButton}
               <Box display='flex' justifyContent='center' alignItems='center'>
                 {!stream ? (
                   <DateRangeSel
