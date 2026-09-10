@@ -191,6 +191,25 @@ describe('Loading dashboard', () => {
     expect(selectedText).toBeInTheDocument();
   });
 
+  it('should show selected cells before unselected cells', async () => {
+    const user = userEvent.setup();
+    render(
+      <MockCellSelect
+        selectedCells={[{ id: '2', name: 'test_cell_2', archive: false }]}
+        setSelectedCells={mockedSetSelectedCells}
+      />,
+    );
+
+    await user.click(screen.getByLabelText('Cell'));
+
+    const cellOptions = await screen.findAllByRole('option');
+    const visibleCellNames = cellOptions
+      .map((option) => option.textContent)
+      .filter((name) => name.includes('test_cell_'));
+
+    expect(visibleCellNames).toEqual(['test_cell_2', 'test_cell_1']);
+  });
+
   it('should display comma-separated cell names in closed dropdown', async () => {
     const selectedCells = [
       { id: '1', name: 'test_cell_1', archive: false },
