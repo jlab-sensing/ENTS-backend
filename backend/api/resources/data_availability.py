@@ -1,5 +1,6 @@
 from flask import request
 from flask_restful import Resource
+from ..auth.auth import authenticate_apikey_or_jwt
 from ..models.sensor import Sensor
 from ..models.data import Data
 from ..models.teros_data import TEROSData
@@ -29,7 +30,9 @@ def _get_cell_availability(cell_id: int) -> dict:
 
 
 class DataAvailability(Resource):
-    def get(self):
+    method_decorators = [authenticate_apikey_or_jwt]
+
+    def get(self, user):
         """Get data availability information for intelligent date range selection.
 
         Returns the latest available data timestamp across all sensors for
@@ -49,14 +52,20 @@ class DataAvailability(Resource):
             return {"error": "cell_ids parameter is required"}, 400
 
         try:
-            cell_ids = [
+            requested_cell_ids = [
                 int(id.strip()) for id in cell_ids_param.split(",") if id.strip()
             ]
         except ValueError:
             return {"error": "Invalid cell_ids format"}, 400
 
-        if not cell_ids:
+        if not requested_cell_ids:
             return {"error": "At least one valid cell_id is required"}, 400
+
+        allowed_cell_ids = {cell.id for cell in user.cells}
+        cell_ids = [cid for cid in requested_cell_ids if cid in allowed_cell_ids]
+
+        if not cell_ids:
+            return {"error": "No accessible cell_ids provided"}, 403
 
         all_latest = []
         all_earliest = []
