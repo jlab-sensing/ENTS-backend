@@ -232,7 +232,7 @@ class TTNApi:
     def delete_end_device(
         self,
         end_device: EndDevice,
-        force: bool = False,
+        force: bool = True,
     ) -> bool:
         """Delete an End Device from the TTN registry.
 
