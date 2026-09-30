@@ -18,6 +18,8 @@ When adding a new entry, please use the following format:
 
 ## Log
 
+- [2026-09-29] chore: updated psycopg to version 3 [#835](https://github.com/jlab-sensing/ENTS-backend/issues/835)
+- [2026-09-29] fix: fetch data for same sensor type [#827](https://github.com/jlab-sensing/ENTS-backend/pull/827)
 - [2026-06-11] chore: updated ci actions [#774](https://github.com/jlab-sensing/ENTS-backend/pull/774)
 - [2026-05-24] feature: added /api/apikey/ endpoint for apikey retrieval, creation, and deletion. Updated auth guarded endpoints to accept JWT or API keys.
 - [2026-05-08] feature: Added /cell/id/sensors endpoint to query sensors associated with each cell [760](https://github.com/jlab-sensing/ENTS-backend/pull/760)
