@@ -36,7 +36,7 @@ ENV PYTHONUNBUFFERED 1
 
 # install system dependencies
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends gcc libpq-dev
+    apt-get install -y --no-install-recommends gcc libpq-dev postgresql
 
 # install python dependencies
 COPY requirements.txt /tmp/requirements.txt
@@ -56,25 +56,9 @@ COPY . .
 # Has additional tools installed for deveopment.
 FROM base AS devbase
 
-# set environment variables to have python print to stdout
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-
-# install system dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends gcc libpq-dev
-
-# install python dependencies
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
-#RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
-
 # install test dependencies
 COPY requirements-dev.txt /tmp/requirements-dev.txt
 RUN pip install --no-cache-dir -r /tmp/requirements-dev.txt
-
-# create new user and group to run the app with name "app"
-WORKDIR /app
 
 # copy files from source tree
 COPY . .

@@ -45,7 +45,15 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 if factories is not None:
-    test_db = factories.postgresql_proc(port=None, dbname="test_db")
+    #test_db = factories.postgresql_proc(port=None, dbname="test_db")
+    test_db = factories.postgresql_noproc(
+        host="postgresql",
+        port=5432,
+        user="dirtviz",
+        password="password",
+        dbname="test_db"
+    )
+
 else:
 
     @pytest.fixture(scope="session")
@@ -87,7 +95,7 @@ def db_conn(request):
         password=pg_password,
     ):
         # Setting context of testing db
-        connection_str = f"postgresql+psycopg2://{pg_user}:@{pg_host}:{pg_port}/{pg_db}"
+        connection_str = f"postgresql+psycopg://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_db}"
         yield connection_str
 
 
