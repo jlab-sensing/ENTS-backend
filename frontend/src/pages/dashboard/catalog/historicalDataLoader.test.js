@@ -113,6 +113,24 @@ describe('historicalDataLoader', () => {
     ]);
   });
 
+  it('collects db sensor requests for multiple cells sharing the same sensor type with different IDs', () => {
+    const cellSensorsById = {
+      1: [{ id: 2029, name: 'teros12', measurement: 'vwc' }],
+      2: [{ id: 2030, name: 'teros12', measurement: 'vwc' }],
+    };
+
+    const requests = collectDbSensorPanelRequests(
+      ['s:2029'],
+      [{ id: 1 }, { id: 2 }],
+      cellSensorsById,
+    );
+
+    const keys = requests.map((r) => r.cacheKey);
+    expect(keys).toContain(sensorDataCacheKey(1, 'teros12', 'vwc'));
+    expect(keys).toContain(sensorDataCacheKey(2, 'teros12', 'vwc'));
+    expect(keys).toHaveLength(2);
+  });
+
   it('skips db sensor panels missing name or measurement', () => {
     expect(
       collectDbSensorPanelRequests(['s:1'], [{ id: 1 }], {

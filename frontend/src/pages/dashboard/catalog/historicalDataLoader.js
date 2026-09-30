@@ -201,7 +201,12 @@ export function collectDbSensorPanelRequests(panelOrder, cells, cellSensorsById)
 
     cells.forEach((cell) => {
       const cellSensors = cellSensorsById[String(cell.id)] || [];
-      if (!cellSensors.some((row) => Number(row?.id) === Number(sensor.id))) return;
+      const hasMatchingSensor = cellSensors.some(
+        (row) =>
+          row?.name === sensor.name &&
+          measurementMatches(row?.measurement, [sensor.measurement]),
+      );
+      if (!hasMatchingSensor) return;
 
       const cacheKey = sensorDataCacheKey(cell.id, sensor.name, sensor.measurement);
       if (seen.has(cacheKey)) return;

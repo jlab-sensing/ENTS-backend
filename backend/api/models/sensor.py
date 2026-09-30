@@ -75,38 +75,33 @@ class Sensor(db.Model):
             t_data = Data.int_val
         elif cur_sensor.data_type == "text":
             t_data = Data.text_val
-        if not stream:
-            # select from actual timestamp and aggregate data
-            if resample == "none":
-                # resampling is not required: select data without aggregate functions
-                stmt = (
-                    db.select(
-                        Data.ts.label("ts"),
-                        t_data.label("data"),
-                    )
-                    .where(Data.sensor_id == cur_sensor.id)
-                    .filter(Data.ts.between(start_time, end_time))
-                )
-            else:
-                # handle normal resampling case
-                resampled = (
-                    db.select(
-                        db.func.date_trunc(resample, Data.ts).label("ts"),
-                        db.func.avg(t_data).label("data"),
-                    )
-                    .where(Data.sensor_id == cur_sensor.id)
-                    .filter(Data.ts.between(start_time, end_time))
-                    .group_by(db.func.date_trunc(resample, Data.ts))
-                    .subquery()
-                )
-
-                stmt = db.select(
-                    resampled.c.ts.label("ts"),
-                    (resampled.c.data).label("data"),
-                ).order_by(resampled.c.ts)
         else:
-            # select based off server timestamp for streaming data
-            # need due to no central clock on sensors
+            raise ValueError(f"Unsupported data_type: {cur_sensor.data_type}")
+
+        if not stream and resample != "none":
+            # handle normal resampling case
+            # build the bucket expression ONCE so the SELECT and GROUP BY share
+            # the same bind parameter (otherwise Postgres raises a GroupingError)
+            bucket = db.func.date_trunc(resample, Data.ts)
+
+            resampled = (
+                db.select(
+                    bucket.label("ts"),
+                    db.func.avg(t_data).label("data"),
+                )
+                .where(Data.sensor_id == cur_sensor.id)
+                .filter(Data.ts.between(start_time, end_time))
+                .group_by(bucket)
+                .subquery()
+            )
+
+            stmt = db.select(
+                resampled.c.ts.label("ts"),
+                resampled.c.data.label("data"),
+            ).order_by(resampled.c.ts)
+        else:
+            # no resampling, or streaming: select raw rows.
+            # streaming uses the server timestamp since sensors have no central clock
             stmt = (
                 db.select(
                     Data.ts.label("ts"),
@@ -114,7 +109,9 @@ class Sensor(db.Model):
                 )
                 .where(Data.sensor_id == cur_sensor.id)
                 .filter(Data.ts.between(start_time, end_time))
+                .order_by(Data.ts)
             )
+
         for row in db.session.execute(stmt):
             data["timestamp"].append(row.ts)
             data["data"].append(row.data)

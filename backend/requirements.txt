@@ -1,6 +1,6 @@
 sqlalchemy
 alembic
-psycopg2-binary
+psycopg
 tqdm
 Flask>=3.1.3,<3.2
 Flask-RESTful
