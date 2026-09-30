@@ -174,7 +174,7 @@ class TTNApi:
         end_device: EndDevice,
     ) -> EndDevice | None:
         """Register a new end device in the TTN registry.
-        
+
         If one of the requests fails then it will ensure instances are cleared
         from TTN.
 
