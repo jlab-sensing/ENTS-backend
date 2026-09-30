@@ -84,25 +84,6 @@ function CellSelect({ selectedCells, setSelectedCells }) {
     });
   }, [cells.data, selectedTags, taggedCellIds]);
 
-  // Further filter by search query
-  const searchableCells = useMemo(() => {
-    if (!Array.isArray(filteredCells)) return [];
-    
-    let result = filteredCells.filter((cell) => cell && cell.id && !cell.archive);
-    
-    // Apply search filter
-    if (searchQuery && searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
-      result = result.filter((cell) => {
-        const name = (cell.name || '').toLowerCase();
-        const idStr = String(cell.id || '');
-        return name.includes(query) || idStr.includes(query);
-      });
-    }
-    
-    return result.sort((a, b) => (a?.name || '').localeCompare(b?.name || ''));
-  }, [filteredCells, searchQuery]);
-
   // Normalize selectedCells
   const safeSelectedCells = useMemo(() => {
     if (!Array.isArray(selectedCells)) return [];
@@ -126,6 +107,28 @@ function CellSelect({ selectedCells, setSelectedCells }) {
   const selectedCellIds = useMemo(() => {
     return new Set(safeSelectedCells.map((cell) => cell.id));
   }, [safeSelectedCells]);
+
+  // Further filter by search query
+  const searchableCells = useMemo(() => {
+    if (!Array.isArray(filteredCells)) return [];
+    
+    let result = filteredCells.filter((cell) => cell && cell.id && !cell.archive);
+    
+    // Apply search filter
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter((cell) => {
+        const name = (cell.name || '').toLowerCase();
+        const idStr = String(cell.id || '');
+        return name.includes(query) || idStr.includes(query);
+      });
+    }
+    
+    return result.sort((a, b) => {
+      const selectedOrder = Number(selectedCellIds.has(b.id)) - Number(selectedCellIds.has(a.id));
+      return selectedOrder || (a?.name || '').localeCompare(b?.name || '');
+    });
+  }, [filteredCells, searchQuery, selectedCellIds]);
 
   // MOVED: Early returns now come AFTER all hooks
   if (cells.isLoading) {
