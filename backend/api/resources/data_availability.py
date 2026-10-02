@@ -1,6 +1,7 @@
 from flask import request
 from flask_restful import Resource
 from ..auth.auth import authenticate_apikey_or_jwt
+from ..models.cell import Cell
 from ..models.sensor import Sensor
 from ..models.data import Data
 from ..models.teros_data import TEROSData
@@ -61,8 +62,14 @@ class DataAvailability(Resource):
         if not requested_cell_ids:
             return {"error": "At least one valid cell_id is required"}, 400
 
-        allowed_cell_ids = {cell.id for cell in user.cells}
-        cell_ids = [cid for cid in requested_cell_ids if cid in allowed_cell_ids]
+        requested_cells = Cell.query.filter(Cell.id.in_(requested_cell_ids)).all()
+        user_cell_ids = {cell.id for cell in user.cells}
+        authorized_cell_ids = {
+            cell.id
+            for cell in requested_cells
+            if cell.is_public or cell.id in user_cell_ids
+        }
+        cell_ids = [cid for cid in requested_cell_ids if cid in authorized_cell_ids]
 
         if not cell_ids:
             return {"error": "No accessible cell_ids provided"}, 403
