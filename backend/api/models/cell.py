@@ -25,6 +25,7 @@ class Cell(db.Model):
     latitude = db.Column(db.Float())
     longitude = db.Column(db.Float())
     archive = db.Column(db.Boolean(), default=False, nullable=False)
+    is_public = db.Column(db.Boolean(), default=True, nullable=False)
     user_id = db.Column(db.Uuid(), db.ForeignKey("user.id"))
     users = db.relationship(
         "User", secondary=Cell_User.__table__, back_populates="cells"
@@ -40,6 +41,7 @@ class Cell(db.Model):
         longitude=-122.0631536846593,
         archive=False,
         user_id=None,
+        is_public=True,
     ):
         self.name = name
         self.location = location
@@ -47,6 +49,7 @@ class Cell(db.Model):
         self.longitude = longitude
         self.archive = archive
         self.user_id = user_id
+        self.is_public = is_public
 
     def __repr__(self):
         return repr(self.name)
