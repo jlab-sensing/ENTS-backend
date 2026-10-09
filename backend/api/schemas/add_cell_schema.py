@@ -10,4 +10,5 @@ class AddCellSchema(ma.SQLAlchemySchema):
     latitude = ma.Float()
     userEmail = ma.Email(dump_default="")
     archive = ma.Boolean(dump_default=False)
+    is_public = ma.Boolean(load_default=True, dump_default=True)
     tag_ids = ma.List(ma.Integer(), dump_default=[])

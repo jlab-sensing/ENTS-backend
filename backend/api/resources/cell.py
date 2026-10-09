@@ -77,12 +77,16 @@ class Cell(Resource):
         else:
             archive = cell_data["archive"]
 
+        is_public = cell_data.get("is_public", True)
+        if is_public is None:
+            is_public = True
+
         if CellModel.find_by_name(cell_name):
             return {"message": "Duplicate cell name"}, 400
 
         try:
             new_cell = CellModel.add_cell_by_user_email(
-                cell_name, location, lat, long, archive, userEmail
+                cell_name, location, lat, long, archive, userEmail, is_public
             )
 
             if new_cell and tag_ids:
@@ -108,12 +112,23 @@ class Cell(Resource):
         except Exception as e:
             return {"message": "Error adding cell", "error": str(e)}, 500
 
-    def put(self, _user, cellId):
+    def put(self, user, cellId):
         json_data = request.json
         cell = CellModel.get(cellId)
 
         if not cell:
             return jsonify({"message": "Cell not found"}), 404
+
+        # Changing visibility is restricted to users with access to the cell,
+        # otherwise anyone authenticated could hide or expose another's cell.
+        if "is_public" in json_data:
+            is_public = json_data.get("is_public")
+            if not isinstance(is_public, bool):
+                return {"message": "is_public must be a boolean"}, 400
+            if is_public != cell.is_public and not (
+                cell.user_id == user.id or user in cell.users
+            ):
+                return {"message": "Not authorized to change cell visibility"}, 403
 
         try:
             # Update basic cell fields
@@ -127,6 +142,8 @@ class Cell(Resource):
                 cell.longitude = json_data.get("long")
             if "archive" in json_data:
                 cell.archive = json_data.get("archive")
+            if "is_public" in json_data:
+                cell.is_public = json_data.get("is_public")
 
             # Handle tag assignment
             if "tag_ids" in json_data:

@@ -55,7 +55,9 @@ class Cell(db.Model):
         return repr(self.name)
 
     @staticmethod
-    def add_cell_by_user_email(name, location, latitude, longitude, archive, userEmail):
+    def add_cell_by_user_email(
+        name, location, latitude, longitude, archive, userEmail, is_public=True
+    ):
         from .user import User
 
         creator = User.get_user_by_email(userEmail)
@@ -66,6 +68,7 @@ class Cell(db.Model):
             longitude=longitude,
             user_id=creator.id,
             archive=archive,
+            is_public=is_public,
         )
         new_cell.save()
 
