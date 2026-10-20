@@ -1,6 +1,16 @@
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, Button, Chip, IconButton, Modal, TextField, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Chip,
+  FormControlLabel,
+  IconButton,
+  Modal,
+  Switch,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { React, useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { addCell } from '../../../services/cell';
@@ -19,6 +29,7 @@ function AddCellModal() {
   const [long, setLong] = useState('');
   const [lat, setLat] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
+  const [isPublic, setIsPublic] = useState(true);
   const archive = false;
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
@@ -42,6 +53,7 @@ function AddCellModal() {
     setLong('');
     setLat('');
     setSelectedTags([]);
+    setIsPublic(true);
   };
 
   const handleClose = () => {
@@ -54,6 +66,7 @@ function AddCellModal() {
     setLong('');
     setLat('');
     setSelectedTags([]);
+    setIsPublic(true);
   };
 
   const getLocation = () => {
@@ -217,6 +230,24 @@ function AddCellModal() {
                   />
 
                   <TagSelector selectedTags={selectedTags} onTagsChange={setSelectedTags} axiosPrivate={axiosPrivate} />
+
+                  <Box>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={isPublic}
+                          onChange={(e) => setIsPublic(e.target.checked)}
+                          color='success'
+                        />
+                      }
+                      label='Public cell'
+                    />
+                    <Typography variant='caption' display='block' sx={{ color: '#666' }}>
+                      {isPublic
+                        ? 'Anyone can view this cell\'s data.'
+                        : 'Only you and users with access to this cell can view its data.'}
+                    </Typography>
+                  </Box>
                 </Box>
 
                 {/* Action Buttons */}
@@ -267,7 +298,7 @@ function AddCellModal() {
                     onClick={async () => {
                       setIsSubmitted(true);
                       try {
-                        const res = await addCell(name, location, long, lat, archive, user.email);
+                        const res = await addCell(name, location, long, lat, archive, user.email, isPublic);
 
                         // Assign tags to the newly created cell if any tags are selected
                         if (selectedTags.length > 0 && res.id) {
