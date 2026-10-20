@@ -460,9 +460,18 @@ function Dashboard() {
           // preserving the existing layout order, then dedupe equivalents.
           const newAvailable = availablePanelIdsForCells(sensors, cellIds, catalogIds);
           setPanelOrder((prevOrder) => mergePanelsForAddedCells(prevOrder, newAvailable, sensors));
+        } else if (prev) {
+          // Partial cell removal: prune panels that are no longer available for
+          // the remaining cells, then dedupe equivalents.
+          const newAvailable = availablePanelIdsForCells(sensors, cellIds, catalogIds);
+          setPanelOrder((prevOrder) => {
+            const pruned = prevOrder.filter(
+              (panelId) => isDerivedPanelEntry(panelId) || newAvailable.has(panelId),
+            );
+            return dedupeEquivalentPanels(pruned, sensors);
+          });
         } else {
-          // Initial load with URL layout, or partial cell removal: respect existing
-          // layout and only dedupe equivalents.
+          // Initial load with URL layout: respect existing layout and only dedupe equivalents.
           setPanelOrder((prevOrder) => dedupeEquivalentPanels(prevOrder, sensors));
         }
       },
