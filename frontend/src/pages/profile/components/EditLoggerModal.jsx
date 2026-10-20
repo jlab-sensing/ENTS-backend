@@ -15,10 +15,12 @@ function EditLoggerModal({ logger }) {
   const [formData, setFormData] = useState({ ...logger });
   const [response, setResponse] = useState(null);
   const [isSubmitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleOpen = () => {
     setOpen(true);
     setResponse(null);
+    setError(null);
     setFormData({ ...logger });
   };
 
@@ -40,9 +42,13 @@ function EditLoggerModal({ logger }) {
     updateLogger(logger.id, updateData, auth?.accessToken)
       .then((res) => {
         setResponse(res);
+        setError(null);
         refetch();
       })
-      .catch((err) => console.error('Edit failed:', err))
+      .catch((err) => {
+        const msg = err?.response?.data?.message || 'Failed to update logger.';
+        setError(msg);
+      })
       .finally(() => setSubmitting(false));
   };
 
@@ -175,6 +181,21 @@ function EditLoggerModal({ logger }) {
                     }}
                   />
                 </Box>
+
+                {/* Error Message */}
+                {error && (
+                  <Box sx={{
+                    mt: '1rem',
+                    p: '0.75rem 1rem',
+                    backgroundColor: '#fdecea',
+                    borderRadius: '8px',
+                    border: '1px solid #f5c6cb'
+                  }}>
+                    <Typography color='error' variant='body2'>
+                      {error}
+                    </Typography>
+                  </Box>
+                )}
 
                 {/* Action Buttons */}
                 <Box sx={{ 
