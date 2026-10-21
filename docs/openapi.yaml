@@ -1,0 +1,846 @@
+openapi: 3.0.3
+info:
+  title: ENTS Backend API
+  description: |
+    Environmental Networked Sensing (ENTS) backend REST API documentation.
+    Provides endpoints for uploading and querying sensor measurements, managing cell network infrastructure, user authentication, and data availability.
+  version: 1.0.0
+servers:
+  - url: /api
+    description: Current Environment relative path
+
+paths:
+  /:
+    get:
+      summary: Health Check
+      description: Returns health status of the API service.
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "SUCCESS"
+
+  /sensor/:
+    get:
+      summary: Get sensor measurements
+      description: Query sensor measurements by cell ID, sensor name, and measurement type over time range.
+      parameters:
+        - name: cellId
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: ID of the cell node
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Name of the sensor or measurement type
+        - name: measurement
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Measurement field name
+        - name: startTime
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Start timestamp filter
+        - name: endTime
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: End timestamp filter
+        - name: resample
+          in: query
+          schema:
+            type: string
+            default: hour
+          description: Resampling frequency interval (e.g., raw, hour, day)
+        - name: stream
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Whether to format response as time series stream object
+      responses:
+        '200':
+          description: Sensor measurements data
+          content:
+            application/json:
+              schema:
+                type: object
+
+    post:
+      summary: Upload sensor measurements (TTN JSON or Protobuf Binary)
+      description: |
+        Upload measurement data from hardware nodes. Differentiated by `Content-Type`:
+        - `application/json`: The Things Network (TTN) uplink webhook payload.
+        - `application/octet-stream`: Protobuf encoded binary measurement payload.
+      parameters:
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            enum: [application/json, application/octet-stream]
+        - name: SensorVersion
+          in: header
+          required: false
+          schema:
+            type: string
+            default: "1"
+          description: "Sensor measurement protocol version ('1' or '2')"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uplink_message:
+                  type: object
+                  properties:
+                    f_port:
+                      type: integer
+                      example: 1
+                    frm_payload:
+                      type: string
+                      description: Base64-encoded binary payload
+                      example: "AQIDBA=="
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              description: Protobuf binary payload
+      responses:
+        '200':
+          description: Measurement processed successfully
+        '400':
+          description: Invalid request content or binary payload parse error
+        '404':
+          description: Unrecognized f_port or sensor parameter
+
+  /sensor_json/:
+    get:
+      summary: Get sensor measurements (JSON endpoint)
+      parameters:
+        - name: cellId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: measurement
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: startTime
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: endTime
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: resample
+          in: query
+          schema:
+            type: string
+            default: hour
+        - name: stream
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Sensor measurements data
+    post:
+      summary: Upload generic sensor measurement via JSON
+      description: Upload custom arbitrary sensor measurements in JSON format.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - cellId
+                - loggerId
+                - ts
+                - data
+              properties:
+                type:
+                  type: string
+                  description: Measurement/Sensor type name
+                  example: "bme280"
+                cellId:
+                  type: integer
+                  description: Cell ID destination
+                  example: 1
+                loggerId:
+                  type: integer
+                  description: Logger ID source
+                  example: 1
+                ts:
+                  type: integer
+                  description: Unix epoch timestamp in seconds
+                  example: 1609459200
+                data:
+                  type: object
+                  description: Arbitrary key-value numerical measurement readings
+                  example:
+                    temperature: 23.5
+                    humidity: 50.2
+      responses:
+        '200':
+          description: Measurement recorded successfully
+        '400':
+          description: Invalid JSON format or missing payload fields
+
+  /cell/:
+    get:
+      summary: List cells
+      security:
+        - ApiKeyAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: user
+          in: query
+          schema:
+            type: boolean
+          description: Filter cells owned by authenticated user
+        - name: tags
+          in: query
+          schema:
+            type: string
+          description: Comma-separated tag IDs (e.g. "1,2,3")
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Tag category filter
+        - name: name
+          in: query
+          schema:
+            type: string
+          description: Search cell by name substring
+      responses:
+        '200':
+          description: List of cells
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cell'
+        '400':
+          description: Invalid query parameters
+        '401':
+          description: Unauthorized
+
+    post:
+      summary: Create new cell node
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - location
+                - latitude
+                - longitude
+                - userEmail
+              properties:
+                name:
+                  type: string
+                location:
+                  type: string
+                latitude:
+                  type: number
+                  format: float
+                longitude:
+                  type: number
+                  format: float
+                userEmail:
+                  type: string
+                archive:
+                  type: boolean
+                tag_ids:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '200':
+          description: Cell created successfully
+        '400':
+          description: Duplicate cell name or validation error
+        '500':
+          description: Internal server error
+
+  /cell/{cellId}:
+    put:
+      summary: Update cell
+      security:
+        - ApiKeyAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: cellId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                location:
+                  type: string
+                lat:
+                  type: number
+                long:
+                  type: number
+                archive:
+                  type: boolean
+                tag_ids:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '200':
+          description: Cell updated
+        '404':
+          description: Cell not found
+    delete:
+      summary: Delete cell
+      security:
+        - ApiKeyAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: cellId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cell deleted successfully
+        '404':
+          description: Cell not found
+
+  /cell/{cell_id}:
+    put:
+      summary: Update cell (by cell_id)
+      security:
+        - ApiKeyAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: cell_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cell updated
+    delete:
+      summary: Delete cell (by cell_id)
+      security:
+        - ApiKeyAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: cell_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cell deleted
+
+  /cell/id:
+    get:
+      summary: Get cell ID mapping
+      responses:
+        '200':
+          description: Map of cell names to IDs
+
+  /cell/{cell_id}/sensors:
+    get:
+      summary: Get sensors associated with a cell
+      parameters:
+        - name: cell_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sensor list for cell
+
+  /cell/{cell_id}/tags:
+    get:
+      summary: Get tags for cell
+      parameters:
+        - name: cell_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Tags for cell
+    post:
+      summary: Add tag to cell
+      parameters:
+        - name: cell_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Tag added to cell
+
+  /cell/{cell_id}/tags/{tag_id}:
+    delete:
+      summary: Remove tag from cell
+      parameters:
+        - name: cell_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: tag_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Tag removed from cell
+
+  /tags/{tag_id}/cells:
+    get:
+      summary: Get cells associated with tag
+      parameters:
+        - name: tag_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of cells having tag
+
+  /cell/{cell_id}/users:
+    get:
+      summary: Get users assigned to cell
+      parameters:
+        - name: cell_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of cell users
+
+  /cell/{cell_id}/users/{user_id}:
+    delete:
+      summary: Remove user from cell
+      parameters:
+        - name: cell_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User removed from cell
+
+  /users/{user_id}/cells:
+    get:
+      summary: Get cells for user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of user cells
+
+  /cell/{cell_id}/share:
+    post:
+      summary: Share cell access with user
+      parameters:
+        - name: cell_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cell access shared
+
+  /logger/:
+    get:
+      summary: List loggers
+      security:
+        - ApiKeyAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: user
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: List of loggers
+    post:
+      summary: Create logger
+      security:
+        - ApiKeyAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - userEmail
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                  example: "ents"
+                device_eui:
+                  type: string
+                dev_eui:
+                  type: string
+                join_eui:
+                  type: string
+                app_key:
+                  type: string
+                description:
+                  type: string
+                userEmail:
+                  type: string
+      responses:
+        '201':
+          description: Logger created
+        '400':
+          description: Duplicate logger or invalid TTN registration details
+
+  /logger/{logger_id}:
+    get:
+      summary: Get logger details
+      security:
+        - ApiKeyAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: logger_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Logger details (including TTN status if applicable)
+        '404':
+          description: Logger not found
+    put:
+      summary: Update logger
+      security:
+        - ApiKeyAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: logger_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Logger updated
+        '404':
+          description: Logger not found
+    delete:
+      summary: Delete logger
+      security:
+        - ApiKeyAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: logger_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Logger deleted from DB and TTN
+        '404':
+          description: Logger not found
+
+  /power/:
+    get:
+      summary: Get power measurement data
+      responses:
+        '200':
+          description: Power data
+
+  /power/{cell_id}:
+    get:
+      summary: Get power measurement data for a specific cell
+      parameters:
+        - name: cell_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cell power data
+
+  /teros/:
+    get:
+      summary: Get TEROS soil sensor measurement data
+      responses:
+        '200':
+          description: TEROS sensor data
+
+  /teros/{cell_id}:
+    get:
+      summary: Get TEROS soil sensor measurement data for a cell
+      parameters:
+        - name: cell_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: TEROS data for cell
+
+  /data-availability/:
+    get:
+      summary: Get data availability summary across cells/sensors
+      responses:
+        '200':
+          description: Data availability metrics
+
+  /catalog/sensors:
+    get:
+      summary: Get sensor catalog definitions
+      responses:
+        '200':
+          description: Catalog of available sensors and specifications
+
+  /equations/validate:
+    post:
+      summary: Validate custom sensor transformation equations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                expression:
+                  type: string
+                  example: "x * 2.5 + 0.1"
+      responses:
+        '200':
+          description: Validation result
+
+  /session:
+    get:
+      summary: Get current session user status
+      responses:
+        '200':
+          description: Current user information
+    post:
+      summary: Authenticate / Login session
+      responses:
+        '200':
+          description: Login status
+    delete:
+      summary: Logout session
+      responses:
+        '200':
+          description: Session cleared
+
+  /user:
+    get:
+      summary: Get current authenticated user details
+      responses:
+        '200':
+          description: User information
+
+  /apikey/:
+    get:
+      summary: Get API keys for current user
+      security:
+        - CookieAuth: []
+      responses:
+        '200':
+          description: List of user API keys
+    post:
+      summary: Generate new API key
+      security:
+        - CookieAuth: []
+      responses:
+        '201':
+          description: API key created
+    delete:
+      summary: Revoke API key
+      security:
+        - CookieAuth: []
+      responses:
+        '200':
+          description: API key revoked
+
+  /tag/:
+    get:
+      summary: List all tags
+      responses:
+        '200':
+          description: List of tags
+    post:
+      summary: Create tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                category:
+                  type: string
+      responses:
+        '201':
+          description: Tag created
+
+  /tag/{tag_id}:
+    get:
+      summary: Get tag detail
+      parameters:
+        - name: tag_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Tag detail
+    put:
+      summary: Update tag
+      parameters:
+        - name: tag_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Tag updated
+    delete:
+      summary: Delete tag
+      parameters:
+        - name: tag_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Tag deleted
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+
+  schemas:
+    Cell:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        location:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        archive:
+          type: boolean
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string

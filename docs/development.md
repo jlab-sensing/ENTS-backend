@@ -162,6 +162,12 @@ The `.env` file is used to provide the necessary environment variables to the lo
 > NOTE: We have run into issues with syntax of AWS ECS with the environment file. The string encapsulation characters `'` and `"` are treated as literals, while [docker supports quoting](https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/#env-file-syntax).
 
 
+### API Documentation
+
+Interactive API documentation generated using Swagger UI is located in `docs/index.html` and backed by the OpenAPI 3.0 specification in `docs/openapi.yaml`. When pushed to GitHub `main` branch, these docs are automatically published via GitHub Pages.
+
+To view locally, open `docs/index.html` in your web browser.
+
 ### Accessing Environment Variables
 
 To access environment variables for development against the production version of the website, you must utilize our python script 'env-import.py'. To use this, you must first:
