@@ -351,6 +351,36 @@ paths:
         '404':
           description: Cell not found
 
+  /cell/{cell_id}:
+    put:
+      summary: Update cell (by cell_id)
+      security:
+        - ApiKeyAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: cell_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cell updated
+    delete:
+      summary: Delete cell (by cell_id)
+      security:
+        - ApiKeyAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: cell_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cell deleted
+
   /cell/id:
     get:
       summary: Get cell ID mapping
