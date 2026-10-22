@@ -922,7 +922,12 @@ class ApplicationServerDeviceRegistry(TTNApiEndpoint):
 
         return True
 
-    def downlink(self, end_device: EndDevice, payload: str, f_port: int = 1) -> bool:
+    def downlink(
+        self,
+        end_device: EndDevice,
+        payload: str,
+        f_port: int = 1,
+    ) -> bool:
         """Queue Downlink
 
         Args:
