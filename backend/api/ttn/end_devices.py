@@ -365,6 +365,24 @@ class TTNApi:
 
         return self.end_device_reg.get_list(field_mask, order, limit, page, filters)
 
+    def send_downlink(
+        self, end_device: EndDevice, payload: str, f_port: int = 1
+    ) -> bool:
+        """Queue Downlink
+
+        This expects a base64 encoded payload, the decoded payload field
+        needs a payload formatter for the end device configured on ttn.
+
+        Args:
+            end_device: The End Device object to send downlink to.
+            payload: The base64 encoded payload to send in the downlink.
+            f_port: default fport is 1,
+
+        Returns:
+            True if the downlink was successfully queued, False otherwise.
+        """
+        return self.as_device_reg.downlink(end_device, payload, f_port)
+
 
 class TTNApiEndpoint:
     def __init__(
@@ -899,6 +917,50 @@ class ApplicationServerDeviceRegistry(TTNApiEndpoint):
         if req.status_code != 200:
             warnings.warn(
                 f"ttn: Failed to delete end device on as:{req.status_code} - {req.text}"
+            )
+            return False
+
+        return True
+
+    def downlink(
+        self,
+        end_device: EndDevice,
+        payload: str,
+        f_port: int = 1,
+    ) -> bool:
+        """Queue Downlink
+
+        Args:
+            end_device: The End Device object to send downlink to.
+            payload: Base64 encoded payload to send in the downlink.
+            f_port: fport default is 1
+
+        Returns:
+            True if the downlink was successfully queued, False otherwise.
+        """
+        device_id = end_device.data["ids"]["device_id"]
+
+        # /api/v3/as/applications/<application-id>/devices/<device-id>/down/push
+
+        endpoint = (
+            f"{self.base_url}/as/applications/{self.app_id}/devices/"
+            f"{device_id}/down/push"
+        )
+        data = {
+            "downlinks": [
+                {
+                    "frm_payload": payload,
+                    "f_port": f_port,
+                    "priority": "NORMAL",
+                }
+            ]
+        }
+
+        req = self.session.post(endpoint, json=data)
+
+        if req.status_code != 200:
+            warnings.warn(
+                f"ttn: Failed to queue downlink on as:{req.status_code} - {req.text}"
             )
             return False
 
