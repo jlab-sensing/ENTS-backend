@@ -942,7 +942,10 @@ class ApplicationServerDeviceRegistry(TTNApiEndpoint):
 
         # /api/v3/as/applications/<application-id>/devices/<device-id>/down/push
 
-        endpoint = f"{self.base_url}/as/applications/{self.app_id}/devices/{device_id}/down/push"
+        endpoint = (
+            f"{self.base_url}/as/applications/{self.app_id}/devices/"
+            f"{device_id}/down/push"
+        )
         data = {
             "downlinks": [
                 {
