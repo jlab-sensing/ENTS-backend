@@ -1,7 +1,6 @@
 from __future__ import annotations
 import os
 import warnings
-
 import requests
 
 
@@ -956,7 +955,7 @@ class ApplicationServerDeviceRegistry(TTNApiEndpoint):
             ]
         }
 
-        req = self.session.post(endpoint, json=data)
+        req = self.session.post(endpoint, json=data, timeout=(3.05, 10))
 
         if req.status_code != 200:
             warnings.warn(
