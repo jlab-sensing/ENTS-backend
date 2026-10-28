@@ -271,3 +271,31 @@ def test_data_availability_mixed_request_filters_unauthorized_private_cell(
         headers=make_jwt_header(user),
     )
     assert response.status_code == 403
+
+
+def test_data_availability_public_cell_accessible_anonymously(
+    test_client, init_database
+):
+    """
+    GIVEN a public cell (e.g. a demo cell)
+    WHEN an anonymous caller hits the data availability endpoint
+    THEN the request succeeds instead of returning 401
+    """
+    cell = Cell("test_cell_da_anon_public", "", 1, 1, False, None, is_public=True)
+    cell.save()
+
+    response = test_client.get(f"/api/data-availability/?cell_ids={cell.id}")
+    assert response.status_code == 200
+
+
+def test_data_availability_private_cell_denied_anonymously(test_client, init_database):
+    """
+    GIVEN a private cell
+    WHEN an anonymous caller hits the data availability endpoint
+    THEN access is denied with a 403
+    """
+    cell = Cell("test_cell_da_anon_private", "", 1, 1, False, None, is_public=False)
+    cell.save()
+
+    response = test_client.get(f"/api/data-availability/?cell_ids={cell.id}")
+    assert response.status_code == 403

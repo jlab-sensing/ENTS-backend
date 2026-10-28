@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from flask import request, jsonify
+from flask import request
 from ..auth.auth import authenticate_apikey_or_jwt
 from ..schemas.cell_schema import CellSchema
 
@@ -34,6 +34,9 @@ class Cell(Resource):
             cells = CellModel.get_cells_by_user_id(user.id)
         else:
             cells = CellModel.get_all()
+
+        # Hide private cells from users without access
+        cells = [cell for cell in cells if cell.can_view(user)]
 
         # Apply tag filtering if specified
         if tag_ids:
@@ -117,7 +120,10 @@ class Cell(Resource):
         cell = CellModel.get(cellId)
 
         if not cell:
-            return jsonify({"message": "Cell not found"}), 404
+            return {"message": "Cell not found"}, 404
+
+        if not cell.can_manage(user):
+            return {"message": "Not authorized to update cell"}, 403
 
         # Changing visibility is restricted to users with access to the cell,
         # otherwise anyone authenticated could hide or expose another's cell.
@@ -125,10 +131,6 @@ class Cell(Resource):
             is_public = json_data.get("is_public")
             if not isinstance(is_public, bool):
                 return {"message": "is_public must be a boolean"}, 400
-            if is_public != cell.is_public and not (
-                cell.user_id == user.id or user in cell.users
-            ):
-                return {"message": "Not authorized to change cell visibility"}, 403
 
         try:
             # Update basic cell fields
@@ -168,10 +170,12 @@ class Cell(Resource):
         except Exception as e:
             return {"message": "Error updating cell", "error": str(e)}, 500
 
-    def delete(self, _user, cellId):
+    def delete(self, user, cellId):
         cell = CellModel.get(cellId)
         if not cell:
-            return jsonify({"message": "Cell not found"}), 404
+            return {"message": "Cell not found"}, 404
+        if not cell.can_manage(user):
+            return {"message": "Not authorized to delete cell"}, 403
         cell.delete()
 
         return {"message": "Cell deleted successfully"}

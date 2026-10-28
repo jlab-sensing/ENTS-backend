@@ -1,6 +1,6 @@
 from flask import request
 from flask_restful import Resource
-from ..auth.auth import authenticate_apikey_or_jwt
+from ..auth.auth import get_optional_user
 from ..models.cell import Cell
 from ..models.sensor import Sensor
 from ..models.data import Data
@@ -31,9 +31,7 @@ def _get_cell_availability(cell_id: int) -> dict:
 
 
 class DataAvailability(Resource):
-    method_decorators = [authenticate_apikey_or_jwt]
-
-    def get(self, user):
+    def get(self):
         """Get data availability information for intelligent date range selection.
 
         Returns the latest available data timestamp across all sensors for
@@ -62,12 +60,11 @@ class DataAvailability(Resource):
         if not requested_cell_ids:
             return {"error": "At least one valid cell_id is required"}, 400
 
+        # Public cells are readable anonymously; private cells need access
+        user = get_optional_user()
         requested_cells = Cell.query.filter(Cell.id.in_(requested_cell_ids)).all()
-        user_cell_ids = {cell.id for cell in user.cells}
         authorized_cell_ids = {
-            cell.id
-            for cell in requested_cells
-            if cell.is_public or cell.id in user_cell_ids
+            cell.id for cell in requested_cells if cell.can_view(user)
         }
         cell_ids = [cid for cid in requested_cell_ids if cid in authorized_cell_ids]
 

@@ -1,9 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
-export const getCells = () => {
+// The access token is optional: anonymous callers only receive public cells,
+// signed-in callers also receive private cells they own or were granted.
+export const getCells = (accessToken) => {
+  const config = accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : {};
   return axios
-    .get(`${process.env.PUBLIC_URL}/api/cell/id`)
+    .get(`${process.env.PUBLIC_URL}/api/cell/id`, config)
     .then((res) => res.data)
     .catch((error) => {
       console.log('Error getting cells:', error.response ? error.response.data : error.message);
@@ -102,10 +105,10 @@ export const getUserCells = (axiosPrivate) => {
   return axiosPrivate.get(`${process.env.PUBLIC_URL}/cell/?user=True`).then((res) => res.data);
 };
 
-export const useCells = () =>
+export const useCells = (accessToken) =>
   useQuery({
-    queryKey: ['cell info'],
-    queryFn: () => getCells(),
+    queryKey: ['cell info', Boolean(accessToken)],
+    queryFn: () => getCells(accessToken),
     refetchOnWindowFocus: true,
   });
 

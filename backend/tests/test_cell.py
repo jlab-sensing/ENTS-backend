@@ -152,3 +152,154 @@ def test_cell_put_is_public_rejects_non_owner(test_client, init_database):
     )
     assert response.status_code == 403
     assert Cell.get(cell.id).is_public is True
+
+
+def _make_cell(name, owner=None, shared_with=(), is_public=True):
+    cell = Cell(
+        name, "loc", 1, 1, False, owner.id if owner else None, is_public=is_public
+    )
+    cell.save()
+    for member in shared_with:
+        cell.users.append(member)
+    cell.save()
+    return cell
+
+
+def _names(response):
+    return {c["name"] for c in response.get_json()}
+
+
+def test_cell_id_hides_private_cells_from_anonymous(test_client, init_database):
+    """
+    GIVEN a public cell and a private cell
+    WHEN an anonymous caller lists cells via /api/cell/id (dashboard dropdown)
+    THEN only the public cell is returned
+    """
+    owner = make_user(email="cid-owner@x.com", api_key="cid-owner-key")
+    _make_cell("cid_public", owner, is_public=True)
+    _make_cell("cid_private", owner, is_public=False)
+
+    names = _names(test_client.get("/api/cell/id"))
+    assert "cid_public" in names
+    assert "cid_private" not in names
+
+
+def test_cell_id_shows_private_cells_to_owner_and_member(test_client, init_database):
+    """
+    GIVEN a private cell shared with a member
+    WHEN the owner, the member and a stranger list cells via /api/cell/id
+    THEN owner and member see it, the stranger does not
+    """
+    owner = make_user(email="cid2-owner@x.com", api_key="cid2-owner-key")
+    member = make_user(email="cid2-member@x.com", api_key="cid2-member-key")
+    stranger = make_user(email="cid2-stranger@x.com", api_key="cid2-stranger-key")
+    _make_cell("cid2_private", owner, shared_with=[member], is_public=False)
+
+    for user, visible in ((owner, True), (member, True), (stranger, False)):
+        response = test_client.get("/api/cell/id", headers=make_jwt_header(user))
+        assert ("cid2_private" in _names(response)) is visible
+
+
+def test_cell_list_excludes_other_users_private_cells(test_client, init_database):
+    """
+    GIVEN public and private cells owned by another user
+    WHEN listing and searching cells
+    THEN the private cell is excluded from both while public stays visible
+    """
+    owner = make_user(email="list-owner@x.com", api_key="list-owner-key")
+    other = make_user(email="list-other@x.com", api_key="list-other-key")
+    _make_cell("list_public_cell", owner, is_public=True)
+    _make_cell("list_private_cell", owner, is_public=False)
+    headers = make_jwt_header(other)
+
+    listed = _names(test_client.get("/api/cell/", headers=headers))
+    assert "list_public_cell" in listed
+    assert "list_private_cell" not in listed
+
+    searched = _names(test_client.get("/api/cell/?name=list_p", headers=headers))
+    assert "list_public_cell" in searched
+    assert "list_private_cell" not in searched
+
+    owner_listed = _names(test_client.get("/api/cell/", headers=make_jwt_header(owner)))
+    assert "list_private_cell" in owner_listed
+
+
+def test_cell_put_and_delete_forbidden_for_non_members(test_client, init_database):
+    """
+    GIVEN a cell owned by another user
+    WHEN a stranger updates its name, changes its visibility, or deletes it
+    THEN each request returns 403 and the cell is unchanged
+    """
+    owner = make_user(email="mut-owner@x.com", api_key="mut-owner-key")
+    stranger = make_user(email="mut-stranger@x.com", api_key="mut-stranger-key")
+    cell = _make_cell("mut_cell", owner, is_public=True)
+    headers = make_jwt_header(stranger)
+
+    assert (
+        test_client.put(
+            f"/api/cell/{cell.id}", json={"name": "hijacked"}, headers=headers
+        ).status_code
+        == 403
+    )
+    assert (
+        test_client.put(
+            f"/api/cell/{cell.id}", json={"is_public": False}, headers=headers
+        ).status_code
+        == 403
+    )
+    assert (
+        test_client.delete(f"/api/cell/{cell.id}", headers=headers).status_code == 403
+    )
+
+    unchanged = Cell.get(cell.id)
+    assert unchanged.name == "mut_cell"
+    assert unchanged.is_public is True
+
+
+def test_cell_owner_can_update_and_delete(test_client, init_database):
+    """
+    GIVEN a cell owner
+    WHEN they rename then delete the cell
+    THEN both requests succeed
+    """
+    owner = make_user(email="own-ud@x.com", api_key="own-ud-key")
+    cell = _make_cell("own_ud_cell", owner)
+    headers = make_jwt_header(owner)
+
+    response = test_client.put(
+        f"/api/cell/{cell.id}", json={"name": "own_ud_renamed"}, headers=headers
+    )
+    assert response.status_code == 200
+    assert Cell.get(cell.id).name == "own_ud_renamed"
+
+    assert (
+        test_client.delete(f"/api/cell/{cell.id}", headers=headers).status_code == 200
+    )
+    assert Cell.get(cell.id) is None
+
+
+def test_cell_defaults_to_public(test_client, init_database):
+    """
+    GIVEN a cell created without an explicit visibility
+    THEN it is public
+    """
+    cell = Cell("default_public_cell", "", 1, 1, False, None)
+    cell.save()
+    assert Cell.get(cell.id).is_public is True
+
+
+def test_cell_post_private_persists_owner(test_client, init_database):
+    """
+    GIVEN a user
+    WHEN creating a private cell
+    THEN the owner and visibility are persisted
+    """
+    user = make_user(email="cell-priv-owner@x.com", api_key="cell-priv-owner-key")
+    response = test_client.post(
+        "/api/cell/",
+        json=_create_cell_payload("priv_owner_cell", user.email, is_public=False),
+    )
+    assert response.status_code == 200
+    cell = Cell.find_by_name("priv_owner_cell")
+    assert cell.is_public is False
+    assert cell.user_id == user.id

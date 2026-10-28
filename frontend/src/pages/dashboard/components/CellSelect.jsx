@@ -14,12 +14,14 @@ import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 import PropTypes from 'prop-types';
 import { React, useMemo, useState, useEffect } from 'react';
+import useAuth from '../../../auth/hooks/useAuth';
 import { useCells } from '../../../services/cell';
 import { useTags, getCellsByTag } from '../../../services/tag';
 
 
 function CellSelect({ selectedCells, setSelectedCells }) {
-  const cells = useCells();
+  const { auth } = useAuth();
+  const cells = useCells(auth?.accessToken);
   const { data: tags = [] } = useTags();
 
   const [selectedTags, setSelectedTags] = useState([]);

@@ -78,6 +78,17 @@ class Cell(db.Model):
 
         return new_cell
 
+    def can_view(self, user):
+        """Public cells are visible to all; private cells to the owner and
+        users the cell has been shared with."""
+        return self.is_public or self.can_manage(user)
+
+    def can_manage(self, user):
+        """Owner or a user the cell has been shared with."""
+        if user is None:
+            return False
+        return self.user_id == user.id or user in self.users
+
     @staticmethod
     def get(id):
         return Cell.query.filter_by(id=id).first()
