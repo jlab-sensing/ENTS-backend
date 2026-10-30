@@ -1,10 +1,25 @@
 from datetime import datetime, timedelta
+import pytest
+from api import db
 from api.models.cell import Cell
 from api.models.logger import Logger
 from api.models.sensor import Sensor
 from api.models.data import Data
 from api.models.power_data import PowerData
 from api.models.teros_data import TEROSData
+
+
+@pytest.fixture(autouse=True)
+def clean_tables_per_test(init_database):
+    """Clean test rows between test runs without dropping table schemas."""
+    yield
+    db.session.query(Data).delete()
+    db.session.query(Sensor).delete()
+    db.session.query(PowerData).delete()
+    db.session.query(TEROSData).delete()
+    db.session.query(Logger).delete()
+    db.session.query(Cell).delete()
+    db.session.commit()
 
 
 def test_statistics_empty_db(test_client, init_database):

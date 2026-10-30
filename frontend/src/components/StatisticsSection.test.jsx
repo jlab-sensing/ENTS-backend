@@ -118,6 +118,20 @@ describe('StatisticsSection Component', () => {
     expect(screen.getByText(/Last uplink:/i)).toBeInTheDocument();
   });
 
+  it('handles invalid timestamp gracefully in formatDate', async () => {
+    const statsWithInvalidDate = {
+      ...mockStatistics,
+      latest_timestamp: 'invalid-date-string',
+    };
+    vi.spyOn(statsService, 'getStatistics').mockResolvedValue(statsWithInvalidDate);
+
+    render(<StatisticsSection />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Last uplink: invalid-date-string/i)).toBeInTheDocument();
+    });
+  });
+
   it('formats large numbers with compact notation', async () => {
     const largeStats = {
       ...mockStatistics,

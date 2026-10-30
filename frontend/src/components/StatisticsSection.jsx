@@ -32,18 +32,15 @@ function formatFullNumber(num) {
 
 function formatDate(isoString) {
   if (!isoString) return 'No data yet';
-  try {
-    const d = new Date(isoString);
-    return d.toLocaleString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  } catch (e) {
-    return isoString;
-  }
+  const d = new Date(isoString);
+  if (Number.isNaN(d.getTime())) return isoString;
+  return d.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 function StatBlock({ accentColor, value, rawValue, label, subtext }) {
