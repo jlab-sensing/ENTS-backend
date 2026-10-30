@@ -18,6 +18,7 @@ When adding a new entry, please use the following format:
 
 ## Log
 
+- [2026-10-30] feat: add platform statistics section to landing page [#855](https://github.com/jlab-sensing/ENTS-backend/pull/855)
 - [2026-10-20] fix: remove stale dashboard sensor panels and layout URL entries when a selected cell is removed [#837](https://github.com/jlab-sensing/ENTS-backend/issues/837)
 - [2026-09-29] feat: ttn devices are forced deleted on logger delete [#621](https://github.com/jlab-sensing/ENTS-backend/pull/621)
 - [2026-09-29] chore: updated psycopg to version 3 [#835](https://github.com/jlab-sensing/ENTS-backend/issues/835)
