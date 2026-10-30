@@ -127,10 +127,12 @@ def create_app(debug: bool = False) -> Flask:
     from .resources.cell_users import CellUsers, CellUserDetail, CellByUser, CellShare
     from .resources.logger import Logger
     from .resources.apikey import ApiKey
+    from .resources.statistics import Statistics
 
     from .auth.routes import auth
 
     api.add_resource(Health_Check, "/")
+    api.add_resource(Statistics, "/statistics/", "/stats/")
     api.add_resource(Cell, "/cell/", "/cell/<int:cellId>")
     api.add_resource(Cell_Id, "/cell/id")
     api.add_resource(Cell_Sensors, "/cell/<int:cell_id>/sensors")
