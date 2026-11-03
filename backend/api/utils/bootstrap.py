@@ -10,7 +10,8 @@ Examples:
 import random
 
 from sqlalchemy.orm import Session
-
+import subprocess
+from datetime import datetime, timedelta, timezone
 from ..conn import engine
 from ..models.logger import Logger
 from ..models.cell import Cell
@@ -71,14 +72,31 @@ def bootstrap() -> tuple[int, int]:
 
 
 def entry():
-    """Entrypoint for the cli call."""
+    end = datetime.now(timezone.utc)
+    start = end - timedelta(days=14)
 
-    for _ in range(5):
-        logger, cell = bootstrap()
+    for index in range(5):
+        logger_id, cell_id = bootstrap()
+        cell_start = start + timedelta(hours=index * 6)
+        cell_end = end - timedelta(hours=index * 2)
 
-        print(logger)
+        print(f"Uploading sample data for cell {cell_id}", flush=True)
 
-        print(cell)
+        subprocess.run(
+            [
+                "ents", "sim_generic", "batch",
+                "--url", "http://backend:8000/api/sensor/",
+                "--sensor", "POWER_VOLTAGE", "BME280_TEMP",
+                "--cell", str(cell_id),
+                "--logger", str(logger_id),
+                "--start", cell_start.isoformat(),
+                "--end", cell_end.isoformat(),
+                "--freq", "3600",
+                "--min", str(-1 + index * 0.2),
+                "--max", str(1 + index * 0.2),
+            ],
+            check=True,
+        )
 
 
 if __name__ == "__main__":
