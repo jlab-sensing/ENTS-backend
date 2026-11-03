@@ -5,8 +5,8 @@ import Nav from '../../components/Nav';
 import { useCells } from '../../services/cell';
 
 function Map() {
-  const { user, setUser, loggedIn, setLoggedIn } = useAuth();
-  const cells = useCells();
+  const { user, setUser, loggedIn, setLoggedIn, auth } = useAuth();
+  const cells = useCells(auth?.accessToken);
   const home = { latitude: 36.95620689807501, longitude: -122.05855126777698 };
   const styles = {
     leafletContainer: {

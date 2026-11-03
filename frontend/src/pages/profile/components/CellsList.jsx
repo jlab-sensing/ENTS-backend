@@ -35,6 +35,7 @@ function CellsList() {
     { field: 'lat', headerName: 'Latitude', width: 150 },
     { field: 'long', headerName: 'Longitude', width: 150 },
     { field: 'archive', headerName: 'Archive', width: 150 },
+    { field: 'is_public', headerName: 'Public', width: 100 },
     {
       field: 'edit',
       headerName: '',
@@ -54,6 +55,7 @@ function CellsList() {
       lat: cell.latitude,
       long: cell.longitude,
       archive: cell.archive,
+      is_public: cell.is_public,
     }));
   }
 

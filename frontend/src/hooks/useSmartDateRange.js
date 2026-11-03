@@ -14,9 +14,10 @@ export function useSmartDateRange() {
   /**
    * Calculate intelligent date range based on data availability
    * @param {Array} selectedCells - Array of selected cell objects
+   * @param {string} [accessToken] - Optional access token for private cells
    * @returns {Object} { startDate, endDate, isFallback }
    */
-  const calculateSmartDateRange = useCallback(async (selectedCells) => {
+  const calculateSmartDateRange = useCallback(async (selectedCells, accessToken) => {
     if (!selectedCells || selectedCells.length === 0) {
       // Default range when no cells selected
       return {
@@ -28,7 +29,7 @@ export function useSmartDateRange() {
 
     try {
       const cellIds = selectedCells.map((cell) => cell.id);
-      const availability = await getDataAvailability(cellIds);
+      const availability = await getDataAvailability(cellIds, accessToken);
 
       if (!availability.latest_timestamp) {
         // No data available, use default range

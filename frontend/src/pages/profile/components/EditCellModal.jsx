@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Box, Typography, Button, IconButton, TextField } from '@mui/material';
+import {
+  Modal,
+  Box,
+  Typography,
+  Button,
+  IconButton,
+  TextField,
+  FormControlLabel,
+  Switch,
+} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useOutletContext } from 'react-router-dom';
 import { updateCell } from '../../../services/cell';
@@ -41,6 +50,12 @@ function EditCellModal({ cell }) {
   const handleChange = (field) => (e) => {
     setFormData({ ...formData, [field]: e.target.value });
   };
+
+  const handlePublicChange = (e) => {
+    setFormData({ ...formData, is_public: e.target.checked });
+  };
+
+  const isPublic = formData.is_public ?? true;
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -216,6 +231,18 @@ function EditCellModal({ cell }) {
                   />
 
                   <TagSelector selectedTags={selectedTags} onTagsChange={setSelectedTags} axiosPrivate={axiosPrivate} />
+
+                  <Box>
+                    <FormControlLabel
+                      control={<Switch checked={isPublic} onChange={handlePublicChange} color='success' />}
+                      label='Public cell'
+                    />
+                    <Typography variant='caption' display='block' sx={{ color: '#666' }}>
+                      {isPublic
+                        ? 'Anyone can view this cell\'s data.'
+                        : 'Only you and users with access to this cell can view its data.'}
+                    </Typography>
+                  </Box>
                 </Box>
 
                 {/* Action Buttons */}

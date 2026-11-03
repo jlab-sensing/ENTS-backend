@@ -1,5 +1,7 @@
 from flask import request
 from flask_restful import Resource
+from ..auth.auth import get_optional_user
+from ..models.cell import Cell
 from ..models.sensor import Sensor
 from ..models.data import Data
 from ..models.teros_data import TEROSData
@@ -49,14 +51,25 @@ class DataAvailability(Resource):
             return {"error": "cell_ids parameter is required"}, 400
 
         try:
-            cell_ids = [
+            requested_cell_ids = [
                 int(id.strip()) for id in cell_ids_param.split(",") if id.strip()
             ]
         except ValueError:
             return {"error": "Invalid cell_ids format"}, 400
 
-        if not cell_ids:
+        if not requested_cell_ids:
             return {"error": "At least one valid cell_id is required"}, 400
+
+        # Public cells are readable anonymously; private cells need access
+        user = get_optional_user()
+        requested_cells = Cell.query.filter(Cell.id.in_(requested_cell_ids)).all()
+        authorized_cell_ids = {
+            cell.id for cell in requested_cells if cell.can_view(user)
+        }
+        cell_ids = [cid for cid in requested_cell_ids if cid in authorized_cell_ids]
+
+        if not cell_ids:
+            return {"error": "No accessible cell_ids provided"}, 403
 
         all_latest = []
         all_earliest = []

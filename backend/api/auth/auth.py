@@ -93,6 +93,24 @@ def authenticate_apikey_or_jwt(f):
     return wrapper
 
 
+def get_optional_user():
+    """Return the caller from a valid Bearer JWT or X-API-Key, else None.
+
+    For endpoints that serve public data to anonymous callers but must still
+    recognise signed-in users. Missing, invalid or expired credentials are
+    treated as anonymous.
+    """
+    auth_header = request.headers.get("Authorization")
+    if auth_header:
+        try:
+            token = auth_header.split(" ")[1]
+            data = jwt.decode(token, config["accessToken"], algorithms=["HS256"])
+            return User.query.get(UUID(data["uid"]))
+        except Exception:
+            return None
+    return get_api_key_user()
+
+
 def handle_login(user: User):
     access_token = jwt.encode(
         {

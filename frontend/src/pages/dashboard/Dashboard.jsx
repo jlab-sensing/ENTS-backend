@@ -46,7 +46,7 @@ import TopNav from '../../components/TopNav';
 
 function Dashboard() {
   const axiosPrivate = useAxiosPrivate();
-  const { loggedIn } = useAuth();
+  const { loggedIn, auth } = useAuth();
   const [startDate, setStartDate] = useState(DateTime.now().minus({ days: 14 }));
   const [endDate, setEndDate] = useState(DateTime.now());
   const [selectedCells, setSelectedCells] = useState([]);
@@ -57,6 +57,9 @@ function Dashboard() {
   const smartDateRangeAppliedRef = useRef(false);
   // Tracks which cell IDs were last loaded. null = never loaded (initial load).
   const prevLoadedCellIdsRef = useRef(null);
+  // Ref so token refreshes don't re-trigger the smart date range effect
+  const accessTokenRef = useRef(auth?.accessToken);
+  accessTokenRef.current = auth?.accessToken;
   const cancelSmartDateRef = useRef(null);
   const [liveData, setLiveData] = useState([]);
 
@@ -80,7 +83,7 @@ function Dashboard() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md')); // <768px = mobile
 
-  const cells = useCells();
+  const cells = useCells(auth?.accessToken);
   const [searchParams, setSearchParams] = useSearchParams();
   const layoutParam = searchParams.get('layout');
   const [panelOrder, setPanelOrder] = useState([]);
@@ -564,7 +567,7 @@ useEffect(() => {
         startDate: smartStartDate,
         endDate: smartEndDate,
         isFallback,
-      } = await calculateSmartDateRange(selectedCells);
+      } = await calculateSmartDateRange(selectedCells, accessTokenRef.current);
 
       // Discard stale response if cell changed before this resolved
       if (cancelToken.cancelled) return;
