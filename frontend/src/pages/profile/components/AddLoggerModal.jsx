@@ -75,6 +75,7 @@ function AddLoggerModal() {
 
   const [isOpen, setOpen] = useState(false);
   const [name, setName] = useState('');
+  const [nameTouched, setNameTouched] = useState(false);
   const [type, setType] = useState('');
   const [devEui, setDevEui] = useState(''); // Changed to match TTN API
   const [joinEui, setJoinEui] = useState(''); // Added for TTN integration
@@ -99,6 +100,7 @@ function AddLoggerModal() {
     setResponse(null);
     setError(null);
     setName('');
+    setNameTouched(false);
     setType('');
     setDevEui('');
     setJoinEui('');
@@ -114,6 +116,7 @@ function AddLoggerModal() {
     setResponse(null);
     setError(null);
     setName('');
+    setNameTouched(false);
     setType('');
     setDevEui('');
     setJoinEui('');
@@ -138,13 +141,14 @@ function AddLoggerModal() {
   const devEuiInvalid = devEuiTyped && !isValidEui64(cleanDevEui);
   const joinEuiInvalid = joinEuiTyped && !isValidEui64(cleanJoinEui);
   const appKeyInvalid = appKeyTyped && !isValidAppKey(cleanAppKey);
+  const nameInvalid = nameTouched && !name.trim();
 
   const lorawanCompleteAndValid =
     isValidEui64(cleanDevEui) && isValidEui64(cleanJoinEui) && isValidAppKey(cleanAppKey);
 
   const submitLogger = ({ submitDevEui, submitJoinEui, submitAppKey }) => {
     addLogger(
-      name,
+      name.trim(),
       type,
       submitDevEui,
       submitJoinEui,
@@ -197,7 +201,7 @@ function AddLoggerModal() {
 
   return (
     <>
-      <Button sx={{ color: 'black' }} key='prev' onClick={handleOpen}>
+      <Button sx={{ color: 'black' }} key='prev' onClick={handleOpen} aria-label='add logger'>
         <AddCircleIcon />
       </Button>
       <Modal
@@ -321,10 +325,11 @@ function AddLoggerModal() {
                     variant='outlined'
                     fullWidth
                     required
-                    error={name.length === 0}
-                    helperText={!name.length ? 'Logger name is required' : ''}
+                    error={nameInvalid}
+                    helperText={nameInvalid ? 'Logger name is required' : ''}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    onBlur={() => setNameTouched(true)}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
