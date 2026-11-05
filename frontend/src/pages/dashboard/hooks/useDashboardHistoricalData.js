@@ -91,7 +91,7 @@ export function useDashboardHistoricalData({
   );
   const panelOrderSnapshot = useMemo(() => [...panelOrder], [panelOrder]);
   const sensorInputs = useMemo(() => cellSensorsById ?? {}, [cellSensorsById]);
-  const historicalLoading = !isHistoricalCacheReady(
+  const cacheReady = isHistoricalCacheReady(
     powerRequestKey,
     sensorRequestKey,
     powerCacheKey,
@@ -99,6 +99,7 @@ export function useDashboardHistoricalData({
     powerTerosLoading,
     sensorLoading,
   );
+  const historicalLoading = !stream && cells?.length > 0 && !cacheReady;
 
   useEffect(() => {
     if (!enabled || stream) {
@@ -212,7 +213,7 @@ export function useDashboardHistoricalData({
   ]);
 
   const published = selectPublishedHistoricalCaches(
-    !historicalLoading,
+    cacheReady,
     historicalPowerByCell,
     historicalTerosByCell,
     historicalSensorByKey,

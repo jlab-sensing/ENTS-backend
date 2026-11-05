@@ -59,12 +59,25 @@ function DownloadBtn({
     }
   };
 
-  const isDisabled = disabled || historicalLoading || downloadStatus || !cells?.length;
+  const hasData = cells?.some(
+    ({ id }) =>
+      historicalPowerByCell[id]?.powerData?.timestamp?.length ||
+      historicalTerosByCell[id]?.terosData?.timestamp?.length ||
+      Object.entries(historicalSensorByKey).some(
+        ([key, payload]) => key.startsWith(`${id}:`) && payload?.timestamp?.length,
+      ),
+  );
+  const isDisabled = disabled || historicalLoading || !hasData;
 
   return (
     <div className='DownloadBtn'>
-      <Button disabled={isDisabled} variant='outlined' onClick={exportToCsv}>
-        {downloadStatus || historicalLoading ? 'DOWNLOADING...' : 'Export to CSV'}
+      <Button
+        disabled={isDisabled}
+        variant='outlined'
+        color={downloadStatus ? 'success' : 'primary'}
+        onClick={exportToCsv}
+      >
+        {downloadStatus ? 'DOWNLOADING...' : 'Export to CSV'}
       </Button>
     </div>
   );
