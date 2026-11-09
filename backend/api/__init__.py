@@ -128,6 +128,7 @@ def create_app(debug: bool = False) -> Flask:
     from .resources.logger import Logger
     from .resources.apikey import ApiKey
     from .resources.statistics import Statistics
+    from .resources.logger_downlink import LoggerDownlink
 
     from .auth.routes import auth
 
@@ -147,6 +148,7 @@ def create_app(debug: bool = False) -> Flask:
     api.add_resource(Session_r, "/session")
     api.add_resource(User_Data, "/user")
     api.add_resource(ApiKey, "/apikey/")
+    api.add_resource(LoggerDownlink, "/logger/<int:logger_id>/downlink")
 
     # Tag management endpoints
     api.add_resource(Tag, "/tag/")

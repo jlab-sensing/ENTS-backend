@@ -1,5 +1,6 @@
 from api.ttn.end_devices import EndDevice, EntsEndDevice, TTNApi
 from .conftest import requires_ttn
+import base64
 
 
 # global API instance
@@ -126,6 +127,27 @@ def test_update_end_device():
     updated = api.update_end_device(end_device)
 
     assert updated is True
+
+
+@requires_ttn()
+def test_downlink():
+    """Test sending a downlink message to the TTN registry."""
+
+    data = {
+        "ids": {
+            "device_id": "eui-0080e1150546d093",
+        },
+    }
+
+    end_device = EndDevice(data)
+
+    message = "Hello World"
+
+    base64_message = base64.b64encode(message.encode()).decode()
+
+    status = api.send_downlink(end_device, payload=base64_message)
+
+    assert status is True
 
 
 @requires_ttn()
