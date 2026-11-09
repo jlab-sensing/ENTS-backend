@@ -1,8 +1,18 @@
-import { describe, expect, it } from 'vitest';
+import { renderHook, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DateTime } from 'luxon';
+import { fetchDashboardPowerTerosData } from '../catalog/historicalDataLoader';
 import {
   isHistoricalCacheReady,
   selectPublishedHistoricalCaches,
+  useDashboardHistoricalData,
 } from './useDashboardHistoricalData';
+
+vi.mock('../catalog/historicalDataLoader', async (importOriginal) => ({
+  ...(await importOriginal()),
+  fetchDashboardPowerTerosData: vi.fn(() => Promise.resolve({ historicalPowerByCell: {}, historicalTerosByCell: {} })),
+  fetchDashboardSensorData: vi.fn(() => Promise.resolve({ historicalSensorByKey: {} })),
+}));
 
 describe('isHistoricalCacheReady', () => {
   it('is false on the first render after resample changes (stale hourly cache)', () => {
@@ -58,5 +68,53 @@ describe('selectPublishedHistoricalCaches', () => {
       historicalTerosByCell: teros,
       historicalSensorByKey: sensors,
     });
+  });
+});
+
+describe('useDashboardHistoricalData', () => {
+  const baseOptions = {
+    panelOrder: ['power-vi'],
+    startDate: DateTime.fromISO('2026-01-01T00:00:00Z'),
+    endDate: DateTime.fromISO('2026-01-14T00:00:00Z'),
+    cellSensorsById: {},
+    resample: 'hour',
+  };
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const renderUseDashboardHistoricalData = (options) => {
+    const props = { ...baseOptions, ...options };
+    return renderHook(() => useDashboardHistoricalData(props));
+  };
+
+  it('reports loading until the selected cells have been fetched', async () => {
+    const { result } = renderUseDashboardHistoricalData({
+      cells: [{ id: 1, name: 'Cell A' }],
+      stream: false,
+      enabled: true,
+    });
+    expect(result.current.historicalLoading).toBe(true);
+    await waitFor(() => expect(result.current.historicalLoading).toBe(false));
+    expect(fetchDashboardPowerTerosData).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps reporting loading while cells are selected but fetching is not enabled yet', () => {
+    const { result } = renderUseDashboardHistoricalData({
+      cells: [{ id: 1, name: 'Cell A' }],
+      stream: false,
+      enabled: false,
+    });
+    expect(result.current.historicalLoading).toBe(true);
+    expect(fetchDashboardPowerTerosData).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['no cells are selected', { cells: [], stream: false, enabled: false }],
+    ['streaming', { cells: [{ id: 1, name: 'Cell A' }], stream: true, enabled: true }],
+  ])('does not report loading while %s', (_, options) => {
+    const { result } = renderUseDashboardHistoricalData(options);
+    expect(result.current.historicalLoading).toBe(false);
+    expect(fetchDashboardPowerTerosData).not.toHaveBeenCalled();
   });
 });
