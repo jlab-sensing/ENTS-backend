@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
+from time import monotonic
 
+from flask import current_app
 from flask_restful import Resource
 from sqlalchemy import func
 from .. import db
@@ -10,6 +12,10 @@ from ..models.power_data import PowerData
 from ..models.sensor import Sensor
 from ..models.teros_data import TEROSData
 from ..models.user import User
+
+STATISTICS_CACHE_TTL_SECONDS = 30
+_statistics_cache = None
+_statistics_cache_time = 0.0
 
 
 class Statistics(Resource):
@@ -22,7 +28,16 @@ class Statistics(Resource):
             JSON object containing totals for cells, loggers, users, and
             data points, plus the latest activity timestamp.
         """
-        # Cell metrics
+        global _statistics_cache, _statistics_cache_time
+
+        now = monotonic()
+        if (
+            not current_app.config.get("TESTING")
+            and _statistics_cache is not None
+            and now - _statistics_cache_time < STATISTICS_CACHE_TTL_SECONDS
+        ):
+            return _statistics_cache
+
         total_cells = db.session.query(func.count(Cell.id)).scalar() or 0
         archived_cells = (
             db.session.query(func.count(Cell.id))
@@ -42,20 +57,23 @@ class Statistics(Resource):
 
         total_data_points = power_points + teros_points + generic_points
 
-        # A cell is active when it has received a measurement in the last day.
-        activity_cutoff = datetime.utcnow() - timedelta(days=1)
-        recent_cell_ids = db.session.query(PowerData.cell_id).filter(
-            PowerData.ts >= activity_cutoff
-        )
-        recent_cell_ids = recent_cell_ids.union(
-            db.session.query(TEROSData.cell_id).filter(
-                TEROSData.ts >= activity_cutoff
+        # These DateTime columns are naive. The power, TEROS, and generic
+        # ingestion paths all use datetime.fromtimestamp(), producing naive
+        # local time values for comparison.
+        activity_cutoff = datetime.now() - timedelta(days=1)
+        recent_cell_ids = (
+            db.session.query(PowerData.cell_id)
+            .filter(PowerData.ts >= activity_cutoff)
+            .union(
+                db.session.query(TEROSData.cell_id).filter(
+                    TEROSData.ts >= activity_cutoff
+                )
             )
-        )
-        recent_cell_ids = recent_cell_ids.union(
-            db.session.query(Sensor.cell_id)
-            .join(Data, Data.sensor_id == Sensor.id)
-            .filter(Data.ts >= activity_cutoff)
+            .union(
+                db.session.query(Sensor.cell_id)
+                .join(Data, Data.sensor_id == Sensor.id)
+                .filter(Data.ts >= activity_cutoff)
+            )
         )
         active_cells = (
             db.session.query(func.count())
@@ -74,7 +92,7 @@ class Statistics(Resource):
         ]
         latest_timestamp = max(all_ts).isoformat() if all_ts else None
 
-        return {
+        response = {
             "total_cells": total_cells,
             "active_cells": active_cells,
             "archived_cells": archived_cells,
@@ -88,3 +106,7 @@ class Statistics(Resource):
                 "generic": generic_points,
             },
         }
+        if not current_app.config.get("TESTING"):
+            _statistics_cache = response
+            _statistics_cache_time = now
+        return response

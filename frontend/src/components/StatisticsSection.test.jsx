@@ -76,6 +76,7 @@ describe('StatisticsSection Component', () => {
         screen.getByText(/Status: Service Unavailable/i),
       ).toBeInTheDocument();
     });
+    expect(screen.getAllByText('—').length).toBe(5);
   });
 
   it('triggers refresh when refresh button is clicked', async () => {

@@ -190,40 +190,41 @@ function StatisticsSection() {
   const totalCells = stats?.total_cells ?? 0;
   const totalLoggers = stats?.total_loggers ?? 0;
   const totalUsers = stats?.total_users ?? 0;
+  const showPlaceholder = loading || !stats;
 
   const statItems = [
     {
       accentColor: '#2563EB',
-      value: loading ? '—' : formatCompactNumber(totalDataPoints),
-      rawValue: loading ? '' : formatFullNumber(totalDataPoints),
+      value: showPlaceholder ? '—' : formatCompactNumber(totalDataPoints),
+      rawValue: showPlaceholder ? '' : formatFullNumber(totalDataPoints),
       label: 'Data Points',
       subtext: 'Measurements recorded',
     },
     {
       accentColor: '#B45309',
-      value: loading ? '—' : formatCompactNumber(activeCells),
-      rawValue: loading ? '' : formatFullNumber(activeCells),
+      value: showPlaceholder ? '—' : formatCompactNumber(activeCells),
+      rawValue: showPlaceholder ? '' : formatFullNumber(activeCells),
       label: 'Active Cells',
       subtext: 'Uploaded in the last 24 hours',
     },
     {
       accentColor: '#0D9488',
-      value: loading ? '—' : formatCompactNumber(totalCells),
-      rawValue: loading ? '' : formatFullNumber(totalCells),
+      value: showPlaceholder ? '—' : formatCompactNumber(totalCells),
+      rawValue: showPlaceholder ? '' : formatFullNumber(totalCells),
       label: 'Total Cells',
       subtext: 'Registered cells',
     },
     {
       accentColor: '#588157',
-      value: loading ? '—' : formatCompactNumber(totalLoggers),
-      rawValue: loading ? '' : formatFullNumber(totalLoggers),
+      value: showPlaceholder ? '—' : formatCompactNumber(totalLoggers),
+      rawValue: showPlaceholder ? '' : formatFullNumber(totalLoggers),
       label: 'Total Loggers',
       subtext: 'Registered hardware units',
     },
     {
       accentColor: '#7C3AED',
-      value: loading ? '—' : formatCompactNumber(totalUsers),
-      rawValue: loading ? '' : formatFullNumber(totalUsers),
+      value: showPlaceholder ? '—' : formatCompactNumber(totalUsers),
+      rawValue: showPlaceholder ? '' : formatFullNumber(totalUsers),
       label: 'Total Users',
       subtext: 'Registered accounts',
     },
