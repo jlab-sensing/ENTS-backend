@@ -185,57 +185,47 @@ function StatisticsSection() {
     fetchStats();
   }, [fetchStats]);
 
-  const totalUploads = stats?.total_uploads ?? 0;
+  const totalDataPoints = stats?.total_data_points ?? 0;
   const activeCells = stats?.active_cells ?? 0;
   const totalCells = stats?.total_cells ?? 0;
-  const totalSites = stats?.total_sites ?? 0;
   const totalLoggers = stats?.total_loggers ?? 0;
-  const totalSensors = stats?.total_sensors ?? 0;
-  const errorRate = stats?.upload_error_rate ?? 0;
-  const reliability = 100 - errorRate;
+  const totalUsers = stats?.total_users ?? 0;
 
   const statItems = [
     {
       accentColor: '#2563EB',
-      value: loading ? '—' : formatCompactNumber(totalUploads),
-      rawValue: loading ? '' : formatFullNumber(totalUploads),
-      label: 'Data Uploads',
-      subtext: 'Packets ingested',
-    },
-    {
-      accentColor: '#2F4F3E',
-      value: loading ? '—' : `${reliability.toFixed(1)}%`,
-      rawValue: '',
-      label: 'Upload Reliability',
-      subtext: `${errorRate.toFixed(1)}% error rate`,
+      value: loading ? '—' : formatCompactNumber(totalDataPoints),
+      rawValue: loading ? '' : formatFullNumber(totalDataPoints),
+      label: 'Data Points',
+      subtext: 'Measurements recorded',
     },
     {
       accentColor: '#B45309',
       value: loading ? '—' : formatCompactNumber(activeCells),
       rawValue: loading ? '' : formatFullNumber(activeCells),
       label: 'Active Cells',
-      subtext: `${formatCompactNumber(totalCells)} total cells`,
+      subtext: 'Uploaded in the last 24 hours',
     },
     {
       accentColor: '#0D9488',
-      value: loading ? '—' : formatCompactNumber(totalSites),
-      rawValue: loading ? '' : formatFullNumber(totalSites),
-      label: 'Deployment Sites',
-      subtext: 'Field locations',
+      value: loading ? '—' : formatCompactNumber(totalCells),
+      rawValue: loading ? '' : formatFullNumber(totalCells),
+      label: 'Total Cells',
+      subtext: 'Registered cells',
     },
     {
       accentColor: '#588157',
       value: loading ? '—' : formatCompactNumber(totalLoggers),
       rawValue: loading ? '' : formatFullNumber(totalLoggers),
-      label: 'Field Loggers',
-      subtext: 'Hardware units',
+      label: 'Total Loggers',
+      subtext: 'Registered hardware units',
     },
     {
       accentColor: '#7C3AED',
-      value: loading ? '—' : formatCompactNumber(totalSensors),
-      rawValue: loading ? '' : formatFullNumber(totalSensors),
-      label: 'Sensor Channels',
-      subtext: 'Active channels',
+      value: loading ? '—' : formatCompactNumber(totalUsers),
+      rawValue: loading ? '' : formatFullNumber(totalUsers),
+      label: 'Total Users',
+      subtext: 'Registered accounts',
     },
   ];
 
@@ -250,7 +240,7 @@ function StatisticsSection() {
       }}
     >
       <Container maxWidth="xl">
-        {/* Uniform Grid: exactly 6 blocks - 1 row on desktop (lg), 2 rows on tablet (md/sm), 3 rows on mobile (xs) */}
+        {/* Uniform grid for the five platform metrics. */}
         <Box
           sx={{
             display: 'grid',
@@ -258,7 +248,7 @@ function StatisticsSection() {
               xs: 'repeat(2, 1fr)',
               sm: 'repeat(3, 1fr)',
               md: 'repeat(3, 1fr)',
-              lg: 'repeat(6, 1fr)',
+              lg: 'repeat(5, 1fr)',
             },
             gap: { xs: 1.5, md: 2 },
             alignItems: 'stretch',

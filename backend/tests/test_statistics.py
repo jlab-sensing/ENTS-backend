@@ -7,6 +7,7 @@ from api.models.sensor import Sensor
 from api.models.data import Data
 from api.models.power_data import PowerData
 from api.models.teros_data import TEROSData
+from api.models.user import User
 
 
 @pytest.fixture(autouse=True)
@@ -19,6 +20,7 @@ def clean_tables_per_test(init_database):
     db.session.query(TEROSData).delete()
     db.session.query(Logger).delete()
     db.session.query(Cell).delete()
+    db.session.query(User).delete()
     db.session.commit()
 
 
@@ -34,13 +36,9 @@ def test_statistics_empty_db(test_client, init_database):
     assert data["total_cells"] == 0
     assert data["active_cells"] == 0
     assert data["archived_cells"] == 0
-    assert data["total_sites"] == 0
     assert data["total_loggers"] == 0
-    assert data["total_sensors"] == 0
+    assert data["total_users"] == 0
     assert data["total_data_points"] == 0
-    assert data["total_uploads"] == 0
-    assert data["upload_error_rate"] == 0.0
-    assert data["upload_success_rate"] == 100.0
     assert data["latest_timestamp"] is None
     assert data["data_breakdown"] == {"power": 0, "teros": 0, "generic": 0}
 
@@ -57,6 +55,13 @@ def test_statistics_populated_db(test_client, init_database):
     # Create archived cell
     archived_cell = Cell(name="cell_archived", location="loc2", archive=True)
     archived_cell.save()
+
+    User(
+        first_name="Ada", last_name="Lovelace", email="ada@example.com", password=""
+    ).save()
+    User(
+        first_name="Grace", last_name="Hopper", email="grace@example.com", password=""
+    ).save()
 
     # Create logger
     logger = Logger(name="logger_1", type="rocketlogger")
@@ -92,13 +97,9 @@ def test_statistics_populated_db(test_client, init_database):
     assert data["total_cells"] == 2
     assert data["active_cells"] == 1
     assert data["archived_cells"] == 1
-    assert data["total_sites"] == 2
     assert data["total_loggers"] == 1
-    assert data["total_sensors"] == 1
+    assert data["total_users"] == 2
     assert data["total_data_points"] == 3
-    assert data["total_uploads"] == 3
-    assert data["upload_error_rate"] == 0.0
-    assert data["upload_success_rate"] == 100.0
     assert data["data_breakdown"]["power"] == 1
     assert data["data_breakdown"]["teros"] == 1
     assert data["data_breakdown"]["generic"] == 1
@@ -110,64 +111,42 @@ def test_statistics_populated_db(test_client, init_database):
     assert alias_response.get_json() == data
 
 
-def test_statistics_sites_deduplicates_locations(test_client, init_database):
-    """GIVEN cells with duplicate location values
+def test_statistics_active_cells_use_last_24_hours(test_client, init_database):
+    """GIVEN cells with recent and old measurements
     WHEN requesting /api/statistics/
-    THEN total_sites should count only distinct non-empty locations
+    THEN only cells with measurements in the last day are active
     """
-    # Two cells at same location
-    cell1 = Cell(name="cell_a", location="farm_field_1", archive=False)
-    cell1.save()
-    cell2 = Cell(name="cell_b", location="farm_field_1", archive=False)
-    cell2.save()
+    recent_cell = Cell(name="recent", location="loc", archive=False)
+    recent_cell.save()
+    old_cell = Cell(name="old", location="loc", archive=False)
+    old_cell.save()
+    logger = Logger(name="activity_logger", type="rocketlogger")
+    logger.save()
 
-    # One cell at a different location
-    cell3 = Cell(name="cell_c", location="lab_bench", archive=False)
-    cell3.save()
+    now = datetime.utcnow()
+    recent_data = PowerData(
+        logger_id=logger.id,
+        cell_id=recent_cell.id,
+        ts=now - timedelta(hours=1),
+        voltage=3.3,
+        current=0.05,
+    )
+    old_data = PowerData(
+        logger_id=logger.id,
+        cell_id=old_cell.id,
+        ts=now - timedelta(days=2),
+        voltage=3.3,
+        current=0.05,
+    )
+    db.session.add_all([recent_data, old_data])
+    db.session.commit()
 
     response = test_client.get("/api/statistics/")
     data = response.get_json()
 
-    assert data["total_cells"] == 3
-    assert data["total_sites"] == 2  # farm_field_1 and lab_bench
-
-
-def test_statistics_sites_ignores_empty_locations(test_client, init_database):
-    """GIVEN cells with empty or None locations
-    WHEN requesting /api/statistics/
-    THEN total_sites should exclude them
-    """
-    cell1 = Cell(name="cell_empty", location="", archive=False)
-    cell1.save()
-
-    cell2 = Cell(name="cell_none", location=None, archive=False)
-    cell2.save()
-
-    cell3 = Cell(name="cell_valid", location="greenhouse", archive=False)
-    cell3.save()
-
-    response = test_client.get("/api/statistics/")
-    data = response.get_json()
-
-    assert data["total_cells"] == 3
-    assert data["total_sites"] == 1  # only "greenhouse"
-
-
-def test_statistics_only_active_cells_counted(test_client, init_database):
-    """GIVEN a mix of active and archived cells
-    WHEN requesting /api/statistics/
-    THEN active_cells and archived_cells should be correct
-    """
-    Cell(name="active_1", location="loc", archive=False).save()
-    Cell(name="active_2", location="loc", archive=False).save()
-    Cell(name="archived_1", location="loc", archive=True).save()
-
-    response = test_client.get("/api/statistics/")
-    data = response.get_json()
-
-    assert data["total_cells"] == 3
-    assert data["active_cells"] == 2
-    assert data["archived_cells"] == 1
+    assert data["total_cells"] == 2
+    assert data["active_cells"] == 1
+    assert data["archived_cells"] == 0
 
 
 def test_statistics_latest_timestamp_picks_most_recent(test_client, init_database):

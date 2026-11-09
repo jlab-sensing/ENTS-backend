@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from flask_restful import Resource
 from sqlalchemy import func
 from .. import db
@@ -7,6 +9,7 @@ from ..models.logger import Logger
 from ..models.power_data import PowerData
 from ..models.sensor import Sensor
 from ..models.teros_data import TEROSData
+from ..models.user import User
 
 
 class Statistics(Resource):
@@ -16,18 +19,11 @@ class Statistics(Resource):
         """Get aggregate metrics for the platform.
 
         Returns:
-            JSON object containing totals for cells, loggers, sensors,
-            data points, uploads, upload error rate, latest activity
-            timestamp, and measurement breakdown.
+            JSON object containing totals for cells, loggers, users, and
+            data points, plus the latest activity timestamp.
         """
         # Cell metrics
         total_cells = db.session.query(func.count(Cell.id)).scalar() or 0
-        active_cells = (
-            db.session.query(func.count(Cell.id))
-            .filter(Cell.archive.is_(False))
-            .scalar()
-            or 0
-        )
         archived_cells = (
             db.session.query(func.count(Cell.id))
             .filter(Cell.archive.is_(True))
@@ -35,18 +31,9 @@ class Statistics(Resource):
             or 0
         )
 
-        # Deployment site metrics (distinct non-empty cell locations)
-        total_sites = (
-            db.session.query(func.count(func.distinct(Cell.location)))
-            .filter(Cell.location.isnot(None))
-            .filter(Cell.location != "")
-            .scalar()
-            or 0
-        )
-
         # Hardware metrics
         total_loggers = db.session.query(func.count(Logger.id)).scalar() or 0
-        total_sensors = db.session.query(func.count(Sensor.id)).scalar() or 0
+        total_users = db.session.query(func.count(User.id)).scalar() or 0
 
         # Data point metrics across tables
         power_points = db.session.query(func.count(PowerData.id)).scalar() or 0
@@ -55,10 +42,27 @@ class Statistics(Resource):
 
         total_data_points = power_points + teros_points + generic_points
 
-        # Ingestion / upload metrics
-        total_uploads = total_data_points
-        upload_error_rate = 0.0
-        upload_success_rate = 100.0
+        # A cell is active when it has received a measurement in the last day.
+        activity_cutoff = datetime.utcnow() - timedelta(days=1)
+        recent_cell_ids = db.session.query(PowerData.cell_id).filter(
+            PowerData.ts >= activity_cutoff
+        )
+        recent_cell_ids = recent_cell_ids.union(
+            db.session.query(TEROSData.cell_id).filter(
+                TEROSData.ts >= activity_cutoff
+            )
+        )
+        recent_cell_ids = recent_cell_ids.union(
+            db.session.query(Sensor.cell_id)
+            .join(Data, Data.sensor_id == Sensor.id)
+            .filter(Data.ts >= activity_cutoff)
+        )
+        active_cells = (
+            db.session.query(func.count())
+            .select_from(recent_cell_ids.subquery())
+            .scalar()
+            or 0
+        )
 
         # Latest transmission timestamp
         latest_power = db.session.query(func.max(PowerData.ts)).scalar()
@@ -75,12 +79,8 @@ class Statistics(Resource):
             "active_cells": active_cells,
             "archived_cells": archived_cells,
             "total_loggers": total_loggers,
-            "total_sensors": total_sensors,
-            "total_sites": total_sites,
+            "total_users": total_users,
             "total_data_points": total_data_points,
-            "total_uploads": total_uploads,
-            "upload_error_rate": upload_error_rate,
-            "upload_success_rate": upload_success_rate,
             "latest_timestamp": latest_timestamp,
             "data_breakdown": {
                 "power": power_points,

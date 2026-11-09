@@ -10,7 +10,7 @@ describe('StatisticsSection Component', () => {
     vi.restoreAllMocks();
   });
 
-  it('renders all 6 stat blocks when data loads successfully', async () => {
+  it('renders all 5 stat blocks when data loads successfully', async () => {
     render(<StatisticsSection />);
 
     // Wait for metrics to load from mock
@@ -19,12 +19,11 @@ describe('StatisticsSection Component', () => {
     });
 
     // Verify all 6 block labels are present
-    expect(screen.getByText('Data Uploads')).toBeInTheDocument();
-    expect(screen.getByText('Upload Reliability')).toBeInTheDocument();
+    expect(screen.getByText('Data Points')).toBeInTheDocument();
     expect(screen.getByText('Active Cells')).toBeInTheDocument();
-    expect(screen.getByText('Deployment Sites')).toBeInTheDocument();
-    expect(screen.getByText('Field Loggers')).toBeInTheDocument();
-    expect(screen.getByText('Sensor Channels')).toBeInTheDocument();
+    expect(screen.getByText('Total Cells')).toBeInTheDocument();
+    expect(screen.getByText('Total Loggers')).toBeInTheDocument();
+    expect(screen.getByText('Total Users')).toBeInTheDocument();
   });
 
   it('displays correct values from mock data', async () => {
@@ -34,18 +33,10 @@ describe('StatisticsSection Component', () => {
       expect(screen.getAllByText('154.2K').length).toBeGreaterThan(0);
     });
 
-    // Upload Reliability percentage
-    expect(screen.getByText('100.0%')).toBeInTheDocument();
-    // Active cells value
     expect(screen.getByText('12')).toBeInTheDocument();
-    // Deployment Sites value
-    expect(screen.getByText('5')).toBeInTheDocument();
-    // Field Loggers value
+    expect(screen.getByText('14')).toBeInTheDocument();
     expect(screen.getByText('8')).toBeInTheDocument();
-    // Sensor Channels value
-    expect(screen.getByText('24')).toBeInTheDocument();
-    // Subtext showing total cells
-    expect(screen.getByText(/14 total cells/i)).toBeInTheDocument();
+    expect(screen.getByText('6')).toBeInTheDocument();
   });
 
   it('displays subtexts for each stat block', async () => {
@@ -55,11 +46,11 @@ describe('StatisticsSection Component', () => {
       expect(screen.getAllByText('154.2K').length).toBeGreaterThan(0);
     });
 
-    expect(screen.getByText('Packets ingested')).toBeInTheDocument();
-    expect(screen.getByText('0.0% error rate')).toBeInTheDocument();
-    expect(screen.getByText('Field locations')).toBeInTheDocument();
-    expect(screen.getByText('Hardware units')).toBeInTheDocument();
-    expect(screen.getByText('Active channels')).toBeInTheDocument();
+    expect(screen.getByText('Measurements recorded')).toBeInTheDocument();
+    expect(screen.getByText('Uploaded in the last 24 hours')).toBeInTheDocument();
+    expect(screen.getByText('Registered cells')).toBeInTheDocument();
+    expect(screen.getByText('Registered hardware units')).toBeInTheDocument();
+    expect(screen.getByText('Registered accounts')).toBeInTheDocument();
   });
 
   it('shows loading dashes before data arrives', () => {
@@ -70,7 +61,7 @@ describe('StatisticsSection Component', () => {
 
     // All blocks should show dash placeholders while loading
     const dashes = screen.getAllByText('—');
-    expect(dashes.length).toBe(6);
+    expect(dashes.length).toBe(5);
   });
 
   it('handles error gracefully when API fails', async () => {
@@ -135,8 +126,8 @@ describe('StatisticsSection Component', () => {
   it('formats large numbers with compact notation', async () => {
     const largeStats = {
       ...mockStatistics,
-      total_uploads: 2500000,
-      total_sensors: 150000,
+      total_data_points: 2500000,
+      total_users: 150000,
       active_cells: 1200000000,
     };
     vi.spyOn(statsService, 'getStatistics').mockResolvedValue(largeStats);
@@ -144,11 +135,11 @@ describe('StatisticsSection Component', () => {
     render(<StatisticsSection />);
 
     await waitFor(() => {
-      // 2.5M for uploads
+      // 2.5M for data points
       expect(screen.getByText('2.5M')).toBeInTheDocument();
     });
 
-    // 150K for sensors
+    // 150K for users
     expect(screen.getByText('150K')).toBeInTheDocument();
     // 1.2B for active cells
     expect(screen.getByText('1.2B')).toBeInTheDocument();
@@ -160,12 +151,8 @@ describe('StatisticsSection Component', () => {
       active_cells: 0,
       archived_cells: 0,
       total_loggers: 0,
-      total_sensors: 0,
-      total_sites: 0,
+      total_users: 0,
       total_data_points: 0,
-      total_uploads: 0,
-      upload_error_rate: 0.0,
-      upload_success_rate: 100.0,
       latest_timestamp: null,
       data_breakdown: { power: 0, teros: 0, generic: 0 },
     };
@@ -174,32 +161,15 @@ describe('StatisticsSection Component', () => {
     render(<StatisticsSection />);
 
     await waitFor(() => {
-      expect(screen.getByText('100.0%')).toBeInTheDocument();
+      expect(screen.getAllByText('0').length).toBe(5);
     });
 
     // All numeric blocks should show 0
     const zeros = screen.getAllByText('0');
-    expect(zeros.length).toBe(5); // uploads, active cells, sites, loggers, sensors
+    expect(zeros.length).toBe(5);
 
     // No "Last uplink" when timestamp is null
     expect(screen.queryByText(/Last uplink:/i)).not.toBeInTheDocument();
-  });
-
-  it('calculates upload reliability from error rate', async () => {
-    const statsWithError = {
-      ...mockStatistics,
-      upload_error_rate: 3.5,
-    };
-    vi.spyOn(statsService, 'getStatistics').mockResolvedValue(statsWithError);
-
-    render(<StatisticsSection />);
-
-    await waitFor(() => {
-      // 100 - 3.5 = 96.5%
-      expect(screen.getByText('96.5%')).toBeInTheDocument();
-    });
-
-    expect(screen.getByText('3.5% error rate')).toBeInTheDocument();
   });
 
   it('renders the statistics section with correct id', async () => {

@@ -5,12 +5,8 @@ export const mockStatistics = {
   active_cells: 12,
   archived_cells: 2,
   total_loggers: 8,
-  total_sensors: 24,
-  total_sites: 5,
+  total_users: 6,
   total_data_points: 154230,
-  total_uploads: 154230,
-  upload_error_rate: 0.0,
-  upload_success_rate: 100.0,
   latest_timestamp: '2026-10-29T12:00:00Z',
   data_breakdown: {
     power: 85200,
