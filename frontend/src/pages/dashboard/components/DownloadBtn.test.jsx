@@ -1,3 +1,4 @@
+import { buttonClasses } from '@mui/material';
 import { fireEvent, render, screen, act } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import DownloadBtn from './DownloadBtn';
@@ -110,6 +111,107 @@ describe('DownloadBtn', () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: /DOWNLOADING/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Export to CSV/i })).toBeDisabled();
+  });
+
+  it.each([
+    ['nothing has loaded', {}],
+    [
+      'only another cell has sensor data',
+      { '2:teros12:vwc': { timestamp: ['Thu, 01 Jan 2026 00:00:00 GMT'], data: [1] } },
+    ],
+  ])('is greyed out when the selected cells have no data (%s)', (_, historicalSensorByKey) => {
+    render(
+      <DownloadBtn
+        cells={[{ id: 1, name: 'Cell A' }]}
+        panelOrder={['power-vi']}
+        historicalPowerByCell={{}}
+        historicalTerosByCell={{}}
+        historicalSensorByKey={historicalSensorByKey}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: /Export to CSV/i })).toBeDisabled();
+  });
+
+  it.each([
+    [
+      'TEROS',
+      { historicalTerosByCell: { 1: { terosData: { timestamp: ['Thu, 01 Jan 2026 00:00:00 GMT'], vwc: [1] } } } },
+    ],
+    [
+      'sensor',
+      { historicalSensorByKey: { '1:teros12:vwc': { timestamp: ['Thu, 01 Jan 2026 00:00:00 GMT'], data: [1] } } },
+    ],
+  ])('is enabled when the selected cell has %s data', (_, caches) => {
+    render(
+      <DownloadBtn
+        cells={[{ id: 1, name: 'Cell A' }]}
+        panelOrder={['teros']}
+        historicalPowerByCell={{}}
+        historicalTerosByCell={{}}
+        historicalSensorByKey={{}}
+        {...caches}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: /Export to CSV/i })).toBeEnabled();
+  });
+
+  it('turns green while a download is in progress and returns to blue afterwards', () => {
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+    render(
+      <DownloadBtn
+        cells={[
+          { id: 1, name: 'Cell A' },
+          { id: 2, name: 'Cell B' },
+        ]}
+        panelOrder={['power-p']}
+        historicalPowerByCell={{
+          1: { powerData: { timestamp: ['Thu, 01 Jan 2026 00:00:00 GMT'], p: [1] } },
+          2: { powerData: { timestamp: ['Thu, 01 Jan 2026 00:00:00 GMT'], p: [2] } },
+        }}
+        historicalTerosByCell={{}}
+        historicalSensorByKey={{}}
+      />,
+    );
+
+    const button = screen.getByRole('button', { name: /Export to CSV/i });
+    expect(button).toHaveClass(buttonClasses.colorPrimary);
+
+    fireEvent.click(button);
+    expect(button).toHaveTextContent(/DOWNLOADING/i);
+    expect(button).toHaveClass(buttonClasses.colorSuccess);
+
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(button).toHaveTextContent(/Export to CSV/i);
+    expect(button).toHaveClass(buttonClasses.colorPrimary);
+  });
+
+  it('ignores clicks while a download is in progress', () => {
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+    render(
+      <DownloadBtn
+        cells={[{ id: 1, name: 'Cell A' }]}
+        panelOrder={['power-p']}
+        historicalPowerByCell={{ 1: { powerData: { timestamp: ['Thu, 01 Jan 2026 00:00:00 GMT'], p: [1] } } }}
+        historicalTerosByCell={{}}
+        historicalSensorByKey={{}}
+      />,
+    );
+
+    const button = screen.getByRole('button', { name: /Export to CSV/i });
+    fireEvent.click(button);
+    fireEvent.click(button);
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(createObjectURL).toHaveBeenCalledTimes(1);
   });
 });

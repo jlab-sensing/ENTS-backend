@@ -1,3 +1,4 @@
+import os
 import warnings
 import re
 from flask_restful import Resource
@@ -77,14 +78,15 @@ class Logger(Resource):
     def post(self, _user):
         """Creates a new logger with database and TTN registration.
 
+        The TTN JoinEUI and AppKey are read from the TTN_JOIN_EUI and
+        TTN_APP_KEY environment variables.
+
         Expected JSON payload:
         {
             "name": "Logger Name",
             "type": "ents",
             "device_eui": "0080E1150546D093",  # for database
             "dev_eui": "0080E1150546D093",     # for TTN (same as device_eui)
-            "join_eui": "0101010101010101",    # for TTN only
-            "app_key": "CEC24E6A258B2B20A5A7C05ABD2C1724",  # for TTN only
             "description": "Logger description",
             "userEmail": "user@example.com"
         }
@@ -135,14 +137,17 @@ class Logger(Resource):
                     return re.sub(r"[^0-9a-fA-F]", "", v or "")
 
                 dev_eui = _norm_hex(json_data.get("dev_eui"))
-                join_eui = _norm_hex(json_data.get("join_eui"))
-                app_key = _norm_hex(json_data.get("app_key"))
+                join_eui = _norm_hex(os.getenv("TTN_JOIN_EUI"))
+                app_key = _norm_hex(os.getenv("TTN_APP_KEY"))
 
                 def _is_valid_eui64(v):
                     return bool(re.fullmatch(r"[0-9a-fA-F]{16}", v or ""))
 
                 def _is_valid_app_key(v):
                     return bool(re.fullmatch(r"[0-9a-fA-F]{32}", v or ""))
+
+                if not (_is_valid_eui64(join_eui) and _is_valid_app_key(app_key)):
+                    warnings.warn("TTN_JOIN_EUI or TTN_APP_KEY is not set or invalid.")
 
                 has_all = bool(dev_eui and join_eui and app_key)
                 valid_all = (
