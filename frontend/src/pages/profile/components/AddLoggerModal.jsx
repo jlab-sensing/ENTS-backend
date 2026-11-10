@@ -113,7 +113,7 @@ function AddLoggerModal() {
   const nameInvalid = nameTouched && !name.trim();
 
   const submitLogger = ({ submitDevEui }) => {
-    addLogger(name.trim(), type, submitDevEui, description, user.email, axiosPrivate)
+    addLogger(name, type, submitDevEui, description, user.email, axiosPrivate)
       .then((res) => {
         setResponse({
           ...res,
