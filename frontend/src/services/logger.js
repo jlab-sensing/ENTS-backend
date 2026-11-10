@@ -10,10 +10,10 @@ export const getLoggers = () => {
     });
 };
 
-export const addLogger = (name, type, devEui, joinEui, appKey, description, email, axiosPrivate) => {
-  // Treat LoRaWAN fields as optional. Only send TTN fields if we have all of them.
+export const addLogger = (name, type, devEui, description, email, axiosPrivate) => {
+  // Device EUI is optional.
   const isEnts = (type || '').toLowerCase() === 'ents';
-  const hasTtnFields = isEnts && Boolean(devEui && joinEui && appKey);
+  const hasTtnFields = isEnts && Boolean(devEui);
   const payload = {
     name: name,
     type: type,
@@ -26,11 +26,8 @@ export const addLogger = (name, type, devEui, joinEui, appKey, description, emai
   }
 
   if (hasTtnFields) {
-    // dev_eui/join_eui/app_key are used for TTN registration.
-    payload.device_eui = devEui;
+    // dev_eui is used for TTN registration.
     payload.dev_eui = devEui;
-    payload.join_eui = joinEui;
-    payload.app_key = appKey;
   }
 
   return axiosPrivate

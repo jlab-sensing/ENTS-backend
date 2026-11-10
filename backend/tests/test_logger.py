@@ -1,5 +1,6 @@
 import types
 
+import pytest
 from flask import Flask
 from sqlalchemy.exc import IntegrityError
 
@@ -67,8 +68,6 @@ def test_ents_invalid_lorawan_creates_logger_and_skips_ttn(monkeypatch):
         {
             "device_eui": "INVALID",
             "dev_eui": "ZZZZ",
-            "join_eui": "short",
-            "app_key": "bad",
         }
     )
 
@@ -85,6 +84,43 @@ def test_ents_invalid_lorawan_creates_logger_and_skips_ttn(monkeypatch):
 def test_ents_valid_lorawan_registers_with_ttn(monkeypatch):
     stub_logger = StubLogger()
     _setup_common(monkeypatch, stub_logger)
+    monkeypatch.setenv("TTN_JOIN_EUI", "0101010101010101")
+    monkeypatch.setenv("TTN_APP_KEY", "CEC24E6A258B2B20A5A7C05ABD2C1724")
+
+    payload = _base_payload()
+    payload.update(
+        {
+            "device_eui": "0080E1150546D093",
+            "dev_eui": "0080E1150546D093",
+        }
+    )
+
+    registered = []
+    resource = LoggerResource()
+    resource.ttn_api = types.SimpleNamespace(
+        register_end_device=lambda ed: registered.append(ed) or {"ok": True}
+    )
+
+    app = _make_test_app()
+    with app.test_request_context(json=payload):
+        body, status = resource.post(None)
+
+    assert status == 201
+    assert body["ttn_registered"] is True
+    assert body["logger_id"] == stub_logger.id
+    assert stub_logger.deleted is False
+    assert registered[0].data["ids"]["join_eui"] == "0101010101010101"
+    assert (
+        registered[0].data["root_keys"]["app_key"]["key"]
+        == "CEC24E6A258B2B20A5A7C05ABD2C1724"
+    )
+
+
+def test_ents_skips_ttn_when_keys_missing_from_env(monkeypatch):
+    stub_logger = StubLogger()
+    _setup_common(monkeypatch, stub_logger)
+    monkeypatch.delenv("TTN_JOIN_EUI", raising=False)
+    monkeypatch.delenv("TTN_APP_KEY", raising=False)
 
     payload = _base_payload()
     payload.update(
@@ -103,11 +139,11 @@ def test_ents_valid_lorawan_registers_with_ttn(monkeypatch):
 
     app = _make_test_app()
     with app.test_request_context(json=payload):
-        body, status = resource.post(None)
+        with pytest.warns(UserWarning, match="TTN_JOIN_EUI or TTN_APP_KEY"):
+            body, status = resource.post(None)
 
     assert status == 201
-    assert body["ttn_registered"] is True
-    assert body["logger_id"] == stub_logger.id
+    assert body["ttn_registered"] is False
     assert stub_logger.deleted is False
 
 

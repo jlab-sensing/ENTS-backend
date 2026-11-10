@@ -25,31 +25,13 @@ import { addLogger } from '../../../services/logger';
 import { IMaskInput } from 'react-imask';
 import PropTypes from 'prop-types';
 
-const LongTextMask = React.forwardRef(function TextMaskCustom(props, ref) {
-  const { onChange, ...other } = props;
-  return (
-    <IMaskInput
-      {...other}
-      mask='**:**:**:**:**:**:**:**:**:**:**:**:**:**:**:**' //AppKey
-      inputRef={ref}
-      onAccept={(value) => onChange({ target: { name: props.name, value } })}
-      overwrite
-    />
-  );
-});
-
-LongTextMask.propTypes = {
-  name: PropTypes.string,
-  onChange: PropTypes.func,
-};
-
 ////////////////////////////////////////////
 const ShortTextMask = React.forwardRef(function TextMaskCustom(props, ref) {
   const { onChange, ...other } = props;
   return (
     <IMaskInput
       {...other}
-      mask='**:**:**:**:**:**:**:**' //DevEUI & AppEui
+      mask='**:**:**:**:**:**:**:**' //DevEUI
       inputRef={ref}
       onAccept={(value) => onChange({ target: { name: props.name, value } })}
       overwrite
@@ -65,7 +47,6 @@ ShortTextMask.propTypes = {
 const cleanHexLike = (value) => (value || '').replace(/[^a-zA-Z0-9]/g, '');
 
 const isValidEui64 = (value) => /^[0-9a-fA-F]{16}$/.test(value);
-const isValidAppKey = (value) => /^[0-9a-fA-F]{32}$/.test(value);
 
 function AddLoggerModal() {
   let data = useOutletContext();
@@ -78,8 +59,6 @@ function AddLoggerModal() {
   const [nameTouched, setNameTouched] = useState(false);
   const [type, setType] = useState('');
   const [devEui, setDevEui] = useState(''); // Changed to match TTN API
-  const [joinEui, setJoinEui] = useState(''); // Added for TTN integration
-  const [appKey, setAppKey] = useState(''); // TTN App Key (sensitive)
   const [description, setDescription] = useState('');
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
@@ -103,8 +82,6 @@ function AddLoggerModal() {
     setNameTouched(false);
     setType('');
     setDevEui('');
-    setJoinEui('');
-    setAppKey('');
     setDescription('');
     setConfirmOpen(false);
     setPendingSubmit(null);
@@ -119,8 +96,6 @@ function AddLoggerModal() {
     setNameTouched(false);
     setType('');
     setDevEui('');
-    setJoinEui('');
-    setAppKey('');
     setDescription('');
     setConfirmOpen(false);
     setPendingSubmit(null);
@@ -131,32 +106,14 @@ function AddLoggerModal() {
   }
 
   const cleanDevEui = cleanHexLike(devEui);
-  const cleanJoinEui = cleanHexLike(joinEui);
-  const cleanAppKey = cleanHexLike(appKey);
 
   const devEuiTyped = Boolean(cleanDevEui);
-  const joinEuiTyped = Boolean(cleanJoinEui);
-  const appKeyTyped = Boolean(cleanAppKey);
 
   const devEuiInvalid = devEuiTyped && !isValidEui64(cleanDevEui);
-  const joinEuiInvalid = joinEuiTyped && !isValidEui64(cleanJoinEui);
-  const appKeyInvalid = appKeyTyped && !isValidAppKey(cleanAppKey);
   const nameInvalid = nameTouched && !name.trim();
 
-  const lorawanCompleteAndValid =
-    isValidEui64(cleanDevEui) && isValidEui64(cleanJoinEui) && isValidAppKey(cleanAppKey);
-
-  const submitLogger = ({ submitDevEui, submitJoinEui, submitAppKey }) => {
-    addLogger(
-      name.trim(),
-      type,
-      submitDevEui,
-      submitJoinEui,
-      submitAppKey,
-      description,
-      user.email,
-      axiosPrivate,
-    )
+  const submitLogger = ({ submitDevEui }) => {
+    addLogger(name.trim(), type, submitDevEui, description, user.email, axiosPrivate)
       .then((res) => {
         setResponse({
           ...res,
@@ -175,28 +132,15 @@ function AddLoggerModal() {
 
   const handleAddLogger = () => {
     const typeIsEnts = (type || '').toLowerCase() === 'ents';
-    const dbDeviceEui = isValidEui64(cleanDevEui) ? cleanDevEui : undefined;
+    const submitDevEui = isValidEui64(cleanDevEui) ? cleanDevEui : undefined;
 
-    // Only attempt TTN registration when all fields are present and valid.
-    const submitDevEui = dbDeviceEui;
-    const submitJoinEui = lorawanCompleteAndValid ? cleanJoinEui : undefined;
-    const submitAppKey = lorawanCompleteAndValid ? cleanAppKey : undefined;
-
-    if (typeIsEnts && !lorawanCompleteAndValid) {
-      setPendingSubmit({
-        submitDevEui,
-        submitJoinEui,
-        submitAppKey,
-      });
+    if (typeIsEnts && !submitDevEui) {
+      setPendingSubmit({ submitDevEui });
       setConfirmOpen(true);
       return;
     }
 
-    submitLogger({
-      submitDevEui,
-      submitJoinEui,
-      submitAppKey,
-    });
+    submitLogger({ submitDevEui });
   };
 
   return (
@@ -237,8 +181,8 @@ function AddLoggerModal() {
             <DialogTitle id='lorawan-confirm-title'>Create Logger Without LoRaWAN?</DialogTitle>
             <DialogContent>
               <DialogContentText id='lorawan-confirm-desc'>
-                The LoRaWAN fields (Device EUI, Join EUI, App Key) are missing or invalid. If you continue, the logger
-                will be created in DirtViz but it will not be registered on The Things Network (LoRaWAN).
+                The Device EUI is missing or invalid. If you continue, the logger will be created in DirtViz but it will
+                not be registered on The Things Network (LoRaWAN).
               </DialogContentText>
             </DialogContent>
             <DialogActions>
@@ -254,11 +198,7 @@ function AddLoggerModal() {
               <Button
                 variant='contained'
                 onClick={() => {
-                  const next = pendingSubmit || {
-                    submitDevEui: undefined,
-                    submitJoinEui: undefined,
-                    submitAppKey: undefined,
-                  };
+                  const next = pendingSubmit || { submitDevEui: undefined };
                   setConfirmOpen(false);
                   setPendingSubmit(null);
                   submitLogger(next);
@@ -373,7 +313,7 @@ function AddLoggerModal() {
 
                 see https://github.com/jlab-sensing/ENTS-backend/issues/512 for more
                 */}
-                  {/* THIS IS WHERE THE Device EUI & Join EUI Code is*/}
+                  {/* THIS IS WHERE THE Device EUI Code is*/}
                   <FormControl variant='standard'>
                     <InputLabel>Device EUI</InputLabel>
                     <Input
@@ -392,46 +332,6 @@ function AddLoggerModal() {
                     />
                     <FormHelperText error={devEuiInvalid}>
                       Optional. 16 hex characters (EUI64). {devEuiInvalid ? 'Invalid Device EUI.' : ''}
-                    </FormHelperText>
-                  </FormControl>
-                  <FormControl variant='standard'>
-                    <InputLabel>Join EUI</InputLabel>
-                    <Input
-                      label='Join EUI'
-                      variant='outlined'
-                      fullWidth
-                      value={joinEui}
-                      onChange={(e) => setJoinEui(e.target.value)}
-                      placeholder='e.g., 0101010101010101'
-                      inputComponent={ShortTextMask}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '8px',
-                        },
-                      }}
-                    />
-                    <FormHelperText error={joinEuiInvalid}>
-                      Optional. 16 hex characters (EUI64). {joinEuiInvalid ? 'Invalid Join EUI.' : ''}
-                    </FormHelperText>
-                  </FormControl>
-                  <FormControl variant='standard'>
-                    <InputLabel>App Key</InputLabel>
-                    <Input
-                      label='App Key'
-                      variant='outlined'
-                      fullWidth
-                      value={appKey}
-                      onChange={(e) => setAppKey(e.target.value)}
-                      placeholder='Application Key'
-                      inputComponent={LongTextMask}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '8px',
-                        },
-                      }}
-                    />
-                    <FormHelperText error={appKeyInvalid}>
-                      Optional. 32 hex characters. {appKeyInvalid ? 'Invalid App Key.' : ''}
                     </FormHelperText>
                   </FormControl>
                   <TextField
