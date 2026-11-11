@@ -3,6 +3,7 @@ import { Box, Typography, Button, Stack } from '@mui/material';
 import LandingFooter from '../../components/LandingFooter.jsx';
 import FeatureSection from '../dashboard/components/FeatureSection.jsx';
 import PresentationSection from '../../components/PresentationSection.jsx';
+import StatisticsSection from '../../components/StatisticsSection.jsx';
 import SectionHeader from '../../components/SectionHeader.jsx';
 import HeroStreamingPower from './HeroStreamingPower.jsx';
 import TopNav from '../../components/TopNav.jsx';
@@ -56,6 +57,8 @@ function Intro() {
             
           </Box>
         </Box>
+        <SectionHeader title={'Statistics'}/>
+        <StatisticsSection />
         <SectionHeader title={'Presentation'} />
         <PresentationSection />
         <SectionHeader title={'Features'} />
