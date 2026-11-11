@@ -9,7 +9,7 @@ import {
 } from '../components/unifiedChartUtils';
 import { sensorDataCacheKey } from '../catalog/historicalDataLoader';
 import { evaluateEquationAt, extractCellStreamRefs } from './equationParser';
-import { resolveGenericStreamType, resolveStreamSpec } from './equationStreams';
+import { resolveGenericStreamType, resolvePowerSensorFallback, resolveStreamSpec } from './equationStreams';
 
 /** Max live points kept for derived equation charts (matches dashboard live buffer). */
 export const LIVE_DERIVED_MAX_POINTS = 100;
@@ -48,10 +48,20 @@ export function streamSeriesFromHistoricalCache(cellId, streamKey, cache) {
   if (spec.source === 'power') {
     const entry = resolveCellEntry(cache.historicalPowerByCell, cellId);
     const powerData = entry?.powerData;
-    if (!powerData?.timestamp?.length) return null;
+    if (powerData?.timestamp?.length && powerData[spec.field]?.some((value) => value != null)) {
+      return {
+        timestamps: powerData.timestamp.map((t) => DateTime.fromHTTP(t).toMillis()),
+        values: powerData[spec.field],
+      };
+    }
+    const fallback = resolvePowerSensorFallback(streamKey);
+    if (!fallback) return null;
+    const key = sensorDataCacheKey(cellId, fallback.sensorName, fallback.measurement);
+    const payload = cache.historicalSensorByKey?.[key];
+    if (!payload?.timestamp?.length) return null;
     return {
-      timestamps: powerData.timestamp.map((t) => DateTime.fromHTTP(t).toMillis()),
-      values: powerData[spec.field] || [],
+      timestamps: payload.timestamp.map((t) => DateTime.fromHTTP(t).toMillis()),
+      values: payload.data || [],
     };
   }
 
@@ -258,6 +268,16 @@ async function fetchStreamSeries(cellId, streamKey, startDate, endDate, resample
 
   if (spec.source === 'power') {
     const data = await getPowerData(cellId, start, end, resample);
+    const fallback = resolvePowerSensorFallback(streamKey);
+    if (fallback && (!data.timestamp?.length || !data[spec.field]?.some((value) => value != null))) {
+      const sensorData = await getSensorData(
+        fallback.sensorName, cellId, fallback.measurement, start, end, resample,
+      );
+      return {
+        timestamps: (sensorData.timestamp || []).map((t) => DateTime.fromHTTP(t).toMillis()),
+        values: sensorData.data || [],
+      };
+    }
     const timestamps = (data.timestamp || []).map((t) => DateTime.fromHTTP(t).toMillis());
     return { timestamps, values: data[spec.field] || [] };
   }

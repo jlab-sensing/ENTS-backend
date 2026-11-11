@@ -119,3 +119,12 @@ export function resolveGenericStreamType(measurementType) {
 export function listEquationStreamKeys() {
   return Object.keys(EQUATION_STREAMS).sort();
 }
+
+/** Generic historical fallback for legacy voltage/current aliases. */
+export function resolvePowerSensorFallback(streamKey) {
+  const spec = resolveStreamSpec(streamKey);
+  if (spec?.source !== 'power') return undefined;
+  if (spec.field === 'v') return { sensorName: 'POWER_VOLTAGE', measurement: 'Voltage' };
+  if (spec.field === 'i') return { sensorName: 'POWER_CURRENT', measurement: 'Current' };
+  return undefined;
+}

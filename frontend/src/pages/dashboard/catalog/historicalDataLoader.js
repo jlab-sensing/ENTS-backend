@@ -1,7 +1,7 @@
 import { panelIdToUnifiedType, isSensorPanelEntry, sensorPanelIdToSensorId } from './dashboardCatalog';
 import { measurementMatches } from '../components/unifiedChartUtils';
 import { extractCellStreamRefs, isDerivedLayoutEntry } from '../equation/equationParser';
-import { resolveStreamSpec } from '../equation/equationStreams';
+import { resolvePowerSensorFallback, resolveStreamSpec } from '../equation/equationStreams';
 import { CHART_CONFIGS } from '../components/chartConfigs';
 import { getPowerData } from '../../../services/power';
 import { getTerosData } from '../../../services/teros';
@@ -85,23 +85,33 @@ function equationRefsNeedSource(panelOrder, source) {
 /**
  * @param {string[]} panelOrder
  */
-export function collectEquationSensorRequests(panelOrder) {
+export function collectEquationSensorRequests(panelOrder, cellSensorsById = {}) {
   const requests = [];
   const seen = new Set();
 
   collectEquationRefsFromPanelOrder(panelOrder).forEach((ref) => {
     const parsed = parseCellStreamRef(ref);
     const spec = parsed && resolveStreamSpec(parsed.streamKey);
-    if (!spec || spec.source !== 'sensor') return;
+    if (!spec) return;
+    const fallback = resolvePowerSensorFallback(parsed.streamKey);
+    const cellSensors = cellSensorsById[String(parsed.cellId)];
+    // References may name cells outside the dashboard selection, whose metadata
+    // is not loaded. Probe their generic history just as the direct fetch does.
+    const hasFallback = fallback && (!Array.isArray(cellSensors) || cellSensors.some(
+      (sensor) => sensor?.name === fallback.sensorName &&
+        measurementMatches(sensor?.measurement, [fallback.measurement]),
+    ));
+    const sensorSpec = spec.source === 'sensor' ? spec : hasFallback && fallback;
+    if (!sensorSpec) return;
 
-    const cacheKey = sensorDataCacheKey(parsed.cellId, spec.sensorName, spec.measurement);
+    const cacheKey = sensorDataCacheKey(parsed.cellId, sensorSpec.sensorName, sensorSpec.measurement);
     if (seen.has(cacheKey)) return;
     seen.add(cacheKey);
     requests.push({
       cacheKey,
       cellId: parsed.cellId,
-      name: spec.sensorName,
-      measurement: spec.measurement,
+      name: sensorSpec.sensorName,
+      measurement: sensorSpec.measurement,
     });
   });
 
@@ -323,7 +333,7 @@ export async function fetchDashboardHistoricalData({
   const sensorRequests = [
     ...collectUnifiedSensorRequests(panelOrder, cells, cellSensorsById),
     ...collectDbSensorPanelRequests(panelOrder, cells, cellSensorsById),
-    ...collectEquationSensorRequests(panelOrder),
+    ...collectEquationSensorRequests(panelOrder, cellSensorsById),
   ];
   const seen = new Set();
   const dedupedSensorRequests = sensorRequests.filter((request) => {
@@ -436,7 +446,7 @@ export async function fetchDashboardSensorData({
   const sensorRequests = [
     ...collectUnifiedSensorRequests(panelOrder, cells, cellSensorsById),
     ...collectDbSensorPanelRequests(panelOrder, cells, cellSensorsById),
-    ...collectEquationSensorRequests(panelOrder),
+    ...collectEquationSensorRequests(panelOrder, cellSensorsById),
   ];
   const seen = new Set();
   const dedupedSensorRequests = sensorRequests.filter((request) => {

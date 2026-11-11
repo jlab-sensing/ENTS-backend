@@ -18,6 +18,7 @@ When adding a new entry, please use the following format:
 
 ## Log
 
+- [2026-11-11] fix: use generic voltage/current sensor history for derived equations when legacy power data is absent [#832](https://github.com/jlab-sensing/ENTS-backend/issues/832)
 - [2026-10-30] feat: add platform statistics section to landing page [#855](https://github.com/jlab-sensing/ENTS-backend/pull/855)
 - [2026-11-09] feat: remove Join EUI and App Key from logger creation; read TTN_JOIN_EUI/TTN_APP_KEY from .env [#851](https://github.com/jlab-sensing/ENTS-backend/issues/851)
 - [2026-11-05] fix: dashboard Export to CSV button no longer shows DOWNLOADING before it is pressed, is greyed out when the selected cells have no data, and turns green while a download is in progress [#849](https://github.com/jlab-sensing/ENTS-backend/issues/849)
