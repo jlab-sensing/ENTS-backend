@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ChartWrapper from '../ChartWrapper';
 import { getMaxAxisAndStepValues } from '../alignAxis';
@@ -396,6 +396,10 @@ const streamChartOptions = {
   },
 };
 
+const firstX = data.datasets[0].data[0].x;
+const lastX = data.datasets[0].data.at(-1).x;
+const HOUR = 60 * 60 * 1000;
+
 const MockChartWrapper = ({ id, data, streamChartOptions, chartOptions, stream }) => {
   return <ChartWrapper id={id} data={data} options={stream ? streamChartOptions : chartOptions} stream={stream} />;
 };
@@ -569,6 +573,102 @@ describe('testing side button events', () => {
     expect(ChartJS.getChart(chartElement).config.options.plugins.zoom.zoom.drag.enabled).toBe(true);
   });
 
+  it('should box zoom both axes and reset them', async () => {
+    const user = userEvent.setup();
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={data}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    const chart = ChartJS.getChart(await screen.findByTestId(/chart-container/i));
+    chart.resize(400, 300);
+    vi.spyOn(chart.canvas, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      top: 0,
+      right: 400,
+      bottom: 300,
+      width: 400,
+      height: 300,
+    });
+    const before = {
+      x: [chart.scales.x.min, chart.scales.x.max],
+      vwcAxis: [chart.scales.vwcAxis.min, chart.scales.vwcAxis.max],
+      ecAxis: [chart.scales.ecAxis.min, chart.scales.ecAxis.max],
+    };
+
+    await user.click(await screen.findByLabelText(/^Zoom$/));
+    const { left, top } = chart.chartArea;
+    fireEvent.mouseDown(chart.canvas, { clientX: left + 50, clientY: top + 50, button: 0 });
+    fireEvent.mouseMove(chart.canvas, { clientX: left + 200, clientY: top + 150, button: 0 });
+    fireEvent.mouseUp(chart.canvas.ownerDocument, { clientX: left + 200, clientY: top + 150, button: 0 });
+
+    for (const axis of ['x', 'vwcAxis', 'ecAxis']) {
+      expect([chart.scales[axis].min, chart.scales[axis].max]).not.toEqual(before[axis]);
+    }
+
+    await user.click(await screen.findByLabelText(/^Reset$/));
+    for (const axis of ['x', 'vwcAxis', 'ecAxis']) {
+      expect([chart.scales[axis].min, chart.scales[axis].max]).toEqual(before[axis]);
+    }
+  });
+
+  it('should keep the value axes when the box zoom drag is flat', async () => {
+    const user = userEvent.setup();
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={data}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    const chart = ChartJS.getChart(await screen.findByTestId(/chart-container/i));
+    chart.resize(400, 300);
+    vi.spyOn(chart.canvas, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      top: 0,
+      right: 400,
+      bottom: 300,
+      width: 400,
+      height: 300,
+    });
+    const before = {
+      x: [chart.scales.x.min, chart.scales.x.max],
+      vwcAxis: [chart.scales.vwcAxis.min, chart.scales.vwcAxis.max],
+      ecAxis: [chart.scales.ecAxis.min, chart.scales.ecAxis.max],
+    };
+    const drag = (fromX, fromY, toX, toY) => {
+      fireEvent.mouseDown(chart.canvas, { clientX: fromX, clientY: fromY, button: 0 });
+      fireEvent.mouseMove(chart.canvas, { clientX: toX, clientY: toY, button: 0 });
+      fireEvent.mouseUp(chart.canvas.ownerDocument, { clientX: toX, clientY: toY, button: 0 });
+    };
+
+    await user.click(await screen.findByLabelText(/^Zoom$/));
+    const { left, top } = chart.chartArea;
+    drag(left + 50, top + 100, left + 200, top + 100);
+
+    expect([chart.scales.x.min, chart.scales.x.max]).not.toEqual(before.x);
+    expect([chart.scales.vwcAxis.min, chart.scales.vwcAxis.max]).toEqual(before.vwcAxis);
+    expect([chart.scales.ecAxis.min, chart.scales.ecAxis.max]).toEqual(before.ecAxis);
+
+    drag(left + 20, top + 20, left + 200, top + 150);
+    const zoomedVwc = [chart.scales.vwcAxis.min, chart.scales.vwcAxis.max];
+    drag(left + 20, top + 60, left + 200, top + 60);
+
+    expect([chart.scales.vwcAxis.min, chart.scales.vwcAxis.max]).toEqual(zoomedVwc);
+    expect(chart.getInitialScaleBounds().vwcAxis).toEqual({ min: before.vwcAxis[0], max: before.vwcAxis[1] });
+
+    await user.click(await screen.findByLabelText(/^Reset$/));
+    for (const axis of ['x', 'vwcAxis', 'ecAxis']) {
+      expect([chart.scales[axis].min, chart.scales[axis].max]).toEqual(before[axis]);
+    }
+  });
+
   it('should toggle pan', async () => {
     const user = userEvent.setup();
     render(
@@ -646,7 +746,61 @@ describe('testing side button events', () => {
     const zoomInBtnElement = await screen.findByLabelText(/Zoom In/i);
     expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(1);
     await user.click(zoomInBtnElement);
-    expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(1.11);
+    expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(1.1);
+    expect(ChartJS.getChart(chartElement).scales.x.max).toBe(lastX);
+  });
+
+  it('should zoom in towards the latest data point when the axis ends after it', async () => {
+    const user = userEvent.setup();
+    const options = {
+      ...chartOptions,
+      scales: { ...chartOptions.scales, x: { ...chartOptions.scales.x, max: lastX + 10 * HOUR } },
+    };
+    render(<ChartWrapper id='vwc' data={data} options={options} stream={false} />);
+    const chartElement = await screen.findByTestId(/chart-container/i);
+    await user.click(await screen.findByLabelText(/Zoom In/i));
+    expect(ChartJS.getChart(chartElement).scales.x.max).toBe(lastX);
+    expect(ChartJS.getChart(chartElement).scales.x.min).toBeCloseTo(lastX - (lastX - firstX) / 1.1);
+  });
+
+  it('should zoom in on the latest data point when the view is past it', async () => {
+    const user = userEvent.setup();
+    const options = {
+      ...chartOptions,
+      scales: { ...chartOptions.scales, x: { ...chartOptions.scales.x, min: lastX + HOUR, max: lastX + 10 * HOUR } },
+    };
+    render(<ChartWrapper id='vwc' data={data} options={options} stream={false} />);
+    const chartElement = await screen.findByTestId(/chart-container/i);
+    await user.click(await screen.findByLabelText(/Zoom In/i));
+    expect(ChartJS.getChart(chartElement).scales.x.max).toBe(lastX);
+    expect(ChartJS.getChart(chartElement).scales.x.min).toBeCloseTo(lastX - (9 * HOUR) / 1.1);
+  });
+
+  it('should zoom in by the zoom factor when the latest data point is near the left edge', async () => {
+    const user = userEvent.setup();
+    const options = {
+      ...chartOptions,
+      scales: { ...chartOptions.scales, x: { ...chartOptions.scales.x, min: lastX - HOUR, max: lastX + 10 * HOUR } },
+    };
+    render(<ChartWrapper id='vwc' data={data} options={options} stream={false} />);
+    const chartElement = await screen.findByTestId(/chart-container/i);
+    await user.click(await screen.findByLabelText(/Zoom In/i));
+    expect(ChartJS.getChart(chartElement).scales.x.max).toBe(lastX);
+    expect(ChartJS.getChart(chartElement).scales.x.min).toBeCloseTo(lastX - (11 * HOUR) / 1.1);
+  });
+
+  it('should zoom in on a single data point', async () => {
+    const user = userEvent.setup();
+    const singlePoint = { datasets: [{ ...data.datasets[0], data: [data.datasets[0].data[0]] }] };
+    const options = {
+      ...chartOptions,
+      scales: { ...chartOptions.scales, x: { ...chartOptions.scales.x, min: firstX - HOUR, max: firstX + HOUR } },
+    };
+    render(<ChartWrapper id='vwc' data={singlePoint} options={options} stream={false} />);
+    const chartElement = await screen.findByTestId(/chart-container/i);
+    await user.click(await screen.findByLabelText(/Zoom In/i));
+    expect(ChartJS.getChart(chartElement).scales.x.max).toBe(firstX);
+    expect(ChartJS.getChart(chartElement).scales.x.min).toBeCloseTo(firstX - (2 * HOUR) / 1.1);
   });
 
   it('should zoom chart out by .9', async () => {
@@ -664,7 +818,24 @@ describe('testing side button events', () => {
     const zoomOutBtnElement = await screen.findByLabelText(/Zoom Out/i);
     expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(1);
     await user.click(zoomOutBtnElement);
-    expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(0.91);
+    expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(0.9);
+    expect(ChartJS.getChart(chartElement).scales.x.max).toBe(lastX);
+  });
+
+  it('should not zoom when the chart has no data', async () => {
+    const user = userEvent.setup();
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={{ datasets: [] }}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    const chartElement = await screen.findByTestId(/chart-container/i);
+    await user.click(await screen.findByLabelText(/Zoom In/i));
+    expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(1);
   });
 
   it('should reset chart zoom', async () => {
@@ -682,19 +853,19 @@ describe('testing side button events', () => {
     const resetBtnElement = await screen.findByLabelText(/^Reset$/);
     const zoomInBtnElement = await screen.findByLabelText(/^Zoom In$/);
     expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(1);
-    expect(ChartJS.getChart(chartElement).scales.x.min).toBe(1717092000000);
-    expect(ChartJS.getChart(chartElement).scales.x.max).toBe(1717189200000);
+    expect(ChartJS.getChart(chartElement).scales.x.min).toBe(firstX);
+    expect(ChartJS.getChart(chartElement).scales.x.max).toBe(lastX);
     expect(ChartJS.getChart(chartElement).options.plugins.zoom.pan.enabled).toBe(true);
     await user.click(zoomInBtnElement);
     await user.click(zoomInBtnElement);
     await user.click(zoomInBtnElement);
-    expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(1.37);
-    expect(ChartJS.getChart(chartElement).scales.x.min).toBe(1717092000000);
-    expect(ChartJS.getChart(chartElement).scales.x.max).toBe(1717162858800);
+    expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(1.33);
+    expect(ChartJS.getChart(chartElement).scales.x.min).toBeCloseTo(lastX - (lastX - firstX) / 1.1 ** 3);
+    expect(ChartJS.getChart(chartElement).scales.x.max).toBe(lastX);
     await user.click(resetBtnElement);
     expect(ChartJS.getChart(chartElement).getZoomLevel()).toBe(1);
-    expect(ChartJS.getChart(chartElement).scales.x.min).toBe(1717092000000);
-    expect(ChartJS.getChart(chartElement).scales.x.max).toBe(1717189200000);
+    expect(ChartJS.getChart(chartElement).scales.x.min).toBe(firstX);
+    expect(ChartJS.getChart(chartElement).scales.x.max).toBe(lastX);
   });
 
   it('should toggle fullscreen modal', async () => {

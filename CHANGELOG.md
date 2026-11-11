@@ -18,6 +18,7 @@ When adding a new entry, please use the following format:
 
 ## Log
 
+- [2026-11-11] fix: dashboard zoom tool selects a rectangle on both axes, and zoom in/out anchor on the most recent data point [#848](https://github.com/jlab-sensing/ENTS-backend/issues/848)
 - [2026-11-09] feat: remove Join EUI and App Key from logger creation; read TTN_JOIN_EUI/TTN_APP_KEY from .env [#851](https://github.com/jlab-sensing/ENTS-backend/issues/851)
 - [2026-11-05] fix: dashboard Export to CSV button no longer shows DOWNLOADING before it is pressed, is greyed out when the selected cells have no data, and turns green while a download is in progress [#849](https://github.com/jlab-sensing/ENTS-backend/issues/849)
 - [2026-10-20] fix: remove stale dashboard sensor panels and layout URL entries when a selected cell is removed [#837](https://github.com/jlab-sensing/ENTS-backend/issues/837)
