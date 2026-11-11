@@ -68,8 +68,16 @@ function ChartWrapper({ id, data, options, stream, onResampleChange, resample = 
     return axesWithScale;
   }
 
-  //** Callback for when zoom action is completed */
+  //** Callback for when zoom action is completed; an axis a flat drag collapsed keeps its previous range */
   function onZoomComplete({ chart }) {
+    const initialBounds = chart.getInitialScaleBounds();
+    for (const { axis, axisMin, axisMax } of axesWithScaleKeys) {
+      const scaleOptions = chart.scales[axis].options;
+      if (scaleOptions.min !== undefined && scaleOptions.min === scaleOptions.max) {
+        scaleOptions.min = scaleRef[axisMin] ?? initialBounds[axis].min;
+        scaleOptions.max = scaleRef[axisMax] ?? initialBounds[axis].max;
+      }
+    }
     setScaleRef(getScaleRef(chart));
   }
 

@@ -616,6 +616,53 @@ describe('testing side button events', () => {
     }
   });
 
+  it('should keep the value axes when the box zoom drag is flat', async () => {
+    const user = userEvent.setup();
+    render(
+      <MockChartWrapper
+        id='vwc'
+        data={data}
+        streamChartOptions={streamChartOptions}
+        chartOptions={chartOptions}
+        stream={false}
+      />,
+    );
+    const chart = ChartJS.getChart(await screen.findByTestId(/chart-container/i));
+    chart.resize(400, 300);
+    vi.spyOn(chart.canvas, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      top: 0,
+      right: 400,
+      bottom: 300,
+      width: 400,
+      height: 300,
+    });
+    const before = {
+      x: [chart.scales.x.min, chart.scales.x.max],
+      vwcAxis: [chart.scales.vwcAxis.min, chart.scales.vwcAxis.max],
+      ecAxis: [chart.scales.ecAxis.min, chart.scales.ecAxis.max],
+    };
+    const drag = (fromX, fromY, toX, toY) => {
+      fireEvent.mouseDown(chart.canvas, { clientX: fromX, clientY: fromY, button: 0 });
+      fireEvent.mouseMove(chart.canvas, { clientX: toX, clientY: toY, button: 0 });
+      fireEvent.mouseUp(chart.canvas.ownerDocument, { clientX: toX, clientY: toY, button: 0 });
+    };
+
+    await user.click(await screen.findByLabelText(/^Zoom$/));
+    const { left, top } = chart.chartArea;
+    drag(left + 50, top + 100, left + 200, top + 100);
+
+    expect([chart.scales.x.min, chart.scales.x.max]).not.toEqual(before.x);
+    expect([chart.scales.vwcAxis.min, chart.scales.vwcAxis.max]).toEqual(before.vwcAxis);
+    expect([chart.scales.ecAxis.min, chart.scales.ecAxis.max]).toEqual(before.ecAxis);
+
+    drag(left + 20, top + 20, left + 200, top + 150);
+    const zoomedVwc = [chart.scales.vwcAxis.min, chart.scales.vwcAxis.max];
+    drag(left + 20, top + 60, left + 200, top + 60);
+
+    expect([chart.scales.vwcAxis.min, chart.scales.vwcAxis.max]).toEqual(zoomedVwc);
+  });
+
   it('should toggle pan', async () => {
     const user = userEvent.setup();
     render(
