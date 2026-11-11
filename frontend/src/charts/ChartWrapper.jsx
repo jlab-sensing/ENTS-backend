@@ -74,8 +74,11 @@ function ChartWrapper({ id, data, options, stream, onResampleChange, resample = 
     for (const { axis, axisMin, axisMax } of axesWithScaleKeys) {
       const scaleOptions = chart.scales[axis].options;
       if (scaleOptions.min !== undefined && scaleOptions.min === scaleOptions.max) {
-        scaleOptions.min = scaleRef[axisMin] ?? initialBounds[axis].min;
-        scaleOptions.max = scaleRef[axisMax] ?? initialBounds[axis].max;
+        chart.zoomScale(
+          axis,
+          { min: scaleRef[axisMin] ?? initialBounds[axis].min, max: scaleRef[axisMax] ?? initialBounds[axis].max },
+          'none',
+        );
       }
     }
     setScaleRef(getScaleRef(chart));

@@ -661,6 +661,12 @@ describe('testing side button events', () => {
     drag(left + 20, top + 60, left + 200, top + 60);
 
     expect([chart.scales.vwcAxis.min, chart.scales.vwcAxis.max]).toEqual(zoomedVwc);
+    expect(chart.getInitialScaleBounds().vwcAxis).toEqual({ min: before.vwcAxis[0], max: before.vwcAxis[1] });
+
+    await user.click(await screen.findByLabelText(/^Reset$/));
+    for (const axis of ['x', 'vwcAxis', 'ecAxis']) {
+      expect([chart.scales[axis].min, chart.scales[axis].max]).toEqual(before[axis]);
+    }
   });
 
   it('should toggle pan', async () => {
