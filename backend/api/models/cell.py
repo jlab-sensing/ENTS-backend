@@ -1,3 +1,4 @@
+from sqlalchemy.dialects.postgresql import JSONB
 from ..models import db
 
 """"This is the reference; we stole this from commenter
@@ -26,6 +27,7 @@ class Cell(db.Model):
     longitude = db.Column(db.Float())
     archive = db.Column(db.Boolean(), default=False, nullable=False)
     user_id = db.Column(db.Uuid(), db.ForeignKey("user.id"))
+    cell_metadata = db.Column("metadata", JSONB, default=dict)
     users = db.relationship(
         "User", secondary=Cell_User.__table__, back_populates="cells"
     )
@@ -40,6 +42,8 @@ class Cell(db.Model):
         longitude=-122.0631536846593,
         archive=False,
         user_id=None,
+        cell_metadata=None,
+        metadata=None,
     ):
         self.name = name
         self.location = location
@@ -47,15 +51,27 @@ class Cell(db.Model):
         self.longitude = longitude
         self.archive = archive
         self.user_id = user_id
+        meta = metadata if metadata is not None else cell_metadata
+        self.cell_metadata = meta if meta is not None else {}
 
     def __repr__(self):
         return repr(self.name)
 
     @staticmethod
-    def add_cell_by_user_email(name, location, latitude, longitude, archive, userEmail):
+    def add_cell_by_user_email(
+        name,
+        location,
+        latitude,
+        longitude,
+        archive,
+        userEmail,
+        metadata=None,
+        cell_metadata=None,
+    ):
         from .user import User
 
         creator = User.get_user_by_email(userEmail)
+        meta = metadata if metadata is not None else cell_metadata
         new_cell = Cell(
             name=name,
             location=location,
@@ -63,6 +79,7 @@ class Cell(db.Model):
             longitude=longitude,
             user_id=creator.id,
             archive=archive,
+            cell_metadata=meta if meta is not None else {},
         )
         new_cell.save()
 

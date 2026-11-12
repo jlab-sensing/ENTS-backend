@@ -1,4 +1,61 @@
+import pytest
+from marshmallow import ValidationError
 from api.models.cell import Cell
+from api.schemas.cell_schema import CellSchema
+from api.schemas.add_cell_schema import AddCellSchema
+
+
+def test_cell_metadata_init():
+    """
+    GIVEN metadata is provided
+    WHEN initializing a Cell instance
+    THEN cell_metadata holds the metadata dict
+    """
+    cell = Cell(name="cell_meta", metadata={"sand": 0.4, "silt": 0.2})
+    assert cell.cell_metadata == {"sand": 0.4, "silt": 0.2}
+
+    cell2 = Cell(name="cell_meta2", cell_metadata={"clay": 0.1})
+    assert cell2.cell_metadata == {"clay": 0.1}
+
+    cell_default = Cell(name="cell_default")
+    assert cell_default.cell_metadata == {}
+
+
+def test_cell_schema_serializes_metadata():
+    """
+    GIVEN a Cell instance with metadata
+    WHEN dumped via CellSchema
+    THEN metadata key contains the dict and cell_metadata is excluded
+    """
+    cell = Cell(name="cell_meta", metadata={"sand": 0.4, "silt": 0.2})
+    schema = CellSchema()
+    dumped = schema.dump(cell)
+    assert "metadata" in dumped
+    assert dumped["metadata"] == {"sand": 0.4, "silt": 0.2}
+    assert "cell_metadata" not in dumped
+
+
+def test_add_cell_schema_loads_metadata():
+    """
+    GIVEN a payload with arbitrary metadata
+    WHEN loaded via AddCellSchema
+    THEN metadata is parsed properly
+    """
+    schema = AddCellSchema()
+    loaded = schema.load(
+        {
+            "name": "cell_1",
+            "location": "field",
+            "latitude": 10.0,
+            "longitude": 20.0,
+            "userEmail": "test@example.com",
+            "metadata": {"sand": 0.5, "ph": 6.8},
+        }
+    )
+    assert loaded["metadata"] == {"sand": 0.5, "ph": 6.8}
+
+    with pytest.raises(ValidationError):
+        schema.load({"name": "cell_invalid", "metadata": "not-a-dict"})
 
 
 def test_cell_search_by_name(setup_cells):
