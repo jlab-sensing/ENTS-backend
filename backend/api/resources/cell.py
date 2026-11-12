@@ -67,6 +67,12 @@ class Cell(Resource):
         long = cell_data["longitude"]
         userEmail = cell_data["userEmail"]
         tag_ids = cell_data.get("tag_ids", [])
+        metadata = (
+            cell_data.get("metadata")
+            or json_data.get("metadata")
+            or json_data.get("cell_metadata")
+            or {}
+        )
 
         # FIXME:
         # migrate user email to include authenticated user
@@ -82,7 +88,7 @@ class Cell(Resource):
 
         try:
             new_cell = CellModel.add_cell_by_user_email(
-                cell_name, location, lat, long, archive, userEmail
+                cell_name, location, lat, long, archive, userEmail, metadata=metadata
             )
 
             if new_cell and tag_ids:
@@ -127,6 +133,10 @@ class Cell(Resource):
                 cell.longitude = json_data.get("long")
             if "archive" in json_data:
                 cell.archive = json_data.get("archive")
+            if "metadata" in json_data:
+                cell.cell_metadata = json_data.get("metadata")
+            elif "cell_metadata" in json_data:
+                cell.cell_metadata = json_data.get("cell_metadata")
 
             # Handle tag assignment
             if "tag_ids" in json_data:
