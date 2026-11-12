@@ -1,3 +1,5 @@
+import pytest
+from marshmallow import ValidationError
 from api.models.cell import Cell
 from api.schemas.cell_schema import CellSchema
 from api.schemas.add_cell_schema import AddCellSchema
@@ -51,6 +53,9 @@ def test_add_cell_schema_loads_metadata():
         }
     )
     assert loaded["metadata"] == {"sand": 0.5, "ph": 6.8}
+
+    with pytest.raises(ValidationError):
+        schema.load({"name": "cell_invalid", "metadata": "not-a-dict"})
 
 
 def test_cell_search_by_name(setup_cells):

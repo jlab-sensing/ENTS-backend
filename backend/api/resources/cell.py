@@ -134,9 +134,15 @@ class Cell(Resource):
             if "archive" in json_data:
                 cell.archive = json_data.get("archive")
             if "metadata" in json_data:
-                cell.cell_metadata = json_data.get("metadata")
+                metadata = json_data.get("metadata")
+                if not isinstance(metadata, dict):
+                    return {"message": "metadata must be a JSON object"}, 400
+                cell.cell_metadata = metadata
             elif "cell_metadata" in json_data:
-                cell.cell_metadata = json_data.get("cell_metadata")
+                cell_metadata = json_data.get("cell_metadata")
+                if not isinstance(cell_metadata, dict):
+                    return {"message": "cell_metadata must be a JSON object"}, 400
+                cell.cell_metadata = cell_metadata
 
             # Handle tag assignment
             if "tag_ids" in json_data:
