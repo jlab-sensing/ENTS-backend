@@ -26,6 +26,95 @@ function resolveCellEntry(cellMap, cellId) {
 }
 
 /**
+ * Generic SensorType rows that carry the same physical quantities as the
+ * legacy `power_data` table. A cell whose Voltage and Current are generic
+ * board sensors (`POWER_VOLTAGE` / `POWER_CURRENT`) has no `power_data`, so
+ * the legacy power path returns nothing — fall back to these sensor rows
+ * instead (issue #832).
+ */
+const GENERIC_POWER_SENSOR = {
+  v: { sensorName: 'POWER_VOLTAGE', measurement: 'Voltage' },
+  i: { sensorName: 'POWER_CURRENT', measurement: 'Current' },
+};
+
+/**
+ * @param {{ timestamp?: string[], data?: unknown[] } | null | undefined} payload
+ * @returns {{ timestamps: number[], values: unknown[] } | null}
+ */
+function sensorPayloadToSeries(payload) {
+  if (!payload?.timestamp?.length) return null;
+  return {
+    timestamps: payload.timestamp.map((t) => DateTime.fromHTTP(t).toMillis()),
+    values: payload.data || [],
+  };
+}
+
+/**
+ * @param {number} cellId
+ * @param {string} sensorName
+ * @param {string} measurement
+ * @param {HistoricalCache} cache
+ * @returns {{ timestamps: number[], values: unknown[] } | null}
+ */
+function sensorSeriesFromHistoricalCache(cellId, sensorName, measurement, cache) {
+  const cacheKey = sensorDataCacheKey(cellId, sensorName, measurement);
+  return sensorPayloadToSeries(cache.historicalSensorByKey?.[cacheKey]);
+}
+
+/**
+ * Multiply two series at the timestamps they share. Used for the `power`
+ * (`p`) field when only generic sensor rows exist: no single sensor row
+ * carries power, so it is computed as voltage times current.
+ *
+ * @param {{ timestamps: number[], values: unknown[] } | null} vSeries
+ * @param {{ timestamps: number[], values: unknown[] } | null} iSeries
+ * @returns {{ timestamps: number[], values: (number | null)[] } | null}
+ */
+function multiplySeriesAtCommonTimestamps(vSeries, iSeries) {
+  if (!vSeries || !iSeries) return null;
+  const iMap = new Map();
+  iSeries.timestamps.forEach((ts, idx) => {
+    const n = Number(iSeries.values[idx]);
+    if (Number.isFinite(n)) iMap.set(ts, n);
+  });
+  const timestamps = [];
+  const values = [];
+  vSeries.timestamps.forEach((ts, idx) => {
+    const v = Number(vSeries.values[idx]);
+    const i = iMap.get(ts);
+    if (Number.isFinite(v) && i !== undefined) {
+      timestamps.push(ts);
+      values.push(v * i);
+    }
+  });
+  if (timestamps.length === 0) return null;
+  return { timestamps, values };
+}
+
+/**
+ * Fall back to generic sensor rows for a legacy power field when the
+ * `power_data` series is empty.
+ *
+ * @param {number} cellId
+ * @param {'v' | 'i' | 'p'} field
+ * @param {HistoricalCache} cache
+ * @returns {{ timestamps: number[], values: unknown[] } | null}
+ */
+function powerFieldFromGenericSensorCache(cellId, field, cache) {
+  if (field === 'v' || field === 'i') {
+    const generic = GENERIC_POWER_SENSOR[field];
+    return sensorSeriesFromHistoricalCache(cellId, generic.sensorName, generic.measurement, cache);
+  }
+  if (field === 'p') {
+    return multiplySeriesAtCommonTimestamps(
+      sensorSeriesFromHistoricalCache(cellId, 'POWER_VOLTAGE', 'Voltage', cache),
+      sensorSeriesFromHistoricalCache(cellId, 'POWER_CURRENT', 'Current', cache),
+    );
+  }
+  return null;
+}
+
+/**
  * @param {number} cellId
  * @param {string} streamKey
  * @param {HistoricalCache} cache
@@ -48,11 +137,15 @@ export function streamSeriesFromHistoricalCache(cellId, streamKey, cache) {
   if (spec.source === 'power') {
     const entry = resolveCellEntry(cache.historicalPowerByCell, cellId);
     const powerData = entry?.powerData;
-    if (!powerData?.timestamp?.length) return null;
-    return {
-      timestamps: powerData.timestamp.map((t) => DateTime.fromHTTP(t).toMillis()),
-      values: powerData[spec.field] || [],
-    };
+    if (powerData?.timestamp?.length) {
+      return {
+        timestamps: powerData.timestamp.map((t) => DateTime.fromHTTP(t).toMillis()),
+        values: powerData[spec.field] || [],
+      };
+    }
+    // No legacy `power_data` for this cell: fall back to the generic
+    // POWER_VOLTAGE / POWER_CURRENT sensor rows (issue #832).
+    return powerFieldFromGenericSensorCache(cellId, spec.field, cache);
   }
 
   const cacheKey = sensorDataCacheKey(cellId, spec.sensorName, spec.measurement);
@@ -259,12 +352,47 @@ async function fetchStreamSeries(cellId, streamKey, startDate, endDate, resample
   if (spec.source === 'power') {
     const data = await getPowerData(cellId, start, end, resample);
     const timestamps = (data.timestamp || []).map((t) => DateTime.fromHTTP(t).toMillis());
-    return { timestamps, values: data[spec.field] || [] };
+    if (timestamps.length) return { timestamps, values: data[spec.field] || [] };
+    // No legacy `power_data` for this cell: fall back to the generic
+    // POWER_VOLTAGE / POWER_CURRENT sensor rows (issue #832).
+    return powerFieldFromGenericSensorApi(cellId, spec.field, start, end, resample);
   }
 
   const data = await getSensorData(spec.sensorName, cellId, spec.measurement, start, end, resample);
   const timestamps = (data.timestamp || []).map((t) => DateTime.fromHTTP(t).toMillis());
   return { timestamps, values: data.data || [] };
+}
+
+/**
+ * Fall back to generic sensor rows for a legacy power field when the
+ * `power_data` response is empty.
+ *
+ * @param {number} cellId
+ * @param {'v' | 'i' | 'p'} field
+ * @param {string} start
+ * @param {string} end
+ * @param {string} resample
+ * @returns {Promise<{ timestamps: number[], values: unknown[] }>}
+ */
+async function powerFieldFromGenericSensorApi(cellId, field, start, end, resample) {
+  if (field === 'v' || field === 'i') {
+    const generic = GENERIC_POWER_SENSOR[field];
+    const data = await getSensorData(generic.sensorName, cellId, generic.measurement, start, end, resample);
+    return sensorPayloadToSeries(data) ?? { timestamps: [], values: [] };
+  }
+  if (field === 'p') {
+    const [vData, iData] = await Promise.all([
+      getSensorData('POWER_VOLTAGE', cellId, 'Voltage', start, end, resample),
+      getSensorData('POWER_CURRENT', cellId, 'Current', start, end, resample),
+    ]);
+    return (
+      multiplySeriesAtCommonTimestamps(sensorPayloadToSeries(vData), sensorPayloadToSeries(iData)) ?? {
+        timestamps: [],
+        values: [],
+      }
+    );
+  }
+  return { timestamps: [], values: [] };
 }
 
 /**
