@@ -123,7 +123,7 @@ ents sim_generic stream \
 
 Once the data stream starts, graphs should appear on the website similar to the example below.
 
-![Example screenshot of ENTS backend](.github/assets/img/dashboard.png)
+![Example screenshot of ENTS backend](../.github/assets/img/dashboard.png)
 
 ### Migrate Database
 
