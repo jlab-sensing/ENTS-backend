@@ -346,25 +346,49 @@ export async function fetchDashboardHistoricalData({
     );
   }
 
-  const sensorRequests = [
+  const coreSensorRequests = [
     ...collectUnifiedSensorRequests(panelOrder, cells, cellSensorsById),
     ...collectDbSensorPanelRequests(panelOrder, cells, cellSensorsById),
-    ...collectEquationSensorRequests(panelOrder),
   ];
+  const equationSensorRequests = collectEquationSensorRequests(panelOrder);
   const seen = new Set();
-  const dedupedSensorRequests = sensorRequests.filter((request) => {
+  const dedupedCoreRequests = coreSensorRequests.filter((request) => {
     if (seen.has(request.cacheKey)) return false;
     seen.add(request.cacheKey);
     return true;
   });
-  if (dedupedSensorRequests.length > 0) {
+  const dedupedEquationRequests = equationSensorRequests.filter((request) => {
+    if (seen.has(request.cacheKey)) return false;
+    seen.add(request.cacheKey);
+    return true;
+  });
+  if (dedupedCoreRequests.length > 0) {
     tasks.push(
       Promise.all(
-        dedupedSensorRequests.map(async ({ cacheKey, cellId, name, measurement }) => {
+        dedupedCoreRequests.map(async ({ cacheKey, cellId, name, measurement }) => {
           const payload = await getSensorData(name, cellId, measurement, startHTTP, endHTTP, resample);
           return [cacheKey, payload];
         }),
       ).then((entries) => ({ kind: 'sensor', data: Object.fromEntries(entries) })),
+    );
+  }
+  if (dedupedEquationRequests.length > 0) {
+    // Equation sensor rows are an optional fallback: timestamped legacy
+    // `power_data` takes precedence, so a rejected generic read must not
+    // discard the successful legacy history. Settle each request on its own
+    // and keep only the rows that loaded.
+    tasks.push(
+      Promise.allSettled(
+        dedupedEquationRequests.map(async ({ cacheKey, cellId, name, measurement }) => {
+          const payload = await getSensorData(name, cellId, measurement, startHTTP, endHTTP, resample);
+          return [cacheKey, payload];
+        }),
+      ).then((settled) => ({
+        kind: 'sensor',
+        data: Object.fromEntries(
+          settled.filter((entry) => entry.status === 'fulfilled').map((entry) => entry.value),
+        ),
+      })),
     );
   }
 
