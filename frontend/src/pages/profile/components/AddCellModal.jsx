@@ -439,7 +439,7 @@ function AddCellModal() {
                             fontSize: '0.75rem',
                           }}
                         >
-                          https://dirtviz.jlab.ucsc.edu/api/sensor/{response.id}
+                          https://dirtviz.jlab.ucsc.edu/api/sensor/
                         </Typography>
                       </Box>
 
@@ -462,7 +462,7 @@ function AddCellModal() {
                             fontSize: '0.75rem',
                           }}
                         >
-                          https://dirtviz.jlab.ucsc.edu/api/sensor/{response.id}
+                          https://dirtviz.jlab.ucsc.edu/api/sensor/
                         </Typography>
                       </Box>
                     </Box>
