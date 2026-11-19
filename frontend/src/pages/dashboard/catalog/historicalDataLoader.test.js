@@ -71,6 +71,32 @@ describe('historicalDataLoader', () => {
     expect(requests[0].cacheKey).toBe(sensorDataCacheKey(1, 'co2', 'co2'));
   });
 
+  it('collects generic power sensor requests for equation-only power layouts', () => {
+    const requests = collectEquationSensorRequests(['2538:voltage * 2538:current']);
+    expect(requests).toEqual([
+      {
+        cacheKey: sensorDataCacheKey(2538, 'POWER_VOLTAGE', 'Voltage'),
+        cellId: 2538,
+        name: 'POWER_VOLTAGE',
+        measurement: 'Voltage',
+      },
+      {
+        cacheKey: sensorDataCacheKey(2538, 'POWER_CURRENT', 'Current'),
+        cellId: 2538,
+        name: 'POWER_CURRENT',
+        measurement: 'Current',
+      },
+    ]);
+  });
+
+  it('collects both generic rows for a power-only equation ref and dedupes repeats', () => {
+    const requests = collectEquationSensorRequests(['2538:power', '2538:voltage']);
+    expect(requests.map((request) => request.cacheKey)).toEqual([
+      sensorDataCacheKey(2538, 'POWER_VOLTAGE', 'Voltage'),
+      sensorDataCacheKey(2538, 'POWER_CURRENT', 'Current'),
+    ]);
+  });
+
   it('finds sensors by s:{id} panel id', () => {
     const cellSensorsById = {
       1: [{ id: 37, name: 'rocketlogger', measurement: 'soil_moisture' }],

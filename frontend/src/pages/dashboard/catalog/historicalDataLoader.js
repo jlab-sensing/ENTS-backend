@@ -92,7 +92,33 @@ export function collectEquationSensorRequests(panelOrder) {
   collectEquationRefsFromPanelOrder(panelOrder).forEach((ref) => {
     const parsed = parseCellStreamRef(ref);
     const spec = parsed && resolveStreamSpec(parsed.streamKey);
-    if (!spec || spec.source !== 'sensor') return;
+    if (!spec) return;
+
+    if (spec.source === 'power') {
+      // Generic sensor rows the cache fallback in equationData.js reads
+      // (issue #832). Voltage needs POWER_VOLTAGE, current needs
+      // POWER_CURRENT, and power needs both to compute voltage * current.
+      // The legacy `power_data` fetch is untouched and still wins when
+      // present — these rows are only the fallback.
+      const genericSensors =
+        spec.field === 'v'
+          ? [{ name: 'POWER_VOLTAGE', measurement: 'Voltage' }]
+          : spec.field === 'i'
+            ? [{ name: 'POWER_CURRENT', measurement: 'Current' }]
+            : [
+                { name: 'POWER_VOLTAGE', measurement: 'Voltage' },
+                { name: 'POWER_CURRENT', measurement: 'Current' },
+              ];
+      genericSensors.forEach(({ name, measurement }) => {
+        const cacheKey = sensorDataCacheKey(parsed.cellId, name, measurement);
+        if (seen.has(cacheKey)) return;
+        seen.add(cacheKey);
+        requests.push({ cacheKey, cellId: parsed.cellId, name, measurement });
+      });
+      return;
+    }
+
+    if (spec.source !== 'sensor') return;
 
     const cacheKey = sensorDataCacheKey(parsed.cellId, spec.sensorName, spec.measurement);
     if (seen.has(cacheKey)) return;

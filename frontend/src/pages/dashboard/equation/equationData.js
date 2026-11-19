@@ -74,13 +74,19 @@ function multiplySeriesAtCommonTimestamps(vSeries, iSeries) {
   if (!vSeries || !iSeries) return null;
   const iMap = new Map();
   iSeries.timestamps.forEach((ts, idx) => {
-    const n = Number(iSeries.values[idx]);
+    const raw = iSeries.values[idx];
+    // Skip missing measurements: Number(null) and Number('') are both 0,
+    // which would fake a valid reading. Numeric zero stays valid.
+    if (raw == null || raw === '') return;
+    const n = Number(raw);
     if (Number.isFinite(n)) iMap.set(ts, n);
   });
   const timestamps = [];
   const values = [];
   vSeries.timestamps.forEach((ts, idx) => {
-    const v = Number(vSeries.values[idx]);
+    const raw = vSeries.values[idx];
+    if (raw == null || raw === '') return;
+    const v = Number(raw);
     const i = iMap.get(ts);
     if (Number.isFinite(v) && i !== undefined) {
       timestamps.push(ts);
@@ -327,6 +333,38 @@ function seriesToRefMap(series) {
 }
 
 /**
+ * Fall back to generic sensor rows for a legacy power field when the
+ * `power_data` response is empty.
+ *
+ * @param {number} cellId
+ * @param {'v' | 'i' | 'p'} field
+ * @param {string} start
+ * @param {string} end
+ * @param {string} resample
+ * @returns {Promise<{ timestamps: number[], values: unknown[] }>}
+ */
+async function powerFieldFromGenericSensorApi(cellId, field, start, end, resample) {
+  if (field === 'v' || field === 'i') {
+    const generic = GENERIC_POWER_SENSOR[field];
+    const data = await getSensorData(generic.sensorName, cellId, generic.measurement, start, end, resample);
+    return sensorPayloadToSeries(data) ?? { timestamps: [], values: [] };
+  }
+  if (field === 'p') {
+    const [vData, iData] = await Promise.all([
+      getSensorData('POWER_VOLTAGE', cellId, 'Voltage', start, end, resample),
+      getSensorData('POWER_CURRENT', cellId, 'Current', start, end, resample),
+    ]);
+    return (
+      multiplySeriesAtCommonTimestamps(sensorPayloadToSeries(vData), sensorPayloadToSeries(iData)) ?? {
+        timestamps: [],
+        values: [],
+      }
+    );
+  }
+  return { timestamps: [], values: [] };
+}
+
+/**
  * @param {number} cellId
  * @param {string} streamKey
  * @param {import('luxon').DateTime} startDate
@@ -361,38 +399,6 @@ async function fetchStreamSeries(cellId, streamKey, startDate, endDate, resample
   const data = await getSensorData(spec.sensorName, cellId, spec.measurement, start, end, resample);
   const timestamps = (data.timestamp || []).map((t) => DateTime.fromHTTP(t).toMillis());
   return { timestamps, values: data.data || [] };
-}
-
-/**
- * Fall back to generic sensor rows for a legacy power field when the
- * `power_data` response is empty.
- *
- * @param {number} cellId
- * @param {'v' | 'i' | 'p'} field
- * @param {string} start
- * @param {string} end
- * @param {string} resample
- * @returns {Promise<{ timestamps: number[], values: unknown[] }>}
- */
-async function powerFieldFromGenericSensorApi(cellId, field, start, end, resample) {
-  if (field === 'v' || field === 'i') {
-    const generic = GENERIC_POWER_SENSOR[field];
-    const data = await getSensorData(generic.sensorName, cellId, generic.measurement, start, end, resample);
-    return sensorPayloadToSeries(data) ?? { timestamps: [], values: [] };
-  }
-  if (field === 'p') {
-    const [vData, iData] = await Promise.all([
-      getSensorData('POWER_VOLTAGE', cellId, 'Voltage', start, end, resample),
-      getSensorData('POWER_CURRENT', cellId, 'Current', start, end, resample),
-    ]);
-    return (
-      multiplySeriesAtCommonTimestamps(sensorPayloadToSeries(vData), sensorPayloadToSeries(iData)) ?? {
-        timestamps: [],
-        values: [],
-      }
-    );
-  }
-  return { timestamps: [], values: [] };
 }
 
 /**

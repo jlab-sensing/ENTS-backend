@@ -103,6 +103,55 @@ describe('equationData', () => {
     expect(series?.values).toEqual([24]);
   });
 
+  it('skips missing voltage/current operands when computing power from generic sensor rows (cache)', () => {
+    const t1 = 'Thu, 18 Jun 2026 00:00:00 GMT';
+    const t2 = 'Thu, 18 Jun 2026 01:00:00 GMT';
+    const t3 = 'Thu, 18 Jun 2026 02:00:00 GMT';
+    const series = streamSeriesFromHistoricalCache(2538, 'power', {
+      historicalPowerByCell: {
+        2538: {
+          powerData: { timestamp: [], v: [], i: [], p: [] },
+        },
+      },
+      historicalSensorByKey: {
+        '2538:power_voltage:voltage': {
+          timestamp: [t1, t2, t3],
+          data: [12, null, 0],
+        },
+        '2538:power_current:current': {
+          timestamp: [t1, t2, t3],
+          data: [2, 3, 5],
+        },
+      },
+    });
+
+    // t2 is skipped (voltage is null, not a 0 W reading); numeric zero at t3 stays valid.
+    expect(series?.timestamps).toEqual([new Date(t1).getTime(), new Date(t3).getTime()]);
+    expect(series?.values).toEqual([24, 0]);
+  });
+
+  it('returns null for power when the current operand is missing at every shared timestamp (cache)', () => {
+    const series = streamSeriesFromHistoricalCache(2538, 'power', {
+      historicalPowerByCell: {
+        2538: {
+          powerData: { timestamp: [], v: [], i: [], p: [] },
+        },
+      },
+      historicalSensorByKey: {
+        '2538:power_voltage:voltage': {
+          timestamp: ['Thu, 18 Jun 2026 00:00:00 GMT'],
+          data: [12],
+        },
+        '2538:power_current:current': {
+          timestamp: ['Thu, 18 Jun 2026 00:00:00 GMT'],
+          data: [''],
+        },
+      },
+    });
+
+    expect(series).toBeNull();
+  });
+
   it('returns null for power streams when both power_data and generic sensor rows are empty (cache)', () => {
     const series = streamSeriesFromHistoricalCache(2538, 'voltage', {
       historicalPowerByCell: {
