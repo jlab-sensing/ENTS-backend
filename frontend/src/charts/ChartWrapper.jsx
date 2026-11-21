@@ -68,8 +68,19 @@ function ChartWrapper({ id, data, options, stream, onResampleChange, resample = 
     return axesWithScale;
   }
 
-  //** Callback for when zoom action is completed */
+  //** Callback for when zoom action is completed; an axis a flat drag collapsed keeps its previous range */
   function onZoomComplete({ chart }) {
+    const initialBounds = chart.getInitialScaleBounds();
+    for (const { axis, axisMin, axisMax } of axesWithScaleKeys) {
+      const scaleOptions = chart.scales[axis].options;
+      if (scaleOptions.min !== undefined && scaleOptions.min === scaleOptions.max) {
+        chart.zoomScale(
+          axis,
+          { min: scaleRef[axisMin] ?? initialBounds[axis].min, max: scaleRef[axisMax] ?? initialBounds[axis].max },
+          'none',
+        );
+      }
+    }
     setScaleRef(getScaleRef(chart));
   }
 
@@ -92,7 +103,7 @@ function ChartWrapper({ id, data, options, stream, onResampleChange, resample = 
             drag: {
               enabled: zoomSelected,
             },
-            mode: 'x',
+            mode: 'xy',
             scaleMode: 'x',
             onZoomComplete,
           },
@@ -163,15 +174,28 @@ function ChartWrapper({ id, data, options, stream, onResampleChange, resample = 
       setPanSelected(!panSelected);
     }
   };
+  //** Zooms the time axis to end at the most recent data point; zooming in never shows more than the data */
+  function zoomToLatest(chart, factor) {
+    const xScale = chart.scales.x;
+    const timestamps = xScale.getDataTimestamps();
+    const latest = timestamps.at(-1);
+    if (latest === undefined) {
+      return;
+    }
+    const width = xScale.max - xScale.min;
+    const span = latest - timestamps[0];
+    const range = (factor > 1 && span > 0 ? Math.min(width, span) : width) / factor;
+    chart.zoomScale('x', { min: latest - range, max: latest });
+  }
   const handleZoomIn = () => {
     if (chartRef.current) {
-      chartRef.current.zoom(1.1);
+      zoomToLatest(chartRef.current, 1.1);
       setScaleRef(getScaleRef(chartRef.current));
     }
   };
   const handleZoomOut = () => {
     if (chartRef.current) {
-      chartRef.current.zoom(0.9);
+      zoomToLatest(chartRef.current, 0.9);
       setScaleRef(getScaleRef(chartRef.current));
     }
   };
