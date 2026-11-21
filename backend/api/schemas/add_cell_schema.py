@@ -11,3 +11,5 @@ class AddCellSchema(ma.SQLAlchemySchema):
     userEmail = ma.Email(dump_default="")
     archive = ma.Boolean(dump_default=False)
     tag_ids = ma.List(ma.Integer(), dump_default=[])
+    metadata = ma.Dict(dump_default={})
+    cell_metadata = ma.Dict(dump_default={})
