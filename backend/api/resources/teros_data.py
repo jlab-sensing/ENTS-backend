@@ -1,5 +1,6 @@
 from flask import request, jsonify
 from flask_restful import Resource
+from marshmallow.exceptions import ValidationError
 from ..schemas.teros_data_schema import TEROSDataSchema
 from ..schemas.get_cell_data_schema import GetCellDataSchema
 from ..schemas.t_input import TInput
@@ -29,7 +30,12 @@ class Teros_Data(Resource):
         return teros_schema.jsonify(new_teros_data)
 
     def get(self, cell_id=0):
-        v_args = get_cell_data.load(request.args)
+        try:
+            v_args = get_cell_data.load(request.args)
+        except ValidationError as _:
+            return jsonify({"errors": "Invalid request arguments."}), 400
+
+
         stream = v_args["stream"] if "stream" in v_args else False
         return jsonify(
             TEROSData.get_teros_data_obj(
