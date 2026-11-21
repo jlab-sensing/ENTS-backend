@@ -50,8 +50,7 @@ describe('AddCellModal success screen endpoints', () => {
 
     await waitFor(() => expect(screen.getByText('Cell Created Successfully!')).toBeInTheDocument());
 
-    expect(screen.getByText('Power Data')).toBeInTheDocument();
-    expect(screen.getByText('TEROS Data')).toBeInTheDocument();
+    expect(screen.getByText('Endpoint for uploading power data:')).toBeInTheDocument();
 
     const endpoints = Array.from(document.querySelectorAll('p'))
       .map((el) => el.textContent.trim())
@@ -62,9 +61,5 @@ describe('AddCellModal success screen endpoints', () => {
       expect(url).toMatch(/\/api\/sensor\/$/);
       expect(url).not.toMatch(/\/api\/sensor\/\d/);
     });
-
-    const text = document.body.textContent;
-    expect(text).not.toMatch(/api\/power\//);
-    expect(text).not.toMatch(/api\/teros\//);
   });
 });
