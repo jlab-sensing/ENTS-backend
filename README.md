@@ -30,7 +30,9 @@ For developers see [docs/development.md](./docs/development.md) for how to get s
 
 For bugs refer to [bug_template.md](.github/ISSUE_TEMPLATE/bug_template). For other issues, create an new issue in this repository.
 
-For documentation on the backend, refer to [backend readme](backend/README.md)
+For documentation on the backend, refer to [backend readme](backend/README.md).
+
+For interactive REST API documentation (Swagger UI), see [docs/index.html](./docs/index.html) or view the OpenAPI specification in [docs/openapi.yaml](./docs/openapi.yaml).
 
 ## Contributing
 
