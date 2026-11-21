@@ -420,34 +420,10 @@ function AddCellModal() {
                     </Typography>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      {/* Power Data Endpoint */}
+                      {/* Data Endpoint */}
                       <Box>
-                        <Chip label='Power Data' color='primary' variant='outlined' size='small' sx={{ mb: 1 }} />
                         <Typography variant='body2' sx={{ mb: 1, color: '#666' }}>
                           Endpoint for uploading power data:
-                        </Typography>
-                        <Typography
-                          variant='body2'
-                          sx={{
-                            fontFamily: 'monospace',
-                            backgroundColor: '#e8f5e8',
-                            color: '#2e7d32',
-                            p: 1,
-                            borderRadius: '4px',
-                            wordBreak: 'break-all',
-                            userSelect: 'all',
-                            fontSize: '0.75rem',
-                          }}
-                        >
-                          https://dirtviz.jlab.ucsc.edu/api/sensor/
-                        </Typography>
-                      </Box>
-
-                      {/* TEROS Data Endpoint */}
-                      <Box>
-                        <Chip label='TEROS Data' color='secondary' variant='outlined' size='small' sx={{ mb: 1 }} />
-                        <Typography variant='body2' sx={{ mb: 1, color: '#666' }}>
-                          Endpoint for uploading TEROS data:
                         </Typography>
                         <Typography
                           variant='body2'
