@@ -92,7 +92,33 @@ export function collectEquationSensorRequests(panelOrder) {
   collectEquationRefsFromPanelOrder(panelOrder).forEach((ref) => {
     const parsed = parseCellStreamRef(ref);
     const spec = parsed && resolveStreamSpec(parsed.streamKey);
-    if (!spec || spec.source !== 'sensor') return;
+    if (!spec) return;
+
+    if (spec.source === 'power') {
+      // Generic sensor rows the cache fallback in equationData.js reads
+      // (issue #832). Voltage needs POWER_VOLTAGE, current needs
+      // POWER_CURRENT, and power needs both to compute voltage * current.
+      // The legacy `power_data` fetch is untouched and still wins when
+      // present — these rows are only the fallback.
+      const genericSensors =
+        spec.field === 'v'
+          ? [{ name: 'POWER_VOLTAGE', measurement: 'Voltage' }]
+          : spec.field === 'i'
+            ? [{ name: 'POWER_CURRENT', measurement: 'Current' }]
+            : [
+                { name: 'POWER_VOLTAGE', measurement: 'Voltage' },
+                { name: 'POWER_CURRENT', measurement: 'Current' },
+              ];
+      genericSensors.forEach(({ name, measurement }) => {
+        const cacheKey = sensorDataCacheKey(parsed.cellId, name, measurement);
+        if (seen.has(cacheKey)) return;
+        seen.add(cacheKey);
+        requests.push({ cacheKey, cellId: parsed.cellId, name, measurement });
+      });
+      return;
+    }
+
+    if (spec.source !== 'sensor') return;
 
     const cacheKey = sensorDataCacheKey(parsed.cellId, spec.sensorName, spec.measurement);
     if (seen.has(cacheKey)) return;
@@ -320,25 +346,49 @@ export async function fetchDashboardHistoricalData({
     );
   }
 
-  const sensorRequests = [
+  const coreSensorRequests = [
     ...collectUnifiedSensorRequests(panelOrder, cells, cellSensorsById),
     ...collectDbSensorPanelRequests(panelOrder, cells, cellSensorsById),
-    ...collectEquationSensorRequests(panelOrder),
   ];
+  const equationSensorRequests = collectEquationSensorRequests(panelOrder);
   const seen = new Set();
-  const dedupedSensorRequests = sensorRequests.filter((request) => {
+  const dedupedCoreRequests = coreSensorRequests.filter((request) => {
     if (seen.has(request.cacheKey)) return false;
     seen.add(request.cacheKey);
     return true;
   });
-  if (dedupedSensorRequests.length > 0) {
+  const dedupedEquationRequests = equationSensorRequests.filter((request) => {
+    if (seen.has(request.cacheKey)) return false;
+    seen.add(request.cacheKey);
+    return true;
+  });
+  if (dedupedCoreRequests.length > 0) {
     tasks.push(
       Promise.all(
-        dedupedSensorRequests.map(async ({ cacheKey, cellId, name, measurement }) => {
+        dedupedCoreRequests.map(async ({ cacheKey, cellId, name, measurement }) => {
           const payload = await getSensorData(name, cellId, measurement, startHTTP, endHTTP, resample);
           return [cacheKey, payload];
         }),
       ).then((entries) => ({ kind: 'sensor', data: Object.fromEntries(entries) })),
+    );
+  }
+  if (dedupedEquationRequests.length > 0) {
+    // Equation sensor rows are an optional fallback: timestamped legacy
+    // `power_data` takes precedence, so a rejected generic read must not
+    // discard the successful legacy history. Settle each request on its own
+    // and keep only the rows that loaded.
+    tasks.push(
+      Promise.allSettled(
+        dedupedEquationRequests.map(async ({ cacheKey, cellId, name, measurement }) => {
+          const payload = await getSensorData(name, cellId, measurement, startHTTP, endHTTP, resample);
+          return [cacheKey, payload];
+        }),
+      ).then((settled) => ({
+        kind: 'sensor',
+        data: Object.fromEntries(
+          settled.filter((entry) => entry.status === 'fulfilled').map((entry) => entry.value),
+        ),
+      })),
     );
   }
 

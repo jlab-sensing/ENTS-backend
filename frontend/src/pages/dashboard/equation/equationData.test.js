@@ -20,6 +20,8 @@ vi.mock('../../../services/sensor', () => ({
   getSensorData: vi.fn(),
 }));
 
+import { getPowerData } from '../../../services/power';
+import { getSensorData } from '../../../services/sensor';
 import { getTerosData } from '../../../services/teros';
 
 describe('equationData', () => {
@@ -59,6 +61,147 @@ describe('equationData', () => {
     });
 
     expect(series?.values).toEqual([12]);
+  });
+
+  it('falls back to generic POWER_VOLTAGE sensor rows when power_data is empty (cache)', () => {
+    const series = streamSeriesFromHistoricalCache(2538, 'voltage', {
+      historicalPowerByCell: {
+        2538: {
+          powerData: { timestamp: [], v: [], i: [], p: [] },
+        },
+      },
+      historicalSensorByKey: {
+        '2538:power_voltage:voltage': {
+          timestamp: ['Thu, 18 Jun 2026 00:00:00 GMT'],
+          data: [12],
+        },
+      },
+    });
+
+    expect(series?.values).toEqual([12]);
+  });
+
+  it('computes power from generic sensor voltage times current when power_data is empty (cache)', () => {
+    const series = streamSeriesFromHistoricalCache(2538, 'power', {
+      historicalPowerByCell: {
+        2538: {
+          powerData: { timestamp: [], v: [], i: [], p: [] },
+        },
+      },
+      historicalSensorByKey: {
+        '2538:power_voltage:voltage': {
+          timestamp: ['Thu, 18 Jun 2026 00:00:00 GMT'],
+          data: [12],
+        },
+        '2538:power_current:current': {
+          timestamp: ['Thu, 18 Jun 2026 00:00:00 GMT'],
+          data: [2],
+        },
+      },
+    });
+
+    expect(series?.values).toEqual([24]);
+  });
+
+  it('skips missing voltage/current operands when computing power from generic sensor rows (cache)', () => {
+    const t1 = 'Thu, 18 Jun 2026 00:00:00 GMT';
+    const t2 = 'Thu, 18 Jun 2026 01:00:00 GMT';
+    const t3 = 'Thu, 18 Jun 2026 02:00:00 GMT';
+    const series = streamSeriesFromHistoricalCache(2538, 'power', {
+      historicalPowerByCell: {
+        2538: {
+          powerData: { timestamp: [], v: [], i: [], p: [] },
+        },
+      },
+      historicalSensorByKey: {
+        '2538:power_voltage:voltage': {
+          timestamp: [t1, t2, t3],
+          data: [12, null, 0],
+        },
+        '2538:power_current:current': {
+          timestamp: [t1, t2, t3],
+          data: [2, 3, 5],
+        },
+      },
+    });
+
+    // t2 is skipped (voltage is null, not a 0 W reading); numeric zero at t3 stays valid.
+    expect(series?.timestamps).toEqual([new Date(t1).getTime(), new Date(t3).getTime()]);
+    expect(series?.values).toEqual([24, 0]);
+  });
+
+  it('returns null for power when the current operand is missing at every shared timestamp (cache)', () => {
+    const series = streamSeriesFromHistoricalCache(2538, 'power', {
+      historicalPowerByCell: {
+        2538: {
+          powerData: { timestamp: [], v: [], i: [], p: [] },
+        },
+      },
+      historicalSensorByKey: {
+        '2538:power_voltage:voltage': {
+          timestamp: ['Thu, 18 Jun 2026 00:00:00 GMT'],
+          data: [12],
+        },
+        '2538:power_current:current': {
+          timestamp: ['Thu, 18 Jun 2026 00:00:00 GMT'],
+          data: [''],
+        },
+      },
+    });
+
+    expect(series).toBeNull();
+  });
+
+  it('returns null for power streams when both power_data and generic sensor rows are empty (cache)', () => {
+    const series = streamSeriesFromHistoricalCache(2538, 'voltage', {
+      historicalPowerByCell: {
+        2538: {
+          powerData: { timestamp: [], v: [], i: [], p: [] },
+        },
+      },
+      historicalSensorByKey: {},
+    });
+
+    expect(series).toBeNull();
+  });
+
+  it('buildDerivedSeries falls back to generic sensor rows for voltage times current', async () => {
+    const start = DateTime.fromISO('2026-06-01T00:00:00');
+    const end = DateTime.fromISO('2026-06-02T00:00:00');
+
+    getPowerData.mockResolvedValue({ timestamp: [], v: [], i: [], p: [] });
+    getSensorData.mockImplementation((name) =>
+      Promise.resolve({
+        timestamp: ['Thu, 18 Jun 2026 00:00:00 GMT'],
+        data: name === 'POWER_VOLTAGE' ? [12] : [2],
+      }),
+    );
+
+    const result = await buildDerivedSeries('2538:voltage * 2538:current', start, end, 'hour', {
+      useCentralCache: false,
+    });
+
+    expect(getSensorData).toHaveBeenCalled();
+    expect(result?.values).toEqual([24]);
+  });
+
+  it('buildDerivedSeries keeps using legacy power_data when present and does not fetch sensors', async () => {
+    const start = DateTime.fromISO('2026-06-01T00:00:00');
+    const end = DateTime.fromISO('2026-06-02T00:00:00');
+
+    getPowerData.mockResolvedValue({
+      timestamp: ['Thu, 18 Jun 2026 00:00:00 GMT'],
+      v: [12],
+      i: [2],
+      p: [24],
+    });
+
+    const result = await buildDerivedSeries('2538:voltage * 2538:current', start, end, 'hour', {
+      useCentralCache: false,
+    });
+
+    expect(getSensorData).not.toHaveBeenCalled();
+    expect(result?.values).toEqual([24]);
   });
 
   it('reads sensor stream values from central historical cache', () => {
