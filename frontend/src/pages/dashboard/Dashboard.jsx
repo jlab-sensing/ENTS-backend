@@ -21,7 +21,6 @@ import DashboardPanelActions from './components/DashboardPanelActions';
 import AddChartModal from './components/AddChartModal';
 import AddEquationModal from './components/AddEquationModal';
 import {
-  DEFAULT_DASHBOARD_PANEL_ORDER,
   applyLayoutToParams,
   isKnownPanelId,
   isDerivedPanelEntry,
@@ -57,6 +56,8 @@ function Dashboard() {
   const smartDateRangeAppliedRef = useRef(false);
   // Tracks which cell IDs were last loaded. null = never loaded (initial load).
   const prevLoadedCellIdsRef = useRef(null);
+  const lastDashboardSearchRef = useRef(null);
+  const isLayoutPendingRef = useRef(false);
   const cancelSmartDateRef = useRef(null);
   const [liveData, setLiveData] = useState([]);
 
@@ -405,7 +406,18 @@ function Dashboard() {
   useEffect(() => {
     const parsedLayout = parseLayoutParam(layoutParam);
     if (parsedLayout.length > 0) {
-      setPanelOrder(parsedLayout);
+      setPanelOrder((prev) => {
+        if (
+          prev.length === parsedLayout.length &&
+          prev.every((id, idx) => id === parsedLayout[idx])
+        ) {
+          isLayoutPendingRef.current = false;
+          return prev;
+        }
+        return parsedLayout;
+      });
+    } else {
+      isLayoutPendingRef.current = false;
     }
   }, [layoutParam]);
 
@@ -452,7 +464,7 @@ function Dashboard() {
           // set: compute the default panel order for the new selection so stale
           // panels from the previous cells don't linger.
           const defaultOrder = defaultPanelOrderFromFetched(sensors, cellIds, catalogIds);
-          setPanelOrder(defaultOrder.length > 0 ? defaultOrder : DEFAULT_DASHBOARD_PANEL_ORDER);
+          setPanelOrder(defaultOrder);
           setLayoutMismatchOpen(false);
           setLayoutMismatchPanels([]);
         } else if (isAddingCells) {
@@ -506,14 +518,32 @@ function Dashboard() {
   useEffect(() => {
     if (!cells.data) return;
 
+    const currentSearch = searchParams.toString();
+    const isDashboardOriginated = isInitialized && currentSearch === lastDashboardSearchRef.current;
+
+    if (isDashboardOriginated) {
+      return;
+    }
+
+    lastDashboardSearchRef.current = currentSearch;
+
     const searchQueryCells = searchParams.get('cell_id');
     const searchQueryStartDate = searchParams.get('startDate');
     const searchQueryEndDate = searchParams.get('endDate');
+    const searchQueryLayout = searchParams.get('layout');
+
+    if (searchQueryLayout) {
+      isLayoutPendingRef.current = true;
+    } else {
+      isLayoutPendingRef.current = false;
+    }
 
     if (searchQueryCells && searchQueryCells.length > 0) {
       const selectedCellIds = searchQueryCells.split(',');
       const selectedCells = cells.data.filter((cell) => selectedCellIds.includes(cell.id.toString()));
       setSelectedCells(selectedCells);
+    } else if (isInitialized) {
+      setSelectedCells([]);
     }
 
     // Only treat URL dates as manual if they're different from the default dates
@@ -539,10 +569,16 @@ function Dashboard() {
         setManualDateSelection(true);
         setHistoricalDatesReady(true);
       }
+    } else if (isInitialized) {
+      setManualDateSelection(false);
+      setHistoricalDatesReady(false);
+      smartDateRangeAppliedRef.current = false;
     }
 
-    setIsInitialized(true);
-  }, [searchParams, cells.data]);
+    if (!isInitialized) {
+      setIsInitialized(true);
+    }
+  }, [searchParams, cells.data, isInitialized]);
 
   // Apply smart date range when cells are selected (only if not manual selection and not already applied)
 useEffect(() => {
@@ -597,37 +633,51 @@ useEffect(() => {
 
 
   // Sync state changes to URL
-// Sync state changes to URL
-useEffect(() => {
-  if (!isInitialized) return;
+  useEffect(() => {
+    if (!isInitialized) return;
 
-  const newParams = new URLSearchParams();
+    if (isLayoutPendingRef.current) {
+      const parsedUrl = parseLayoutParam(searchParams.get('layout'));
+      const isMatching =
+        panelOrder.length === parsedUrl.length &&
+        panelOrder.every((id, idx) => id === parsedUrl[idx]);
+      if (!isMatching) {
+        return;
+      }
+      isLayoutPendingRef.current = false;
+    }
 
-  if (selectedCells.length > 0) {
-    newParams.set('cell_id', selectedCells.map((cell) => cell.id).join(','));
-  }
+    const newParams = new URLSearchParams();
 
-  // Only write dates to URL if user manually selected them
-  // Prevents smart-range dates from poisoning URL on reload
-  if (manualDateSelection) {
-    newParams.set('startDate', hourlyStartDate.toISO());
-    newParams.set('endDate', hourlyEndDate.toISO());
-  }
+    if (selectedCells.length > 0) {
+      newParams.set('cell_id', selectedCells.map((cell) => cell.id).join(','));
+    }
 
-  // Only persist layout when at least one cell is selected.
-  // Deselecting all cells clears it so stale panels don't appear on reload.
-  applyLayoutToParams(newParams, selectedCells, panelOrder);
+    // Only write dates to URL if user manually selected them
+    // Prevents smart-range dates from poisoning URL on reload
+    if (manualDateSelection) {
+      newParams.set('startDate', hourlyStartDate.toISO());
+      newParams.set('endDate', hourlyEndDate.toISO());
+    }
 
-  setSearchParams(newParams, { replace: true });
-}, [
-  hourlyStartDate,
-  hourlyEndDate,
-  selectedCells,
-  panelOrder,
-  isInitialized,
-  manualDateSelection,
-  setSearchParams,
-]);
+    // Only persist layout when at least one cell is selected.
+    // Deselecting all cells clears it so stale panels don't appear on reload.
+    applyLayoutToParams(newParams, selectedCells, panelOrder);
+
+    if (newParams.toString() !== searchParams.toString()) {
+      lastDashboardSearchRef.current = newParams.toString();
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [
+    hourlyStartDate,
+    hourlyEndDate,
+    selectedCells,
+    panelOrder,
+    isInitialized,
+    manualDateSelection,
+    searchParams,
+    setSearchParams,
+  ]);
 
 
   const handleStartDateChange = (newStartDate) => {
@@ -692,6 +742,7 @@ useEffect(() => {
 
   // Reset dashboard layout and selection to default state
   const handleResetLayout = () => {
+    isLayoutPendingRef.current = false;
     setSelectedCells([]);
     setPanelOrder([]);
     setManualDateSelection(false);
@@ -704,6 +755,7 @@ useEffect(() => {
     newParams.delete('layout');
     newParams.delete('startDate');
     newParams.delete('endDate');
+    lastDashboardSearchRef.current = newParams.toString();
     setSearchParams(newParams);
   };
 
