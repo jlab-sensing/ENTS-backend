@@ -37,8 +37,13 @@ docker compose up -d
 
 The site is then available at http://localhost:3000. Review the generated `.env`
 before exposing the site publicly, since the secrets in it are only examples.
-Set `ENTS_VERSION` to a release tag to pin a version instead of `latest`, and
-use `docker compose --profile pgadmin up -d` to also start pgAdmin.
+To pin a release instead of `latest`, set `ENTS_VERSION` to the version without
+the leading `v` (release `v1.2.3` is published as `1.2.3`), for example
+`ENTS_VERSION=1.2.3 docker compose up -d`. Use
+`docker compose --profile pgadmin up -d` to also start pgAdmin, which is only
+reachable from the local machine at http://localhost:8888. The database is not
+published to the host. If you use a different env file, run
+`ENV_FILE=custom.env docker compose --env-file custom.env up -d`.
 
 The same files can be downloaded manually:
 

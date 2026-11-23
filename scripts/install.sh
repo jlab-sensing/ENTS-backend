@@ -37,14 +37,27 @@ fi
 mkdir -p "$DIR"
 cd "$DIR"
 
+# Download to a temporary file and move it into place only on success, so a
+# failed download never leaves a partial file behind.
+download() {
+    tmp="$2.tmp"
+    if fetch "$1" "$tmp"; then
+        mv "$tmp" "$2"
+    else
+        rm -f "$tmp"
+        echo "Error: failed to download $1" >&2
+        exit 1
+    fi
+}
+
 echo "Downloading docker-compose.yml"
-fetch "${BASE_URL}/docker-compose.release.yml" docker-compose.yml
+download "${BASE_URL}/docker-compose.release.yml" docker-compose.yml
 
 if [ -f .env ]; then
     echo "Found existing .env, leaving it unchanged"
 else
     echo "Downloading .env"
-    fetch "${BASE_URL}/.env.example" .env
+    download "${BASE_URL}/.env.example" .env
 fi
 
 cat <<EOF
@@ -59,6 +72,6 @@ Next steps:
        cd "$DIR" && docker compose up -d
   3. Open http://localhost:3000
 
-Use ENTS_VERSION=<tag> to pin a release, and 'docker compose --profile pgadmin up -d'
+Use ENTS_VERSION=<version without leading v> to pin a release, and 'docker compose --profile pgadmin up -d'
 to also start pgAdmin on http://localhost:8888.
 EOF

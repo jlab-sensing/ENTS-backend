@@ -6,6 +6,11 @@
 #   ENTS_REGISTRY  registry/namespace the images are pulled from
 #   ENTS_VERSION   image tag to run (default: latest)
 #   ENV_FILE       env file passed to the containers (default: .env)
+#
+# The ".env" file next to this file is also used by Compose itself to fill in
+# the database settings below. If you use a different file, pass it twice so
+# the database and the backend agree on the credentials:
+#   ENV_FILE=custom.env docker compose --env-file custom.env up -d
 services:
   backend:
     image: ${ENTS_REGISTRY:-ghcr.io/jlab-sensing}/ents-backend:${ENTS_VERSION:-latest}
@@ -48,12 +53,10 @@ services:
       POSTGRES_USER: ${DB_USER:-dirtviz}
       POSTGRES_PASSWORD: ${DB_PASS:-password}
       POSTGRES_DB: ${DB_DATABASE:-dirtviz}
-    ports:
-      - '5432:5432'
     volumes:
       - postgresql-16-data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -62,7 +65,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     ports:
-      - '8888:80'
+      - '127.0.0.1:8888:80'
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-user-name@domain-name.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-strong-password}
