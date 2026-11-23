@@ -55,7 +55,7 @@ def test_owner_shares_logger_and_friend_sees_it(share_setup):
     assert response.status_code == 200
     body = response.get_json()
     assert body["message"] == "Logger shared successfully"
-    assert body["user"]["email"] == friend.email
+    assert body["user"] == {"id": str(friend.id), "email": friend.email}
     assert logger_ids_for(client, friend) == [logger.id]
     assert logger_ids_for(client, owner) == [logger.id]
 
@@ -138,6 +138,29 @@ def test_share_with_user_who_already_has_access(share_setup):
         assert response.get_json() == {
             "message": "User already has access to this logger"
         }
+
+
+def test_share_at_the_same_time_as_another_request(share_setup, monkeypatch):
+    client, owner, friend, _, logger = share_setup
+    friend_id = friend.id
+    save = Logger.save
+
+    def save_after_another_request(self):
+        with db.engine.begin() as conn:
+            conn.execute(
+                Logger_User.__table__.insert().values(
+                    logger_id=self.id, user_id=friend_id
+                )
+            )
+        save(self)
+
+    monkeypatch.setattr(Logger, "save", save_after_another_request)
+
+    response = share(client, owner, logger.id, {"email": friend.email})
+
+    assert response.status_code == 400
+    assert response.get_json() == {"message": "User already has access to this logger"}
+    assert logger_ids_for(client, friend) == [logger.id]
 
 
 def test_deleting_a_shared_logger_removes_its_shares(share_setup):

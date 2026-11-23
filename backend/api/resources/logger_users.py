@@ -1,11 +1,10 @@
 from flask_restful import Resource
 from flask import request
+from sqlalchemy.exc import IntegrityError
 from ..auth.auth import authenticate_apikey_or_jwt
+from ..models import db
 from ..models.logger import Logger as LoggerModel
 from ..models.user import User as UserModel
-from ..schemas.user_schema import UserSchema
-
-user_schema = UserSchema()
 
 
 class LoggerShare(Resource):
@@ -44,9 +43,14 @@ class LoggerShare(Resource):
             return {"message": "User already has access to this logger"}, 400
 
         logger.shared_users.append(target_user)
-        logger.save()
+        try:
+            logger.save()
+        except IntegrityError:
+            # another request shared the logger with this user first
+            db.session.rollback()
+            return {"message": "User already has access to this logger"}, 400
 
         return {
             "message": "Logger shared successfully",
-            "user": user_schema.dump(target_user),
+            "user": {"id": str(target_user.id), "email": target_user.email},
         }
