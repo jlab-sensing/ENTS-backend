@@ -122,6 +122,7 @@ def create_app(debug: bool = False) -> Flask:
     from .resources.sensor_catalog import SensorCatalog
     from .resources.equation_validate import EquationValidate
     from .resources.cell_sensors import Cell_Sensors
+    from .resources.cell_statistics import Cell_Statistics
     from .resources.tag import Tag, TagDetail
     from .resources.cell_tags import CellTags, CellTagDetail, CellsByTag
     from .resources.cell_users import CellUsers, CellUserDetail, CellByUser, CellShare
@@ -137,6 +138,7 @@ def create_app(debug: bool = False) -> Flask:
     api.add_resource(Cell, "/cell/", "/cell/<int:cellId>")
     api.add_resource(Cell_Id, "/cell/id")
     api.add_resource(Cell_Sensors, "/cell/<int:cell_id>/sensors")
+    api.add_resource(Cell_Statistics, "/cell/<int:cell_id>/statistics")
     api.add_resource(Logger, "/logger/", "/logger/<int:logger_id>")
     api.add_resource(Power_Data, "/power/", "/power/<int:cell_id>")
     api.add_resource(Teros_Data, "/teros/", "/teros/<int:cell_id>")
