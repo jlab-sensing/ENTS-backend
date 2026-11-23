@@ -67,6 +67,19 @@ def test_calculate_statistics_skips_missing_values_and_sorts_by_time():
     assert stats["latest_reading_ts"] == "2026-01-01T02:00:00"
 
 
+def test_calculate_statistics_skips_non_finite_values():
+    t0 = datetime(2026, 1, 1)
+    timestamps = [t0, t0 + timedelta(hours=1), t0 + timedelta(hours=2)]
+    values = [float("nan"), 4.0, float("inf")]
+
+    stats = _calculate_statistics(timestamps, values)
+
+    assert stats["count"] == 1
+    assert stats["mean"] == 4.0
+    assert stats["latest_value"] == 4.0
+    assert stats["latest_reading_ts"] == "2026-01-01T01:00:00"
+
+
 def test_calculate_statistics_single_value_has_zero_std():
     stats = _calculate_statistics([datetime(2026, 1, 1)], [5])
 
@@ -166,6 +179,7 @@ def test_cell_statistics_all_measurements_in_range(test_client):
         ("power", "power", "current"),
         ("power", "power", "power"),
         ("teros12", "teros12", "vwc"),
+        ("teros12", "teros12", "raw_vwc"),
         ("teros12", "teros12", "temp"),
         ("teros12", "teros12", "ec"),
         ("sensor", "bme280", "temperature"),
@@ -193,6 +207,8 @@ def test_cell_statistics_all_measurements_in_range(test_client):
 
     assert stats[("teros12", "teros12", "vwc")]["unit"] == "%"
     assert stats[("teros12", "teros12", "vwc")]["mean"] == pytest.approx(25.0)
+    assert stats[("teros12", "teros12", "raw_vwc")]["unit"] == "raw"
+    assert stats[("teros12", "teros12", "raw_vwc")]["mean"] == pytest.approx(2050.0)
     assert stats[("teros12", "teros12", "temp")]["unit"] == "°C"
     assert stats[("teros12", "teros12", "temp")]["max"] == pytest.approx(23.0)
     assert stats[("teros12", "teros12", "ec")]["unit"] == "µS/cm"
@@ -208,6 +224,37 @@ def test_cell_statistics_all_measurements_in_range(test_client):
     assert counts["count"] == 2
     assert counts["mean"] == pytest.approx(4.0)
     assert counts["latest_value"] == pytest.approx(5.0)
+
+
+def test_cell_statistics_leaves_out_non_finite_readings(test_client):
+    cell = Cell(name="stats_non_finite", location="loc")
+    cell.save()
+    sensor = Sensor(
+        name="probe",
+        measurement="level",
+        data_type="float",
+        cell_id=cell.id,
+        unit="cm",
+    )
+    sensor.save()
+
+    t0 = datetime(2026, 1, 10, 12, 0)
+    for minutes, val in ((0, float("nan")), (10, 2.5), (20, float("inf"))):
+        Data(
+            sensor_id=sensor.id, ts=t0 + timedelta(minutes=minutes), float_val=val
+        ).save()
+
+    response = test_client.get(
+        f"/api/cell/{cell.id}/statistics",
+        query_string={"startTime": rfc(t0), "endTime": rfc(t0 + timedelta(hours=1))},
+    )
+
+    assert response.status_code == 200
+    assert "NaN" not in response.get_data(as_text=True)
+    assert "Infinity" not in response.get_data(as_text=True)
+    level = by_series(response.get_json())[("sensor", "probe", "level")]
+    assert level["count"] == 1
+    assert level["mean"] == pytest.approx(2.5)
 
 
 def test_cell_statistics_time_range_includes_its_start_and_end(test_client):

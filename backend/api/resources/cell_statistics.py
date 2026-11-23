@@ -1,5 +1,6 @@
 """Summary statistics for the measurements of a cell"""
 
+import math
 import statistics
 
 from datetime import datetime, timezone
@@ -21,7 +22,9 @@ get_cell_statistics_schema = GetCellStatisticsSchema()
 def _calculate_statistics(timestamps: list, values: list) -> dict:
     """Calculate summary statistics from paired timestamps and measurement values."""
     valid_pairs = [
-        (ts, float(val)) for ts, val in zip(timestamps, values) if val is not None
+        (ts, float(val))
+        for ts, val in zip(timestamps, values)
+        if val is not None and math.isfinite(val)
     ]
     if not valid_pairs:
         return {
@@ -117,7 +120,12 @@ class Cell_Statistics(Resource):
         teros = TEROSData.get_teros_data_obj(
             cell_id, resample="none", start_time=start_time, end_time=end_time
         )
-        for measurement, unit in (("vwc", "%"), ("temp", "°C"), ("ec", "µS/cm")):
+        for measurement, unit in (
+            ("vwc", "%"),
+            ("raw_vwc", "raw"),
+            ("temp", "°C"),
+            ("ec", "µS/cm"),
+        ):
             series.append(
                 (
                     "teros12",
