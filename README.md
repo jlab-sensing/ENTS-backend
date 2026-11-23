@@ -24,6 +24,29 @@ cp .env.example .env
 docker compose up --build -d
 ```
 
+### Run without cloning the repository
+
+Published container images can be run without a copy of the source code. The
+following downloads a compose file and a `.env` into a `dirtviz` directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jlab-sensing/ENTS-backend/main/scripts/install.sh | sh
+cd dirtviz
+docker compose up -d
+```
+
+The site is then available at http://localhost:3000. Review the generated `.env`
+before exposing the site publicly, since the secrets in it are only examples.
+Set `ENTS_VERSION` to a release tag to pin a version instead of `latest`, and
+use `docker compose --profile pgadmin up -d` to also start pgAdmin.
+
+The same files can be downloaded manually:
+
+```bash
+curl -fsSL -o docker-compose.yml https://raw.githubusercontent.com/jlab-sensing/ENTS-backend/main/docker-compose.release.yml
+curl -fsSL -o .env https://raw.githubusercontent.com/jlab-sensing/ENTS-backend/main/.env.example
+```
+
 For developers see [docs/development.md](./docs/development.md) for how to get started and [CONTRIBUTING.md](CONTRIBUTING.md) for PR requirements.
 
 ## Support
