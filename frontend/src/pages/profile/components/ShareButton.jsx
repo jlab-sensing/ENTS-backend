@@ -5,12 +5,22 @@ import { React, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import Popover from '@mui/material/Popover';
 import { shareCell } from '../../../services/cell';
+import { shareLogger } from '../../../services/logger';
 import PropTypes from 'prop-types';
 import useAuth from '../../../auth/hooks/useAuth';
 
-function ShareButton({ ids }) {
+// refetchIndex is the position of the list's refetch function in the profile outlet context
+const SHARE_TARGETS = {
+  cell: { share: shareCell, refetchIndex: 3, noun: 'cell' },
+  logger: { share: shareLogger, refetchIndex: 9, noun: 'logger' },
+};
+
+function ShareButton({ ids, type = 'cell' }) {
+  const { share, refetchIndex, noun } = SHARE_TARGETS[type];
+  const Noun = noun.charAt(0).toUpperCase() + noun.slice(1);
+  const plural = ids && ids.length > 1 ? 's' : '';
   let data = useOutletContext();
-  const refetch = data[3];
+  const refetch = data[refetchIndex];
   const user = data[4];
   data = data[0];
   const { auth } = useAuth();
@@ -43,14 +53,13 @@ function ShareButton({ ids }) {
       return;
     }
 
-    // Share all selected cells
-    const sharePromises = ids.map((cellId) =>
-      shareCell(cellId, email, auth?.accessToken)
+    const sharePromises = ids.map((itemId) =>
+      share(itemId, email, auth?.accessToken)
         .then((res) => res)
         .catch((error) => {
-          console.error(`Error sharing cell ${cellId}:`, error);
+          console.error(`Error sharing ${noun} ${itemId}:`, error);
           throw error;
-        })
+        }),
     );
 
     Promise.all(sharePromises)
@@ -60,7 +69,7 @@ function ShareButton({ ids }) {
         refetch();
       })
       .catch((error) => {
-        setError(error.response?.data?.message || 'Failed to share cells. Please try again.');
+        setError(error.response?.data?.message || `Failed to share ${noun}s. Please try again.`);
       });
   };
 
@@ -132,7 +141,7 @@ function ShareButton({ ids }) {
                     fontSize: '1.5rem',
                   }}
                 >
-                  Share Cell{ids && ids.length > 1 ? 's' : ''}
+                  Share {Noun + plural}
                 </Typography>
                 <Typography
                   variant='body2'
@@ -141,7 +150,7 @@ function ShareButton({ ids }) {
                     mt: 0.5,
                   }}
                 >
-                  Share {ids && ids.length} cell{ids && ids.length > 1 ? 's' : ''} with another user
+                  Share {ids && ids.length} {noun + plural} with another user
                 </Typography>
               </Box>
 
@@ -162,7 +171,7 @@ function ShareButton({ ids }) {
                   sx={{ mb: 3 }}
                 />
 
-                {/* Selected Cells */}
+                {/* Selected items */}
                 <Box
                   sx={{
                     backgroundColor: '#f8f9fa',
@@ -172,7 +181,7 @@ function ShareButton({ ids }) {
                   }}
                 >
                   <Typography variant='body2' sx={{ color: '#666', fontWeight: 500 }}>
-                    Selected Cell IDs:
+                    Selected {Noun} IDs:
                   </Typography>
                   <Typography variant='body2' sx={{ color: '#333', mt: 0.5 }}>
                     {ids && ids.join(', ')}
@@ -213,7 +222,7 @@ function ShareButton({ ids }) {
                       px: '1.5rem',
                     }}
                   >
-                    Share Cell{ids && ids.length > 1 ? 's' : ''}
+                    Share {Noun + plural}
                   </Button>
                 </Box>
               </Box>
@@ -239,7 +248,7 @@ function ShareButton({ ids }) {
                     fontSize: '1.5rem',
                   }}
                 >
-                  Cell{ids && ids.length > 1 ? 's' : ''} Shared Successfully!
+                  {Noun + plural} Shared Successfully!
                 </Typography>
                 <Typography
                   variant='body2'
@@ -248,7 +257,8 @@ function ShareButton({ ids }) {
                     mt: 0.5,
                   }}
                 >
-                  The cell{ids && ids.length > 1 ? 's have' : ' has'} been shared with {email}
+                  The {noun}
+                  {ids && ids.length > 1 ? 's have' : ' has'} been shared with {email}
                 </Typography>
               </Box>
 
@@ -263,8 +273,8 @@ function ShareButton({ ids }) {
                   }}
                 >
                   <Typography variant='body1' sx={{ color: '#666', lineHeight: 1.6 }}>
-                    Cell{ids && ids.length > 1 ? 's' : ''} <strong>{ids && ids.join(', ')}</strong>{' '}
-                    {ids && ids.length > 1 ? 'have' : 'has'} been successfully shared with <strong>{email}</strong>.
+                    {Noun + plural} <strong>{ids && ids.join(', ')}</strong> {ids && ids.length > 1 ? 'have' : 'has'}{' '}
+                    been successfully shared with <strong>{email}</strong>.
                   </Typography>
                 </Box>
 
@@ -296,4 +306,5 @@ export default ShareButton;
 
 ShareButton.propTypes = {
   ids: PropTypes.arrayOf(PropTypes.number).isRequired,
+  type: PropTypes.oneOf(['cell', 'logger']),
 };
