@@ -1,0 +1,79 @@
+---
+# Compose file that runs DirtViz from published container images. It does not
+# need a clone of the repository. See scripts/install.sh for a one-line setup.
+#
+# Variables (all optional, set in the shell or in a ".env" file next to this file):
+#   ENTS_REGISTRY  registry/namespace the images are pulled from
+#   ENTS_VERSION   image tag to run (default: latest)
+#   ENV_FILE       env file passed to the containers (default: .env)
+#
+# The ".env" file next to this file is also used by Compose itself to fill in
+# the database settings below. If you use a different file, pass it twice so
+# the database and the backend agree on the credentials:
+#   ENV_FILE=custom.env docker compose --env-file custom.env up -d
+services:
+  backend:
+    image: ${ENTS_REGISTRY:-ghcr.io/jlab-sensing}/ents-backend:${ENTS_VERSION:-latest}
+    env_file:
+      - ${ENV_FILE:-.env}
+    ports:
+      - '8000:8000'
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend:
+    image: ${ENTS_REGISTRY:-ghcr.io/jlab-sensing}/ents-frontend:${ENTS_VERSION:-latest}
+    ports:
+      - '3000:80'
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  migration:
+    image: ${ENTS_REGISTRY:-ghcr.io/jlab-sensing}/ents-migration:${ENTS_VERSION:-latest}
+    env_file:
+      - ${ENV_FILE:-.env}
+    depends_on:
+      postgresql:
+        condition: service_healthy
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+
+  postgresql:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${DB_USER:-dirtviz}
+      POSTGRES_PASSWORD: ${DB_PASS:-password}
+      POSTGRES_DB: ${DB_DATABASE:-dirtviz}
+    volumes:
+      - postgresql-16-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - '127.0.0.1:8888:80'
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-user-name@domain-name.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-strong-password}
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    profiles:
+      - pgadmin
+
+volumes:
+  postgresql-16-data:
+  pgadmin-data:
