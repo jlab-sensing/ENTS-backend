@@ -6,6 +6,8 @@ import { useOutletContext } from 'react-router-dom';
 import { addCell } from '../../../services/cell';
 import { useAssignCellTags } from '../../../services/tag';
 import TagSelector from '../../../components/TagSelector';
+import MetadataEditor from '../../../components/MetadataEditor';
+import { rowsToMetadata } from '../../../components/metadataUtils';
 
 function AddCellModal() {
   let data = useOutletContext();
@@ -19,12 +21,14 @@ function AddCellModal() {
   const [long, setLong] = useState('');
   const [lat, setLat] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
+  const [metadataRows, setMetadataRows] = useState([]);
   const archive = false;
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
   const [IsSubmitted, setIsSubmitted] = useState(null);
 
   const assignCellTagsMutation = useAssignCellTags();
+  const { metadata, rowErrors: metadataErrors, hasError: hasMetadataError } = rowsToMetadata(metadataRows);
 
   const handleOpen = () => {
     setOpen(true);
@@ -42,6 +46,7 @@ function AddCellModal() {
     setLong('');
     setLat('');
     setSelectedTags([]);
+    setMetadataRows([]);
   };
 
   const handleClose = () => {
@@ -54,6 +59,7 @@ function AddCellModal() {
     setLong('');
     setLat('');
     setSelectedTags([]);
+    setMetadataRows([]);
   };
 
   const getLocation = () => {
@@ -90,7 +96,11 @@ function AddCellModal() {
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            width: 450,
+            width: 480,
+            maxWidth: '92vw',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
             bgcolor: 'white',
             borderRadius: '12px',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
@@ -147,7 +157,7 @@ function AddCellModal() {
               </Box>
 
               {/* Form Section */}
-              <Box sx={{ padding: '2rem' }}>
+              <Box sx={{ padding: '2rem', overflowY: 'auto' }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                   <TextField
                     label='Cell Name'
@@ -159,6 +169,7 @@ function AddCellModal() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder='e.g., Forest Station A'
+                    InputLabelProps={{ shrink: true }}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
@@ -175,6 +186,7 @@ function AddCellModal() {
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder='e.g., North Campus Field'
+                    InputLabelProps={{ shrink: true }}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
@@ -188,10 +200,10 @@ function AddCellModal() {
                     required
                     error={(lat.length === 0 && IsSubmitted) || isNaN(Number(lat))}
                     helperText={!(lat.length) && (IsSubmitted) ? 'Latitude is required' : isNaN(Number(lat)) ? 'Please enter a valid number' : ''}
-
                     value={lat}
                     onChange={(e) => setLat(e.target.value)}
                     placeholder='e.g., 36.9741'
+                    InputLabelProps={{ shrink: true }}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
@@ -205,10 +217,10 @@ function AddCellModal() {
                     required
                     error={(long.length === 0 && IsSubmitted) || isNaN(Number(long))}
                     helperText={!(long.length) && (IsSubmitted) ? 'Longitude is required' : isNaN(Number(long)) ? 'Please enter a valid number' : ''}
-
                     value={long}
                     onChange={(e) => setLong(e.target.value)}
                     placeholder='e.g., -122.0308'
+                    InputLabelProps={{ shrink: true }}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: '8px',
@@ -217,6 +229,8 @@ function AddCellModal() {
                   />
 
                   <TagSelector selectedTags={selectedTags} onTagsChange={setSelectedTags} axiosPrivate={axiosPrivate} />
+
+                  <MetadataEditor rows={metadataRows} rowErrors={metadataErrors} onRowsChange={setMetadataRows} />
                 </Box>
 
                 {/* Action Buttons */}
@@ -266,8 +280,11 @@ function AddCellModal() {
                     variant='contained'
                     onClick={async () => {
                       setIsSubmitted(true);
+                      if (hasMetadataError) {
+                        return;
+                      }
                       try {
-                        const res = await addCell(name, location, long, lat, archive, user.email);
+                        const res = await addCell(name, location, long, lat, archive, user.email, metadata);
 
                         // Assign tags to the newly created cell if any tags are selected
                         if (selectedTags.length > 0 && res.id) {
@@ -277,9 +294,9 @@ function AddCellModal() {
 
                         setResponse(res);
                         refetch();
-                      } catch (error) {
-                        setError(error);
-                        console.error(error);
+                      } catch (err) {
+                        setError(err);
+                        console.error(err);
                       }
                     }}
                     disabled={
@@ -288,7 +305,8 @@ function AddCellModal() {
                       !lat.trim() ||
                       !long.trim() ||
                       isNaN(Number(lat)) ||
-                      isNaN(Number(long))
+                      isNaN(Number(long)) ||
+                      hasMetadataError
                     }
                     sx={{
                       backgroundColor: '#588157',

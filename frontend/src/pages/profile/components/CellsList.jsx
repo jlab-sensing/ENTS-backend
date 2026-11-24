@@ -6,6 +6,7 @@ import DeleteCellModal from './DeleteCellModal';
 import EditCellModal from './EditCellModal';
 import { React, useState } from 'react';
 import ShareButton from './ShareButton';
+import { formatMetadataSummary } from '../../../components/metadataUtils';
 
 function CellsList() {
   let data = useOutletContext();
@@ -36,6 +37,13 @@ function CellsList() {
     { field: 'long', headerName: 'Longitude', width: 150 },
     { field: 'archive', headerName: 'Archive', width: 150 },
     {
+      field: 'metadata',
+      headerName: 'Metadata',
+      width: 200,
+      sortable: false,
+      renderCell: (params) => formatMetadataSummary(params.row.metadata),
+    },
+    {
       field: 'edit',
       headerName: '',
       sortable: false,
@@ -54,6 +62,7 @@ function CellsList() {
       lat: cell.latitude,
       long: cell.longitude,
       archive: cell.archive,
+      metadata: cell.metadata || {},
     }));
   }
 

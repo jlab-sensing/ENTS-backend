@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // import AccountInfo from '../pages/profile/components/AccountInfo';
 import DeleteCellModal from '../pages/profile/components/DeleteCellModal';
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { updateCell, getCells, deleteCell, getUserCells, getCellSensors } from '../services/cell';
+import { addCell, updateCell, getCells, deleteCell, getUserCells, getCellSensors } from '../services/cell';
 import { useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 vi.mock('axios');
@@ -306,6 +306,23 @@ describe('Cell Service API Functions', () => {
   //     })
   //   );
   // });
+  it('adds a new cell with metadata', async () => {
+    const mockResponse = { id: 10, name: 'New Cell', metadata: { sand: 0.4 } };
+    axios.post.mockResolvedValueOnce({ data: mockResponse });
+
+    const data = await addCell('New Cell', 'Location', '10.0', '20.0', false, 'test@example.com', { sand: 0.4 });
+
+    expect(data).toEqual(mockResponse);
+    expect(axios.post).toHaveBeenCalledWith(
+      `${process.env.PUBLIC_URL}/api/cell/`,
+      expect.objectContaining({
+        name: 'New Cell',
+        location: 'Location',
+        metadata: { sand: 0.4 },
+      }),
+    );
+  });
+
   it('fetches cells successfully', async () => {
     const mockResponse = [{ id: 1, name: 'Mock Cell' }];
     axios.get.mockResolvedValue({ data: mockResponse });
