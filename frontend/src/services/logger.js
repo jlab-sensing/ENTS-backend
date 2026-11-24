@@ -72,6 +72,27 @@ export const deleteLogger = async (loggerId, accessToken) => {
   }
 };
 
+export const shareLogger = async (loggerId, email, accessToken) => {
+  const url = `${process.env.PUBLIC_URL}/api/logger/${loggerId}/share`;
+
+  try {
+    const response = await axios.post(
+      url,
+      { email },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error sharing logger:', error.response ? error.response.data : error.message);
+    throw error;
+  }
+};
+
 export const getUserLoggers = (axiosPrivate) => {
   return axiosPrivate.get(`${process.env.PUBLIC_URL}/logger/?user=True`).then((res) => res.data);
 };

@@ -4,6 +4,7 @@ import { useOutletContext } from 'react-router-dom';
 import AddLoggerModal from './AddLoggerModal';
 import DeleteLoggerModal from './DeleteLoggerModal';
 import EditLoggerModal from './EditLoggerModal';
+import ShareButton from './ShareButton';
 import { React, useState } from 'react';
 
 function LoggersList() {
@@ -99,6 +100,7 @@ function LoggersList() {
           Your Loggers
         </Typography>
         <AddLoggerModal />
+        <ShareButton ids={selectedRowId ? [selectedRowId] : []} type='logger' />
         <DeleteLoggerModal id={selectedRowId} />
       </Box>
 

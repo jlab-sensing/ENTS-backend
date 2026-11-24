@@ -1,9 +1,17 @@
 from ..models import db
 from .user import User
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from datetime import datetime
 import uuid
+
+
+class Logger_User(db.Model):
+    """Users a logger is shared with; the owner is Logger.user_id"""
+
+    __tablename__ = "logger_user"
+    logger_id = db.Column(db.Integer, db.ForeignKey("logger.id"), primary_key=True)
+    user_id = db.Column(db.Uuid(), db.ForeignKey("user.id"), primary_key=True)
 
 
 class Logger(db.Model):
@@ -21,6 +29,7 @@ class Logger(db.Model):
     user_id = db.Column(UUID(), db.ForeignKey("user.id"))
 
     user = db.relationship("User", backref="loggers")
+    shared_users = db.relationship("User", secondary=Logger_User.__table__)
 
     def __init__(self, name, type="", device_eui="", description="", user_id=None):
         self.name = name
@@ -65,7 +74,10 @@ class Logger(db.Model):
 
     @staticmethod
     def get_loggers_by_user_id(id):
-        return Logger.query.filter_by(user_id=id).all()
+        """Get loggers the user owns or that are shared with them"""
+        return Logger.query.filter(
+            or_(Logger.user_id == id, Logger.shared_users.any(User.id == id))
+        ).all()
 
     @staticmethod
     def get_all():
