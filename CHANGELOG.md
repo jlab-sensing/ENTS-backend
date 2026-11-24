@@ -18,6 +18,7 @@ When adding a new entry, please use the following format:
 
 ## Log
 
+- [2026-11-11] fix: dashboard zoom tool selects a rectangle on both axes, and zoom in/out anchor on the most recent data point [#848](https://github.com/jlab-sensing/ENTS-backend/issues/848)
 - [2026-11-23] feat: add `GET /api/cell/<cell_id>/statistics` returning count, min, max, mean, median, std and latest value for each measurement of a cell [#874](https://github.com/jlab-sensing/ENTS-backend/issues/874)
 - [2026-10-30] feat: add platform statistics section to landing page [#855](https://github.com/jlab-sensing/ENTS-backend/pull/855)
 - [2026-11-09] feat: remove Join EUI and App Key from logger creation; read TTN_JOIN_EUI/TTN_APP_KEY from .env [#851](https://github.com/jlab-sensing/ENTS-backend/issues/851)
