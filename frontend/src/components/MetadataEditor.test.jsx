@@ -4,6 +4,7 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import MetadataEditor from './MetadataEditor';
 import {
+  formatEditorValue,
   formatMetadataSummary,
   formatMetadataValue,
   metadataToRows,
@@ -12,9 +13,12 @@ import {
 } from './metadataUtils';
 
 describe('metadataUtils', () => {
-  it('parses numbers, booleans, null, JSON, and strings', () => {
+  it('parses numbers, exponent numbers, booleans, null, JSON, and strings', () => {
     expect(parseMetadataValue('0.4')).toBe(0.4);
     expect(parseMetadataValue('-12')).toBe(-12);
+    expect(parseMetadataValue('1e-7')).toBe(1e-7);
+    expect(parseMetadataValue('1.5e+4')).toBe(15000);
+    expect(parseMetadataValue('1e999')).toBe('1e999');
     expect(parseMetadataValue('true')).toBe(true);
     expect(parseMetadataValue('false')).toBe(false);
     expect(parseMetadataValue('null')).toBeNull();
@@ -25,7 +29,12 @@ describe('metadataUtils', () => {
     expect(parseMetadataValue('')).toBe('');
   });
 
-  it('formats values and summaries cleanly', () => {
+  it('formats values for editor vs summaries cleanly', () => {
+    expect(formatEditorValue(null)).toBe('null');
+    expect(formatEditorValue(undefined)).toBe('');
+    expect(formatEditorValue(0.4)).toBe('0.4');
+    expect(formatEditorValue({ nested: true })).toBe('{"nested":true}');
+
     expect(formatMetadataValue(null)).toBe('');
     expect(formatMetadataValue(undefined)).toBe('');
     expect(formatMetadataValue(0.4)).toBe('0.4');
@@ -34,6 +43,51 @@ describe('metadataUtils', () => {
     expect(formatMetadataSummary(null)).toBe('—');
     expect(formatMetadataSummary({})).toBe('—');
     expect(formatMetadataSummary({ sand: 0.4, silt: 0.2 })).toBe('sand: 0.4, silt: 0.2');
+  });
+
+  it('round-trips unchanged values and preserves exact types and keys', () => {
+    const original = {
+      empty: null,
+      numStr: '0.4',
+      boolTrueStr: 'true',
+      boolFalseStr: 'false',
+      nullStr: 'null',
+      expNum: 1e-7,
+      largeExpNum: 1e25,
+      ordinaryNum: 0.4,
+      ordinaryStr: 'loam',
+      paddedStr: '  spaced  ',
+      ' leadingKey': 0.2,
+      leadingKey: 0.8,
+    };
+
+    const rows = metadataToRows(original);
+    const result = rowsToMetadata(rows);
+
+    expect(result.hasError).toBe(false);
+    expect(result.metadata).toStrictEqual(original);
+    expect(result.metadata.empty).toBeNull();
+    expect(typeof result.metadata.numStr).toBe('string');
+    expect(typeof result.metadata.boolTrueStr).toBe('string');
+    expect(typeof result.metadata.boolFalseStr).toBe('string');
+    expect(typeof result.metadata.nullStr).toBe('string');
+    expect(result.metadata.expNum).toBe(1e-7);
+    expect(result.metadata.largeExpNum).toBe(1e25);
+    expect(result.metadata[' leadingKey']).toBe(0.2);
+    expect(result.metadata.leadingKey).toBe(0.8);
+  });
+
+  it('normalizes new keys and defines __proto__ as an own data property', () => {
+    const result = rowsToMetadata([
+      { id: 'r1', key: '  sand  ', value: '0.4' },
+      { id: 'r2', key: '__proto__', value: '{"admin":true}' },
+    ]);
+
+    expect(result.hasError).toBe(false);
+    expect(result.metadata.sand).toBe(0.4);
+    expect(Object.prototype.hasOwnProperty.call(result.metadata, '__proto__')).toBe(true);
+    expect(Object.getOwnPropertyDescriptor(result.metadata, '__proto__').value).toEqual({ admin: true });
+    expect(JSON.stringify(result.metadata)).toBe('{"sand":0.4,"__proto__":{"admin":true}}');
   });
 
   it('converts metadata objects to rows and back with validation', () => {
@@ -99,6 +153,13 @@ describe('MetadataEditor', () => {
     );
 
     expect(screen.getByText('Duplicate key')).toBeInTheDocument();
+
+    const keyInput = screen.getByLabelText('Key 1');
+    await user.type(keyInput, 'y');
+    expect(onRowsChange).toHaveBeenCalledWith([
+      { id: 'row-1', key: 'sandy', value: '0.4' },
+      { id: 'row-2', key: 'sand', value: '0.2' },
+    ]);
 
     const valueInput = screen.getByLabelText('Value 1');
     await user.type(valueInput, '5');

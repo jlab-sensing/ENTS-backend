@@ -15,7 +15,21 @@ function MetadataEditor({ rows, rowErrors, onRowsChange }) {
 
   const handleFieldChange = (rowId, field) => (event) => {
     const { value } = event.target;
-    onRowsChange(rows.map((row) => (row.id === rowId ? { ...row, [field]: value } : row)));
+    onRowsChange(
+      rows.map((row) => {
+        if (row.id !== rowId) {
+          return row;
+        }
+        const updated = { ...row, [field]: value };
+        if (field === 'key') {
+          delete updated.isLoaded;
+        }
+        if (field === 'value') {
+          delete updated.hasOriginalValue;
+        }
+        return updated;
+      }),
+    );
   };
 
   const handleRemoveRow = (rowId) => {

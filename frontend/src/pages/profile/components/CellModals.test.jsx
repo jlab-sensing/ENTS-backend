@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -88,14 +88,14 @@ describe('Cell Modals with Metadata', () => {
     renderWithProviders(<AddCellModal />);
 
     await user.click(screen.getByRole('button'));
-    await user.type(screen.getByLabelText(/cell name/i), 'Station B');
-    await user.type(screen.getByLabelText(/location/i), 'South Field');
-    await user.type(screen.getByLabelText(/latitude/i), '36.97');
-    await user.type(screen.getByLabelText(/longitude/i), '-122.03');
+    fireEvent.change(screen.getByLabelText(/cell name/i), { target: { value: 'Station B' } });
+    fireEvent.change(screen.getByLabelText(/location/i), { target: { value: 'South Field' } });
+    fireEvent.change(screen.getByLabelText(/latitude/i), { target: { value: '36.97' } });
+    fireEvent.change(screen.getByLabelText(/longitude/i), { target: { value: '-122.03' } });
 
     await user.click(screen.getByRole('button', { name: /add field/i }));
-    await user.type(screen.getByLabelText('Key 1'), 'sand');
-    await user.type(screen.getByLabelText('Value 1'), '0.4');
+    fireEvent.change(screen.getByLabelText('Key 1'), { target: { value: 'sand' } });
+    fireEvent.change(screen.getByLabelText('Value 1'), { target: { value: '0.4' } });
 
     await user.click(screen.getByRole('button', { name: /add cell/i }));
 
@@ -123,13 +123,13 @@ describe('Cell Modals with Metadata', () => {
     renderWithProviders(<AddCellModal />);
 
     await user.click(screen.getByRole('button'));
-    await user.type(screen.getByLabelText(/cell name/i), 'Station C');
-    await user.type(screen.getByLabelText(/location/i), 'West Field');
-    await user.type(screen.getByLabelText(/latitude/i), '36.97');
-    await user.type(screen.getByLabelText(/longitude/i), '-122.03');
+    fireEvent.change(screen.getByLabelText(/cell name/i), { target: { value: 'Station C' } });
+    fireEvent.change(screen.getByLabelText(/location/i), { target: { value: 'West Field' } });
+    fireEvent.change(screen.getByLabelText(/latitude/i), { target: { value: '36.97' } });
+    fireEvent.change(screen.getByLabelText(/longitude/i), { target: { value: '-122.03' } });
 
     await user.click(screen.getByRole('button', { name: /add field/i }));
-    await user.type(screen.getByLabelText('Value 1'), '0.5');
+    fireEvent.change(screen.getByLabelText('Value 1'), { target: { value: '0.5' } });
 
     expect(screen.getByText('Key is required')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /add cell/i })).toBeDisabled();
@@ -161,8 +161,8 @@ describe('Cell Modals with Metadata', () => {
 
     await user.click(screen.getByRole('button', { name: 'Remove metadata field 2' }));
     await user.click(screen.getByRole('button', { name: /add field/i }));
-    await user.type(screen.getByLabelText('Key 2'), 'silt');
-    await user.type(screen.getByLabelText('Value 2'), '0.2');
+    fireEvent.change(screen.getByLabelText('Key 2'), { target: { value: 'silt' } });
+    fireEvent.change(screen.getByLabelText('Value 2'), { target: { value: '0.2' } });
 
     await user.click(screen.getByRole('button', { name: /update cell/i }));
 
@@ -178,6 +178,46 @@ describe('Cell Modals with Metadata', () => {
       );
     });
     expect(refetch).toHaveBeenCalled();
+  });
+
+  it('preserves untouched metadata values and keys when saving EditCellModal', async () => {
+    const user = userEvent.setup({ delay: null });
+    const originalMetadata = {
+      empty: null,
+      code: '0.4',
+      flag: 'true',
+      tiny: 1e-7,
+      ' leadingKey': 'kept',
+    };
+    updateCell.mockResolvedValueOnce({ id: 8, name: 'Field B Updated' });
+
+    renderWithProviders(
+      <EditCellModal
+        cell={{
+          id: 8,
+          name: 'Field B',
+          location: 'East Plot',
+          lat: 36.97,
+          long: -122.03,
+          metadata: originalMetadata,
+        }}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+    fireEvent.change(screen.getByLabelText(/cell name/i), { target: { value: 'Field B Updated' } });
+    await user.click(screen.getByRole('button', { name: /update cell/i }));
+
+    await waitFor(() => {
+      expect(updateCell).toHaveBeenCalledWith(
+        8,
+        expect.objectContaining({
+          name: 'Field B Updated',
+          metadata: originalMetadata,
+        }),
+        'test-token',
+      );
+    });
   });
 
   it('renders cell metadata summary in CellsList and passes it to EditCellModal', async () => {
