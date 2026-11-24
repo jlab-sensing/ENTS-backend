@@ -5,6 +5,8 @@ import { useOutletContext } from 'react-router-dom';
 import { updateCell } from '../../../services/cell';
 import { useCellTags, useAssignCellTags } from '../../../services/tag';
 import TagSelector from '../../../components/TagSelector';
+import MetadataEditor from '../../../components/MetadataEditor';
+import { metadataToRows, rowsToMetadata } from '../../../components/metadataUtils';
 import PropTypes from 'prop-types';
 import useAuth from '../../../auth/hooks/useAuth';
 
@@ -17,17 +19,20 @@ function EditCellModal({ cell }) {
   const [isOpen, setOpen] = useState(false);
   const [formData, setFormData] = useState({ ...cell });
   const [selectedTags, setSelectedTags] = useState([]);
+  const [metadataRows, setMetadataRows] = useState(() => metadataToRows(cell.metadata));
   const [response, setResponse] = useState(null);
   const [isSubmitting, setSubmitting] = useState(false);
 
   const { data: cellTags = [] } = useCellTags(cell.id);
   const assignCellTagsMutation = useAssignCellTags();
+  const { metadata, rowErrors: metadataErrors, hasError: hasMetadataError } = rowsToMetadata(metadataRows);
 
   const handleOpen = () => {
     setOpen(true);
     setResponse(null);
     setFormData({ ...cell });
     setSelectedTags(cellTags);
+    setMetadataRows(metadataToRows(cell.metadata));
   };
 
   useEffect(() => {
@@ -43,11 +48,14 @@ function EditCellModal({ cell }) {
   };
 
   const handleSubmit = async () => {
+    if (hasMetadataError) {
+      return;
+    }
     setSubmitting(true);
 
     try {
       // Update cell data
-      const cellResponse = await updateCell(cell.id, formData, auth?.accessToken);
+      const cellResponse = await updateCell(cell.id, { ...formData, metadata }, auth?.accessToken);
 
       // Update cell tags
       const tagIds = selectedTags.map((tag) => tag.id);
@@ -80,7 +88,11 @@ function EditCellModal({ cell }) {
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            width: 450,
+            width: 480,
+            maxWidth: '92vw',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
             bgcolor: 'white',
             borderRadius: '12px',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
@@ -141,7 +153,7 @@ function EditCellModal({ cell }) {
               </Box>
 
               {/* Form Section */}
-              <Box sx={{ padding: '2rem' }}>
+              <Box sx={{ padding: '2rem', overflowY: 'auto' }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                   <TextField
                     label='Cell Name'
@@ -149,6 +161,7 @@ function EditCellModal({ cell }) {
                     onChange={handleChange('name')}
                     fullWidth
                     required
+                    InputLabelProps={{ shrink: true }}
                     error={!formData.name?.trim()}
                     helperText={!formData.name?.trim() ? 'Cell name is required' : ''}
                     sx={{
@@ -163,6 +176,7 @@ function EditCellModal({ cell }) {
                     onChange={handleChange('location')}
                     fullWidth
                     required
+                    InputLabelProps={{ shrink: true }}
                     error={!formData.location?.trim()}
                     helperText={!formData.location?.trim() ? 'Location is required' : ''}
                     placeholder='e.g., North Campus Field'
@@ -178,6 +192,7 @@ function EditCellModal({ cell }) {
                     onChange={handleChange('lat')}
                     fullWidth
                     required
+                    InputLabelProps={{ shrink: true }}
                     error={!formData.lat?.toString().trim() || isNaN(Number(formData.lat))}
                     helperText={
                       !formData.lat?.toString().trim()
@@ -199,6 +214,7 @@ function EditCellModal({ cell }) {
                     onChange={handleChange('long')}
                     fullWidth
                     required
+                    InputLabelProps={{ shrink: true }}
                     error={!formData.long?.toString().trim() || isNaN(Number(formData.long))}
                     helperText={
                       !formData.long?.toString().trim()
@@ -216,6 +232,8 @@ function EditCellModal({ cell }) {
                   />
 
                   <TagSelector selectedTags={selectedTags} onTagsChange={setSelectedTags} axiosPrivate={axiosPrivate} />
+
+                  <MetadataEditor rows={metadataRows} rowErrors={metadataErrors} onRowsChange={setMetadataRows} />
                 </Box>
 
                 {/* Action Buttons */}
@@ -254,7 +272,8 @@ function EditCellModal({ cell }) {
                       !formData.lat?.toString().trim() ||
                       !formData.long?.toString().trim() ||
                       isNaN(Number(formData.lat)) ||
-                      isNaN(Number(formData.long))
+                      isNaN(Number(formData.long)) ||
+                      hasMetadataError
                     }
                     sx={{
                       backgroundColor: '#588157',
@@ -341,5 +360,6 @@ EditCellModal.propTypes = {
     location: PropTypes.string.isRequired,
     long: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     lat: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    metadata: PropTypes.object,
   }).isRequired,
 };
