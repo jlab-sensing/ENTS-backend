@@ -37,14 +37,30 @@ fi
 mkdir -p "$DIR"
 cd "$DIR"
 
-# Download to a temporary file and move it into place only on success, so a
-# failed download never leaves a partial file behind.
+# Refuse to install into a directory that other users can write to or that is
+# owned by someone else, since they could swap the downloaded files.
+if [ ! -O . ]; then
+    echo "Error: $(pwd) is not owned by the current user." >&2
+    exit 1
+fi
+case "$(ls -ld . | cut -c9)" in
+    w|t|s)
+        echo "Error: $(pwd) is writable by other users. Run 'chmod o-w' on it or choose another DIR." >&2
+        exit 1
+        ;;
+esac
+
+# Download to a private temporary file and move it into place only on success,
+# so a failed download never leaves a partial file behind.
+tmp=""
+trap 'rm -f "$tmp"' EXIT INT TERM
 download() {
-    tmp="$2.tmp"
+    tmp="$(mktemp ./.download.XXXXXX)"
     if fetch "$1" "$tmp"; then
+        chmod 644 "$tmp"
         mv "$tmp" "$2"
+        tmp=""
     else
-        rm -f "$tmp"
         echo "Error: failed to download $1" >&2
         exit 1
     fi
