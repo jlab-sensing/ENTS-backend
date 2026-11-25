@@ -6,6 +6,7 @@ import {
   collectEquationRefsFromPanelOrder,
   collectEquationSensorRequests,
   collectUnifiedSensorRequests,
+  fetchDashboardHistoricalData,
   fetchDashboardSensorData,
   findSensorByPanelId,
   panelOrderNeedsPower,
@@ -17,7 +18,16 @@ vi.mock('../../../services/sensor', () => ({
   getSensorData: vi.fn(),
 }));
 
+vi.mock('../../../services/power', () => ({
+  getPowerData: vi.fn(),
+}));
+
+vi.mock('../../../services/teros', () => ({
+  getTerosData: vi.fn(),
+}));
+
 import { getSensorData } from '../../../services/sensor';
+import { getPowerData } from '../../../services/power';
 
 describe('historicalDataLoader', () => {
   beforeEach(() => {
@@ -69,6 +79,32 @@ describe('historicalDataLoader', () => {
     const requests = collectEquationSensorRequests(['1:co2 * 2']);
     expect(requests).toHaveLength(1);
     expect(requests[0].cacheKey).toBe(sensorDataCacheKey(1, 'co2', 'co2'));
+  });
+
+  it('collects generic power sensor requests for equation-only power layouts', () => {
+    const requests = collectEquationSensorRequests(['2538:voltage * 2538:current']);
+    expect(requests).toEqual([
+      {
+        cacheKey: sensorDataCacheKey(2538, 'POWER_VOLTAGE', 'Voltage'),
+        cellId: 2538,
+        name: 'POWER_VOLTAGE',
+        measurement: 'Voltage',
+      },
+      {
+        cacheKey: sensorDataCacheKey(2538, 'POWER_CURRENT', 'Current'),
+        cellId: 2538,
+        name: 'POWER_CURRENT',
+        measurement: 'Current',
+      },
+    ]);
+  });
+
+  it('collects both generic rows for a power-only equation ref and dedupes repeats', () => {
+    const requests = collectEquationSensorRequests(['2538:power', '2538:voltage']);
+    expect(requests.map((request) => request.cacheKey)).toEqual([
+      sensorDataCacheKey(2538, 'POWER_VOLTAGE', 'Voltage'),
+      sensorDataCacheKey(2538, 'POWER_CURRENT', 'Current'),
+    ]);
   });
 
   it('finds sensors by s:{id} panel id', () => {
@@ -210,6 +246,59 @@ describe('historicalDataLoader', () => {
       start.toHTTP(),
       end.toHTTP(),
       'none',
+    );
+  });
+
+  it('keeps legacy power history when an optional generic sensor request rejects', async () => {
+    const legacyPowerData = { timestamp: ['Thu, 18 Jun 2026 00:00:00 GMT'], data: [42] };
+    getPowerData.mockResolvedValue(legacyPowerData);
+    getSensorData.mockImplementation((name) =>
+      name === 'POWER_CURRENT'
+        ? Promise.reject(new Error('sensor unavailable'))
+        : Promise.resolve({ timestamp: [], data: [12] }),
+    );
+    const start = DateTime.fromISO('2026-06-01T00:00:00');
+    const end = DateTime.fromISO('2026-06-02T00:00:00');
+
+    const result = await fetchDashboardHistoricalData({
+      cells: [{ id: 2538, name: 'Cell 2538' }],
+      panelOrder: ['2538:voltage * 2538:current'],
+      startDate: start,
+      endDate: end,
+      cellSensorsById: {},
+    });
+
+    expect(result.historicalPowerByCell[2538]).toMatchObject({
+      name: 'Cell 2538',
+      powerData: legacyPowerData,
+    });
+    expect(result.historicalSensorByKey).toHaveProperty(
+      sensorDataCacheKey(2538, 'POWER_VOLTAGE', 'Voltage'),
+    );
+    expect(result.historicalSensorByKey).not.toHaveProperty(
+      sensorDataCacheKey(2538, 'POWER_CURRENT', 'Current'),
+    );
+  });
+
+  it('keeps successful generic reads for generic-only cells', async () => {
+    getPowerData.mockResolvedValue({ timestamp: [], data: [] });
+    getSensorData.mockResolvedValue({ timestamp: [], data: [12] });
+    const start = DateTime.fromISO('2026-06-01T00:00:00');
+    const end = DateTime.fromISO('2026-06-02T00:00:00');
+
+    const result = await fetchDashboardHistoricalData({
+      cells: [{ id: 2538, name: 'Cell 2538' }],
+      panelOrder: ['2538:voltage * 2538:current'],
+      startDate: start,
+      endDate: end,
+      cellSensorsById: {},
+    });
+
+    expect(result.historicalSensorByKey).toHaveProperty(
+      sensorDataCacheKey(2538, 'POWER_VOLTAGE', 'Voltage'),
+    );
+    expect(result.historicalSensorByKey).toHaveProperty(
+      sensorDataCacheKey(2538, 'POWER_CURRENT', 'Current'),
     );
   });
 });
